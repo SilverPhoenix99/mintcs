@@ -1,0 +1,13 @@
+%%{
+
+machine Lex;
+include "Lexer.csrl";
+
+}%%
+namespace mint.Compiler
+{
+    public partial class Lexer
+    {
+        %% write data;
+    }
+}
