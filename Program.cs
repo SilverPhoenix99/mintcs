@@ -1,7 +1,8 @@
-﻿using mint.types;
+﻿using mint.Compiler;
+using mint.types;
 using System;
 using System.Diagnostics;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 using Ex = System.Linq.Expressions.Expression;
@@ -12,14 +13,13 @@ namespace mint
     {
         static void Main(string[] args)
         {
-            dynamic obj = "a";
-            obj.ToString();
+            Debug.Assert(Marshal.SizeOf(typeof(Nil))    <= sizeof(bool));
+            Debug.Assert(Marshal.SizeOf(typeof(True))   <= sizeof(bool));
+            Debug.Assert(Marshal.SizeOf(typeof(False))  <= sizeof(bool));
+            Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
+            Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            Debug.Assert(Marshal.SizeOf<Nil>()    <= sizeof(bool));
-            Debug.Assert(Marshal.SizeOf<True>()   <= sizeof(bool));
-            Debug.Assert(Marshal.SizeOf<False>()  <= sizeof(bool));
-            Debug.Assert(Marshal.SizeOf<Fixnum>() <= sizeof(long));
-            Debug.Assert(Marshal.SizeOf<Symbol>() <= IntPtr.Size);
+            Token[] tokens = new Lexer("def f").ToArray();
             
             test.InvokeDynamicMethods.Test();
         }

@@ -200,12 +200,12 @@ namespace mint.Compiler
 
         private bool FcalledBy(bool reject, params States[] states)
         {
-            return FcalledBy(reject: reject, states: states);
+            return FcalledBy(reject, 0, states);
         }
 
         private bool FcalledBy(params States[] states)
         {
-            return FcalledBy(states: states);
+            return FcalledBy(true, 0, states);
         }
 
         private Token GenToken(TokenType type,
@@ -290,7 +290,7 @@ namespace mint.Compiler
             return tok;
         }
 
-        private Token GenToken(Dictionary<string, TokenType> type,
+        private Token GenToken(IReadOnlyDictionary<string, TokenType> type,
                                string token = null, Tuple<int, int> location = null,
                                int ts = -1, int te = -1, int ots = 0, int ote = 0)
         {
@@ -308,10 +308,15 @@ namespace mint.Compiler
             return GenToken(type[token], token, location, ts, te, ots, ote);
         }
 
-        private Token GenToken(Dictionary<string, Tuple<States, TokenType, TokenType>> type,
+        private Token GenToken(IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>> type,
                                string token = null, Tuple<int, int> location = null,
                                int ts = -1, int te = -1, int ots = 0, int ote = 0)
         {
+            if(ts < 0) { ts = this.ts; }
+            if(te < 0) { te = this.te; }
+
+            token = token ?? CurrentToken(ts, te, ots, ote);
+
             var config = RESERVED[token];
             var state = config.Item1;
             var token_type = config.Item2;
@@ -467,7 +472,7 @@ namespace mint.Compiler
             return tok;
         }
 
-        private Token KeywordToken(TokenType token_type, int lts, int lte, States next_state, string token = null)
+        private Token KeywordToken(dynamic token_type, int lts, int lte, States next_state, string token = null)
         {
             // fexec te = lte;
             if(lte >= 0)
