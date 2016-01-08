@@ -4,6 +4,8 @@ machine Lex;
 include "Lexer.csrl";
 
 }%%
+using System;
+using mint.types;
 using static mint.Compiler.Lexer.States;
 using static mint.Compiler.TokenType;
 
@@ -24,7 +26,7 @@ namespace mint.Compiler
             var num_flags = 0;
             var num_base = 0;
             var regexp_delim = -1;
-            var regex_options = 0;
+            var regex_options = Regexp.Flags.None;
             
             if(literals.Count != 0)
             {

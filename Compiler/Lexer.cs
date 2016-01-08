@@ -178,9 +178,9 @@ namespace mint.Compiler
             return data.Substring(ts, te + ote - ts);
         }
 
-        private bool FcalledBy(bool reject = true, uint offset = 0, params States[] states)
+        private bool FcalledBy(bool reject, uint offset, params States[] states)
         {
-            var intStates = states.Select((s) => (int) s);
+            var intStates = states.Select((s) => (uint) s);
 
             for(var i = top-offset-1; i >= 0; i--)
             {
@@ -198,7 +198,7 @@ namespace mint.Compiler
             return false;
         }
 
-        private bool FcalledBy(bool reject = true, params States[] states)
+        private bool FcalledBy(bool reject, params States[] states)
         {
             return FcalledBy(reject: reject, states: states);
         }
@@ -273,7 +273,7 @@ namespace mint.Compiler
                             {
                                 type = tSTRING_DEND;
                                 lit.ContentStart = te + ote;
-                                cs = lit.State;
+                                cs = (uint) lit.State;
                             }
                             else
                             {
@@ -360,8 +360,9 @@ namespace mint.Compiler
                 ts = this.ts;
             }
 
-            var heredoc = new Heredoc(CurrentToken(ts: ts), te);
-            GenToken(heredoc.Type, token: heredoc.FullId, ts: ts);
+            var tok = CurrentToken(ts: ts);
+            var heredoc = new Heredoc(tok, te);
+            GenToken(heredoc.Type, token: tok, ts: ts);
             literals.Push(heredoc);
             return heredoc;
         }
@@ -394,7 +395,7 @@ namespace mint.Compiler
             return GenToken(lit.Type, token: token, ts: ts);
         }
 
-        private bool GenInterpolationToken(TokenType type)
+        private bool GenInterpolationTokens(TokenType type)
         {
             var lit = literals.Peek();
             lit.CommitIndent();
@@ -514,81 +515,89 @@ namespace mint.Compiler
             stack[top++] = (uint) state;
         }
 
+        private void PushFcall()
+        {
+            stack[top++] = cs;
+        }
+
         private void PopFcall()
         {
             top--;
         }
 
-        private static readonly Dictionary<string, TokenType> OPERATORS = new Dictionary<string, TokenType>()
-        {
-            { "*",  kMUL     },
-            { "**", kPOW     },
-            { "+",  kPLUS    },
-            { "-",  kMINUS   },
-            { "&",  kBIN_AND },
-            { "::", kCOLON2  },
-            { "(",  kLPAREN2 },
-            { "[",  kLBRACK2 },
-            { "{",  kLBRACE2 },
-        };
+        private static readonly IReadOnlyDictionary<string, TokenType> OPERATORS =
+            (IReadOnlyDictionary<string, TokenType>) new SortedList<string, TokenType>(9)
+            {
+                { "*",  kMUL     },
+                { "**", kPOW     },
+                { "+",  kPLUS    },
+                { "-",  kMINUS   },
+                { "&",  kBIN_AND },
+                { "::", kCOLON2  },
+                { "(",  kLPAREN2 },
+                { "[",  kLBRACK2 },
+                { "{",  kLBRACE2 },
+            };
 
-        private static readonly Dictionary<string, TokenType> KEYWORDS = new Dictionary<string, TokenType>()
-        {
-            { "!",   kNOTOP     },
-            { "!=",  kNEQ       },
-            { "!@",  kNOTOP     },
-            { "!~",  kNMATCH    },
-            { "&",   kAMPER     },
-            { "&&",  kANDOP     },
-            { "&.",  kANDDOT    },
-            { "(",   kLPAREN    },
-            { ")",   kRPAREN    },
-            { "*",   kSTAR      },
-            { "**",  kDSTAR     },
-            { "+",   kUPLUS     },
-            { "+@",  kUPLUS     },
-            { ",",   kCOMMA     },
-            { "-",   kUMINUS    },
-            { "->",  kLAMBDA    },
-            { "-@",  kUMINUS    },
-            { ".",   kDOT       },
-            { "..",  kDOT2      },
-            { "...", kDOT3      },
-            { "/",   kDIV       },
-            { ":",   kCOLON     },
-            { "::",  kCOLON3    },
-            { ";",   kSEMICOLON },
-            { "<",   kLESS      },
-            { "<<",  kLSHIFT    },
-            { "<=",  kLEQ       },
-            { "<=>", kCMP       },
-            { "=",   kASSIGN    },
-            { "==",  kEQ        },
-            { "===", kEQQ       },
-            { "=>",  kASSOC     },
-            { "=~",  kMATCH     },
-            { ">",   kGREATER   },
-            { ">=",  kGEQ       },
-            { ">>",  kRSHIFT    },
-            { "?",   kQMARK     },
-            { "[",   kLBRACK    },
-            { "[]",  kAREF      },
-            { "[]=", kASET      },
-            { "]",   kRBRACK    },
-            { "^",   kXOR       },
-            { "`",   kBACKTICK  },
-            { "{",   kLBRACE    },
-            { "|",   kPIPE      },
-            { "||",  kOROP      },
-            { "}",   kRBRACE    },
-            { "~",   kNEG       },
-            { "~@",  kNEG       },
-            { "%",   kPERCENT   },
-            { "\\",  kBACKSLASH },
-        };
+        private static readonly IReadOnlyDictionary<string, TokenType> KEYWORDS =
+            (IReadOnlyDictionary<string, TokenType>) new SortedList<string, TokenType>(51)
+            {
+                { "!",   kNOTOP     },
+                { "!=",  kNEQ       },
+                { "!@",  kNOTOP     },
+                { "!~",  kNMATCH    },
+                { "&",   kAMPER     },
+                { "&&",  kANDOP     },
+                { "&.",  kANDDOT    },
+                { "(",   kLPAREN    },
+                { ")",   kRPAREN    },
+                { "*",   kSTAR      },
+                { "**",  kDSTAR     },
+                { "+",   kUPLUS     },
+                { "+@",  kUPLUS     },
+                { ",",   kCOMMA     },
+                { "-",   kUMINUS    },
+                { "->",  kLAMBDA    },
+                { "-@",  kUMINUS    },
+                { ".",   kDOT       },
+                { "..",  kDOT2      },
+                { "...", kDOT3      },
+                { "/",   kDIV       },
+                { ":",   kCOLON     },
+                { "::",  kCOLON3    },
+                { ";",   kSEMICOLON },
+                { "<",   kLESS      },
+                { "<<",  kLSHIFT    },
+                { "<=",  kLEQ       },
+                { "<=>", kCMP       },
+                { "=",   kASSIGN    },
+                { "==",  kEQ        },
+                { "===", kEQQ       },
+                { "=>",  kASSOC     },
+                { "=~",  kMATCH     },
+                { ">",   kGREATER   },
+                { ">=",  kGEQ       },
+                { ">>",  kRSHIFT    },
+                { "?",   kQMARK     },
+                { "[",   kLBRACK    },
+                { "[]",  kAREF      },
+                { "[]=", kASET      },
+                { "]",   kRBRACK    },
+                { "^",   kXOR       },
+                { "`",   kBACKTICK  },
+                { "{",   kLBRACE    },
+                { "|",   kPIPE      },
+                { "||",  kOROP      },
+                { "}",   kRBRACE    },
+                { "~",   kNEG       },
+                { "~@",  kNEG       },
+                { "%",   kPERCENT   },
+                { "\\",  kBACKSLASH },
+            };
 
-        private static readonly Dictionary<string, Tuple<States, TokenType, TokenType>> RESERVED =
-            new Dictionary<string, Tuple<States, TokenType, TokenType>>()
+        private static readonly IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>> RESERVED =
+            (IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>>)
+            new SortedList<string, Tuple<States, TokenType, TokenType>>(41)
             {
                 { "alias",        new Tuple<States, TokenType, TokenType>(EXPR_FNAME, kALIAS,        kALIAS)        },
                 { "and",          new Tuple<States, TokenType, TokenType>(EXPR_BEG,   kAND,          kAND)          },

@@ -54,7 +54,7 @@ action Keyword {
 
 action Number {
     GenNumberToken(token_type, num_base, num_flags, ts: lts >= 0 ? lts : ts);
-    if(FcalledBy(COMMON_EXPR, false))
+    if(FcalledBy(false, COMMON_EXPR))
     {
         PopFcall();
     }
@@ -69,7 +69,7 @@ action StringStart {
         fexec te = lte;
     }
     GenLiteralToken(lts >= 0 ? lts : ts);
-    if(cs != COMMON_EXPR)
+    if(cs != (uint) COMMON_EXPR)
     {
         PushFcall(); // this is so that strings can identify who called them if needed
     }
@@ -216,7 +216,7 @@ percent_string = '%' string_term? (
 
 action Heredoc {
   var lit = GenHeredocToken(lts >= 0 ? lts : ts);
-  fexec lit.ContentStart = NextBol();
+  fexec lit.ContentStart = NextBOL();
   PushFcall();
   fnext HEREDOC_DELIMITER;
   fbreak;
@@ -325,7 +325,7 @@ gvar = '$' (
   | gvar_char
   | (space | c_eof) @ { throw new SyntaxError("`$' without identifiers is not allowed as a global variable name"); }
 ) >err {
-    throw new SyntaxError(string.Format("`{0}' is not allowed as a global variable name", CurrentToken()));
+    throw new SyntaxError($"`{CurrentToken()}' is not allowed as a global variable name");
   } % { token_type = tGVAR; };
 
 var = (
@@ -333,13 +333,13 @@ var = (
   | ( digit | ^ident_char ) % {
       var tok = CurrentToken();
       var type_str = token_type == tIVAR ? "n instance" : " class";
-      throw new SyntaxError(string.Format("`{0}' is not allowed as a{1} variable name", tok, type_str));
+      throw new SyntaxError($"`{tok}' is not allowed as a{type_str} variable name");
     }
 
   | ( c_eof | space ) % {
-      var tok = current_token(ote: -1);
+      var tok = CurrentToken(ote: -1);
       var type_str = token_type == tIVAR ? "n instance" : " class";
-      var msg = string.Format("`{0}' without identifiers is not allowed as a{1} variable name", tok, type_str);
+      var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
       throw new SyntaxError(msg);
     }
 );
@@ -828,7 +828,7 @@ COMMON_EXPR := |*
   empty_lines => {
     in_cmd = true;
     GenToken(kNL, token: "\n");
-    Pop_Fcall();
+    PopFcall();
     fnext EXPR_BEG;
     fbreak;
   };
@@ -890,7 +890,7 @@ COMMON_EXPR := |*
           var c = CurrentToken(ots: 1, ote: 1)[0];
           var i = " \n\f\r\t\v".IndexOf(c);
           c = "snfrtv"[i];
-          Console.WriteLine(string.Format("invalid character syntax; use ?\\{0}", c));
+          Console.WriteLine($"invalid character syntax; use ?\\{c}");
         }
 
       | c_eof % { throw new SyntaxError("incomplete character syntax"); }
@@ -913,10 +913,10 @@ COMMON_EXPR := |*
   '.' digit => { throw new SyntaxError("no .<digit> floating literal anymore; put 0 before dot"); };
 
   ^ident_char => {
-    throw new SyntaxError(string.Format("Invalid char `{}' in expression at {1}", current_token, ts));
+    throw new SyntaxError($"Invalid char `{CurrentToken()}' in expression at {ts}");
   };
 
-  any => { throw new SyntaxError("Don't know what to do with `{current_token}' at {ts}"); };
+  any => { throw new SyntaxError($"Don't know what to do with `{CurrentToken()}' at {ts}"); };
 
 *|;
 
@@ -985,13 +985,13 @@ HEREDOC_DELIMITER := |*
   c_eof => EofLiteralError;
 
   ^nl_eof* nl_eof => {
-    if(current_literal.IsDelimiter(current_token))
+    if(current_literal.IsDelimiter(CurrentToken()))
     {
       // found delimiter => end of heredoc
       GenStringContentToken();
       GenStringEndToken();
       line_jump = te;
-      fexec current_literal.Restore();
+      fexec ((Heredoc) current_literal).Restore;
       PopFcall();
       fnext EXPR_END;
       fbreak;
@@ -1047,8 +1047,8 @@ HEREDOC_CONTENT := |*
   '\t' => {
     if(current_literal.Dedents && current_literal.LineIndent >= 0)
     {
-        var w = lit.LineIndent / TabWidth + 1;
-        lit.LineIndent = w * TabWidth;
+        var w = current_literal.LineIndent / TabWidth + 1;
+        current_literal.LineIndent = w * TabWidth;
     }
   };
 
@@ -1073,7 +1073,7 @@ STRING_DELIMITER := |*
     var is_labeled = current_literal.CanLabel &&
       (
         FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG) ||
-        ( !IsCond && FcalledBy(EXPR_BEG, EXPR_ENDFN) )
+        ( !Cond && FcalledBy(EXPR_BEG, EXPR_ENDFN) )
       );
 
     var tok = CurrentToken(ote: -1);
@@ -1087,7 +1087,7 @@ STRING_DELIMITER := |*
     {
       // not the delimiter
       fexec ts;
-      fgoto *(current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT);
+      fgoto *((uint) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
     }
 
     // found delimiter => end string
@@ -1102,7 +1102,7 @@ STRING_DELIMITER := |*
     }
 
     GenStringEndToken();
-    fnext *(is_labeled ? EXPR_BEG : EXPR_END);
+    fnext *((uint) (is_labeled ? EXPR_BEG : EXPR_END));
     fbreak;
   };
 
@@ -1110,7 +1110,7 @@ STRING_DELIMITER := |*
     if(!current_literal.IsDelimiter(CurrentToken()))
     {
       fhold;
-      fgoto *(current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT);
+      fgoto *((uint) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
     }
 
     // found delimiter => end string
@@ -1205,20 +1205,21 @@ STRING_CONTENT := |*
 
 REGEXP_END := |*
 
-  'm' => { regex_options |= RX_MULTI_LINE; };
-  'i' => { regex_options |= RX_IGNORE_CASE; };
-  'x' => { regex_options |= RX_EXTEND; };
-  'o' => { regex_options |= RX_ONCE; };
+  'm' => { regex_options |= Regexp.Flags.Multiline; };
+  'i' => { regex_options |= Regexp.Flags.IgnoreCase; };
+  'x' => { regex_options |= Regexp.Flags.Extend; };
+  'o' => { regex_options |= Regexp.Flags.Once; };
 
   ( alpha - [mixo] )+ => {
     var tok = CurrentToken();
-    var opt = tok.length == 1 ? "" : "s";
-    throw new SyntaxError(string.Format("unknown regexp option{} - {}", opt, tok));
+    var opt = tok.Length == 1 ? "" : "s";
+    throw new SyntaxError($"unknown regexp option{opt} - {tok}");
   };
 
   ^alpha => {
     fexec @te -= 1;
-    GenToken(tREGEXP_END, ts: regexp_delim, options: regex_options);
+    var tok = GenToken(tREGEXP_END, ts: regexp_delim);
+    tok.Properties["flags"] = regex_options;
     fnext EXPR_END;
     fbreak;
   };
