@@ -1,11 +1,10 @@
 ﻿using mint.Compiler;
+using mint.test;
 using mint.types;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-
-using Ex = System.Linq.Expressions.Expression;
 
 namespace mint
 {
@@ -19,9 +18,12 @@ namespace mint
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            Token[] tokens = new Lexer("def f").ToArray();
+            //Token[] tokens = new Lexer("def []=; end").ToArray();
+
+            Ast<Token> ast = Parser.Parse("def []=; end");
+            AstPrinter<Token>.Print(ast, indent_size: 4);
             
-            test.InvokeDynamicMethods.Test();
+            //test.InvokeDynamicMethods.Test();
         }
         
     }

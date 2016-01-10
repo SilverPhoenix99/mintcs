@@ -18,6 +18,13 @@ namespace mint.Compiler
             Properties = new Dictionary<string, object>();
 		}
 
-		public static readonly Token Null = new Token(TokenType.None, null, null);
+		public static readonly Token EOF = new Token(TokenType.EOF, null, null);
+
+        public override string ToString()
+        {
+            var properties = Properties.Count == 0 ? "" : " **";
+
+            return $"<{Type} \"{Value}\" [{Location.Item1}, {Location.Item2}]{properties}>";
+        }
     }
 }

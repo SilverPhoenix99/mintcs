@@ -1,6 +1,6 @@
 ﻿namespace mint.Compiler
 {
-    struct BitStack
+    public struct BitStack
     {
         private ulong stack;
 

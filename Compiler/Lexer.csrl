@@ -69,7 +69,7 @@ action StringStart {
         fexec te = lte;
     }
     GenLiteralToken(lts >= 0 ? lts : ts);
-    if(cs != (uint) COMMON_EXPR)
+    if(cs != (int) COMMON_EXPR)
     {
         PushFcall(); // this is so that strings can identify who called them if needed
     }
@@ -294,7 +294,7 @@ setter_name = ( ident_start | upper ) ident_char* '=' %TokEnd ( [^~=>] | '=>' ) 
 
 any_ident   = identifier | constant | fid;
 
-# don't put token_type = :tLABEL, because it may be refused if @in_cmd == true
+# don't put token_type = :tLABEL, because it may be refused if InCmd == true
 label = (
     ( identifier | constant | reserved_ident | reserved_const ) ':'
   | (fid | reserved_fid) & (any+ ':')
@@ -440,7 +440,7 @@ EXPR_BEG := |*
     | '('
     | '['
     | label % {
-        if(in_cmd)
+        if(InCmd)
         {
           // label not allowed
           lte -= 1; // remove trailing ':'
@@ -455,8 +455,8 @@ EXPR_BEG := |*
           next_state = EXPR_LABELARG;
         }
       }
-    | reserved
-    | any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; }
+    | reserved  % { next_state = null; }
+    | any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; }
 
   ) => Keyword;
 
@@ -490,24 +490,24 @@ EXPR_ARG := |*
   ws+ '[' => Keyword;
 
   '{' % {
-    if(lpar_beg > 0 && lpar_beg == paren_nest)
+    if(LParBeg > 0 && LParBeg == ParenNest)
     {
-      lpar_beg = 0;
-      paren_nest -= 1;
+      LParBeg = 0;
+      ParenNest -= 1;
       token_type = kLAMBEG;
     }
     else
     {
-      in_cmd = true;
+      InCmd = true;
       token_type = OPERATORS;
     }
   } => Keyword;
 
   label % { token_type = tLABEL; next_state = EXPR_LABELARG; } => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
-  any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
 
@@ -527,12 +527,12 @@ EXPR_CLASS := |*
   (
       '::'
     | ( '**' | '*' ) %TokEnd [^=]
-    | ( '<=>' | '<=' | '<' | '<<' %TokEnd [^=] ) % { in_cmd = true; }
+    | ( '<=>' | '<=' | '<' | '<<' %TokEnd [^=] ) % { InCmd = true; }
     | '&' %TokEnd [^&.=]
     | '('
     | '['
-    | reserved
-    | any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; }
+    | reserved  % { next_state = null; }
+    | any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; }
 
   ) => Keyword;
 
@@ -565,24 +565,24 @@ EXPR_CMDARG := |*
   ws+ '[' => Keyword;
 
   '{' % {
-    if(lpar_beg > 0 && lpar_beg == paren_nest)
+    if(LParBeg > 0 && LParBeg == ParenNest)
     {
-      lpar_beg = 0;
-      paren_nest -= 1;
+      LParBeg = 0;
+      ParenNest--;
       token_type = kLAMBEG;
     }
     else
     {
-      in_cmd = true;
+      InCmd = true;
       token_type = OPERATORS;
     }
   } => Keyword;
 
   label % { token_type = tLABEL; next_state = EXPR_LABELARG; } => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
-  any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
 
@@ -595,14 +595,14 @@ EXPR_DOT := |*
 
   operator_expr => Keyword;
 
-  '`' % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  '`' % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   (
       any_ident
     | reserved_ident % { token_type = tIDENTIFIER; }
     | reserved_const % { token_type = tCONSTANT; }
     | reserved_fid   % { token_type = tFID; }
-  ) % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  ) % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
 
@@ -616,20 +616,20 @@ EXPR_END := |*
   '?' => Keyword;
 
   '{' % {
-    if(lpar_beg > 0 && lpar_beg == paren_nest)
+    if(LParBeg > 0 && LParBeg == ParenNest)
     {
-      lpar_beg = 0;
-      paren_nest -= 1;
+      LParBeg = 0;
+      ParenNest--;
       token_type = kLAMBEG;
     }
     else
     {
-      in_cmd = true;
+      InCmd = true;
       token_type = OPERATORS;
     }
   } => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
   any_ident % { next_state = EXPR_END; } => Keyword;
 
@@ -645,20 +645,20 @@ EXPR_ENDARG := |*
   '?' => Keyword;
 
   '{' % {
-    if(lpar_beg > 0 && lpar_beg == paren_nest)
+    if(LParBeg > 0 && LParBeg == ParenNest)
     {
-      lpar_beg = 0;
-      paren_nest -= 1;
+      LParBeg = 0;
+      ParenNest--;
       token_type = kLAMBEG;
     }
     else
     {
-      in_cmd = true;
+      InCmd = true;
       token_type = kLBRACE_ARG;
     }
   } => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
   any_ident % { next_state = EXPR_END; } => Keyword;
 
@@ -674,21 +674,21 @@ EXPR_ENDFN := |*
   '?' => Keyword;
 
   '{' % {
-    if(lpar_beg > 0 && lpar_beg == paren_nest)
+    if(LParBeg > 0 && LParBeg == ParenNest)
     {
-      lpar_beg = 0;
-      paren_nest -= 1;
+      LParBeg = 0;
+      ParenNest--;
       token_type = kLAMBEG;
     }
     else
     {
-      in_cmd = true;
+      InCmd = true;
       token_type = OPERATORS;
     }
   } => Keyword;
 
   label % {
-    if(in_cmd)
+    if(InCmd)
     {
       // label not allowed
       lte -= 1; // remove trailing ':'
@@ -704,8 +704,7 @@ EXPR_ENDFN := |*
     }
   } => Keyword;
 
-  reserved => Keyword;
-
+  reserved  % { next_state = null; } => Keyword;
   any_ident % { next_state = EXPR_ENDFN; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
@@ -727,8 +726,8 @@ EXPR_FNAME := |*
 
   (
       operator_expr
-    | '`' % { next_state = EXPR_ENDFN; }
-    | reserved
+    | '`'       % { next_state = EXPR_ENDFN; }
+    | reserved  % { next_state = EXPR_ENDFN; }
     | any_ident % { next_state = EXPR_ENDFN; }
   ) => Keyword;
 
@@ -741,9 +740,9 @@ EXPR_FNAME := |*
 EXPR_LABELARG := |*
 
   empty_lines => {
-    if(in_kwarg)
+    if(InKwarg)
     {
-      in_cmd = true;
+      InCmd = true;
       GenToken(kNL, token: "\n");
       fnext EXPR_BEG;
       fbreak;
@@ -773,9 +772,9 @@ EXPR_LABELARG := |*
 
   label % { token_type = tLABEL; next_state = EXPR_LABELARG; } => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
-  any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
 
@@ -802,9 +801,9 @@ EXPR_MID := |*
 
   '[' => Keyword;
 
-  reserved => Keyword;
+  reserved % { next_state = null; } => Keyword;
 
-  any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+  any_ident % { next_state = InCmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
   any => { fhold; fcall COMMON_EXPR; };
 
@@ -826,7 +825,7 @@ COMMON_EXPR := |*
   line_comment; # no op
 
   empty_lines => {
-    in_cmd = true;
+    InCmd = true;
     GenToken(kNL, token: "\n");
     PopFcall();
     fnext EXPR_BEG;
@@ -855,7 +854,7 @@ COMMON_EXPR := |*
         | '::' % { token_type = OPERATORS; }
       ) % { next_state = EXPR_DOT; }
 
-    | ';' % { in_cmd = true; }
+    | ';' % { InCmd = true; }
 
     | ':' %TokEnd ( space | '#' )
 
@@ -871,10 +870,10 @@ COMMON_EXPR := |*
     | '}'
 
     | '{' % {
-        if(lpar_beg > 0 && lpar_beg == paren_nest)
+        if(LParBeg > 0 && LParBeg == ParenNest)
         {
-          lpar_beg = 0;
-          paren_nest -= 1;
+          LParBeg = 0;
+          ParenNest--;
           token_type = kLAMBEG;
         }
       }
@@ -1073,7 +1072,7 @@ STRING_DELIMITER := |*
     var is_labeled = current_literal.CanLabel &&
       (
         FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG) ||
-        ( !Cond && FcalledBy(EXPR_BEG, EXPR_ENDFN) )
+        ( !Cond.Peek && FcalledBy(EXPR_BEG, EXPR_ENDFN) )
       );
 
     var tok = CurrentToken(ote: -1);
@@ -1087,7 +1086,7 @@ STRING_DELIMITER := |*
     {
       // not the delimiter
       fexec ts;
-      fgoto *((uint) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
+      fgoto *((int) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
     }
 
     // found delimiter => end string
@@ -1102,7 +1101,7 @@ STRING_DELIMITER := |*
     }
 
     GenStringEndToken();
-    fnext *((uint) (is_labeled ? EXPR_BEG : EXPR_END));
+    fnext *((int) (is_labeled ? EXPR_BEG : EXPR_END));
     fbreak;
   };
 
@@ -1110,7 +1109,7 @@ STRING_DELIMITER := |*
     if(!current_literal.IsDelimiter(CurrentToken()))
     {
       fhold;
-      fgoto *((uint) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
+      fgoto *((int) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
     }
 
     // found delimiter => end string

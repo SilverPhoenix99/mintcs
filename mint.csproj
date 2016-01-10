@@ -48,7 +48,9 @@
     <Compile Include="Compiler\BitStack.cs" />
     <Compile Include="Compiler\Heredoc.cs" />
     <Compile Include="Compiler\Literal.cs" />
-    <Compile Include="Compiler\TokenType.cs" />
+    <Compile Include="Compiler\Ast.cs" />
+    <Compile Include="Compiler\Parser.cs" />
+    <Compile Include="Compiler\TokenType_backup.cs" />
     <Compile Include="Compiler\iLiteral.cs" />
     <Compile Include="Compiler\Lexer.cs" />
     <Compile Include="Compiler\Lexer_States.cs" />
@@ -56,10 +58,11 @@
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="gen\Lexer_data.cs" />
     <Compile Include="gen\Lexer_exec.cs" />
-    <Compile Include="gen\Parser.y.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
+    <Compile Include="gen\Parser.cs" />
     <Compile Include="SyntaxError.cs" />
+    <Compile Include="test\AstPrinter.cs" />
     <Compile Include="test\InvokeDynamicMethods.cs" />
     <Compile Include="test\NativeCallback.cs" />
     <Compile Include="types\aObject.cs" />
@@ -86,9 +89,9 @@
     <None Include="App.config" />
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
-    <None Include="Compiler\Lexer.csrl" />
-    <None Include="Compiler\Lexer_data.csrl" />
-    <None Include="Compiler\Lexer_exec.csrl" />
+    <Ragel Include="Compiler\Lexer.csrl" />
+    <Ragel Include="Compiler\Lexer_data.csrl" />
+    <Ragel Include="Compiler\Lexer_exec.csrl" />
     <None Include="Compiler\Parser.y" />
   </ItemGroup>
   <ItemGroup />
@@ -100,4 +103,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="'gen\Lexer_data.cs' 'gen\Lexer_exec.cs'">
+    <Exec Command="GenLexer.bat" />
+  </Target>
 </Project>
