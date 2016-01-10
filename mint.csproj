@@ -50,7 +50,6 @@
     <Compile Include="Compiler\Literal.cs" />
     <Compile Include="Compiler\Ast.cs" />
     <Compile Include="Compiler\Parser.cs" />
-    <Compile Include="Compiler\TokenType_backup.cs" />
     <Compile Include="Compiler\iLiteral.cs" />
     <Compile Include="Compiler\Lexer.cs" />
     <Compile Include="Compiler\Lexer_States.cs" />
@@ -92,7 +91,7 @@
     <Ragel Include="Compiler\Lexer.csrl" />
     <Ragel Include="Compiler\Lexer_data.csrl" />
     <Ragel Include="Compiler\Lexer_exec.csrl" />
-    <None Include="Compiler\Parser.y" />
+    <Gppg Include="Compiler\Parser.y" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -105,5 +104,8 @@
   -->
   <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="'gen\Lexer_data.cs' 'gen\Lexer_exec.cs'">
     <Exec Command="GenLexer.bat" />
+  </Target>
+  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="'gen\Parser.cs'">
+    <Exec Command="GenParser.bat" />
   </Target>
 </Project>
