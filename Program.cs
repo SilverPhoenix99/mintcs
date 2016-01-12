@@ -3,7 +3,7 @@ using mint.test;
 using mint.types;
 using System;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace mint
@@ -20,9 +20,28 @@ namespace mint
 
             //Token[] tokens = new Lexer("def []=; end").ToArray();
 
-            Ast<Token> ast = Parser.Parse("def []=; end");
-            AstPrinter<Token>.Print(ast, indent_size: 4);
+            /*Ast<Token> ast = Parser.Parse(
+                @"
+
+class X
+    def []=(i, v)
+        @a[i] = v
+    end
+
+    alias :set :[]=
+end
+
+                ");*/
+                
+
+            Ast<Token> ast = Parser.Parse(File.ReadAllText(
+                @"D:\Users\Silver Phoenix\Projects\RubyMine\opengl-definitions\lib\opengl-definitions\version.rb"));
+
+            var doc = AstXmlSerializer.ToXml(ast);
+            Console.WriteLine(doc.ToString());
             
+            //AstPrinter<Token>.Print(ast, indent_size: 4);
+
             //test.InvokeDynamicMethods.Test();
         }
         

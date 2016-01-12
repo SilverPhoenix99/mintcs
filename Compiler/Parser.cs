@@ -48,16 +48,16 @@ namespace mint.Compiler
         //       They are: kLBRACK2
 
         protected static readonly Ast<Token> ENSURE_NODE =
-            (AstNode<Token>) new Token(kENSURE, "ensure", new Tuple<int, int>(-1, -1));
+            (Ast<Token>) new Token(kENSURE, "ensure", new Tuple<int, int>(-1, -1));
 
         protected static readonly Ast<Token> CALL_NODE =
-            (AstNode<Token>) new Token(kDOT, ".", new Tuple<int, int>(-1, -1));
+            (Ast<Token>) new Token(kDOT, ".", new Tuple<int, int>(-1, -1));
 
-        protected static readonly Ast<Token> EMPTY = new AstList<Token>();
+        protected static readonly Ast<Token> EMPTY = new Ast<Token>();
 
         private static Ast<Token> sexp() => EMPTY;
 
-        private static Ast<Token> sexp(params Ast<Token>[] nodes) => new AstList<Token>(nodes);
+        private static Ast<Token> sexp(params Ast<Token>[] nodes) => new Ast<Token>(null, nodes);
 
         public static Ast<Token> Parse(string data)
         {
@@ -78,7 +78,7 @@ namespace mint.Compiler
             public override int yylex()
             {
                 var token = Lexer.NextToken();
-                yylval = (AstNode<Token>) token;
+                yylval = (Ast<Token>) token;
                 return (int) token.Type;
             }
         }

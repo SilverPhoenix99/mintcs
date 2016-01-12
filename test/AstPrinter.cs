@@ -24,31 +24,42 @@ namespace mint.test
             Ast.Accept(this);
         }
 
-        public void Visit(AstNode<T> node)
+        public void Visit(Ast<T> node)
         {
-            WriteIndent();
-            Writer.WriteLine(node.Value);
-        }
-
-        public void Visit(AstList<T> list)
-        {
-            WriteIndent();
-
-            if(list.List.Count == 0)
+            if(node.List.Count == 0)
             {
-                Writer.WriteLine("{}");
+                WriteLine(node.Value == null ? (object) "[]" : node.Value);
                 return;
             }
-
-            Writer.WriteLine("{");
-            Indent++;
-            foreach(var ast in list.List)
+           
+            if(node.Value != null)
             {
-                ast.Accept(this);
+                Write(node.Value);
+                Write(" ");
             }
+
+            WriteLine("[");
+            Indent++;
+
+            foreach(var child in node.List)
+            {
+                child.Accept(this);
+            }
+
             Indent--;
+            WriteLine("]");
+        }
+        
+        private void Write<V>(V obj)
+        {
             WriteIndent();
-            Writer.WriteLine("}");
+            Writer.Write(obj);
+        }
+
+        private void WriteLine<V>(V obj)
+        {
+            WriteIndent();
+            Writer.WriteLine(obj);
         }
 
         private void WriteIndent()

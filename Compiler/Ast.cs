@@ -6,69 +6,42 @@ namespace mint.Compiler
 {
     public interface AstVisitor<T>
     {
-        void Visit(AstNode<T> node);
-        void Visit(AstList<T> list);
+        void Visit(Ast<T> node);
     }
 
-    public abstract class Ast<T>
+    public class Ast<T> : IEnumerable<Ast<T>>
     {
-        public abstract void Accept(AstVisitor<T> visitor);
+        public Ast() { }
 
-        // Adds the element to the end of the list.
-        // It it is a list, it will be added as a single node.
-        public abstract Ast<T> Append(Ast<T> other);
+        public Ast(T value)
+        {
+            Value = value;
+        }
 
-        // Joins two nodes together. Lists are flattened.
-        public abstract Ast<T> Concat(Ast<T> other);
+        public Ast(T value, IEnumerable<Ast<T>> children) : this(value)
+        {
+            ((List<Ast<T>>) List).AddRange(children);
+        }
 
-        // Append operator
-        public static Ast<T> operator |(Ast<T> left, Ast<T> right) => left?.Append(right) ?? right;
-
-        // Concat operator
-        public static Ast<T> operator +(Ast<T> left, Ast<T> right) => left?.Concat(right) ?? right;
-    }
-
-    public class AstNode<T> : Ast<T>
-    {
         public T Value { get; }
-
-        public AstNode(T value) { Value = value; }
-
-        public override void Accept(AstVisitor<T> visitor) { visitor.Visit(this); }
-
-        public override Ast<T> Append(Ast<T> other) => new AstList<T>(this).Append(other);
-
-        public override Ast<T> Concat(Ast<T> other) => new AstList<T>(this).Concat(other);
-
-        public static implicit operator AstNode<T>(T value) => new AstNode<T>(value);
-    }
-
-    public class AstList<T> : Ast<T>, IEnumerable<Ast<T>>
-    {
-        public IReadOnlyList<Ast<T>> List { get; }
-
+        public IReadOnlyList<Ast<T>> List { get; } = new List<Ast<T>>();
         public Ast<T> this[int index] => List[index];
 
-        public AstList(IEnumerable<Ast<T>> list) { List = new List<Ast<T>>(list); }
-
-        public AstList(params Ast<T>[] list) : this((IEnumerable<Ast<T>>) list) { }
-
-        public override void Accept(AstVisitor<T> visitor) { visitor.Visit(this); }
-
-        public override Ast<T> Append(Ast<T> other) => other == null
-                                                    ? this
-                                                    : new AstList<T>( List.Concat(new[] { other }) );
-
-        public override Ast<T> Concat(Ast<T> other)
+        public void Accept(AstVisitor<T> visitor)
         {
-            if(other is AstList<T>)
-            {
-                var otherList = ((AstList<T>) other).List;
-                return new AstList<T>( List.Concat(otherList) );
-            }
-
-            return Append(other);
+            visitor.Visit(this);
         }
+
+        // Adds the element to the end of the list.
+        public Ast<T> Append(Ast<T> other) =>
+            Value == null && other.Value == null
+            ? new Ast<T>(Value, List.Concat(other.List))
+            : new Ast<T>(Value, List.Concat(new[] { other }));
+        
+        // Append operator
+        public static Ast<T> operator +(Ast<T> left, Ast<T> right) => left?.Append(right) ?? right;
+        
+        public static explicit operator Ast<T>(T value) => new Ast<T>(value);
 
         public IEnumerator<Ast<T>> GetEnumerator() => List.GetEnumerator();
 

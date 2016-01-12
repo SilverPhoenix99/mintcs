@@ -408,12 +408,19 @@ operator_expr = (
 # Main/Entry - Beginning of File  ----------------------------------------------
 #
 
-action RetryBeg { fexec 0; fgoto EXPR_BEG; }
-action GotoBeg { fgoto EXPR_BEG; }
+action RetryBeg {
+    fexec 0;
+    fgoto EXPR_BEG;
+}
+
+action GotoBeg {
+    lts = -1;
+    fgoto EXPR_BEG;
+}
 
 BOF := bol @err(RetryBeg) @GotoBeg;
 
-empty_lines = nl bol? (ws* nl bol?)*;
+empty_lines = nl bol? (ws* nl bol?)* % { lts = -1; };
 
 
 #
@@ -820,7 +827,10 @@ COMMON_EXPR := |*
   c_eof;
 
   # ignore and continue parsing in corresponding expression state
-  ws+ => { fret; };
+  ws+ => {
+      lts = -1;
+      fret;
+  };
 
   line_comment; # no op
 

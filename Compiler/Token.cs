@@ -22,9 +22,9 @@ namespace mint.Compiler
 
         public override string ToString()
         {
-            var properties = Properties.Count == 0 ? "" : " **";
+            var properties = Properties.Count == 0 ? "" : ", **";
 
-            return $"<{Type} \"{Value}\" [{Location.Item1}, {Location.Item2}]{properties}>";
+            return $"[{Type}, \"{Value}\", {Location.Item1}, {Location.Item2}{properties}]";
         }
     }
 }

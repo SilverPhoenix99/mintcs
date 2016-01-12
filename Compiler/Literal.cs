@@ -11,6 +11,9 @@ namespace mint.Compiler
             Delimiter = delimiter;
             ContentStart = content_start;
             CanLabel = can_label;
+
+            string end_delimiter;
+            EndDelimiter = STRING_END.TryGetValue(Delimiter, out end_delimiter) ? end_delimiter : Delimiter;
         }
 
         public uint         BraceCount          { get; set; }

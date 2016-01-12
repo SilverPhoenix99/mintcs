@@ -67,13 +67,13 @@ top_compstmt :
 top_stmts :
     { $$ = sexp(); } // nothing
   | top_stmt                 { $$ = sexp($1); }
-  | top_stmts terms top_stmt { $$ = $1 | $3; }
+  | top_stmts terms top_stmt { $$ = $1 + $3; }
   | error top_stmt           { $$ = sexp($2); }
 ;
 
 top_stmt :
     stmt
-  | kAPP_BEGIN kLBRACE2 top_compstmt kRBRACE { $$ = sexp($1, $3); }
+  | kAPP_BEGIN kLBRACE2 top_compstmt kRBRACE { $$ = $1 + $3; }
 ;
 
 bodystmt :
@@ -82,30 +82,33 @@ bodystmt :
         var compstmt   = $1;
         var opt_rescue = $2;
         var opt_else   = $3;
-        var opt_ensure = (AstList<Token>) $4;
+        var opt_ensure = $4;
 
-        if(opt_rescue != null)
+        if(opt_else.Value != null)
         {
-            if(opt_else != null) { opt_rescue |= opt_else; }
-        }
-        else if(opt_else != null)
-        {
-            Console.WriteLine("else without rescue is useless");
+            if(opt_rescue.List.Count != 0)
+            {
+                opt_rescue += opt_else;
+            }
+            else
+            {
+                Console.WriteLine("else without rescue is useless");
+            }
         }
 
         if(opt_ensure.List.Count != 0)
         {
-            $$ = sexp(opt_ensure[0], compstmt, opt_rescue, opt_ensure[1]);
+            $$ = opt_ensure[0] + compstmt + opt_rescue + opt_ensure[1];
             break;
         }
 
-        if(opt_rescue == null)
+        if(opt_rescue.List.Count != 0)
         {
-            $$ = compstmt;
+            $$ = ENSURE_NODE + compstmt + opt_rescue + sexp();
             break;
         }
 
-        $$ = sexp(ENSURE_NODE, compstmt, opt_rescue, sexp());
+        $$ = compstmt;
     }
 ;
 
@@ -116,7 +119,7 @@ compstmt :
 stmts :
     { $$ = sexp(); } // nothing
   | stmt_or_begin             { $$ = sexp($1); }
-  | stmts terms stmt_or_begin { $$ = $1 | $3; }
+  | stmts terms stmt_or_begin { $$ = $1 + $3; }
   | error stmt                { $$ = sexp($2); }
 ;
 
@@ -130,52 +133,52 @@ stmt_or_begin :
 ;
 
 stmt :
-    kALIAS fitem { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = sexp($1, $2, $4); }
-  | kALIAS tGVAR tGVAR     { $$ = sexp($1, $2, $3); }
-  | kALIAS tGVAR tBACK_REF { $$ = sexp($1, $2, $3); }
+    kALIAS fitem { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + $2 + $4; }
+  | kALIAS tGVAR tGVAR     { $$ = $1 + $2 + $3; }
+  | kALIAS tGVAR tBACK_REF { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tNTH_REF
     {
         throw new SyntaxError("can't make alias for the number variables");
     }
-  | kUNDEF undef_list     { $$ = sexp($1, $2); }
-  | stmt kIF_MOD expr     { $$ = sexp($2, $3, $1, sexp()); }
-  | stmt kUNLESS_MOD expr { $$ = sexp($2, $3, $1, sexp()); }
-  | stmt kWHILE_MOD expr  { $$ = sexp($2, $3, $1); }
-  | stmt kUNTIL_MOD expr  { $$ = sexp($2, $3, $1); }
-  | stmt kRESCUE_MOD stmt { $$ = sexp(ENSURE_NODE, $1, $2 | $3, sexp()); }
+  | kUNDEF undef_list     { $$ = $1 + $2; }
+  | stmt kIF_MOD expr     { $$ = $2 + $3 + $1; }
+  | stmt kUNLESS_MOD expr { $$ = $2 + $3 + $1; }
+  | stmt kWHILE_MOD expr  { $$ = $2 + $3 + $1; }
+  | stmt kUNTIL_MOD expr  { $$ = $2 + $3 + $1; }
+  | stmt kRESCUE_MOD stmt { $$ = ENSURE_NODE + $1 + ($2 + $3) + sexp(); }
   | kAPP_END kLBRACE2 compstmt kRBRACE
     {
         if(in_def || in_single)
         {
             Console.WriteLine("END in method; use at_exit");
         }
-        $$ = sexp($1, $3);
+        $$ = $1 + $3;
     }
   | command_asgn
-  | mlhs kASSIGN command_call                                     { $$ = sexp($2, $1, $3); }
-  | var_lhs tOP_ASGN command_call                                 { $$ = sexp($2, $1, $3); }
-  | primary kLBRACK2 opt_call_args rbracket tOP_ASGN command_call { $$ = sexp($5, sexp($2, $1, $3), $6); }
-  | primary call_op tIDENTIFIER tOP_ASGN command_call             { $$ = sexp($4, sexp($2, $3, $1), $5); }
-  | primary call_op tCONSTANT tOP_ASGN command_call               { $$ = sexp($4, sexp($2, $3, $1), $5); }
-  | primary kCOLON2 tCONSTANT tOP_ASGN command_call               { $$ = sexp($4, sexp($2, $3, $1), $5); }
-  | primary kCOLON2 tIDENTIFIER tOP_ASGN command_call             { $$ = sexp($4, sexp($2, $3, $1), $5); }
-  | backref tOP_ASGN command_call                                 { $$ = sexp($2, $1, $3); }
-  | lhs kASSIGN mrhs                                              { $$ = sexp($2, $1, $3); }
-  | mlhs kASSIGN mrhs_arg                                         { $$ = sexp($2, $1, $3); }
+  | mlhs kASSIGN command_call                                     { $$ = $2 + $1 + $3; }
+  | var_lhs tOP_ASGN command_call                                 { $$ = $2 + $1 + $3; }
+  | primary kLBRACK2 opt_call_args rbracket tOP_ASGN command_call { $$ = $5 + ( $2 + $1 + $3 ) + $6; }
+  | primary call_op tIDENTIFIER tOP_ASGN command_call             { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
+  | primary call_op tCONSTANT tOP_ASGN command_call               { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
+  | primary kCOLON2 tCONSTANT tOP_ASGN command_call               { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
+  | primary kCOLON2 tIDENTIFIER tOP_ASGN command_call             { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
+  | backref tOP_ASGN command_call                                 { $$ = $2 + $1 + $3; }
+  | lhs kASSIGN mrhs                                              { $$ = $2 + $1 + $3; }
+  | mlhs kASSIGN mrhs_arg                                         { $$ = $2 + $1 + $3; }
   | expr
 ;
 
 command_asgn :
-    lhs kASSIGN command_call { $$ = sexp($2, $1, $3); }
-  | lhs kASSIGN command_asgn { $$ = sexp($2, $1, $3); }
+    lhs kASSIGN command_call { $$ = $2 + $1 + $3; }
+  | lhs kASSIGN command_asgn { $$ = $2 + $1 + $3; }
 ;
 
 expr :
     command_call
-  | expr kAND expr      { $$ = sexp($2, $1, $3); }
-  | expr kOR expr       { $$ = sexp($2, $1, $3); }
-  | kNOT opt_nl expr    { $$ = sexp($1, $3); }
-  | kNOTOP command_call { $$ = sexp($1, $2); }
+  | expr kAND expr      { $$ = $2 + $1 + $3; }
+  | expr kOR expr       { $$ = $2 + $1 + $3; }
+  | kNOT opt_nl expr    { $$ = $1 + $3; }
+  | kNOTOP command_call { $$ = $1 + $2; }
   | arg
 ;
 
@@ -186,11 +189,11 @@ command_call :
 
 block_command :
     block_call
-  | block_call call_op2 operation2 command_args { $$ = sexp($2, $1, $3, $4); }
+  | block_call call_op2 operation2 command_args { $$ = $2 + $1 + $3 + $4; }
 ;
 
 cmd_brace_block :
-    kLBRACE_ARG opt_block_param compstmt kRBRACE { $$ = sexp($1, $2, $3); }
+    kLBRACE_ARG opt_block_param compstmt kRBRACE { $$ = $1 + $2 + $3; }
 ;
 
 fcall :
@@ -198,29 +201,29 @@ fcall :
 ;
 
 command :
-    fcall command_args    %prec tLOWEST { $$ = sexp(CALL_NODE, sexp(), $1, $2); }
+    fcall command_args    %prec tLOWEST { $$ = CALL_NODE + sexp() + $1 + $2; }
   | fcall command_args cmd_brace_block
     {
       //block_dup_check($2,$3);
-      $$ = sexp(CALL_NODE, sexp(), $1, $2 | $3);
+      $$ = CALL_NODE + sexp() + $1 + ($2 + $3);
     }
-  | primary call_op operation2 command_args    %prec tLOWEST { $$ = sexp($2, $1, $3, $4); }
+  | primary call_op operation2 command_args    %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary call_op operation2 command_args cmd_brace_block
     {
       //block_dup_check($4,$5);
-      $$ = sexp($2, $1, $3, $4 | $5);
+      $$ = $2 + $1 + $3 + ($4 + $5);
     }
-  | primary kCOLON2 operation2 command_args    %prec tLOWEST { $$ = sexp($2, $1, $3, $4); }
+  | primary kCOLON2 operation2 command_args    %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 command_args cmd_brace_block
     {
       //block_dup_check($4,$5);
-      $$ = sexp($2, $1, $3, $4 | $5);
+      $$ = $2 + $1 + $3 + ($4 + $5);
     }
-  | kSUPER command_args { $$ = sexp($1, $2); }
-  | kYIELD command_args { $$ = sexp($1, $2); }
-  | kRETURN call_args   { $$ = sexp($1, $2); }
-  | kBREAK call_args    { $$ = sexp($1, $2); }
-  | kNEXT call_args     { $$ = sexp($1, $2); }
+  | kSUPER command_args { $$ = $1 + $2; }
+  | kYIELD command_args { $$ = $1 + $2; }
+  | kRETURN call_args   { $$ = $1 + $2; }
+  | kBREAK call_args    { $$ = $1 + $2; }
+  | kNEXT call_args     { $$ = $1 + $2; }
 ;
 
 mlhs :
@@ -236,14 +239,14 @@ mlhs_inner :
 mlhs_basic :
     mlhs_head
   | mlhs_head mlhs_item                        { $$ = $1 + $2; }
-  | mlhs_head kSTAR mlhs_node                  { $$ = $1 | sexp($2, $3); }
-  | mlhs_head kSTAR mlhs_node kCOMMA mlhs_post { $$ = $1 | sexp($2, $3) + $5; }
-  | mlhs_head kSTAR                            { $$ = $1 | sexp($2, sexp()); }
-  | mlhs_head kSTAR kCOMMA mlhs_post           { $$ = $1 | sexp($2, sexp()) + $4; }
-  | kSTAR mlhs_node                            { $$ = sexp( sexp($1, $2) ); }
-  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = sexp( sexp($1, $2) ) + $3; }
-  | kSTAR                                      { $$ = sexp( sexp($1, sexp()) ); }
-  | kSTAR kCOMMA mlhs_post                     { $$ = sexp( sexp($1, sexp()) ) + $3; }
+  | mlhs_head kSTAR mlhs_node                  { $$ = $1 + ($2 + $3); }
+  | mlhs_head kSTAR mlhs_node kCOMMA mlhs_post { $$ = $1 + ($2 + $3) + $5; }
+  | mlhs_head kSTAR                            { $$ = $1 + $2; }
+  | mlhs_head kSTAR kCOMMA mlhs_post           { $$ = $1 + $2 + $4; }
+  | kSTAR mlhs_node                            { $$ = $1 + $2; }
+  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = sexp($1 + $2) + $3; }
+  | kSTAR                                      { $$ = sexp($1); }
+  | kSTAR kCOMMA mlhs_post                     { $$ = sexp($1) + $3; }
 ;
 
 mlhs_item :
@@ -272,17 +275,17 @@ mlhs_node :
         // assignable($1, 0)
         //assignable("mlhs_node > keyword_variable", $1);
     }
-  | primary kLBRACK2 opt_call_args rbracket  { $$ = sexp($2, $1, $3); }
-  | primary call_op tIDENTIFIER { $$ = sexp($2, $1, $3); }
-  | primary kCOLON2 tIDENTIFIER { $$ = sexp($2, $1, $3); }
-  | primary call_op tCONSTANT   { $$ = sexp($2, $1, $3); }
+  | primary kLBRACK2 opt_call_args rbracket  { $$ = $2 + $1 + $3; }
+  | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
+  | primary kCOLON2 tIDENTIFIER { $$ = $2 + $1 + $3; }
+  | primary call_op tCONSTANT   { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tCONSTANT
     {
         if(in_def || in_single)
         {
             throw new SyntaxError("dynamic constant assignment");
         }
-        $$ = sexp($2, $1, $3);
+        $$ = $2 + $1 + $3;
     }
   | kCOLON3 tCONSTANT
     {
@@ -290,7 +293,7 @@ mlhs_node :
         {
             throw new SyntaxError("dynamic constant assignment");
         }
-        $$ = sexp($1, $2);
+        $$ = $1 + $2;
     }
   | backref
     {
@@ -310,17 +313,17 @@ lhs :
       // assignable($1, 0)
       //assignable("lhs > keyword_variable", $1);
     }
-  | primary kLBRACK2 opt_call_args rbracket { $$ = sexp($2, $1, $3); }
-  | primary call_op tIDENTIFIER { $$ = sexp($2, $1, $3); }
-  | primary kCOLON2 tIDENTIFIER { $$ = sexp($2, $1, $3); }
-  | primary call_op tCONSTANT   { $$ = sexp($2, $1, $3); }
+  | primary kLBRACK2 opt_call_args rbracket { $$ = $2 + $1 + $3; }
+  | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
+  | primary kCOLON2 tIDENTIFIER { $$ = $2 + $1 + $3; }
+  | primary call_op tCONSTANT   { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tCONSTANT
     {
         if(in_def || in_single)
         {
             throw new SyntaxError("dynamic constant assignment");
         }
-        $$ = sexp($2, $1, $3);
+        $$ = $2 + $1 + $3;
     }
   | kCOLON3 tCONSTANT
     {
@@ -328,7 +331,7 @@ lhs :
         {
             throw new SyntaxError("dynamic constant assignment");
         }
-      $$ = sexp($1, $2);
+      $$ = $1 + $2;
     }
   | backref
     {
@@ -346,9 +349,9 @@ cname :
 ;
 
 cpath :
-    kCOLON3 cname { $$ = sexp($1, $2); }
+    kCOLON3 cname { $$ = $1 + $2; }
   | cname
-  | primary kCOLON2 cname { $$ = sexp($2, $1, $3); }
+  | primary kCOLON2 cname { $$ = $2 + $1 + $3; }
 ;
 
 fname :
@@ -371,7 +374,7 @@ fitem :
 
 undef_list :
     fitem { $$ = sexp($1); }
-  | undef_list kCOMMA { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 | $2; }
+  | undef_list kCOMMA { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + sexp($2); }
 ;
 
 op :
@@ -452,82 +455,82 @@ reswords :
 ;
 
 arg :
-    lhs kASSIGN arg { $$ = sexp($2, $1, $3); }
+    lhs kASSIGN arg { $$ = $2 + $1 + $3; }
   | lhs kASSIGN arg kRESCUE_MOD arg
     {
-      $$ = sexp(ENSURE_NODE, sexp(sexp($2, $1, $3)), sexp(sexp($4, $5)), sexp(), sexp());
+      $$ = ENSURE_NODE + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
     }
-  | var_lhs tOP_ASGN arg { $$ = sexp($2, $1, $3); }
+  | var_lhs tOP_ASGN arg { $$ = $2 + $1 + $3; }
   | var_lhs tOP_ASGN arg kRESCUE_MOD arg
     {
-      $$ = sexp(ENSURE_NODE, sexp(sexp($2, $1, $3)), sexp(sexp($4, $5)), sexp(), sexp());
+      $$ = ENSURE_NODE + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
     }
   | primary kLBRACK2 opt_call_args rbracket tOP_ASGN arg
     {
-      $$ = sexp($5, sexp($2, $1, $3), $6);
+      $$ = $5 + ($2 + $1 + $3) + $6;
     }
   | primary call_op tIDENTIFIER tOP_ASGN arg
     {
-      $$ = sexp($4, sexp($2, $1, $3), $5);
+      $$ = $4 + ($2 + $1 + $3) + $5;
     }
   | primary call_op tCONSTANT tOP_ASGN arg
     {
-      $$ = sexp($4, sexp($2, $1, $3), $5);
+      $$ = $4 + ($2 + $1 + $3) + $5;
     }
   | primary kCOLON2 tIDENTIFIER tOP_ASGN arg
     {
-      $$ = sexp($4, sexp($2, $1, $3), $5);
+      $$ = $4 + ($2 + $1 + $3) + $5;
     }
   | primary kCOLON2 tCONSTANT tOP_ASGN arg
     {
-      $$ = sexp($4, sexp($2, $1, $3), $5);
+      $$ = $4 + ($2 + $1 + $3) + $5;
     }
   | kCOLON3 tCONSTANT tOP_ASGN arg
     {
-      $$ = sexp($3, sexp($1, $2), $4);
+      $$ = $3 + ($1 + $2) + $4;
     }
-  | backref tOP_ASGN arg { $$ = sexp($2, $1, $3); }
-  | arg kDOT2 arg        { $$ = sexp($2, $1, $3); }
-  | arg kDOT3 arg        { $$ = sexp($2, $1, $3); }
-  | arg kPLUS arg        { $$ = sexp($2, $1, $3); }
-  | arg kMINUS arg       { $$ = sexp($2, $1, $3); }
-  | arg kMUL arg         { $$ = sexp($2, $1, $3); }
-  | arg kDIV arg         { $$ = sexp($2, $1, $3); }
-  | arg kPERCENT arg     { $$ = sexp($2, $1, $3); }
-  | arg kPOW arg         { $$ = sexp($2, $1, $3); }
+  | backref tOP_ASGN arg { $$ = $2 + $1 + $3; }
+  | arg kDOT2 arg        { $$ = $2 + $1 + $3; }
+  | arg kDOT3 arg        { $$ = $2 + $1 + $3; }
+  | arg kPLUS arg        { $$ = $2 + $1 + $3; }
+  | arg kMINUS arg       { $$ = $2 + $1 + $3; }
+  | arg kMUL arg         { $$ = $2 + $1 + $3; }
+  | arg kDIV arg         { $$ = $2 + $1 + $3; }
+  | arg kPERCENT arg     { $$ = $2 + $1 + $3; }
+  | arg kPOW arg         { $$ = $2 + $1 + $3; }
   | kUMINUS_NUM simple_numeric kPOW arg
     {
-      $$ = sexp($3, sexp($1, $2), $4);
+      $$ = $3 + ($1 + $2) + $4;
     }
-  | kUPLUS arg           { $$ = sexp($1, $2); }
-  | kUMINUS arg          { $$ = sexp($1, $2); }
-  | arg kPIPE arg        { $$ = sexp($2, $1, $3); }
-  | arg kXOR arg         { $$ = sexp($2, $1, $3); }
-  | arg kBIN_AND arg     { $$ = sexp($2, $1, $3); }
-  | arg kCMP arg         { $$ = sexp($2, $1, $3); }
-  | arg kGREATER arg     { $$ = sexp($2, $1, $3); }
-  | arg kGEQ arg         { $$ = sexp($2, $1, $3); }
-  | arg kLESS arg        { $$ = sexp($2, $1, $3); }
-  | arg kLEQ arg         { $$ = sexp($2, $1, $3); }
-  | arg kEQ arg          { $$ = sexp($2, $1, $3); }
-  | arg kEQQ arg         { $$ = sexp($2, $1, $3); }
-  | arg kNEQ arg         { $$ = sexp($2, $1, $3); }
-  | arg kMATCH arg       { $$ = sexp($2, $1, $3); }
-  | arg kNMATCH arg      { $$ = sexp($2, $1, $3); }
-  | kNOTOP arg           { $$ = sexp($1, $2); }
-  | kNEG arg             { $$ = sexp($1, $2); }
-  | arg kLSHIFT arg      { $$ = sexp($2, $1, $3); }
-  | arg kRSHIFT arg      { $$ = sexp($2, $1, $3); }
-  | arg kANDOP arg       { $$ = sexp($2, $1, $3); }
-  | arg kOROP arg        { $$ = sexp($2, $1, $3); }
+  | kUPLUS arg           { $$ = $1 + $2; }
+  | kUMINUS arg          { $$ = $1 + $2; }
+  | arg kPIPE arg        { $$ = $2 + $1 + $3; }
+  | arg kXOR arg         { $$ = $2 + $1 + $3; }
+  | arg kBIN_AND arg     { $$ = $2 + $1 + $3; }
+  | arg kCMP arg         { $$ = $2 + $1 + $3; }
+  | arg kGREATER arg     { $$ = $2 + $1 + $3; }
+  | arg kGEQ arg         { $$ = $2 + $1 + $3; }
+  | arg kLESS arg        { $$ = $2 + $1 + $3; }
+  | arg kLEQ arg         { $$ = $2 + $1 + $3; }
+  | arg kEQ arg          { $$ = $2 + $1 + $3; }
+  | arg kEQQ arg         { $$ = $2 + $1 + $3; }
+  | arg kNEQ arg         { $$ = $2 + $1 + $3; }
+  | arg kMATCH arg       { $$ = $2 + $1 + $3; }
+  | arg kNMATCH arg      { $$ = $2 + $1 + $3; }
+  | kNOTOP arg           { $$ = $1 + $2; }
+  | kNEG arg             { $$ = $1 + $2; }
+  | arg kLSHIFT arg      { $$ = $2 + $1 + $3; }
+  | arg kRSHIFT arg      { $$ = $2 + $1 + $3; }
+  | arg kANDOP arg       { $$ = $2 + $1 + $3; }
+  | arg kOROP arg        { $$ = $2 + $1 + $3; }
   | kDEFINED opt_nl { in_defined = true; } arg
     {
       in_defined = false;
-      $$ = sexp($1, $4);
+      $$ = $1 + $4;
     }
   | arg kQMARK arg opt_nl kCOLON arg
     {
-      $$ = sexp($2, $1, $3, $6);
+      $$ = $2 + $1 + $3 + $6;
     }
   | primary
 ;
@@ -535,7 +538,7 @@ arg :
 aref_args :
     { $$ = sexp(); } // nothing
   | args trailer
-  | args kCOMMA assocs trailer { $$ = sexp($1 + $3); }
+  | args kCOMMA assocs trailer { $$ = $1 + $3; }
   | assocs trailer
 ;
 
@@ -558,9 +561,9 @@ opt_call_args :
 
 call_args :
     command                          { $$ = sexp($1); }
-  | args opt_block_arg               { $$ = $1 | $2; }
-  | assocs opt_block_arg             { $$ = $1 | $2; }
-  | args kCOMMA assocs opt_block_arg { $$ = $1 + $2 | $3; }
+  | args opt_block_arg               { $$ = $1 + $2; }
+  | assocs opt_block_arg             { $$ = $1 + $2; }
+  | args kCOMMA assocs opt_block_arg { $$ = $1 + $3 + $4; }
   | block_arg                        { $$ = sexp($1); }
 ;
 
@@ -577,7 +580,7 @@ command_args :
 ;
 
 block_arg :
-  kAMPER arg { $$ = sexp($1, $2); }
+  kAMPER arg { $$ = $1 + $2; }
 ;
 
 opt_block_arg :
@@ -587,9 +590,9 @@ opt_block_arg :
 
 args :
     arg                   { $$ = sexp($1); }
-  | kSTAR arg             { $$ = sexp(sexp($1, $2)); }
-  | args kCOMMA arg       { $$ = $1 | $2; }
-  | args kCOMMA kSTAR arg { $$ = $1 | sexp($3, $4); }
+  | kSTAR arg             { $$ = sexp($1 + $2); }
+  | args kCOMMA arg       { $$ = $1 + $3; }
+  | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
 ;
 
 mrhs_arg :
@@ -598,9 +601,9 @@ mrhs_arg :
 ;
 
 mrhs :
-    args kCOMMA arg       { $$ = $1 | $2; }
-  | args kCOMMA kSTAR arg { $$ = $1 | sexp($3, $4); }
-  | kSTAR arg             { $$ = sexp(sexp($1, $2)); }
+    args kCOMMA arg       { $$ = $1 + $2; }
+  | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
+  | kSTAR arg             { $$ = sexp($1 + $2); }
 ;
 
 primary :
@@ -620,7 +623,7 @@ primary :
       PushCmdarg();
       Lexer.Cmdarg = new BitStack();
     }
-    bodystmt kEND { PopCmdarg(); $$ = sexp($1, $3); }
+    bodystmt kEND { PopCmdarg(); $$ = $1 + $3; }
   | kLPAREN_ARG { Lexer.State = Lexer.States.EXPR_ENDARG; } rparen { $$ = sexp(); }
   | kLPAREN_ARG
     {
@@ -633,38 +636,43 @@ primary :
       $$ = $3;
     }
   | kLPAREN compstmt kRPAREN   { $$ = $2; }
-  | primary kCOLON2 tCONSTANT  { $$ = sexp($2, $1, $3); }
-  | kCOLON3 tCONSTANT          { $$ = sexp($1, $2); }
-  | kLBRACK aref_args kRBRACK  { $$ = sexp($1, $2); }
-  | kLBRACE assoc_list kRBRACE { $$ = sexp($1, $2); }
+  | primary kCOLON2 tCONSTANT  { $$ = $2 + $1 + $3; }
+  | kCOLON3 tCONSTANT          { $$ = $1 + $2; }
+  | kLBRACK aref_args kRBRACK  { $$ = $1 + $2; }
+  | kLBRACE assoc_list kRBRACE { $$ = $1 + $2; }
   | kRETURN
-  | kYIELD kLPAREN2 call_args rparen { $$ = sexp($1, $3); }
-  | kYIELD kLPAREN2 rparen           { $$ = sexp($1, sexp()); }
+  | kYIELD kLPAREN2 call_args rparen { $$ = $1 + $3; }
+  | kYIELD kLPAREN2 rparen           { $$ = $1 + sexp(); }
   | kYIELD
-  | kDEFINED opt_nl kLPAREN2 { in_defined = true; } expr { in_defined = false; } rparen { $$ = sexp($1, $5); }
-  | kNOT kLPAREN2 expr rparen { $$ = sexp($1, $3); }
-  | kNOT kLPAREN2 rparen      { $$ = sexp($1, sexp()); }
+  | kDEFINED opt_nl kLPAREN2 { in_defined = true; } expr { in_defined = false; } rparen { $$ = $1 + $5; }
+  | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
+  | kNOT kLPAREN2 rparen      { $$ = $1 + sexp(); }
   | fcall brace_block
     {
         //Console.WriteLine("primary > fcall brace_block");
-        $$ = sexp(CALL_NODE, sexp(), $1, sexp($2));
+        $$ = CALL_NODE + sexp() + $1 + sexp($2);
     }
   | method_call
   | method_call brace_block
     {
-        var call = (AstList<Token>) $1;
-        $$ = sexp(call[0], call[1], call[2], call[3] | $2);
+        //var call = $1;
+        //$$ = call.Value, call[0] + call[1] + call[2] + call[3] | $2);
+        throw new NotImplementedException();
     }
-  | kLAMBDA lambda { $$ = sexp($1, $2); }
-  | kIF expr then compstmt if_tail kEND { $$ = sexp($1, $2, $4, $5); }
-  | kUNLESS expr then compstmt opt_else kEND { $$ = sexp($1, $2, $4, $5); }
-  | kWHILE { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = sexp($1, $3, $6); }
-  | kUNTIL { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = sexp($1, $3, $6); }
-  | kCASE expr opt_terms case_body kEND { $$ = sexp($1, $2, $4); }
-  | kCASE opt_terms case_body kEND { $$ = sexp($1, sexp(), $3); }
+  | kLAMBDA lambda
+    {
+        var args_body = $2;
+        $$ = $1 + args_body[0] + args_body[1];
+    }
+  | kIF expr then compstmt if_tail kEND { $$ = $1 + $2 + $4 + $5; }
+  | kUNLESS expr then compstmt opt_else kEND { $$ = $1 + $2 + $4 + $5; }
+  | kWHILE { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
+  | kUNTIL { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
+  | kCASE expr opt_terms case_body kEND { $$ = $1 + $2 + $4; }
+  | kCASE opt_terms case_body kEND { $$ = $1 + sexp() + $3; }
   | kFOR for_var kIN { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND
   {
-      $$ = sexp($1, $2, $5, $8);
+      $$ = $1 + $2 + $5 + $8;
   }
   | kCLASS cpath superclass
     {
@@ -675,13 +683,16 @@ primary :
     }
     bodystmt kEND
     {
-        $$ = $2;
-        var superclass = (AstList<Token>) $3;
-        if(superclass.List.Count != 0)
+        var superclass = $3;
+        if(superclass.Value != null)
         {
-            $$ = sexp(superclass[0], $$, superclass[1]);
+            superclass = (Ast<Token>) superclass.Value + $2 + superclass[0];
         }
-        $$ = sexp($1, $$, $4);
+        else // => empty list => no superclass
+        {
+            superclass = $2;
+        }
+        $$ = $1 + superclass + $5;
     }
   | kCLASS kLSHIFT expr
     {
@@ -694,7 +705,7 @@ primary :
     {
       PopDef();
       PopSingle();
-      $$ = sexp($1, sexp($2, $3), $6);
+      $$ = $1 + ($2 + $3) + $6;
     }
   | kMODULE cpath
     {
@@ -703,7 +714,7 @@ primary :
             throw new SyntaxError("module definition in method body");
         }
     }
-    bodystmt kEND { $$ = sexp($1, $2, $3); }
+    bodystmt kEND { $$ = $1 + $2 + $4; }
   | kDEF fname
     {
       PushDef();
@@ -712,7 +723,7 @@ primary :
     f_arglist bodystmt kEND
     {
       PopDef();
-      $$ = sexp($1, sexp(), sexp(), $2, $4, $5);
+      $$ = $1 + $2 + $4 + $5;
     }
   | kDEF singleton dot_or_colon { Lexer.State = Lexer.States.EXPR_FNAME; } fname
     {
@@ -723,7 +734,7 @@ primary :
     f_arglist bodystmt kEND
     {
       PopSingle();
-      $$ = sexp($1, $2, $3, $5, $6, $7);
+      $$ = $1 + ($3 + $2 + $5) + $7 + $8;
     }
   | kBREAK
   | kNEXT
@@ -743,13 +754,13 @@ do :
 ;
 
 if_tail :
-    opt_else
-  | kELSIF expr then compstmt if_tail { $$ = sexp($1, $2, $4, $5); }
+    opt_else                          { $$ = $1.Value == null ? $1 : sexp($1); }
+  | kELSIF expr then compstmt if_tail { $$ = sexp($1 + $2 + $4) + $5; }
 ;
 
 opt_else :
     { $$ = sexp(); } // nothing
-  | kELSE compstmt { $$ = sexp($1, $2); }
+  | kELSE compstmt { $$ = $1 + $2; }
 ;
 
 for_var :
@@ -769,7 +780,7 @@ f_marg :
 
 f_marg_list :
     f_marg
-  | f_marg_list kCOMMA f_marg { $$ = $1 + $2; }
+  | f_marg_list kCOMMA f_marg { $$ = $1 + $3; }
 ;
 
 f_margs :
@@ -778,44 +789,44 @@ f_margs :
     {
       // assignable($4, 0);
       //assignable("f_margs > f_marg_list kCOMMA kSTAR f_norm_arg", val)
-      $$ = $1 | sexp($3, $4);
+      $$ = $1 + ($3 + $4);
     }
   | f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list
     {
       // assignable($4, 0);
       //assignable("f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list", val)
-      $$ = $1 | sexp($3, $4) + $6;
+      $$ = $1 + ($3 + $4) + $6;
     }
-  | f_marg_list kCOMMA kSTAR { $$ = $1 | sexp($3, sexp()); }
-  | f_marg_list kCOMMA kSTAR kCOMMA f_marg_list { $$ = $1 | sexp($3, sexp()) + $5; }
+  | f_marg_list kCOMMA kSTAR { $$ = $1 + $3; }
+  | f_marg_list kCOMMA kSTAR kCOMMA f_marg_list { $$ = $1 + $3 + $5; }
   | kSTAR f_norm_arg
     {
       // assignable($2, 0);
       //assignable("kSTAR f_norm_arg", val)
-      $$ = sexp(sexp($1, $2));
+      $$ = sexp($1 + $2);
     }
   | kSTAR f_norm_arg kCOMMA f_marg_list
     {
       // assignable($2, 0);
       //assignable("kSTAR f_norm_arg kCOMMA f_marg_list", val)
-      $$ = sexp(sexp($1, $2)) + $4;
+      $$ = sexp($1 + $2) + $4;
     }
-  | kSTAR { $$ = sexp( sexp($1, sexp()) ); }
-  | kSTAR kCOMMA f_marg_list { $$ = sexp(sexp($1, sexp())) + $3; }
+  | kSTAR { $$ = sexp($1); }
+  | kSTAR kCOMMA f_marg_list { $$ = sexp($1) + $3; }
 ;
 
 block_args_tail :
     f_block_kwarg kCOMMA f_kwrest opt_f_block_arg
     {
-      $$ = $1 | $3 | $4;
+      $$ = $1 + $3 + $4;
     }
   | f_block_kwarg opt_f_block_arg
     {
-      $$ = $1 | $2;
+      $$ = $1 + $2;
     }
   | f_kwrest opt_f_block_arg
     {
-      $$ = sexp($1, $2);
+      $$ = sexp($1) + $2;
     }
   | f_block_arg { $$ = sexp($1); }
 ;
@@ -828,11 +839,11 @@ opt_block_args_tail :
 block_param :
     f_arg kCOMMA f_block_optarg kCOMMA f_rest_arg opt_block_args_tail
     {
-      $$ = $1 + $3 | $5 + $6;
+      $$ = $1 + $3 + $5 + $6;
     }
   | f_arg kCOMMA f_block_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_block_args_tail
     {
-      $$ = $1 + $3 | $5 + $7 + $8;
+      $$ = $1 + $3 + $5 + $7 + $8;
     }
   | f_arg kCOMMA f_block_optarg opt_block_args_tail
     {
@@ -844,12 +855,12 @@ block_param :
     }
   | f_arg kCOMMA f_rest_arg opt_block_args_tail
     {
-      $$ = $1 | $3 + $4;
+      $$ = $1 + $3 + $4;
     }
   | f_arg kCOMMA
   | f_arg kCOMMA f_rest_arg kCOMMA f_arg opt_block_args_tail
     {
-      $$ = $1 | $3 + $5 + $6;
+      $$ = $1 + $3 + $5 + $6;
     }
   | f_arg opt_block_args_tail
     {
@@ -857,11 +868,11 @@ block_param :
     }
   | f_block_optarg kCOMMA f_rest_arg opt_block_args_tail
     {
-      $$ = $1 | $3 + $4;
+      $$ = $1 + $3 + $4;
     }
   | f_block_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_block_args_tail
     {
-      $$ = $1 | $3 + $5 + $6;
+      $$ = $1 + $3 + $5 + $6;
     }
   | f_block_optarg opt_block_args_tail
     {
@@ -900,7 +911,7 @@ opt_bv_decl :
 
 bv_decls :
     bvar                 { $$ = sexp($1); }
-  | bv_decls kCOMMA bvar { $$ = $1 | $3; }
+  | bv_decls kCOMMA bvar { $$ = $1 + $3; }
 ;
 
 bvar :
@@ -938,7 +949,7 @@ lambda_body :
 ;
 
 do_block :
-    kDO_BLOCK opt_block_param compstmt kEND { $$ = sexp($1, $2, $3); }
+    kDO_BLOCK opt_block_param compstmt kEND { $$ = $1 + $2 + $3; }
 ;
 
 block_call :
@@ -948,59 +959,56 @@ block_call :
       //    compile_error(PARSER_ARG "block given to yield");
       //block_dup_check($1->nd_args, $2);
 
-      var command = (AstList<Token>) $1;
-      $$ = sexp(command[0], command[1], command[2], command[3] | $2);
+      //var command = $1;
+      //$$ = sexp(command[0], command[1], command[2], command[3] + $2);
+      throw new NotImplementedException();
     }
   | block_call call_op2 operation2 opt_paren_args
     {
-      $$ = sexp($2, $1, $3, $4);
+      $$ = $2 + $1 + $3 + $4;
     }
   | block_call call_op2 operation2 opt_paren_args brace_block
     {
       // block_dup_check($4, $5);
-      $$ = sexp($2, $1, $3, $4 | $5);
+      $$ = $2 + $1 + $3 + ($4 + $5);
     }
   | block_call call_op2 operation2 command_args do_block
     {
       // block_dup_check($4, $5);
-      $$ = sexp($2, $1, $3, $4 | $5);
+      $$ = $2 + $1 + $3 + ($4 + $5);
     }
 ;
 
 method_call :
-    fcall paren_args                          { /*Console.WriteLine("method_call > fcall paren_args");*/ $$ = sexp(CALL_NODE, sexp(), $1, $2); }
-  | primary call_op operation2 opt_paren_args { $$ = sexp($2, $1, $3, $4); }
-  | primary kCOLON2 operation2 paren_args     { $$ = sexp($2, $1, $3, $4); }
-  | primary kCOLON2 operation3                { $$ = sexp($2, $1, $3, sexp()); }
-  | primary call_op paren_args                { $$ = sexp($2, $1, sexp(), $3); }
-  | primary kCOLON2 paren_args                { $$ = sexp($2, $1, sexp(), $3); }
-  | kSUPER paren_args                         { $$ = sexp(CALL_NODE, sexp(), $1, $2); }
+    fcall paren_args                          { /*Console.WriteLine("method_call > fcall paren_args");*/ $$ = CALL_NODE + sexp() + $1 + $2; }
+  | primary call_op operation2 opt_paren_args { $$ = $2 + $1 + $3 + $4; }
+  | primary kCOLON2 operation2 paren_args     { $$ = $2 + $1 + $3 + $4; }
+  | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + sexp(); }
+  | primary call_op paren_args                { $$ = $2 + $1 + sexp() + $3; }
+  | primary kCOLON2 paren_args                { $$ = $2 + $1 + sexp() + $3; }
+  | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
-    {
-        ((AstNode<Token>) $1).Value.Properties["no_args"] = true;
-        $$ = sexp(CALL_NODE, sexp(), $1, sexp());
-    }
   | primary kLBRACK2 opt_call_args rbracket   { $$ = sexp(CALL_NODE, $1, $2, $3); }
 ;
 
 brace_block :
-    kLBRACE2 opt_block_param compstmt kRBRACE { $$ = sexp($1, $2, $3); }
-  | kDO opt_block_param compstmt kEND         { $$ = sexp($1, $2, $3); }
+    kLBRACE2 opt_block_param compstmt kRBRACE { $$ = $1 + $2 + $3; }
+  | kDO opt_block_param compstmt kEND         { $$ = $1 + $2 + $3; }
 ;
 
 case_body :
-    kWHEN args then compstmt cases { $$ = sexp(sexp($1, $2, $4)) + $5; }
+    kWHEN args then compstmt cases { $$ = sexp($1 + $2 + $4) + $5; }
 ;
 
 cases :
-    opt_else { $$ = sexp($1); }
+    opt_else { $$ = $1.Value == null ? $1 : sexp($1); }
   | case_body
 ;
 
 opt_rescue :
     kRESCUE exc_list exc_var then compstmt opt_rescue
     {
-      $$ = sexp(sexp($1, $2, $3, $5)) + $6;
+      $$ = sexp($1 + $2 + $3 + $5) + $6;
     }
   | { $$ = sexp(); } // nothing
 ;
@@ -1017,7 +1025,7 @@ exc_var :
 ;
 
 opt_ensure :
-    kENSURE compstmt { $$ = sexp($1, $2); }
+    kENSURE compstmt { $$ = $1 + $2; }
   | { $$ = sexp(); } // nothing
 ;
 
@@ -1032,71 +1040,43 @@ strings :
 ;
 
 string :
-    tCHAR          { $$ = sexp($1, sexp()); }
+    tCHAR          { $$ = $1; }
   | string1
-  | string string1 { $$ = $1 | $2; }
+  | string string1 { $$ = $1 + $2; }
 ;
 
 string1 :
-    tSTRING_BEG string_contents tSTRING_END
-    {
-        $$ = sexp($1, $2);
-
-        var str_beg = (AstNode<Token>) $1;
-        var str_end = (AstNode<Token>) $3;
-        foreach(var prop in str_end.Value.Properties)
-        {
-            str_beg.Value.Properties.Add(prop.Key, prop.Value);
-        }
-    }
+    tSTRING_BEG string_contents tSTRING_END { $$ = $3 + $2; }
+        // properties are always at tSTRING_END if they exist
 ;
 
 xstring :
-    tXSTRING_BEG xstring_contents tSTRING_END
-    {
-        $$ = sexp($1, $2);
-
-        var str_beg = (AstNode<Token>) $1;
-        var str_end = (AstNode<Token>) $3;
-        foreach(var prop in str_end.Value.Properties)
-        {
-            str_beg.Value.Properties.Add(prop.Key, prop.Value);
-        }
-    }
+    tXSTRING_BEG xstring_contents tSTRING_END { $$ = $1 + $2; }
 ;
 
 regexp :
-    tREGEXP_BEG regexp_contents tREGEXP_END
-    {
-        $$ = sexp($1, $2);
-
-        var str_beg = (AstNode<Token>) $1;
-        var str_end = (AstNode<Token>) $3;
-        foreach(var prop in str_end.Value.Properties)
-        {
-            str_beg.Value.Properties.Add(prop.Key, prop.Value);
-        }
-    }
+    tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $3 + $2; }
+        // properties are always at tSTRING_END if they exist
 ;
 
 words :
-    tWORDS_BEG kSPACE tSTRING_END    { $$ = sexp($1, sexp()); }
-  | tWORDS_BEG word_list tSTRING_END { $$ = sexp($1, $2); }
+    tWORDS_BEG kSPACE tSTRING_END    { $$ = $1; }
+  | tWORDS_BEG word_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 word_list :
     { $$ = sexp(); } // nothing
-  | word_list word kSPACE { $$ = sexp($1 + $2); }
+  | word_list word kSPACE { $$ = $1 + $2; }
 ;
 
 word :
     string_content { $$ = sexp($1); }
-  | word string_content { $$ = $1 | $2; }
+  | word string_content { $$ = $1 + $2; }
 ;
 
 symbols :
-    tSYMBOLS_BEG kSPACE tSTRING_END      { $$ = sexp($1, sexp()); }
-  | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = sexp($1, $2); }
+    tSYMBOLS_BEG kSPACE tSTRING_END      { $$ = $1; }
+  | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 symbol_list :
@@ -1105,43 +1085,43 @@ symbol_list :
 ;
 
 qwords :
-    tQWORDS_BEG kSPACE tSTRING_END     { $$ = sexp($1, sexp()); }
-  | tQWORDS_BEG qword_list tSTRING_END { $$ = sexp($1, $2); }
+    tQWORDS_BEG kSPACE tSTRING_END     { $$ = $1; }
+  | tQWORDS_BEG qword_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qsymbols :
-    tQSYMBOLS_BEG kSPACE tSTRING_END    { $$ = sexp($1, sexp()); }
-  | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = sexp($1, $2); }
+    tQSYMBOLS_BEG kSPACE tSTRING_END    { $$ = $1; }
+  | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qword_list :
     { $$ = sexp(); } // nothing
-  | qword_list tSTRING_CONTENT kSPACE { $$ = $1 | $2; }
+  | qword_list tSTRING_CONTENT kSPACE { $$ = $1 + $2; }
 ;
 
 qsym_list :
     { $$ = sexp(); } // nothing
-  | qsym_list tSTRING_CONTENT kSPACE { $$ = $1 | $2; }
+  | qsym_list tSTRING_CONTENT kSPACE { $$ = $1 + $2; }
 ;
 
 string_contents :
     { $$ = sexp(); } // nothing
-  | string_contents string_content { $$ = $1 | $2; }
+  | string_contents string_content { $$ = $1 + $2; }
 ;
 
 xstring_contents :
     { $$ = sexp(); } // nothing
-  | xstring_contents string_content { $$ = $1 | $2; }
+  | xstring_contents string_content { $$ = $1 + $2; }
 ;
 
 regexp_contents :
     { $$ = sexp(); } // nothing
-  | regexp_contents string_content { $$ = $1 | $2; }
+  | regexp_contents string_content { $$ = $1 + $2; }
 ;
 
 string_content :
     tSTRING_CONTENT
-  | tSTRING_DVAR string_dvar { $$ = sexp($1, $2); }
+  | tSTRING_DVAR string_dvar { $$ = $1 + $2; }
   | tSTRING_DBEG
     {
       PushCond();
@@ -1153,7 +1133,7 @@ string_content :
     {
       PopCond();
       PopCmdarg();
-      $$ = sexp($1, $3);
+      $$ = $1 + $3;
     }
 ;
 
@@ -1165,7 +1145,7 @@ string_dvar :
 ;
 
 symbol :
-    tSYMBEG sym { $$ = sexp($1, $2); }
+    tSYMBEG sym { $$ = $1 + $2; }
 ;
 
 sym :
@@ -1176,12 +1156,12 @@ sym :
 ;
 
 dsym :
-  tSYMBEG xstring_contents tSTRING_END { $$ = sexp($1, $2); }
+  tSYMBEG xstring_contents tSTRING_END { $$ = $1 + $2; }
 ;
 
 numeric :
     simple_numeric
-  | kUMINUS_NUM simple_numeric   %prec tLOWEST { $$ = sexp($1, $2); }
+  | kUMINUS_NUM simple_numeric   %prec tLOWEST { $$ = $1 + $2; }
 ;
 
 simple_numeric :
@@ -1246,7 +1226,7 @@ superclass :
       Lexer.State = Lexer.States.EXPR_BEG;
       Lexer.InCmd = true;
     }
-    expr term { $$ = sexp($1, $2); }
+    expr term { $$ = $1 + $2; }
   | { $$ = sexp(); } // nothing
 ;
 
@@ -1271,7 +1251,7 @@ f_arglist :
 ;
 
 args_tail :
-    f_kwarg kCOMMA f_kwrest opt_f_block_arg { $$ = $1 | $3 + $4; }
+    f_kwarg kCOMMA f_kwrest opt_f_block_arg { $$ = $1 + $3 + $4; }
   | f_kwarg opt_f_block_arg                 { $$ = $1 + $2; }
   | f_kwrest opt_f_block_arg                { $$ = sexp($1) + $2; }
   | f_block_arg                             { $$ = sexp($1); }
@@ -1283,18 +1263,18 @@ opt_args_tail :
 ;
 
 f_args :
-    f_arg kCOMMA f_optarg kCOMMA f_rest_arg opt_args_tail { $$ = $1 + $3 | $5 + $6; }
+    f_arg kCOMMA f_optarg kCOMMA f_rest_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
   | f_arg kCOMMA f_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail
     {
-      $$ = $1 + $3 | $5 + $7 + $8;
+      $$ = $1 + $3 + $5 + $7 + $8;
     }
   | f_arg kCOMMA f_optarg opt_args_tail { $$ = $1 + $3 + $4; }
   | f_arg kCOMMA f_optarg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
-  | f_arg kCOMMA f_rest_arg opt_args_tail { $$ = $1 | $3 + $4; }
-  | f_arg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 | $3 + $5 + $6; }
+  | f_arg kCOMMA f_rest_arg opt_args_tail { $$ = $1 + $3 + $4; }
+  | f_arg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
   | f_arg opt_args_tail { $$ = $1 + $2; }
-  | f_optarg kCOMMA f_rest_arg opt_args_tail { $$ = $1 | $3 + $4; }
-  | f_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 | $3 + $5 + $6; }
+  | f_optarg kCOMMA f_rest_arg opt_args_tail { $$ = $1 + $3 + $4; }
+  | f_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
   | f_optarg opt_args_tail { $$ = $1 + $2; }
   | f_optarg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $4; }
   | f_rest_arg opt_args_tail { $$ = sexp($1) + $2; }
@@ -1342,7 +1322,7 @@ f_arg_item :
 
 f_arg :
     f_arg_item
-  | f_arg kCOMMA f_arg_item { $$ = $1 + $2; }
+  | f_arg kCOMMA f_arg_item { $$ = $1 + $3; }
 ;
 
 f_label :
@@ -1359,13 +1339,13 @@ f_kw :
     {
       //assignable("f_kw > f_label arg", val)
       //#assignable($1, $2);
-      $$ = sexp($1, $2);
+      $$ = $1 + $2;
     }
   | f_label
     {
       //assignable("f_kw > f_label", val)
       //#assignable($1, (NODE *)-1);
-      $$ = sexp($1, sexp());
+      $$ = $1;
     }
 ;
 
@@ -1374,24 +1354,24 @@ f_block_kw :
     {
       //assignable("f_block_kw > f_label primary", val)
       //#$$ = assignable($1, $2);
-      $$ = sexp($1, $2);
+      $$ = $1 + $2;
     }
   | f_label
     {
       //assignable("f_block_kw > f_label", val)
       //#assignable($1, (NODE *)-1);
-      $$ = sexp($1, sexp());
+      $$ = $1;
     }
 ;
 
 f_block_kwarg :
     f_block_kw { $$ = sexp($1); }
-  | f_block_kwarg kCOMMA f_block_kw { $$ = $1 | $3; }
+  | f_block_kwarg kCOMMA f_block_kw { $$ = $1 + $3; }
 ;
 
 f_kwarg :
     f_kw { $$ = sexp($1); }
-  | f_kwarg kCOMMA f_kw { $$ = $1 | $3; }
+  | f_kwarg kCOMMA f_kw { $$ = $1 + $3; }
 ;
 
 kwrest_mark :
@@ -1400,8 +1380,8 @@ kwrest_mark :
 ;
 
 f_kwrest :
-    kwrest_mark tIDENTIFIER { $$ = sexp($1, $2); }
-  | kwrest_mark             { $$ = sexp($1, sexp()); }
+    kwrest_mark tIDENTIFIER { $$ = $1 + $2; }
+  | kwrest_mark             { $$ = $1; }
 ;
 
 f_opt :
@@ -1409,7 +1389,7 @@ f_opt :
     {
       //assignable("f_opt > f_arg_asgn kASSIGN arg", val)
       //#assignable($1, $3);
-      $$ = sexp($2, $1, $3);
+      $$ = $2 + $1 + $3;
     }
 ;
 
@@ -1418,18 +1398,18 @@ f_block_opt :
     {
       //assignable("f_block_opt > f_arg_asgn kASSIGN primary", val)
       //#assignable($1, $3);
-      $$ = sexp($2, $1, $3);
+      $$ = $2 + $1 + $3;
     }
 ;
 
 f_block_optarg :
     f_block_opt { $$ = sexp($1); }
-  | f_block_optarg kCOMMA f_block_opt { $$ = $1 | $3; }
+  | f_block_optarg kCOMMA f_block_opt { $$ = $1 + $3; }
 ;
 
 f_optarg :
     f_opt { $$ = sexp($1); }
-  | f_optarg kCOMMA f_opt { $$ = $1 | $3; }
+  | f_optarg kCOMMA f_opt { $$ = $1 + $3; }
 ;
 
 restarg_mark :
@@ -1443,9 +1423,9 @@ f_rest_arg :
       //puts "f_rest_arg > restarg_mark tIDENTIFIER : #{val.inspect}"
       //#if (id_type($2) != ID_LOCAL)
       //#    yyerror("rest argument must be local variable");
-      $$ = sexp($1, $2);
+      $$ = $1 + $2;
     }
-  | restarg_mark { $$ = sexp($1, sexp()); }
+  | restarg_mark { $$ = $1; }
 ;
 
 blkarg_mark :
@@ -1459,7 +1439,7 @@ f_block_arg :
       //puts "f_block_arg > blkarg_mark tIDENTIFIER : #{val.inspect}"
       //#if (id_type($2) != ID_LOCAL)
       //#    yyerror("block argument must be local variable");
-      $$ = sexp($1, $2);
+      $$ = $1 + $2;
     }
 ;
 
@@ -1492,19 +1472,19 @@ singleton :
 
 assoc_list :
     { $$ = sexp(); } // nothing
-  | assocs trailer { $$ = $2; }
+  | assocs trailer
 ;
 
 assocs :
     assoc { $$ = sexp($1); }
-  | assocs kCOMMA assoc { $$ = $1 | $3; }
+  | assocs kCOMMA assoc { $$ = $1 + $3; }
 ;
 
 assoc :
-    arg kASSOC arg { $$ = sexp($2, $1, $3); }
-  | tLABEL arg { $$ = sexp($1, $2); }
-  | tSTRING_BEG string_contents tLABEL_END arg { $$ = sexp(sexp($3, $2, $4)); }
-  | kDSTAR arg { $$ = sexp($1, $2); }
+    arg kASSOC arg { $$ = $2 + $1 + $3; }
+  | tLABEL arg { $$ = $1 + $2; }
+  | tSTRING_BEG string_contents tLABEL_END arg { $$ = $3 + $2 + $4; }
+  | kDSTAR arg { $$ = $1 + $2; }
 ;
 
 operation :
