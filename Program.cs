@@ -19,9 +19,8 @@ namespace mint
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
             //Token[] tokens = new Lexer("def []=; end").ToArray();
-
-            /*Ast<Token> ast = Parser.Parse(
-                @"
+            Ast<Token> ast = Parser.Parse(
+/*@"
 
 class X
     def []=(i, v)
@@ -31,11 +30,18 @@ class X
     alias :set :[]=
 end
 
-                ");*/
+                "*/
+
+/*@"module Math
+  TAU = 2 * PI
+end"*/
+
+@"%W'a b c#@d  '"
+);
                 
 
-            Ast<Token> ast = Parser.Parse(File.ReadAllText(
-                @"D:\Users\Silver Phoenix\Projects\RubyMine\opengl-definitions\lib\opengl-definitions\version.rb"));
+            //Ast<Token> ast = Parser.Parse(File.ReadAllText(
+            //    @"D:\Users\Silver Phoenix\Projects\RubyMine\mathgl\lib\version.rb"));
 
             var doc = AstXmlSerializer.ToXml(ast);
             Console.WriteLine(doc.ToString());

@@ -5,7 +5,7 @@ namespace mint
     class SyntaxError : Exception
     {
         public SyntaxError() : base() { }
-        public SyntaxError(string message) : base(message) { }
-        public SyntaxError(string message, Exception innerException) : base(message, innerException) { }
+        public SyntaxError(int line, string message) : base($":{line}: {message}") { }
+        public SyntaxError(int line, string message, Exception innerException) : base($":{line}: {message}", innerException) { }
     }
 }

@@ -19,5 +19,6 @@
 
         void CommitIndent();
         bool IsDelimiter(string token);
+        uint TranslateDelimiter(char token);
     }
 }

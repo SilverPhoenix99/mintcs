@@ -73,7 +73,7 @@ action StringStart {
     {
         PushFcall(); // this is so that strings can identify who called them if needed
     }
-    fnext STRING_DELIMITER;
+    fnext *((int) literals.Peek().State);
     fbreak;
 }
 
@@ -87,7 +87,7 @@ action StringStart {
 
 line_comment = '#' ^nl_eof*;
 
-action EmbDocEof { throw new SyntaxError("embedded document meets end of file"); }
+action EmbDocEof { throw new SyntaxError(Location(p).Item1, "embedded document meets end of file"); }
 
 block_trail = (space - nl) ^nl*;
 
@@ -115,7 +115,7 @@ action RacSuf { num_flags |= RATIONAL_FLAG; }
 action CmxSuf { num_flags |= IMAGINARY_FLAG; }
 action IntNum { token_type = tINTEGER; }
 action FloNum { token_type = tFLOAT; }
-action TrailError { throw new SyntaxError("trailing `_' in number"); }
+action TrailError { throw new SyntaxError(Location(p).Item1, "trailing `_' in number"); }
 
 bdigit = [01];
 odigit = [0-7];
@@ -204,8 +204,8 @@ e_arg_sign =
 # or if the unicode is invalid.
 # In here, unicode is explicitly disabled.
 percent_string = '%' string_term? (
-    c_eof @{ throw new SyntaxError("unknown type of %string"); }
-  | (ascii - alnum) @lerr{ throw new SyntaxError("unknown type of %string"); }
+    c_eof @{ throw new SyntaxError(Location(p).Item1, "unknown type of %string"); }
+  | (ascii - alnum) @lerr{ throw new SyntaxError(Location(p).Item1, "unknown type of %string"); }
 );
 
 
@@ -222,7 +222,7 @@ action Heredoc {
   fbreak;
 }
 
-action UnterminatedHeredoc { throw new SyntaxError("unterminated here document identifier"); }
+action UnterminatedHeredoc { throw new SyntaxError(Location(p).Item1, "unterminated here document identifier"); }
 
 # This is different from MRI: MRI accepts \n in identifiers,
 # but then it can't find the identifier anywhere after. (MRI bug)
@@ -323,9 +323,9 @@ gvar = '$' (
     '-' ident_char
   | ( ident_char - [1-9] ) ident_char*
   | gvar_char
-  | (space | c_eof) @ { throw new SyntaxError("`$' without identifiers is not allowed as a global variable name"); }
+  | (space | c_eof) @ { throw new SyntaxError(Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
 ) >err {
-    throw new SyntaxError($"`{CurrentToken()}' is not allowed as a global variable name");
+    throw new SyntaxError(Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name");
   } % { token_type = tGVAR; };
 
 var = (
@@ -333,14 +333,14 @@ var = (
   | ( digit | ^ident_char ) % {
       var tok = CurrentToken();
       var type_str = token_type == tIVAR ? "n instance" : " class";
-      throw new SyntaxError($"`{tok}' is not allowed as a{type_str} variable name");
+      throw new SyntaxError(Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
     }
 
   | ( c_eof | space ) % {
       var tok = CurrentToken(ote: -1);
       var type_str = token_type == tIVAR ? "n instance" : " class";
       var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
-      throw new SyntaxError(msg);
+      throw new SyntaxError(Location(p).Item1, msg);
     }
 );
 
@@ -902,7 +902,7 @@ COMMON_EXPR := |*
           Console.WriteLine($"invalid character syntax; use ?\\{c}");
         }
 
-      | c_eof % { throw new SyntaxError("incomplete character syntax"); }
+      | c_eof % { throw new SyntaxError(Location(p).Item1, "incomplete character syntax"); }
 
     )
 
@@ -919,13 +919,13 @@ COMMON_EXPR := |*
 
   number => Number;
 
-  '.' digit => { throw new SyntaxError("no .<digit> floating literal anymore; put 0 before dot"); };
+  '.' digit => { throw new SyntaxError(Location(p).Item1, "no .<digit> floating literal anymore; put 0 before dot"); };
 
   ^ident_char => {
-    throw new SyntaxError($"Invalid char `{CurrentToken()}' in expression at {ts}");
+    throw new SyntaxError(Location(p).Item1, $"Invalid char `{CurrentToken()}' in expression at {ts}");
   };
 
-  any => { throw new SyntaxError($"Don't know what to do with `{CurrentToken()}' at {ts}"); };
+  any => { throw new SyntaxError(Location(p).Item1, $"Don't know what to do with `{CurrentToken()}' at {ts}"); };
 
 *|;
 
@@ -935,7 +935,7 @@ COMMON_EXPR := |*
 # Strings: <<Heredocs, 'strings', %w(words) and ?chars
 #
 
-action EofLiteralError { throw new SyntaxError(current_literal.UnterminatedMessage); }
+action EofLiteralError { throw new SyntaxError(Location(p).Item1, current_literal.UnterminatedMessage); }
 
 
 # ------------------------------------------------------------------------------
@@ -943,8 +943,8 @@ action EofLiteralError { throw new SyntaxError(current_literal.UnterminatedMessa
 # Character escaping
 #
 
-action InvalidUnicode { throw new SyntaxError("invalid Unicode escape"); }
-action UntermUnicode  { throw new SyntaxError("unterminated Unicode escape"); }
+action InvalidUnicode { throw new SyntaxError(Location(p).Item1, "invalid Unicode escape"); }
+action UntermUnicode  { throw new SyntaxError(Location(p).Item1, "unterminated Unicode escape"); }
 
 unicode_digits = xdigit{1,6} >lerr(InvalidUnicode);
 
@@ -961,12 +961,12 @@ char_escape = '\\' (ascii - [CMcux0-7] - c_eof);
 octal_escape = '\\' odigit{1,3};
 
 
-action InvalidHex { throw new SyntaxError("invalid hex escape"); }
+action InvalidHex { throw new SyntaxError(Location(p).Item1, "invalid hex escape"); }
 
 hex_escape   = '\\x' ( xdigit{1,2} >lerr InvalidHex );
 
 
-action InvalidControl { throw new SyntaxError("Invalid escape character syntax"); }
+action InvalidControl { throw new SyntaxError(Location(p).Item1, "Invalid escape character syntax"); }
 
 ctrl_char = '\\' ( 'c' | 'C-' );
 meta_char = '\\M-';
@@ -991,77 +991,77 @@ control_escape = control_prefix (
 #  || ( cs in (EXPR_ARG, EXPR_CMDARG) && ( ts == 0 || Data[ts - 1].Matches(" \f\t\r\v") ) )
 
 HEREDOC_DELIMITER := |*
-  c_eof => EofLiteralError;
+    c_eof => EofLiteralError;
 
-  ^nl_eof* nl_eof => {
-    if(current_literal.IsDelimiter(CurrentToken()))
-    {
-      // found delimiter => end of heredoc
-      GenStringContentToken();
-      GenStringEndToken();
-      line_jump = te;
-      fexec ((Heredoc) current_literal).Restore;
-      PopFcall();
-      fnext EXPR_END;
-      fbreak;
-    }
+    ^nl_eof* nl_eof => {
+        if(current_literal.IsDelimiter(CurrentToken()))
+        {
+            // found delimiter => end of heredoc
+            GenStringContentToken();
+            GenStringEndToken();
+            line_jump = te;
+            fexec ((Heredoc) current_literal).Restore;
+            PopFcall();
+            fnext EXPR_END;
+            fbreak;
+        }
 
-    fexec ts;
-    fgoto HEREDOC_CONTENT;
-  };
+        fexec ts;
+        fgoto HEREDOC_CONTENT;
+    };
 
 *|;
 
 HEREDOC_CONTENT := |*
-  # TODO: '\\\n' - counts as not being present, if id_delimiter != "'"
+    # TODO: '\\\n' - counts as not being present, if id_delimiter != "'"
 
-  c_eof => EofLiteralError;
+    c_eof => EofLiteralError;
 
-  '\n' => { // don't jump yet
-    current_literal.LineIndent = 0;
+    '\n' => { // don't jump yet
+        current_literal.LineIndent = 0;
 
-    if(line_jump > this.p)
-    {
-      // content in @te..@line_jump isn't included
-      GenStringContentToken(0);
-      current_literal.ContentStart = line_jump;
-      fexec @line_jump;
-    }
+        if(line_jump > this.p)
+        {
+            // content in te..line_jump isn't included
+            GenStringContentToken(0);
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+        }
 
-    fgoto HEREDOC_DELIMITER;
-  };
+        fgoto HEREDOC_DELIMITER;
+    };
 
-  '\\' ^c_eof => { current_literal.CommitIndent(); };
+    '\\' ^c_eof => { current_literal.CommitIndent(); };
 
-  '#' any_var => { GenInterpolationTokens(token_type); };
+    '#' any_var => { GenInterpolationTokens(token_type); };
 
-  '#{' => {
-    current_literal.CommitIndent();
-    if(current_literal.Interpolates)
-    {
-      GenStringContentToken();
-      GenToken(tSTRING_DBEG);
-      fnext EXPR_BEG;
-      fbreak;
-    }
-  };
+    '#{' => {
+        current_literal.CommitIndent();
+        if(current_literal.Interpolates)
+        {
+            GenStringContentToken();
+            GenToken(tSTRING_DBEG);
+            fnext EXPR_BEG;
+            fbreak;
+        }
+    };
 
-  ' ' => {
-    if(current_literal.Dedents && current_literal.LineIndent >= 0)
-    {
-        current_literal.LineIndent++;
-    }
-  };
+    ' ' => {
+        if(current_literal.Dedents && current_literal.LineIndent >= 0)
+        {
+            current_literal.LineIndent++;
+        }
+    };
 
-  '\t' => {
-    if(current_literal.Dedents && current_literal.LineIndent >= 0)
-    {
-        var w = current_literal.LineIndent / TabWidth + 1;
-        current_literal.LineIndent = w * TabWidth;
-    }
-  };
+    '\t' => {
+        if(current_literal.Dedents && current_literal.LineIndent >= 0)
+        {
+            var w = current_literal.LineIndent / TabWidth + 1;
+            current_literal.LineIndent = w * TabWidth;
+        }
+    };
 
-  any => { current_literal.CommitIndent(); };
+    any => { current_literal.CommitIndent(); };
 
 *|;
 
@@ -1071,145 +1071,124 @@ HEREDOC_CONTENT := |*
 # Strings
 #
 
-STRING_DELIMITER := |*
-  c_eof => EofLiteralError;
+# ^D (0x4) isn't used by the lexer.
+# The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
+string_delimiter = 0x4;
 
-  alnum;
 
-  ^alnum ':' [^:] => {
-    fexec te -= 1; // hold the last char [^:]
-
-    var is_labeled = current_literal.CanLabel &&
-      (
-        FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG) ||
-        ( !Cond.Peek && FcalledBy(EXPR_BEG, EXPR_ENDFN) )
-      );
-
-    var tok = CurrentToken(ote: -1);
-
-    if(!is_labeled)
-    {
-      fexec te -= 1; // hold the last char ':'
-    }
-
-    if(!current_literal.IsDelimiter(tok))
-    {
-      // not the delimiter
-      fexec ts;
-      fgoto *((int) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
-    }
-
-    // found delimiter => end string
-
-    PopFcall();
+action StringDelimiter {
     GenStringContentToken();
-    if(current_literal.IsRegexp)
+
+    if(current_literal.IsDelimiter("\n") && line_jump > this.p)
     {
-      regexp_delim = ts;
-      regex_options = 0;
-      fgoto REGEXP_END;
+        fexec te = line_jump;
+        ts = p;
     }
-
-    GenStringEndToken();
-    fnext *((int) (is_labeled ? EXPR_BEG : EXPR_END));
-    fbreak;
-  };
-
-  ^alnum => {
-    if(!current_literal.IsDelimiter(CurrentToken()))
-    {
-      fhold;
-      fgoto *((int) (current_literal.IsWords ? WORD_CONTENT : STRING_CONTENT));
-    }
-
-    // found delimiter => end string
-
-    PopFcall();
-    GenStringContentToken();
 
     if(current_literal.IsRegexp)
     {
-      regexp_delim = ts;
-      regex_options = 0;
-      fgoto REGEXP_END;
+        regexp_delim = ts;
+        regex_options = 0;
+        fgoto REGEXP_END;
+    }
+
+    var is_labeled = (Peek(1) == ':' && Peek(2) != ':')
+        && current_literal.CanLabel
+        && (
+               FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG) ||
+               (!Cond.Peek && FcalledBy(EXPR_BEG, EXPR_ENDFN))
+           );
+
+    if(is_labeled)
+    {
+        // grab ':'
+        fexec te + 1;
+        fnext EXPR_BEG;
+    }
+    else
+    {
+        fnext EXPR_END;
     }
 
     GenStringEndToken();
-    fnext EXPR_END;
     fbreak;
-  };
-
-*|;
+}
 
 
-WORD_CONTENT := |*
-  # pass-through to take care of whitespace
-  # TODO: '\\\n' - counts as '\\n'
-
-  (space - nl)+ => {
-    if(!GenStringContentToken())
-    {
-      // ignore empty content
-      current_literal.ContentStart = te; // cannot be before gen_string_content_token
-      fgoto STRING_DELIMITER;
-    }
-
-    current_literal.ContentStart = te;
-    GenToken(tSPACE);
-    fnext STRING_DELIMITER;
-    fbreak;
-  };
-
-  #TODO: embedded heredocs
-  #'\n' => {};
-
-  any => {
-    fhold;
-    fgoto STRING_CONTENT;
-  };
-
-*|;
-
-
-STRING_CONTENT := |*
-  c_eof => EofLiteralError;
-
-  octal_escape;
-  hex_escape;
-  char_escape;
-  multi_unicode_escape;
-  control_escape;
-
-  '#' any_var => {
-    GenInterpolationTokens(token_type);
-    fgoto STRING_DELIMITER;
-  };
-
-  '#{' => {
+action StringDBeg {
     if(current_literal.Interpolates)
     {
-      GenStringContentToken();
-      GenToken(tSTRING_DBEG);
-      fnext EXPR_BEG;
-      fbreak;
+        GenStringContentToken();
+        GenToken(tSTRING_DBEG);
+        PopFcall();
+        fnext EXPR_BEG;
+        fbreak;
     }
-  };
+}
 
-  '\n' => { // don't jump yet
+
+action StringDVar { GenInterpolationTokens(token_type); }
+
+
+action StringNl {
     if(line_jump > 0)
     {
-      // content in @te..@line_jump isn't included
-      GenStringContentToken();
-      current_literal.ContentStart = line_jump;
-      fexec @line_jump;
+        // content in te...line_jump isn't included
+        lte = current_literal.State == WORD_CONTENT && Peek(ts) == '\\' ? -1 : 0;
+        GenStringContentToken();
+        current_literal.ContentStart = line_jump;
+        fexec line_jump;
     }
+}
 
-    fgoto STRING_DELIMITER;
-  };
 
-  any => { fgoto STRING_DELIMITER; };
+STRING_CONTENT :=
+    (
+        c_eof @EofLiteralError
+      | octal_escape
+      | hex_escape
+      | char_escape
+      | multi_unicode_escape
+      | control_escape
+      | '\\'? '\n'  %StringNl
+      | '#{'        %StringDBeg
+      | '#' any_var %StringDVar
+      | ^([\\\n] | c_eof | string_delimiter)
+    )*
+    string_delimiter @StringDelimiter
+;
 
-*|;
+
+# ts...lte : tSTRING_CONTENT
+# lte...te : tSPACE
+action WordContent {
+    if(GenStringContentToken(lte - te) != null)
+    {
+        GenToken(tSPACE, ts: lte);
+        fbreak;
+    }
+}
+
+
+WORD_CONTENT :=
+    (space | nl)*
+    (
+        (
+            c_eof @EofLiteralError
+          | octal_escape
+          | hex_escape
+          | char_escape
+          | multi_unicode_escape
+          | control_escape
+          | '\\'? '\n'  %StringNl
+          | '#{'        %StringDBeg
+          | '#' any_var %StringDVar
+          | ^([\\\n] | c_eof | string_delimiter | space)
+        )+ > { current_literal.ContentStart = p; } %TokEnd
+        (space - nl)* %WordContent
+    )?
+    string_delimiter %StringDelimiter
+;
 
 
 REGEXP_END := |*
@@ -1222,11 +1201,11 @@ REGEXP_END := |*
   ( alpha - [mixo] )+ => {
     var tok = CurrentToken();
     var opt = tok.Length == 1 ? "" : "s";
-    throw new SyntaxError($"unknown regexp option{opt} - {tok}");
+    throw new SyntaxError(Location(p).Item1, $"unknown regexp option{opt} - {tok}");
   };
 
   ^alpha => {
-    fexec @te -= 1;
+    fexec te -= 1;
     var tok = GenToken(tREGEXP_END, ts: regexp_delim);
     tok.Properties["flags"] = regex_options;
     fnext EXPR_END;
@@ -1242,7 +1221,7 @@ REGEXP_END := |*
 #
 
 CHAR := |*
-  c_eof => { throw new SyntaxError("incomplete character syntax"); };
+  c_eof => { throw new SyntaxError(Location(p).Item1, "incomplete character syntax"); };
 
     unicode_escape
   | octal_escape
@@ -1257,5 +1236,6 @@ CHAR := |*
   };
 
 *|;
+
 
 }%%

@@ -5,12 +5,12 @@ namespace mint.test
 {
     class AstXmlSerializer : AstVisitor<Token>
     {
-        private XElement current;
+        private XContainer current;
 
         public AstXmlSerializer(Ast<Token> ast)
         {
             Ast = ast;
-            Document = new XDocument(current = new XElement("ast"));
+            current = Document = new XDocument();
         }
 
         public Ast<Token> Ast { get; }
@@ -29,7 +29,7 @@ namespace mint.test
 
             if(token == null)
             {
-                current = new XElement("list");
+                current = new XElement(current == Document ? "ast" : "list");
             }
             else
             {

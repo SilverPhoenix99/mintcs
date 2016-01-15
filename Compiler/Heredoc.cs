@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using static mint.Compiler.TokenType;
 
 namespace mint.Compiler
@@ -79,6 +78,8 @@ namespace mint.Compiler
             
             return regex.IsMatch(delimiter);
         }
+
+        public uint TranslateDelimiter(char delimiter) => delimiter;
 
         private static readonly Regex HEREDOC_IDENT = new Regex("^<<([-~]?)([\"'`]?)(.+)(?:\\2)$", RegexOptions.Compiled);
     }

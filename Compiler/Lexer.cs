@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using static mint.Compiler.Lexer.States;
 using static mint.Compiler.TokenType;
 
@@ -10,18 +11,17 @@ namespace mint.Compiler
     public partial class Lexer : IEnumerable<Token>
     {
 		int p,
+            cs,
 			ts,
 			te,
 			act,
 			top,
 			line_jump;
 
-        int cs;
-
         bool __end__seen = false;
-
 		int[] stack = new int[10];
         int[] lines;
+        Token eof_token;
 
 		readonly Queue<Token> tokens = new Queue<Token>();
         readonly Stack<iLiteral> literals = new Stack<iLiteral>();
@@ -69,7 +69,7 @@ namespace mint.Compiler
         public Token NextToken()
 		{
 			if(!Eof && tokens.Count == 0) { Advance(); }
-			return tokens.Count == 0 ? Token.EOF : tokens.Dequeue();
+			return tokens.Count == 0 ? eof_token : tokens.Dequeue();
 		}
 
 		public void Reset()
@@ -109,6 +109,7 @@ namespace mint.Compiler
 
             lines.Add(data.Length);
             this.lines = lines.ToArray();
+            eof_token = new Token(EOF, "$eof", Location(data.Length));
 		}
 
         public IEnumerator<Token> GetEnumerator()
@@ -137,11 +138,20 @@ namespace mint.Compiler
             return new Tuple<int, int>(line, pos - lines[line - 1] + 1);
         }
         
-        private uint Peek(int n = 0)
+        private uint Peek(int op = 0)
         {
             // TODO use encoding to advance chars
-            n = p + n;
-            return 0 <= n && n < data.Length ? data[n] : 0u;
+            op += p;
+
+            var c = 0 <= op && op < data.Length ? data[op] : 0u;
+
+            if(c > 0
+                && (cs == (int) STRING_CONTENT || cs == (int) WORD_CONTENT))
+            {
+                return literals.Peek().TranslateDelimiter((char) c);
+            }
+
+            return c;
         }
         
         private string CurrentToken(int ts = -1, int te = -1, int ots = 0, int ote = 0)
@@ -248,6 +258,7 @@ namespace mint.Compiler
                             {
                                 type = tSTRING_DEND;
                                 lit.ContentStart = te + ote;
+                                PushFcall();
                                 cs = (int) lit.State;
                             }
                             else
@@ -394,31 +405,30 @@ namespace mint.Compiler
             return true;
         }
 
-        private bool GenStringContentToken(int ote = int.MinValue)
+        private Token GenStringContentToken(int ote = int.MinValue)
         {
             if(ote == int.MinValue) { ote = ts - te; }
             var lit = literals.Peek();
             var tok = CurrentToken(ts: lit.ContentStart, ote: ote);
             if(tok.Length == 0)
             {
-                return false;
+                return null;
             }
-            GenToken(tSTRING_CONTENT, token: tok, ts: lit.ContentStart);
-            return true;
+            return GenToken(tSTRING_CONTENT, token: tok, ts: lit.ContentStart);
         }
 
         private Token GenStringEndToken()
         {
             var lit = literals.Pop();
             var tok = CurrentToken();
-            if(lit.Delimiter == "/")
+            if(lit.IsRegexp)
             {
                 return GenToken(tREGEXP_END, token: tok);
             }
             
-            if(tok.Last() == ':')
+            if(tok[tok.Length - 1] == ':')
             {
-                return GenToken(tREGEXP_END, token: tok);
+                return GenToken(tLABEL_END, token: tok);
             }
 
             if(lit.Dedents)

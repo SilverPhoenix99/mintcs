@@ -44,6 +44,16 @@ namespace mint.Compiler
         private void PushKwarg() { in_kwarg_stack.Push(Lexer.InKwarg); }
         private void PopKwarg()  { Lexer.InKwarg = in_kwarg_stack.Pop(); }
 
+        public new Ast<Token> Parse()
+        {
+            if(!((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
+            {
+                var token = ValueStack[ValueStack.Depth-1];
+                throw new SyntaxError(token.Value.Location.Item1, $"unexpected {token.Value.Type}");
+            }
+            return Result;
+        }
+
         // TODO: Assigns (kASSIGN and tOP_ASGN) will have to know if they are calling into a kASET ('[]=').
         //       They are: kLBRACK2
 
@@ -61,9 +71,7 @@ namespace mint.Compiler
 
         public static Ast<Token> Parse(string data)
         {
-            var parser = new Parser(data);
-            parser.Parse();
-            return parser.Result;
+            return new Parser(data).Parse();
         }
 
         class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>

@@ -12,24 +12,24 @@
 
 %token tUNKNOWN
 
-%token  kALIAS       kAMPER      kAND        kANDDOT      kANDOP        kAPP_BEGIN      kAPP_END      kAREF
-%token  kASET        kASSIGN     kASSOC      kBACKSLASH   kBACKTICK     kBEGIN          kBIN_AND      kBREAK
-%token  kCASE        kCLASS      kCMP        kCOLON       kCOLON2       kCOLON3         kCOMMA        kDEF
-%token  kDEFINED     kDIV        kDO         kDOT         kDOT2         kDOT3           kDO_BLOCK     kDO_COND
-%token  kDO_LAMBDA   kDSTAR      kELSE       kELSIF       kEND          kENSURE         kEQ           kEQQ
-%token  kFALSE       kFOR        kGEQ        kGREATER     kIF           kIF_MOD         kIN           kLAMBDA
-%token  kLAMBEG      kLBRACE     kLBRACE2    kLBRACE_ARG  kLBRACK       kLBRACK2        kLEQ          kLESS
-%token  kLPAREN      kLPAREN2    kLPAREN_ARG kLSHIFT      kMATCH        kMINUS          kMODULE       kMUL
-%token  kNEG         kNEQ        kNEXT       kNIL         kNL           kNMATCH         kNOT          kNOTOP
-%token  kOR          kOROP       kPERCENT    kPIPE        kPLUS         kPOW            kQMARK        kRBRACE
-%token  kRBRACK      kREDO       kRESCUE     kRESCUE_MOD  kRETRY        kRETURN         kRPAREN       kRSHIFT
-%token  kSELF        kSEMICOLON  kSPACE      kSTAR        kSUPER        kTHEN           kTRUE         kUMINUS
-%token  kUMINUS_NUM  kUNDEF      kUNLESS     kUNLESS_MOD  kUNTIL        kUNTIL_MOD      kUPLUS        kWHEN
-%token  kWHILE       kWHILE_MOD  kXOR        kYIELD       k__ENCODING__ k__FILE__       k__LINE__     tBACK_REF
-%token  tCHAR        tCONSTANT   tCVAR       tFID         tFLOAT        tGVAR           tIDENTIFIER   tIMAGINARY
-%token  tINTEGER     tIVAR       tLABEL      tLABEL_END   tNTH_REF      tOP_ASGN        tQSYMBOLS_BEG tQWORDS_BEG
-%token  tRATIONAL    tREGEXP_BEG tREGEXP_END tSPACE       tSTRING_BEG   tSTRING_CONTENT tSTRING_DBEG  tSTRING_DEND
-%token  tSTRING_DVAR tSTRING_END tSYMBEG     tSYMBOLS_BEG tWORDS_BEG    tXSTRING_BEG
+%token  kALIAS          kAMPER          kAND            kANDDOT         kANDOP          kAPP_BEGIN      kAPP_END        kAREF
+%token  kASET           kASSIGN         kASSOC          kBACKSLASH      kBACKTICK       kBEGIN          kBIN_AND        kBREAK
+%token  kCASE           kCLASS          kCMP            kCOLON          kCOLON2         kCOLON3         kCOMMA          kDEF
+%token  kDEFINED        kDIV            kDO             kDOT            kDOT2           kDOT3           kDO_BLOCK       kDO_COND
+%token  kDO_LAMBDA      kDSTAR          kELSE           kELSIF          kEND            kENSURE         kEQ             kEQQ
+%token  kFALSE          kFOR            kGEQ            kGREATER        kIF             kIF_MOD         kIN             kLAMBDA
+%token  kLAMBEG         kLBRACE         kLBRACE2        kLBRACE_ARG     kLBRACK         kLBRACK2        kLEQ            kLESS
+%token  kLPAREN         kLPAREN2        kLPAREN_ARG     kLSHIFT         kMATCH          kMINUS          kMODULE         kMUL
+%token  kNEG            kNEQ            kNEXT           kNIL            kNL             kNMATCH         kNOT            kNOTOP
+%token  kOR             kOROP           kPERCENT        kPIPE           kPLUS           kPOW            kQMARK          kRBRACE
+%token  kRBRACK         kREDO           kRESCUE         kRESCUE_MOD     kRETRY          kRETURN         kRPAREN         kRSHIFT
+%token  kSELF           kSEMICOLON      kSTAR           kSUPER          kTHEN           kTRUE           kUMINUS         kUMINUS_NUM
+%token  kUNDEF          kUNLESS         kUNLESS_MOD     kUNTIL          kUNTIL_MOD      kUPLUS          kWHEN           kWHILE
+%token  kWHILE_MOD      kXOR            kYIELD          k__ENCODING__   k__FILE__       k__LINE__       tBACK_REF       tCHAR
+%token  tCONSTANT       tCVAR           tFID            tFLOAT          tGVAR           tIDENTIFIER     tIMAGINARY      tINTEGER
+%token  tIVAR           tLABEL          tLABEL_END      tNTH_REF        tOP_ASGN        tQSYMBOLS_BEG   tQWORDS_BEG     tRATIONAL
+%token  tREGEXP_BEG     tREGEXP_END     tSPACE          tSTRING_BEG     tSTRING_CONTENT tSTRING_DBEG    tSTRING_DEND    tSTRING_DVAR
+%token  tSTRING_END     tSYMBEG         tSYMBOLS_BEG    tWORDS_BEG      tXSTRING_BEG
 
 %nonassoc  tLOWEST
 %nonassoc  kLBRACE_ARG
@@ -127,7 +127,7 @@ stmt_or_begin :
     stmt
   | kAPP_BEGIN
     {
-        throw new SyntaxError("BEGIN is permitted only at toplevel");
+        throw new SyntaxError($1.Value.Location.Item1, "BEGIN is permitted only at toplevel");
     }
     kLBRACE2 top_compstmt kRBRACE
 ;
@@ -138,7 +138,7 @@ stmt :
   | kALIAS tGVAR tBACK_REF { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tNTH_REF
     {
-        throw new SyntaxError("can't make alias for the number variables");
+        throw new SyntaxError($3.Value.Location.Item1, "can't make alias for the number variables");
     }
   | kUNDEF undef_list     { $$ = $1 + $2; }
   | stmt kIF_MOD expr     { $$ = $2 + $3 + $1; }
@@ -283,7 +283,7 @@ mlhs_node :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("dynamic constant assignment");
+            throw new SyntaxError($3.Value.Location.Item1, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -291,7 +291,7 @@ mlhs_node :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("dynamic constant assignment");
+            throw new SyntaxError($2.Value.Location.Item1, "dynamic constant assignment");
         }
         $$ = $1 + $2;
     }
@@ -321,7 +321,7 @@ lhs :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("dynamic constant assignment");
+            throw new SyntaxError($3.Value.Location.Item1, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -329,7 +329,7 @@ lhs :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("dynamic constant assignment");
+            throw new SyntaxError($2.Value.Location.Item1, "dynamic constant assignment");
         }
       $$ = $1 + $2;
     }
@@ -343,7 +343,7 @@ lhs :
 cname :
     tIDENTIFIER
     {
-        throw new SyntaxError("class/module name must be CONSTANT");
+        throw new SyntaxError($1.Value.Location.Item1, "class/module name must be CONSTANT");
     }
   | tCONSTANT
 ;
@@ -678,7 +678,7 @@ primary :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("class definition in method body");
+            throw new SyntaxError($1.Value.Location.Item1, "class definition in method body");
         }
     }
     bodystmt kEND
@@ -711,7 +711,7 @@ primary :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError("module definition in method body");
+            throw new SyntaxError($1.Value.Location.Item1, "module definition in method body");
         }
     }
     bodystmt kEND { $$ = $1 + $2 + $4; }
@@ -1060,13 +1060,13 @@ regexp :
 ;
 
 words :
-    tWORDS_BEG kSPACE tSTRING_END    { $$ = $1; }
+    tWORDS_BEG tSPACE tSTRING_END    { $$ = $1; }
   | tWORDS_BEG word_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 word_list :
     { $$ = sexp(); } // nothing
-  | word_list word kSPACE { $$ = $1 + $2; }
+  | word_list word tSPACE { $$ = $1 + $2; }
 ;
 
 word :
@@ -1075,33 +1075,33 @@ word :
 ;
 
 symbols :
-    tSYMBOLS_BEG kSPACE tSTRING_END      { $$ = $1; }
+    tSYMBOLS_BEG tSPACE tSTRING_END      { $$ = $1; }
   | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 symbol_list :
     { $$ = sexp(); } // nothing
-  | symbol_list word kSPACE { $$ = $1 + $2; }
+  | symbol_list word tSPACE { $$ = $1 + $2; }
 ;
 
 qwords :
-    tQWORDS_BEG kSPACE tSTRING_END     { $$ = $1; }
+    tQWORDS_BEG tSPACE tSTRING_END     { $$ = $1; }
   | tQWORDS_BEG qword_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qsymbols :
-    tQSYMBOLS_BEG kSPACE tSTRING_END    { $$ = $1; }
+    tQSYMBOLS_BEG tSPACE tSTRING_END    { $$ = $1; }
   | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qword_list :
     { $$ = sexp(); } // nothing
-  | qword_list tSTRING_CONTENT kSPACE { $$ = $1 + $2; }
+  | qword_list tSTRING_CONTENT tSPACE { $$ = $1 + $2; }
 ;
 
 qsym_list :
     { $$ = sexp(); } // nothing
-  | qsym_list tSTRING_CONTENT kSPACE { $$ = $1 + $2; }
+  | qsym_list tSTRING_CONTENT tSPACE { $$ = $1 + $2; }
 ;
 
 string_contents :
@@ -1286,19 +1286,19 @@ f_args :
 f_bad_arg :
     tCONSTANT
     {
-        throw new SyntaxError("formal argument cannot be a constant");
+        throw new SyntaxError($1.Value.Location.Item1, "formal argument cannot be a constant");
     }
   | tIVAR
     {
-        throw new SyntaxError("formal argument cannot be an instance variable");
+        throw new SyntaxError($1.Value.Location.Item1, "formal argument cannot be an instance variable");
     }
   | tGVAR
     {
-        throw new SyntaxError("formal argument cannot be a global variable");
+        throw new SyntaxError($1.Value.Location.Item1, "formal argument cannot be a global variable");
     }
   | tCVAR
     {
-        throw new SyntaxError("formal argument cannot be a class variable");
+        throw new SyntaxError($1.Value.Location.Item1, "formal argument cannot be a class variable");
     }
 ;
 

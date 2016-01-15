@@ -13,7 +13,15 @@ namespace mint.Compiler
             CanLabel = can_label;
 
             string end_delimiter;
-            EndDelimiter = STRING_END.TryGetValue(Delimiter, out end_delimiter) ? end_delimiter : Delimiter;
+
+            if(STRING_END.TryGetValue(Delimiter, out end_delimiter))
+            {
+                EndDelimiter = end_delimiter;
+            }
+            else
+            {
+                EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
+            }
         }
 
         public uint         BraceCount          { get; set; }
@@ -27,7 +35,7 @@ namespace mint.Compiler
         public bool         IsRegexp            => Delimiter[0] == '/' || Delimiter.StartsWith("%r");
         public bool         IsWords             => Delimiter[0] == '%' && "WwIi".IndexOf(Delimiter[1]) >= 0;
         public int          LineIndent          { get { return 0; } set { } } // Do nothing
-        public Lexer.States State               => Lexer.States.STRING_DELIMITER;
+        public Lexer.States State               => IsWords ? Lexer.States.WORD_CONTENT : Lexer.States.STRING_CONTENT;
         public string       UnterminatedMessage => "unterminated string meets end of file";
 
         public TokenType Type
@@ -43,6 +51,9 @@ namespace mint.Compiler
         public void CommitIndent() { } // Do nothing
 
         public bool IsDelimiter(string delimiter) => EndDelimiter == delimiter;
+
+        // use ^D, since it isn't used anywhere (trimmed at Lexer.Reset())
+        public uint TranslateDelimiter(char delimiter) => EndDelimiter[0] == delimiter ? 0x4u : delimiter;
 
         private static readonly Regex INTERPOLATES = new Regex("^(/|`|:?\"|%[^qwis])", RegexOptions.Compiled);
 
