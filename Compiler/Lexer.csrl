@@ -432,7 +432,7 @@ action PostIdent {
             next_state = EXPR_CMDARG;
         }
     }
-    else if(IsLabel())
+    else if(IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = te + 1;
         token_type = tLABEL;
@@ -447,7 +447,7 @@ action PostIdent {
 
 action PostReserved {
     next_state = null;
-    if(!in_cmd && IsLabel())
+    if(!in_cmd && IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = te + 1;
         token_type = tLABEL;
@@ -457,7 +457,7 @@ action PostReserved {
 
 
 action PostArgIdent {
-    if(IsLabel())
+    if(IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = te + 1;
         token_type = tLABEL;
@@ -472,7 +472,7 @@ action PostArgIdent {
 
 action PostArgReserved {
     next_state = null;
-    if(IsLabel())
+    if(IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = te + 1;
         token_type = tLABEL;
@@ -814,7 +814,7 @@ COMMON_EXPR := |*
     | '<<' | '>>' | '|' | '/' | '^' | '%'
     | '...' | '..' | ',' | '&&' | '||'
 
-    | ( '**' | '*' | '+' | '-' | '&' %TokEnd [^&.] ) % { token_type = tOPERATOR; }
+    | ( '**' | '*' | '+' | '-' | '&' %TokEnd [^&.=] ) % { token_type = tOPERATOR; }
     | op_asgn % { token_type = tOPERATOR; }
     | (
           nl %TokStart ws* '.' %TokEnd [^.0-9]
