@@ -12,15 +12,12 @@ namespace mint.Compiler
             ContentStart = content_start;
             CanLabel = can_label;
 
+            EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
             string end_delimiter;
 
-            if(STRING_END.TryGetValue(Delimiter, out end_delimiter))
+            if(STRING_END.TryGetValue(EndDelimiter, out end_delimiter))
             {
                 EndDelimiter = end_delimiter;
-            }
-            else
-            {
-                EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
             }
         }
 
@@ -37,6 +34,7 @@ namespace mint.Compiler
         public int          LineIndent          { get { return 0; } set { } } // Do nothing
         public Lexer.States State               => IsWords ? Lexer.States.WORD_CONTENT : Lexer.States.STRING_CONTENT;
         public string       UnterminatedMessage => "unterminated string meets end of file";
+        public bool         WasContent          { get; set; }
 
         public TokenType Type
         {

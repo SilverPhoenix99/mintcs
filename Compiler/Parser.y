@@ -54,6 +54,11 @@
 %right     kPOW
 %right     kNOTOP kNEG kUPLUS
 
+// special token types - used for grouping
+%token tKEYWORD   // e.g.: kSTAR, kAMPER, etc...
+%token tOPERATOR  // e.g.: kMUL, kDIV, etc...
+%token tRESERVED  // e.g.: kIF, kBEGIN, etc...
+
 %%
 
 program :
@@ -98,7 +103,7 @@ bodystmt :
 
         if(opt_ensure.List.Count != 0)
         {
-            $$ = opt_ensure[0] + compstmt + opt_rescue + opt_ensure[1];
+            $$ = (Ast<Token>) opt_ensure.Value + compstmt + opt_rescue + opt_ensure[0];
             break;
         }
 
@@ -201,19 +206,19 @@ fcall :
 ;
 
 command :
-    fcall command_args    %prec tLOWEST { $$ = CALL_NODE + sexp() + $1 + $2; }
+    fcall command_args %prec tLOWEST { $$ = CALL_NODE + sexp() + $1 + $2; }
   | fcall command_args cmd_brace_block
     {
       //block_dup_check($2,$3);
       $$ = CALL_NODE + sexp() + $1 + ($2 + $3);
     }
-  | primary call_op operation2 command_args    %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
+  | primary call_op operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary call_op operation2 command_args cmd_brace_block
     {
       //block_dup_check($4,$5);
       $$ = $2 + $1 + $3 + ($4 + $5);
     }
-  | primary kCOLON2 operation2 command_args    %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
+  | primary kCOLON2 operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 command_args cmd_brace_block
     {
       //block_dup_check($4,$5);
@@ -349,7 +354,7 @@ cname :
 ;
 
 cpath :
-    kCOLON3 cname { $$ = $1 + $2; }
+    kCOLON3 cname         { $$ = $1 + $2; }
   | cname
   | primary kCOLON2 cname { $$ = $2 + $1 + $3; }
 ;
@@ -647,17 +652,23 @@ primary :
   | kDEFINED opt_nl kLPAREN2 { in_defined = true; } expr { in_defined = false; } rparen { $$ = $1 + $5; }
   | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
   | kNOT kLPAREN2 rparen      { $$ = $1 + sexp(); }
-  | fcall brace_block
-    {
-        //Console.WriteLine("primary > fcall brace_block");
-        $$ = CALL_NODE + sexp() + $1 + sexp($2);
-    }
+  | fcall brace_block         { $$ = CALL_NODE + sexp() + $1 + sexp($2); }
   | method_call
   | method_call brace_block
     {
-        //var call = $1;
-        //$$ = call.Value, call[0] + call[1] + call[2] + call[3] | $2);
-        throw new NotImplementedException();
+        var method_call = $1;
+        if(method_call.List.Count == 0)
+        {
+            // it''s kSUPER without parameters
+            method_call += $2;
+        }
+        else
+        {
+            // the last in the list are the parameters => append to it
+            var index = method_call.List.Count-1;
+            ((IList<Ast<Token>>) method_call.List)[index] = method_call.List[index].Append($2);
+        }
+        $$ = method_call;
     }
   | kLAMBDA lambda
     {
@@ -905,7 +916,7 @@ block_param_def :
 ;
 
 opt_bv_decl :
-    opt_nl
+    opt_nl                            { $$ = sexp(); }
   | opt_nl kSEMICOLON bv_decls opt_nl { $$ = $3; }
 ;
 
@@ -922,7 +933,7 @@ bvar :
 lambda :
     {
       PushLParBeg();
-      Lexer.LParBeg = Lexer.ParenNest += 1;
+      Lexer.LParBeg = ++Lexer.ParenNest;
     }
     f_larglist
     {
@@ -955,32 +966,33 @@ do_block :
 block_call :
     command do_block
     {
-      //if (nd_type($1) == NODE_YIELD)
-      //    compile_error(PARSER_ARG "block given to yield");
-      //block_dup_check($1->nd_args, $2);
+        //if (nd_type($1) == NODE_YIELD)
+        //    compile_error(PARSER_ARG "block given to yield");
+        //block_dup_check($1->nd_args, $2);
 
-      //var command = $1;
-      //$$ = sexp(command[0], command[1], command[2], command[3] + $2);
-      throw new NotImplementedException();
+        var command = $1;
+        var index = command.List.Count-1;
+        ((IList<Ast<Token>>) command.List)[index] = command.List[index].Append($2);
+        $$ = command;
     }
   | block_call call_op2 operation2 opt_paren_args
     {
-      $$ = $2 + $1 + $3 + $4;
+        $$ = $2 + $1 + $3 + $4;
     }
   | block_call call_op2 operation2 opt_paren_args brace_block
     {
-      // block_dup_check($4, $5);
-      $$ = $2 + $1 + $3 + ($4 + $5);
+        // block_dup_check($4, $5);
+        $$ = $2 + $1 + $3 + ($4 + $5);
     }
   | block_call call_op2 operation2 command_args do_block
     {
-      // block_dup_check($4, $5);
-      $$ = $2 + $1 + $3 + ($4 + $5);
+        // block_dup_check($4, $5);
+        $$ = $2 + $1 + $3 + ($4 + $5);
     }
 ;
 
 method_call :
-    fcall paren_args                          { /*Console.WriteLine("method_call > fcall paren_args");*/ $$ = CALL_NODE + sexp() + $1 + $2; }
+    fcall paren_args                          { $$ = CALL_NODE + sexp() + $1 + $2; }
   | primary call_op operation2 opt_paren_args { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 paren_args     { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + sexp(); }
@@ -988,7 +1000,7 @@ method_call :
   | primary kCOLON2 paren_args                { $$ = $2 + $1 + sexp() + $3; }
   | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
-  | primary kLBRACK2 opt_call_args rbracket   { $$ = sexp(CALL_NODE, $1, $2, $3); }
+  | primary kLBRACK2 opt_call_args rbracket   { $$ = CALL_NODE + $1 + $2 + $3; }
 ;
 
 brace_block :
@@ -1040,14 +1052,13 @@ strings :
 ;
 
 string :
-    tCHAR          { $$ = $1; }
+    tCHAR
   | string1
   | string string1 { $$ = $1 + $2; }
 ;
 
 string1 :
-    tSTRING_BEG string_contents tSTRING_END { $$ = $3 + $2; }
-        // properties are always at tSTRING_END if they exist
+    tSTRING_BEG string_contents tSTRING_END { $$ = $1 + $2; }
 ;
 
 xstring :
@@ -1056,17 +1067,17 @@ xstring :
 
 regexp :
     tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $3 + $2; }
-        // properties are always at tSTRING_END if they exist
+        // properties are always at tREGEXP_END if they exist
 ;
 
 words :
-    tWORDS_BEG tSPACE tSTRING_END    { $$ = $1; }
+    tWORDS_BEG tSPACE tSTRING_END
   | tWORDS_BEG word_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 word_list :
     { $$ = sexp(); } // nothing
-  | word_list word tSPACE { $$ = $1 + $2; }
+  | word_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 word :
@@ -1075,33 +1086,33 @@ word :
 ;
 
 symbols :
-    tSYMBOLS_BEG tSPACE tSTRING_END      { $$ = $1; }
+    tSYMBOLS_BEG tSPACE tSTRING_END
   | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 symbol_list :
     { $$ = sexp(); } // nothing
-  | symbol_list word tSPACE { $$ = $1 + $2; }
+  | symbol_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 qwords :
-    tQWORDS_BEG tSPACE tSTRING_END     { $$ = $1; }
+    tQWORDS_BEG tSPACE tSTRING_END
   | tQWORDS_BEG qword_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qsymbols :
-    tQSYMBOLS_BEG tSPACE tSTRING_END    { $$ = $1; }
+    tQSYMBOLS_BEG tSPACE tSTRING_END
   | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = $1 + $2; }
 ;
 
 qword_list :
     { $$ = sexp(); } // nothing
-  | qword_list tSTRING_CONTENT tSPACE { $$ = $1 + $2; }
+  | qword_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 qsym_list :
     { $$ = sexp(); } // nothing
-  | qsym_list tSTRING_CONTENT tSPACE { $$ = $1 + $2; }
+  | qsym_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 string_contents :
@@ -1161,7 +1172,7 @@ dsym :
 
 numeric :
     simple_numeric
-  | kUMINUS_NUM simple_numeric   %prec tLOWEST { $$ = $1 + $2; }
+  | kUMINUS_NUM simple_numeric %prec tLOWEST { $$ = $1 + $2; }
 ;
 
 simple_numeric :
@@ -1226,7 +1237,7 @@ superclass :
       Lexer.State = Lexer.States.EXPR_BEG;
       Lexer.InCmd = true;
     }
-    expr term { $$ = $1 + $2; }
+    expr term { $$ = $1 + $3; }
   | { $$ = sexp(); } // nothing
 ;
 
@@ -1345,7 +1356,6 @@ f_kw :
     {
       //assignable("f_kw > f_label", val)
       //#assignable($1, (NODE *)-1);
-      $$ = $1;
     }
 ;
 
@@ -1360,7 +1370,6 @@ f_block_kw :
     {
       //assignable("f_block_kw > f_label", val)
       //#assignable($1, (NODE *)-1);
-      $$ = $1;
     }
 ;
 
@@ -1381,7 +1390,7 @@ kwrest_mark :
 
 f_kwrest :
     kwrest_mark tIDENTIFIER { $$ = $1 + $2; }
-  | kwrest_mark             { $$ = $1; }
+  | kwrest_mark
 ;
 
 f_opt :
@@ -1425,7 +1434,7 @@ f_rest_arg :
       //#    yyerror("rest argument must be local variable");
       $$ = $1 + $2;
     }
-  | restarg_mark { $$ = $1; }
+  | restarg_mark
 ;
 
 blkarg_mark :

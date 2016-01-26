@@ -46,5 +46,18 @@ namespace mint.Compiler
         public IEnumerator<Ast<T>> GetEnumerator() => List.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override string ToString()
+        {
+            var s = Value == null ? "" : Value.ToString();
+            s += " -> (";
+            if(List.Count != 0)
+            {
+                s += List.Select(ast => ast.ToString()).Aggregate((current, next) => current + ", " + next);
+            }
+            s += ")";
+
+            return s;
+        }
     }
 }

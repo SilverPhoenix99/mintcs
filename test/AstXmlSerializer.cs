@@ -41,7 +41,10 @@ namespace mint.test
 
                 foreach(var property in token.Properties)
                 {
-                    current.Add(new XElement("property", new XAttribute(property.Key, property.Value)));
+                    current.Add(new XElement("property",
+                        new XAttribute("key",   property.Key),
+                        new XAttribute("value", property.Value)
+                    ));
                 }
             }
 

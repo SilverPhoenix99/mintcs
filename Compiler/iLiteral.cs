@@ -16,6 +16,7 @@
         bool         IsWords             { get; }
         int          ContentStart        { get; set; }
         Lexer.States State               { get; }
+        bool         WasContent          { get; set; }
 
         void CommitIndent();
         bool IsDelimiter(string token);

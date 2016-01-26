@@ -4,6 +4,7 @@ using mint.types;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace mint
@@ -18,34 +19,51 @@ namespace mint
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            //Token[] tokens = new Lexer("def []=; end").ToArray();
-            Ast<Token> ast = Parser.Parse(
-/*@"
 
-class X
-    def []=(i, v)
-        @a[i] = v
-    end
+//            var fragment = @"
+//class C
+//    # comment
+//    A = ->(b) { c }
+//    A = ->(b) { c }
+//end
+//";
 
-    alias :set :[]=
-end
+            //var tokens = new Lexer(fragment).ToArray();
 
-                "*/
+            //var ast2 = Parser.Parse(fragment);
+            //var doc2 = AstXmlSerializer.ToXml(ast2);
+            //Console.WriteLine(doc2.ToString());
 
-/*@"module Math
-  TAU = 2 * PI
-end"*/
+            int count = 0;
+            foreach(var file_name in Directory.EnumerateFiles(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems", "*.rb", SearchOption.AllDirectories))
+            {
+                var file_text = File.ReadAllText(file_name);
 
-@"%W'a b c#@d  '"
-);
-                
+                // not the best option:
+                if(file_name.EndsWith(@"actionmailer-4.2.5\lib\rails\generators\mailer\templates\mailer.rb"))
+                {
+                    // it's not a ruby file
+                    continue;
+                }
 
-            //Ast<Token> ast = Parser.Parse(File.ReadAllText(
-            //    @"D:\Users\Silver Phoenix\Projects\RubyMine\mathgl\lib\version.rb"));
+                var ast = Parser.Parse(file_text);
+                var doc = AstXmlSerializer.ToXml(ast);
+                //Console.WriteLine(doc.ToString());
+                ++count;
+                Console.WriteLine($"Parsed {count} files");
+            }
 
-            var doc = AstXmlSerializer.ToXml(ast);
-            Console.WriteLine(doc.ToString());
-            
+            //var file_text = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\pigment-0.2.3\lib\pigment.rb");
+
+            //var tokens = new Lexer(file_text).ToArray();
+
+            //var tokens = new Lexer("\"Color(r =#{r}#{\", [h=#{h}, s=#{s}]\" if @hsl})\"").ToArray();
+
+            //var ast = Parser.Parse(file_text);
+
+            //var doc = AstXmlSerializer.ToXml(ast);
+            //Console.WriteLine(doc.ToString());
+
             //AstPrinter<Token>.Print(ast, indent_size: 4);
 
             //test.InvokeDynamicMethods.Test();

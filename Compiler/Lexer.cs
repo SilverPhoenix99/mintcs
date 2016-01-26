@@ -1,8 +1,8 @@
-﻿using System;
+﻿using mint.types;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using static mint.Compiler.Lexer.States;
 using static mint.Compiler.TokenType;
 
@@ -44,9 +44,9 @@ namespace mint.Compiler
 			}
 		}
 
-        public BitStack Cmdarg { get; set; }
+        public BitStack Cmdarg;
 
-        public BitStack Cond { get; set; }
+        public BitStack Cond;
 
         public bool Eof => p > Data.Length;
 
@@ -57,6 +57,15 @@ namespace mint.Compiler
         public int LParBeg { get; set; }
 
         public int ParenNest { get; set; }
+        //private int paren_nest;
+        //public int ParenNest
+        //{
+        //    get { return paren_nest; }
+        //    set
+        //    {
+        //        paren_nest = value;
+        //    }
+        //}
 
         public States State
         {
@@ -86,7 +95,7 @@ namespace mint.Compiler
 			Cmdarg = new BitStack();
             LParBeg = 0;
 			__end__seen = false;
-			InCmd = false;
+			InCmd = true;
             InKwarg = false;
 
             List<int> lines = new List<int>();
@@ -103,11 +112,10 @@ namespace mint.Compiler
 
                 if(c == '\n')
                 {
-                    lines.Add(i);
+                    lines.Add(i+1);
                 }
 			}
-
-            lines.Add(data.Length);
+            
             this.lines = lines.ToArray();
             eof_token = new Token(EOF, "$eof", Location(data.Length));
 		}
@@ -138,7 +146,7 @@ namespace mint.Compiler
             return new Tuple<int, int>(line, pos - lines[line - 1] + 1);
         }
         
-        private uint Peek(int op = 0)
+        private uint Peek(int op = 0, bool translate_delimiter = true)
         {
             // TODO use encoding to advance chars
             op += p;
@@ -146,6 +154,7 @@ namespace mint.Compiler
             var c = 0 <= op && op < data.Length ? data[op] : 0u;
 
             if(c > 0
+                && translate_delimiter
                 && (cs == (int) STRING_CONTENT || cs == (int) WORD_CONTENT))
             {
                 return literals.Peek().TranslateDelimiter((char) c);
@@ -154,13 +163,12 @@ namespace mint.Compiler
             return c;
         }
         
-        private string CurrentToken(int ts = -1, int te = -1, int ots = 0, int ote = 0)
+        private string CurrentToken(int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }
             if(te < 0) { te = this.te; }
-            ts += ots;
 
-            return data.Substring(ts, te + ote - ts);
+            return data.Substring(ts, te - ts);
         }
 
         private bool FcalledBy(bool reject, uint offset, params States[] states)
@@ -195,79 +203,91 @@ namespace mint.Compiler
 
         private Token GenToken(TokenType type,
                                string token = null, Tuple<int, int> location = null,
-                               int ts = -1, int te = -1, int ots = 0, int ote = 0)
+                               int ts = -1, int te = -1)
         {
+            switch(type)
+            {
+                case tKEYWORD:  return GenToken(KEYWORDS,  token, location, ts, te);
+                case tOPERATOR: return GenToken(OPERATORS, token, location, ts, te);
+                case tRESERVED: return GenToken(RESERVED,  token, location, ts, te);
+            }
+
             if(ts < 0) { ts = this.ts; }
             if(te < 0) { te = this.te; }
 
-            token = token ?? CurrentToken(ts, te, ots, ote);
-            location = location ?? Location(ts + ots);
-
-            if(token.Length == 1)
+            token = token ?? CurrentToken(ts, te);
+            location = location ?? Location(ts);
+            
+            switch(type)
             {
-                var c = token[0];
-                switch(token[0])
+                case kLPAREN2:    goto case kLPAREN;
+                case kLPAREN_ARG: goto case kLPAREN;
+                case kLBRACK:     goto case kLPAREN;
+                case kLBRACK2:    goto case kLPAREN;
+                case kLPAREN:
                 {
-                    case '(': goto case '[';
-                    case '[':
+                    ParenNest++;
+                    if(cs != (uint) EXPR_FNAME && cs != (uint) EXPR_DOT)
                     {
-                        ParenNest++;
-                        if(cs != (uint) EXPR_FNAME && cs != (uint) EXPR_DOT)
-                        {
-                            Cond.Push(false);
-                            Cmdarg.Push(false);
-                        }
-                        break;
-                    }
-
-                    case ')': goto case ']';
-                    case ']':
-                    {
-                        ParenNest--;
-                        Cond.LexPop();
-                        Cmdarg.LexPop();
-                        break;
-                    }
-
-                    case '{':
-                    {
-                        if(literals.Count != 0)
-                        {
-                            literals.Peek().BraceCount++;
-                        }
-
                         Cond.Push(false);
                         Cmdarg.Push(false);
-                        if(type == kLAMBEG)
-                        {
-                            LParBeg = 0;
-                            ParenNest--;
-                        }
+                    }
+                    break;
+                }
+
+                case kRBRACK: goto case kRPAREN;
+                case kRPAREN:
+                {
+                    ParenNest--;
+                    Cond.LexPop();
+                    Cmdarg.LexPop();
+                    break;
+                }
+
+                case kLBRACE2: goto case kLBRACE;
+                case kLAMBEG:  goto case kLBRACE;
+                case kLBRACE:
+                {
+                    if(literals.Count != 0)
+                    {
+                        literals.Peek().BraceCount++;
+                    }
+
+                    Cond.Push(false);
+                    Cmdarg.Push(false);
+                    if(type == kLAMBEG)
+                    {
+                        LParBeg = 0;
+                        ParenNest--;
+                    }
+                    else
+                    {
+                        InCmd = type != kLBRACE;
+                    }
+                    break;
+                }
+
+                case kRBRACE:
+                {
+                    Cond.LexPop();
+                    Cmdarg.LexPop();
+                    cs = (int) EXPR_ENDARG;
+                    if(literals.Count == 0)
+                    {
+                        break;
+                    }
+                    var lit = literals.Peek();
+                    if(lit.BraceCount != 0)
+                    {
+                        lit.BraceCount--;
                         break;
                     }
 
-                    case '}':
-                    {
-                        Cond.LexPop();
-                        Cmdarg.LexPop();
-                        cs = (int) EXPR_ENDARG;
-                        if(literals.Count != 0)
-                        {
-                            var lit = literals.Peek();
-                            if(lit.BraceCount == 0)
-                            {
-                                type = tSTRING_DEND;
-                                lit.ContentStart = te + ote;
-                                PushFcall();
-                                cs = (int) lit.State;
-                            }
-                            else
-                            {
-                                lit.BraceCount--;
-                            }
-                        }
-                        break;
-                    }
+                    type = tSTRING_DEND;
+                    lit.ContentStart = te;
+                    PushFcall();
+                    cs = (int) lit.State;
+                    break;
                 }
             }
 
@@ -278,35 +298,35 @@ namespace mint.Compiler
 
         private Token GenToken(IReadOnlyDictionary<string, TokenType> type,
                                string token = null, Tuple<int, int> location = null,
-                               int ts = -1, int te = -1, int ots = 0, int ote = 0)
+                               int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }
             if(te < 0) { te = this.te; }
 
-            token = token ?? CurrentToken(ts, te, ots, ote);
+            token = token ?? CurrentToken(ts, te);
 
             if(type == OPERATORS && token.Last() == '=')
             {
                 token = token.Substring(0, token.Length-1);
-                return GenToken(tOP_ASGN, token, location, ts, te, ots, ote);
+                return GenToken(tOP_ASGN, token, location, ts, te);
             }
             
-            return GenToken(type[token], token, location, ts, te, ots, ote);
+            return GenToken(type[token], token, location, ts, te);
         }
 
         private Token GenToken(IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>> type,
                                string token = null, Tuple<int, int> location = null,
-                               int ts = -1, int te = -1, int ots = 0, int ote = 0)
+                               int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }
             if(te < 0) { te = this.te; }
 
-            token = token ?? CurrentToken(ts, te, ots, ote);
+            token = token ?? CurrentToken(ts, te);
 
             var config = type[token];
             var token_type = ProcessReserved(config.Item1, config.Item2, config.Item3);
 
-            return GenToken(token_type, token, location, ts, te, ots, ote);
+            return GenToken(token_type, token, location, ts, te);
         }
 
         private TokenType ProcessReserved(States state, TokenType type, TokenType alt_type)
@@ -317,8 +337,6 @@ namespace mint.Compiler
                 return type;
             }
 
-            State = state;
-
             InCmd = InCmd || state == EXPR_BEG;
 
             if(type == kDO)
@@ -327,23 +345,27 @@ namespace mint.Compiler
                 {
                     LParBeg = 0;
                     ParenNest--;
-                    return kDO_LAMBDA;
+                    type = kDO_LAMBDA;
                 }
                 else if(Cond.Peek)
                 {
-                    return kDO_COND;
+                    type = kDO_COND;
                 }
-                else if((Cmdarg.Peek && State != EXPR_ENDARG) || State == EXPR_BEG || State == EXPR_ENDARG)
+                else if((Cmdarg.Peek && State != EXPR_CMDARG) || State == EXPR_BEG || State == EXPR_ENDARG)
                 {
-                    return kDO_BLOCK;
+                    type = kDO_BLOCK;
                 }
+                State = state;
+                return type;
             }
-            else if(State != EXPR_BEG && State != EXPR_LABELARG && alt_type != type)
+
+            if(State != EXPR_BEG && State != EXPR_LABELARG && alt_type != type)
             {
                 State = EXPR_BEG;
                 return alt_type;
             }
 
+            State = state;
             return type;
         }
 
@@ -397,19 +419,25 @@ namespace mint.Compiler
             {
                 return false;
             }
-            var tok = CurrentToken(ots: 1);
-            GenStringContentToken(-tok.Length - 1);
+            var tok = CurrentToken(ts + 1);
+            if(!lit.IsWords || lit.WasContent)
+            {
+                GenStringContentToken(te - tok.Length - 1);
+            }
+            lit.WasContent = true;
             GenToken(tSTRING_DVAR, token: "#");
             GenToken(type, token: tok, ts: ts + 1);
             lit.ContentStart = te;
             return true;
         }
 
-        private Token GenStringContentToken(int ote = int.MinValue)
+        private Token GenStringContentToken(int te = -1)
         {
-            if(ote == int.MinValue) { ote = ts - te; }
+            // Not a mistake. By default, we don't want the current token
+            if(te < 0) { te = this.ts; }
+
             var lit = literals.Peek();
-            var tok = CurrentToken(ts: lit.ContentStart, ote: ote);
+            var tok = CurrentToken(ts: lit.ContentStart, te: te);
             if(tok.Length == 0)
             {
                 return null;
@@ -417,28 +445,30 @@ namespace mint.Compiler
             return GenToken(tSTRING_CONTENT, token: tok, ts: lit.ContentStart);
         }
 
-        private Token GenStringEndToken()
+        private Token GenStringEndToken(int ts = -1, int te = -1, Regexp.Flags regexp_options = Regexp.Flags.None)
         {
             var lit = literals.Pop();
-            var tok = CurrentToken();
+            var tok = CurrentToken(ts, te);
             if(lit.IsRegexp)
             {
-                return GenToken(tREGEXP_END, token: tok);
+                var token = GenToken(tREGEXP_END, token: tok, ts: ts);
+                token.Properties["flags"] = regexp_options;
+                return token;
             }
             
             if(tok[tok.Length - 1] == ':')
             {
-                return GenToken(tLABEL_END, token: tok);
+                return GenToken(tLABEL_END, token: tok, ts: ts);
             }
 
             if(lit.Dedents)
             {
-                var token = GenToken(tSTRING_END, token: tok);
+                var token = GenToken(tSTRING_END, token: tok, ts: ts);
                 token.Properties["dedent"] = lit.Indent;
                 return token;
             }
 
-            return GenToken(tSTRING_END, token: tok);
+            return GenToken(tSTRING_END, token: tok, ts: ts);
         }
 
         private const int RATIONAL_FLAG = 1;
@@ -515,6 +545,11 @@ namespace mint.Compiler
         private void PopFcall()
         {
             top--;
+        }
+
+        private bool IsLabel(int op = 0)
+        {
+            return Peek(op) == ':' && Peek(op + 1) != ':';
         }
 
         private static readonly IReadOnlyDictionary<string, TokenType> OPERATORS =

@@ -52,7 +52,8 @@ namespace mint.Compiler
         public Lexer.States State          => Lexer.States.HEREDOC_DELIMITER;
         public TokenType    Type           => id_delimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
         public string UnterminatedMessage  => $"can't find string {Delimiter} anywhere before EOF";
-        
+        public bool         WasContent     { get { return false; } set { } }
+
         public void CommitIndent()
         {
             if(!Dedents)
@@ -73,7 +74,7 @@ namespace mint.Compiler
             {
                 regex = new Regex(indent_type == '\0'
                                     ? $"^{Delimiter}$"
-                                    : $@"^[\t\v\f\r ]*{Delimiter}$");
+                                    : $@"^[\t\v\f\r ]*{Delimiter}\r?$");
             }
             
             return regex.IsMatch(delimiter);

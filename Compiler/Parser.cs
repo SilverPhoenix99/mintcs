@@ -89,6 +89,11 @@ namespace mint.Compiler
                 yylval = (Ast<Token>) token;
                 return (int) token.Type;
             }
+
+            public override void yyerror(string format, params object[] args)
+            {
+                base.yyerror(format, args);
+            }
         }
     }
 }
