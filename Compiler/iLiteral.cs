@@ -17,6 +17,8 @@
         int          ContentStart        { get; set; }
         Lexer.States State               { get; }
         bool         WasContent          { get; set; }
+        int          Nesting             { get; set; }
+        bool         IsNested            { get; }
 
         void CommitIndent();
         bool IsDelimiter(string token);

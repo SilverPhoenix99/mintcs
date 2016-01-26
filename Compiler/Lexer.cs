@@ -28,7 +28,7 @@ namespace mint.Compiler
 
 		string data;
 
-        public Lexer(string data = null)
+        public Lexer(string data = "")
         {
 			Data = data ?? "";
             TabWidth = 8;

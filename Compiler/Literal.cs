@@ -35,6 +35,12 @@ namespace mint.Compiler
         public Lexer.States State               => IsWords ? Lexer.States.WORD_CONTENT : Lexer.States.STRING_CONTENT;
         public string       UnterminatedMessage => "unterminated string meets end of file";
         public bool         WasContent          { get; set; }
+        public int          Nesting             { get; set; }
+        public bool         IsNested            => STRING_END.ContainsKey(BeginDelimiter) && Nesting > 0;
+
+        // Not inherited
+        // Returns the last character from the begin delimiter
+        public string BeginDelimiter => Delimiter.Substring(Delimiter.Length - 1);
 
         public TokenType Type
         {

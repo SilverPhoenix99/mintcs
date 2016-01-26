@@ -47,11 +47,20 @@ string_term = [QqWwIixrs];
 # Actions
 #
 
+action GotoCommonExpr {
+    fhold;
+    lts = -1;
+    lte = -1;
+    fcall COMMON_EXPR;
+}
+
+
 action Keyword {
     // Keyword
     KeywordToken(token_type, lts, lte, next_state);
     fbreak;
 }
+
 
 action Number {
     GenNumberToken(token_type, num_base, num_flags, ts: lts >= 0 ? lts : ts);
@@ -62,6 +71,7 @@ action Number {
     fnext EXPR_END;
     fbreak;
 }
+
 
 action StringStart {
     // StringStart
@@ -174,25 +184,21 @@ action UnaryOp {
     fbreak;
 }
 
-e_beg_sign =
-      '+' %TokStart number %Number
-    | (
-          '+' [^=0-9]  % { token_type = kUPLUS; }
-        | '-' [^=>0-9] % { token_type = kUMINUS; }
-        | '-' digit    % { token_type = kUMINUS_NUM; }
-    ) %UnaryOp
+e_beg_number = '+' %TokStart number;
+
+e_beg_unary_sign =
+      '+' [^=0-9]  % { token_type = kUPLUS; }
+    | '-' [^=>0-9] % { token_type = kUMINUS; }
+    | '-' digit    % { token_type = kUMINUS_NUM; }
 ;
 
-e_arg_sign =
-    ws+ (
-          '+' %TokStart number %Number
-        | (
-              '+' ^(space | [=0-9])  % { token_type = kUPLUS; }
-            | '-' ^(space | [=>0-9]) % { token_type = kUMINUS; }
-            | '-' digit % { token_type = kUMINUS_NUM; }
-        ) %UnaryOp
-    )
-;
+e_arg_number = ws+ '+' %TokStart number;
+
+e_arg_unary_sign = ws+ (
+      '+' ^(space | [=0-9])  % { token_type = kUPLUS; }
+    | '-' ^(space | [=>0-9]) % { token_type = kUMINUS; }
+    | '-' digit % { token_type = kUMINUS_NUM; }
+);
 
 
 # ------------------------------------------------------------------------------
@@ -288,10 +294,45 @@ reserved_fid   = 'defined?' %TokEnd [^=];
 
 reserved = ( reserved_ident | reserved_const | reserved_fid ) % { token_type = tRESERVED; };
 
-identifier  = ( (ident_start ident_char*) - reserved_ident ) % { token_type = tIDENTIFIER; };
-constant    = ( (upper       ident_char*) - reserved_const ) % { token_type = tCONSTANT; };
-fid         = ( ((ident_start | upper) ident_char*) - reserved_fid ) [?!] %TokEnd [^=] % { token_type = tFID; };
-setter_name = ( ident_start | upper ) ident_char* '=' %TokEnd ( [^~=>] | '=>' ) % { token_type = tIDENTIFIER; };
+base_identifier = ident_start ident_char*;
+base_constant   = upper       ident_char*;
+
+identifier  = ( base_identifier - reserved_ident ) % { token_type = tIDENTIFIER; };
+constant    = ( base_constant   - reserved_const ) % { token_type = tCONSTANT; };
+
+fid_identifier = (
+    base_identifier %TokEnd [?!]
+    (
+          [^=] >TokEnd % { token_type = tFID; }
+        | '='          % { token_type = tIDENTIFIER; }
+    )
+) - reserved_fid;
+
+fid_constant = (
+    base_constant %TokEnd [?!]
+    (
+          [^=] >TokEnd % { token_type = tFID; }
+        | '='          % { token_type = tCONSTANT; }
+    )
+) - reserved_fid;
+
+fid = fid_identifier | fid_constant;
+
+setter_identifier = base_identifier %TokEnd '='
+(
+        [^~=>]            >TokEnd
+      | '=>'              % { lte = this.p - 2; }
+      | ('=' ^'>' | [~>])
+) % { token_type = tIDENTIFIER; };
+
+setter_constant = base_constant %TokEnd '='
+(
+        [^~=>]            % { token_type = tIDENTIFIER; } >TokEnd
+      | '=>'              % { token_type = tIDENTIFIER; } % { lte = this.p - 2; }
+      | ('=' ^'>' | [~>]) % { token_type = tCONSTANT; }
+);
+
+setter_name = setter_identifier | setter_constant;
 
 any_ident = identifier | constant | fid;
 
@@ -376,7 +417,7 @@ operator_expr = (
 
     # similar to COMMON_EXPR
   | '**' %TokEnd [^=]   % { token_type = tOPERATOR; }
-  | '*'  %TokEnd [^=]   % { token_type = tOPERATOR; }
+  | '*'  %TokEnd [^*=]  % { token_type = tOPERATOR; }
   | '+'  %TokEnd [^@=]  % { token_type = tOPERATOR; }
   | '-'  %TokEnd [^@=]  % { token_type = tOPERATOR; }
   | '&'  %TokEnd [^&.=] % { token_type = tOPERATOR; }
@@ -434,7 +475,7 @@ action PostIdent {
     }
     else if(IsLabel(lte >= 0 ? te - lte : 0))
     {
-        lte = te + 1;
+        lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
         next_state = EXPR_LABELARG;
     }
@@ -449,7 +490,7 @@ action PostReserved {
     next_state = null;
     if(!in_cmd && IsLabel(lte >= 0 ? te - lte : 0))
     {
-        lte = te + 1;
+        lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
         next_state = EXPR_LABELARG;
     }
@@ -459,7 +500,7 @@ action PostReserved {
 action PostArgIdent {
     if(IsLabel(lte >= 0 ? te - lte : 0))
     {
-        lte = te + 1;
+        lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
         next_state = EXPR_LABELARG;
     }
@@ -474,7 +515,7 @@ action PostArgReserved {
     next_state = null;
     if(IsLabel(lte >= 0 ? te - lte : 0))
     {
-        lte = te + 1;
+        lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
         next_state = EXPR_LABELARG;
     }
@@ -485,7 +526,9 @@ EXPR_BEG := |*
 
   empty_lines;
 
-  e_beg_sign;
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
 
   '/' => StringStart;
 
@@ -494,7 +537,8 @@ EXPR_BEG := |*
   heredoc_ident => Heredoc;
 
       '::'
-    | ( '**' | '*' ) %TokEnd [^=]
+    | '**' %TokEnd [^=]
+    | '*'  %TokEnd [^*=]
     | '&' %TokEnd [^&.=]
     | '('
     | '['
@@ -503,7 +547,7 @@ EXPR_BEG := |*
 
   => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -513,7 +557,9 @@ EXPR_ARG := |*
 
   ws+ heredoc_ident => Heredoc;
 
-  e_arg_sign;
+  e_arg_number => Number;
+
+  e_arg_unary_sign => UnaryOp;
 
   ws+ '/' %TokEnd ^(space | '=') => StringStart;
 
@@ -521,7 +567,8 @@ EXPR_ARG := |*
 
   ws+ '::' => Keyword;
 
-  ws+ ( '**' | '*' ) %TokEnd ^(space | '=') => Keyword;
+  ws+ '**' %TokEnd ^(space | '=')  => Keyword;
+  ws+ '*'  %TokEnd ^(space | [*=]) => Keyword;
 
   ws+ '&' %TokEnd ^(space | [&.=]) => Keyword;
 
@@ -539,7 +586,7 @@ EXPR_ARG := |*
   reserved  %PostArgReserved => Keyword;
   any_ident %PostArgIdent    => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -548,14 +595,17 @@ EXPR_CLASS := |*
 
   empty_lines;
 
-  e_beg_sign;
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
 
   '/' => StringStart;
 
   percent_string => StringStart;
 
       '::'
-    | ( '**' | '*' ) %TokEnd [^=]
+    | '**' %TokEnd [^=]
+    | '*'  %TokEnd [^*=]
     | ( '<=>' | '<=' | '<' | '<<' %TokEnd [^=] ) % { InCmd = true; }
     | '&' %TokEnd [^&.=]
     | '('
@@ -564,14 +614,16 @@ EXPR_CLASS := |*
     | any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; }
   => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
 
 EXPR_CMDARG := |*
 
-  e_arg_sign;
+  e_arg_number => Number;
+
+  e_arg_unary_sign => UnaryOp;
 
   ws+ '/' %TokEnd ^(space | '=') => StringStart;
 
@@ -581,7 +633,8 @@ EXPR_CMDARG := |*
 
   ws+ '::' => Keyword;
 
-  ws+ ( '**' | '*' ) %TokEnd ^(space | '=') => Keyword;
+  ws+ '**' %TokEnd ^(space | '=')  => Keyword;
+  ws+ '*'  %TokEnd ^(space | [*=]) => Keyword;
 
   ws+ '&' %TokEnd ^(space | [&.=]) => Keyword;
 
@@ -599,7 +652,7 @@ EXPR_CMDARG := |*
   reserved  %PostArgReserved => Keyword;
   any_ident %PostArgIdent    => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -619,7 +672,7 @@ EXPR_DOT := |*
     | reserved_fid   % { token_type = tFID; }
   ) % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -638,7 +691,7 @@ EXPR_END := |*
 
   any_ident % { next_state = EXPR_END; } => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -657,7 +710,7 @@ EXPR_ENDARG := |*
 
   any_ident % { next_state = EXPR_END; } => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -675,7 +728,7 @@ EXPR_ENDFN := |*
   reserved  %PostReserved => Keyword;
   any_ident %PostReserved => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -701,7 +754,7 @@ EXPR_FNAME := |*
   | operator_expr
   => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -721,7 +774,9 @@ EXPR_LABELARG := |*
 
   heredoc_ident => Heredoc;
 
-  e_beg_sign;
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
 
   '/' => StringStart;
 
@@ -729,7 +784,8 @@ EXPR_LABELARG := |*
 
   '::' => Keyword;
 
-  ( '**' | '*' ) %TokEnd [^=] => Keyword;
+  '**' %TokEnd [^=]  => Keyword;
+  '*'  %TokEnd [^*=] => Keyword;
 
   '&' %TokEnd [^&.=] => Keyword;
 
@@ -743,14 +799,16 @@ EXPR_LABELARG := |*
   reserved  %PostArgReserved => Keyword;
   any_ident %PostArgIdent    => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
 
 EXPR_MID := |*
 
-  e_beg_sign;
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
 
   heredoc_ident => Heredoc;
 
@@ -760,7 +818,8 @@ EXPR_MID := |*
 
   '::' => Keyword;
 
-  ( '**' | '*' ) %TokEnd [^=] => Keyword;
+  '**' %TokEnd [^=]  => Keyword;
+  '*'  %TokEnd [^*=] => Keyword;
 
   '&' %TokEnd [^&.=] => Keyword;
 
@@ -772,7 +831,7 @@ EXPR_MID := |*
 
   any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
 
-  any => { fhold; fcall COMMON_EXPR; };
+  any => GotoCommonExpr;
 
 *|;
 
@@ -999,6 +1058,7 @@ HEREDOC_CONTENT := |*
             GenStringContentToken();
             GenToken(tSTRING_DBEG);
             InCmd = true;
+            PopFcall();
             fnext EXPR_BEG;
             fbreak;
         }
@@ -1069,16 +1129,24 @@ action StringDVar {
 
 
 action StringDelimiter {
-    GenStringContentToken();
-    if(current_literal.IsRegexp)
+    if(current_literal.IsNested)
     {
-        regexp_delim = this.ts;
-        fgoto REGEXP_END;
+        current_literal.Nesting--;
     }
-    GenStringEndToken();
-    PopFcall();
-    fnext EXPR_END;
-    fbreak;
+    else
+    {
+        // only counts as delimiter if not nested
+        GenStringContentToken();
+        if(current_literal.IsRegexp)
+        {
+            regexp_delim = this.ts;
+            fgoto REGEXP_END;
+        }
+        GenStringEndToken();
+        PopFcall();
+        fnext EXPR_END;
+        fbreak;
+    }
 }
 
 
@@ -1096,6 +1164,13 @@ STRING_CONTENT := |*
     '#{'        => StringDBeg;
     '#' any_var => StringDVar;
 
+    [\[{(<] => {
+        if(((Literal) current_literal).BeginDelimiter == CurrentToken())
+        {
+            current_literal.Nesting++;
+        }
+    };
+
     ^([\\\n] | c_eof | string_delimiter);
 *|;
 
@@ -1104,19 +1179,26 @@ WORD_CONTENT := |*
     c_eof => EofLiteralError;
 
     string_delimiter => {
-        if(current_literal.WasContent)
+        if(current_literal.IsNested)
         {
-            GenStringContentToken();
-            GenToken(tSPACE, token: "");
+            current_literal.Nesting--;
         }
-        GenStringEndToken();
-        if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+        else
         {
-            fexec line_jump;
+            if(current_literal.WasContent)
+            {
+                GenStringContentToken();
+                GenToken(tSPACE, token: "");
+            }
+            GenStringEndToken();
+            if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+            {
+                fexec line_jump;
+            }
+            PopFcall();
+            fnext EXPR_END;
+            fbreak;
         }
-        PopFcall();
-        fnext EXPR_END;
-        fbreak;
     };
 
     '\\\n' => {
@@ -1158,6 +1240,14 @@ WORD_CONTENT := |*
     multi_unicode_escape                           => { current_literal.WasContent = true; };
     control_escape                                 => { current_literal.WasContent = true; };
     ^('\\' | c_eof | string_delimiter | space)     => { current_literal.WasContent = true; };
+
+    [\[{(<] => {
+        current_literal.WasContent = true;
+        if(((Literal) current_literal).BeginDelimiter == CurrentToken())
+        {
+            current_literal.Nesting++;
+        }
+    };
 
     (
           space

@@ -53,6 +53,8 @@ namespace mint.Compiler
         public TokenType    Type           => id_delimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
         public string UnterminatedMessage  => $"can't find string {Delimiter} anywhere before EOF";
         public bool         WasContent     { get { return false; } set { } }
+        public int          Nesting        { get { return 0; } set { } }
+        public bool         IsNested       => false;
 
         public void CommitIndent()
         {

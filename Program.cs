@@ -19,11 +19,14 @@ namespace mint
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
+            //var fragment = File.ReadAllText("C:\\Programming\\Ruby\\ruby22\\lib\\ruby\\gems\\2.2.0\\gems\\activerecord-4.2.5\\lib\\active_record\\connection_adapters\\postgresql\\schema_statements.rb");
+            var fragment = @"
+sign = +1
+pivot = 1
+";
 
-            var fragment = @"a = b?(:c)";
-            
             var tokens = new Lexer(fragment).ToArray();
-            
+
             var ast2 = Parser.Parse(fragment);
             var doc2 = AstXmlSerializer.ToXml(ast2);
             //Console.WriteLine(doc2.ToString());
@@ -35,7 +38,12 @@ namespace mint
                 var rel_path = file_name.Substring(52);
 
                 // not the best option:
-                if(rel_path == @"actionmailer-4.2.5\lib\rails\generators\mailer\templates\mailer.rb")
+                if(rel_path == @"actionmailer-4.2.5\lib\rails\generators\mailer\templates\mailer.rb"
+                || rel_path == @"activejob-4.2.5\lib\rails\generators\job\templates\job.rb"
+                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\migration\templates\create_table_migration.rb"
+                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\migration\templates\migration.rb"
+                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\model\templates\model.rb"
+                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\model\templates\module.rb")
                 {
                     // it's not a ruby file
                     continue;
