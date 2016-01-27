@@ -20,15 +20,11 @@ namespace mint
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
             //var fragment = File.ReadAllText("C:\\Programming\\Ruby\\ruby22\\lib\\ruby\\gems\\2.2.0\\gems\\activerecord-4.2.5\\lib\\active_record\\connection_adapters\\postgresql\\schema_statements.rb");
-            var fragment = @"
-sign = +1
-pivot = 1
-";
+            //var fragment = @"%w(a(b)c d)";
 
-            var tokens = new Lexer(fragment).ToArray();
-
-            var ast2 = Parser.Parse(fragment);
-            var doc2 = AstXmlSerializer.ToXml(ast2);
+            //var tokens = new Lexer(fragment).ToArray();
+            //var ast2 = Parser.Parse(fragment);
+            //var doc2 = AstXmlSerializer.ToXml(ast2);
             //Console.WriteLine(doc2.ToString());
 
             int count = 0;
@@ -43,7 +39,8 @@ pivot = 1
                 || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\migration\templates\create_table_migration.rb"
                 || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\migration\templates\migration.rb"
                 || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\model\templates\model.rb"
-                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\model\templates\module.rb")
+                || rel_path == @"activerecord-4.2.5\lib\rails\generators\active_record\model\templates\module.rb"
+                || rel_path.StartsWith(@"backports-3.6.7\spec\tags"))
                 {
                     // it's not a ruby file
                     continue;

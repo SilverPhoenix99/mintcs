@@ -1171,7 +1171,7 @@ STRING_CONTENT := |*
         }
     };
 
-    ^([\\\n] | c_eof | string_delimiter);
+    ^([\\\n] | c_eof | string_delimiter | [\[{(<]);
 *|;
 
 
@@ -1239,7 +1239,6 @@ WORD_CONTENT := |*
     hex_escape                                     => { current_literal.WasContent = true; };
     multi_unicode_escape                           => { current_literal.WasContent = true; };
     control_escape                                 => { current_literal.WasContent = true; };
-    ^('\\' | c_eof | string_delimiter | space)     => { current_literal.WasContent = true; };
 
     [\[{(<] => {
         current_literal.WasContent = true;
@@ -1248,6 +1247,8 @@ WORD_CONTENT := |*
             current_literal.Nesting++;
         }
     };
+    
+    ^('\\' | c_eof | string_delimiter | space | [\[{(<]) => { current_literal.WasContent = true; };
 
     (
           space
