@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public class Token
     {

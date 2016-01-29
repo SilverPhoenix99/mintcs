@@ -1,9 +1,9 @@
 ﻿using QUT.Gppg;
 using System;
 using System.Collections.Generic;
-using static mint.Compiler.TokenType;
+using static Mint.Parser.TokenType;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public partial class Parser
     {

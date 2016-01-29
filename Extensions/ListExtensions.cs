@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace mint.Extensions
+namespace Mint.Extensions
 {
     //Source: Daniel Imms http://www.growingwiththeweb.com/2013/01/a-list-extension-that-takes-lambda.html
 

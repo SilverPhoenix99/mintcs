@@ -5,11 +5,11 @@ include "Lexer.csrl";
 
 }%%
 using System;
-using mint.types;
-using static mint.Compiler.Lexer.States;
-using static mint.Compiler.TokenType;
+using Mint.Types;
+using static Mint.Parser.Lexer.States;
+using static Mint.Parser.TokenType;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public partial class Lexer
     {

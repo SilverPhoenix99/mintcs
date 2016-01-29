@@ -4,7 +4,7 @@ machine Lex;
 include "Lexer.csrl";
 
 }%%
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public partial class Lexer
     {

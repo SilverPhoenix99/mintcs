@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace mint
+namespace Mint
 {
     [Serializable]
     internal class TypeError : Exception

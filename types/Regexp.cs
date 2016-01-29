@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace mint.types
+namespace Mint.Types
 {
-    class Regexp
+    public class Regexp
     {
         [Flags]
         public enum Flags : uint

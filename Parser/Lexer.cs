@@ -1,12 +1,12 @@
-﻿using mint.types;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using static mint.Compiler.Lexer.States;
-using static mint.Compiler.TokenType;
+using Mint.Types;
+using static Mint.Parser.Lexer.States;
+using static Mint.Parser.TokenType;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public partial class Lexer : IEnumerable<Token>
     {

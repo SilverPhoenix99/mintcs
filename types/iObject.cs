@@ -1,8 +1,8 @@
 ﻿using System.Dynamic;
 
-namespace mint.types
+namespace Mint.Types
 {
-    interface iObject : IDynamicMetaObjectProvider
+    public interface iObject : IDynamicMetaObjectProvider
     {
         long  Id                { get; }
        

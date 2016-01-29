@@ -1,9 +1,8 @@
-﻿using mint.Compiler;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
-namespace mint.test
+namespace Mint.Parser
 {
-    class AstXmlSerializer : AstVisitor<Token>
+    public class AstXmlSerializer : AstVisitor<Token>
     {
         private XContainer current;
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace mint
+namespace Mint
 {
     [Serializable]
-    internal class NoMethodError : Exception
+    public class NoMethodError : Exception
     {
         public NoMethodError()
         {

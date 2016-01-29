@@ -3,9 +3,9 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
 
-namespace mint.types
+namespace Mint.Types
 {
-    abstract class aObject : iObject
+    public abstract class aObject : iObject
     {
         private static long nextId = 0;
 

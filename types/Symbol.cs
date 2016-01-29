@@ -4,9 +4,9 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
 
-namespace mint.types
+namespace Mint.Types
 {
-    struct Symbol : iObject
+    public struct Symbol : iObject
     {
         public static Class CLASS = new Class(name: "Symbol");
 

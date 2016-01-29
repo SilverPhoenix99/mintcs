@@ -1,4 +1,4 @@
-﻿namespace mint.Compiler
+﻿namespace Mint.Parser
 {
     interface iLiteral
     {

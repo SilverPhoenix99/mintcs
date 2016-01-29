@@ -1,9 +1,7 @@
-%namespace  mint.Compiler
+%namespace  Mint.Parser
 %parsertype Parser
 %partial
 %visibility public
-
-%using mint.types
 
 %scanbasetype Lexer
 %tokentype TokenType

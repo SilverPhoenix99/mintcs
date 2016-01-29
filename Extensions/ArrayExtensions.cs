@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace mint.Extensions
+namespace Mint.Extensions
 {
 	static class ArrayExtensions
 	{

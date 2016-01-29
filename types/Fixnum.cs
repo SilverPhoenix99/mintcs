@@ -1,9 +1,9 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace mint.types
+namespace Mint.Types
 {
-    struct Fixnum : iObject
+    public struct Fixnum : iObject
     {
         // TODO Superclass = Integer < Numeric
         public static Class CLASS = new Class(name: "Fixnum");

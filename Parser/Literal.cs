@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using static mint.Compiler.TokenType;
-using static mint.Compiler.Lexer.States;
+using static Mint.Parser.TokenType;
+using static Mint.Parser.Lexer.States;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     class Literal : iLiteral
     {

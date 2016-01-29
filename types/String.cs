@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace mint.types
+namespace Mint.Types
 {
-    class String : Object
+    public class String : Object
     {
         public static new readonly Class CLASS = new Class(name: "String");
 

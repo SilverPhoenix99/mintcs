@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace mint.types
+namespace Mint.Types
 {
-    class Float : aObject
+    public class Float : aObject
     {
         // TODO Superclass = Integer < Numeric
         public static Class CLASS = new Class(name: "Float");

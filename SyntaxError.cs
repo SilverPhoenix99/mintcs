@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace mint
+namespace Mint
 {
     class SyntaxError : Exception
     {

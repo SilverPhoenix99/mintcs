@@ -5,9 +5,9 @@ using System.Reflection;
 
 using Ex=System.Linq.Expressions.Expression;
 
-namespace mint.types
+namespace Mint.Types
 {
-    class Class : Object
+    public class Class : Object
     {
         public Class(Class superclass = null, string name = null) : base(CLASS)
         {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace mint.types
+namespace Mint.Types
 {
-    partial class Object : aObject
+    public partial class Object : aObject
     {
         public static readonly Class BASIC_OBJECT_CLASS = new Class(name: "BasicObject") { Super = null };
 

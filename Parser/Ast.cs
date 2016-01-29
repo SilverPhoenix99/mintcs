@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace mint.Compiler
+namespace Mint.Parser
 {
     public interface AstVisitor<T>
     {

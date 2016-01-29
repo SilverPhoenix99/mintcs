@@ -1,9 +1,9 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace mint.types
+namespace Mint.Types
 {
-    struct Nil : iObject
+    public struct Nil : iObject
     {
         public static readonly Class CLASS = new Class(name: "NilClass");
 
