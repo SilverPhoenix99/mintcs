@@ -75,7 +75,7 @@ namespace mint.Compiler
             if(regex == null)
             {
                 regex = new Regex(indent_type == '\0'
-                                    ? $"^{Delimiter}$"
+                                    ? $"^{Delimiter}\r?$"
                                     : $@"^[\t\v\f\r ]*{Delimiter}\r?$");
             }
             

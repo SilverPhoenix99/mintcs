@@ -10,7 +10,7 @@ machine Lex;
 access this.;
 alphtype uint;
 variable p this.p;
-getkey Peek();
+getkey Peek(translate_delimiter: translate_delimiter);
 
 # ------------------------------------------------------------------------------
 #
@@ -31,7 +31,7 @@ action TokEnd   { lte = this.p; }
 
 c_eof   = 0; # Lexer already excludes 0x4 and 0x1A (^D | ^Z)
 nl      = '\n' @NewLine;
-ws      = ( (space - nl) | ('\\' nl) ) %TokStart;
+ws      = ( (space - nl) | ('\\' '\r'? nl) ) %TokStart;
 nl_eof  = nl | c_eof;
 nl_ws   = nl | ws;
 unicode = ^ascii;
@@ -79,7 +79,7 @@ action StringStart {
     {
         fexec te = lte;
     }
-    GenLiteralToken(lts >= 0 ? lts : ts);
+    GenLiteralToken(in_cmd, can_label, lts >= 0 ? lts : ts);
     if(cs != (int) COMMON_EXPR)
     {
         PushFcall(); // this is so that strings can identify who called them if needed
@@ -112,7 +112,11 @@ block_comment =
 ;
 
 # Expressions that must be at the beginning of a line.
-bol = block_comment | '__END__' nl_eof;
+bol = block_comment | '__END__' %TokStart '\r'? nl_eof @{
+    __end__ = lts - 7;
+    fexec eof;
+    fbreak;
+};
 
 
 # ------------------------------------------------------------------------------
@@ -292,7 +296,15 @@ reserved_ident = 'alias'
 reserved_const = 'BEGIN' | 'END';
 reserved_fid   = 'defined?' %TokEnd [^=];
 
-reserved = ( reserved_ident | reserved_const | reserved_fid ) % { token_type = tRESERVED; };
+reserved = ( reserved_ident | reserved_const | reserved_fid ) % {
+    token_type = tRESERVED;
+    if(cs != (int) EXPR_FNAME && !FcalledBy(EXPR_FNAME))
+    {
+        // Change state here for ProcessReserved()
+        // This way no need to pass in_cmd parameter
+        InCmd = in_cmd;
+    }
+};
 
 base_identifier = ident_start ident_char*;
 base_constant   = upper       ident_char*;
@@ -356,29 +368,28 @@ invalid_gvar = ^(
 );
 
 gvar = '$' (
-    '-' ident_char
-  | ( ident_char - [1-9] ) ident_char*
-  | gvar_char
-  | (space | c_eof) @ { throw new SyntaxError(Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
-) >err {
-    throw new SyntaxError(Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name");
-  } % { token_type = tGVAR; };
+      '-' ident_char
+    | ( ident_char - [1-9] ) ident_char*
+    | gvar_char
+    | (space | c_eof) @ { throw new SyntaxError(Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
+    | invalid_gvar @ { throw new SyntaxError(Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name"); }
+) % { token_type = tGVAR; };
 
-var = (
-    (ident_char - digit) ident_char*
-  | ( digit | ^ident_char ) % {
-      var tok = CurrentToken();
-      var type_str = token_type == tIVAR ? "n instance" : " class";
-      throw new SyntaxError(Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
-    }
+var =
+      (ident_char - digit) ident_char*
+    | ( digit | ^ident_char ) % {
+        var tok = CurrentToken();
+        var type_str = token_type == tIVAR ? "n instance" : " class";
+        throw new SyntaxError(Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
+      }
 
   | ( c_eof | space ) % {
-      var tok = CurrentToken(te: te - 1);
-      var type_str = token_type == tIVAR ? "n instance" : " class";
-      var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
-      throw new SyntaxError(Location(p).Item1, msg);
+        var tok = CurrentToken(te: te - 1);
+        var type_str = token_type == tIVAR ? "n instance" : " class";
+        var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
+        throw new SyntaxError(Location(p).Item1, msg);
     }
-);
+;
 
 ivar = '@' % { token_type = tIVAR; } var;
 cvar = '@@' % { token_type = tCVAR; } var;
@@ -427,7 +438,7 @@ operator_expr = (
   | '/'  %TokEnd [^=]
   | '^'  %TokEnd [^=]
   | '%'  %TokEnd [^=]
-  | '[' % { token_type = tOPERATOR; }
+  | '['  %TokEnd ^']' @ { token_type = tOPERATOR; }
 
     # unique to operator_expr
   | '+@' | '-@' | '!@' | '~@'
@@ -473,7 +484,7 @@ action PostIdent {
             next_state = EXPR_CMDARG;
         }
     }
-    else if(IsLabel(lte >= 0 ? te - lte : 0))
+    else if(can_label && IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
@@ -488,7 +499,7 @@ action PostIdent {
 
 action PostReserved {
     next_state = null;
-    if(!in_cmd && IsLabel(lte >= 0 ? te - lte : 0))
+    if(!in_cmd && can_label && IsLabel(lte >= 0 ? te - lte : 0))
     {
         lte = (lte >= 0 ? lte : te) + 1;
         token_type = tLABEL;
@@ -870,8 +881,12 @@ COMMON_EXPR := |*
     | '>=' | '>'
     | '~'
 
-    | '<<' | '>>' | '|' | '/' | '^' | '%'
-    | '...' | '..' | ',' | '&&' | '||'
+    | '<<' | '>>' | '/' | '^' | '%'
+    | '...' | '..' | '&&'
+    | ',' % { CanLabel = true; }
+
+    | '|' [^|=] >TokEnd @ { CanLabel = true; }
+    | '||'
 
     | ( '**' | '*' | '+' | '-' | '&' %TokEnd [^&.=] ) % { token_type = tOPERATOR; }
     | op_asgn % { token_type = tOPERATOR; }
@@ -959,8 +974,20 @@ action EofLiteralError { throw new SyntaxError(Location(p).Item1, current_litera
 # Character escaping
 #
 
-action InvalidUnicode { throw new SyntaxError(Location(p).Item1, "invalid Unicode escape"); }
-action UntermUnicode  { throw new SyntaxError(Location(p).Item1, "unterminated Unicode escape"); }
+action InvalidUnicode {
+    if(!in_literal)
+    {
+        throw new SyntaxError(Location(p).Item1, "invalid Unicode escape");
+    }
+}
+
+
+action UntermUnicode  {
+    if(!in_literal)
+    {
+        throw new SyntaxError(Location(p).Item1, "unterminated Unicode escape");
+    }
+}
 
 unicode_digits = xdigit{1,6} >lerr(InvalidUnicode);
 
@@ -968,11 +995,12 @@ unicode_escape = '\\u' xdigit{4} @lerr(InvalidUnicode)
                | '\\u{' unicode_digits '}' @lerr(UntermUnicode)
 ;
 
-multi_unicode_escape = '\\u' xdigit{4} @lerr(InvalidUnicode)
-                     | '\\u{' unicode_digits ([\t ] @lerr(UntermUnicode) unicode_digits)* '}' @lerr(UntermUnicode)
+multi_unicode_escape =
+      '\\u' xdigit{4} @lerr(InvalidUnicode)
+    | '\\u{' unicode_digits ([\t ] @lerr(UntermUnicode) unicode_digits)* '}' @lerr(UntermUnicode)
 ;
 
-char_escape = '\\' (ascii - [CMcux0-7] - c_eof);
+char_escape = '\\' (any - [CMcux0-7] - c_eof);
 
 octal_escape = '\\' odigit{1,3};
 
@@ -1006,9 +1034,10 @@ control_escape = control_prefix (
 #     ( cs in (EXPR_BEG, EXPR_FNAME, EXPR_LABELARG, EXPR_MID) )
 #  || ( cs in (EXPR_ARG, EXPR_CMDARG) && ( ts == 0 || Data[ts - 1].Matches(" \f\t\r\v") ) )
 
+
 HEREDOC_DELIMITER := |*
     c_eof => EofLiteralError;
-
+    
     ^nl_eof* nl_eof => {
         if(current_literal.IsDelimiter(CurrentToken()))
         {
@@ -1093,13 +1122,69 @@ HEREDOC_CONTENT := |*
 # The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
 string_delimiter = 0x4;
 
+action StringDelimiter { // StringDelimiter
+    if(current_literal.IsNested)
+    {
+        // Delimiter is one of '{[(<'
+        current_literal.WasContent = true;
+        current_literal.Nesting--;
+        goto _again;
+    }
 
-action StringNl {
-    if(line_jump > 0)
+    // If delimiter is one of '{[(<' => nesting has ended => no op
+
+    // If delimiter is '\n' => it may jump
+    //     must create content before jump
+    if(!current_literal.IsWords || current_literal.WasContent)
+    {
+        GenStringContentToken();
+        if(current_literal.IsWords)
+        {
+            GenToken(tSPACE, token: "");
+        }
+    }
+
+    // If regexp (never happens in STRING_INTERPOLATION)
+    if(current_literal.IsRegexp)
+    {
+        // If '\n' jumps
+        if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+        {
+            // Grab the '\n' for the token
+            regexp_delim = line_jump - 1;
+            fexec line_jump;
+        }
+        else
+        {
+            regexp_delim = ts;
+        }
+        fgoto REGEXP_END;
+    }
+
+    var tok = GenStringEndToken();
+
+    if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+    {
+        fexec line_jump;
+    }
+    PopFcall();
+    fnext *((int) (tok.Type == tLABEL_END ? EXPR_BEG : EXPR_END));
+    fbreak;
+
+}
+
+
+action StringDelimiterEscape { // StringDelimiterEscape
+    // No nesting
+
+    current_literal.WasContent = true;
+
+    // If '\n' jumps => generate content and jump
+
+    if(current_literal.IsDelimiter("\n") && line_jump > this.p)
     {
         // content in te...line_jump isn't included
-        lte = current_literal.State == WORD_CONTENT && Peek(this.ts) == '\\' ? -1 : 0;
-        GenStringContentToken();
+        GenStringContentToken(te); // include current token in content
         current_literal.ContentStart = line_jump;
         fexec line_jump;
         fbreak;
@@ -1107,9 +1192,77 @@ action StringNl {
 }
 
 
-action StringDBeg {
+action StringNl { // StringNl
+    if(!current_literal.IsWords)
+    {
+        if(line_jump > this.p)
+        {
+            // content in te...line_jump isn't included
+            GenStringContentToken(this.p + 1); // include current token in content
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            fbreak;
+        }
+
+        // Nothing to do
+        goto _again;
+    }
+
+    // Words
+
+    if(lts < 0)
+    {
+        // Not escape => considered as space
+
+        // Jump if needed
+        if(line_jump > p)
+        {
+            var was_content = current_literal.WasContent;
+            if(was_content)
+            {
+                GenStringContentToken();
+                GenToken(tSPACE, te: this.p + 1);
+            }
+            current_literal.WasContent = false;
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            if(was_content)
+            {
+                fbreak;
+            }
+
+            // Start the space token from after the jump
+            ts = p;
+            te = line_jump;
+        }
+    }
+    else
+    {
+        // Escape => considered as char
+        lts = -1;
+
+        current_literal.WasContent = true;
+
+        if(line_jump > p)
+        {
+            GenStringContentToken();
+            GenToken(tSPACE, te: this.p + 1);
+            current_literal.WasContent = false;
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            fbreak;
+        }
+    }
+}
+
+
+action StringDBeg { // StringDBeg
+    current_literal.WasContent = true;
+
     if(current_literal.Interpolates)
     {
+        // should always happen
+        // (only called by strings with interpolation)
         GenStringContentToken();
         GenToken(tSTRING_DBEG);
         InCmd = true;
@@ -1120,176 +1273,89 @@ action StringDBeg {
 }
 
 
-action StringDVar {
+action StringDVar { // StringDVar
     if(GenInterpolationTokens(token_type))
     {
+        // this should always happen
+        // (only called by strings with interpolation)
         fbreak;
     }
 }
 
 
-action StringDelimiter {
-    if(current_literal.IsNested)
+action StringNesting { // StringNesting
+    current_literal.WasContent = true;
+    if(((Literal) current_literal).BeginDelimiter == CurrentToken())
     {
-        current_literal.Nesting--;
+        current_literal.Nesting++;
     }
-    else
+}
+
+
+action WordSpace { // WordSpace
+    if(!current_literal.IsWords)
     {
-        // only counts as delimiter if not nested
+        goto _again;
+    }
+
+    var was_content = current_literal.WasContent;
+    if(was_content)
+    {
         GenStringContentToken();
-        if(current_literal.IsRegexp)
-        {
-            regexp_delim = this.ts;
-            fgoto REGEXP_END;
-        }
-        GenStringEndToken();
-        PopFcall();
-        fnext EXPR_END;
+        GenToken(tSPACE);
+    }
+    current_literal.WasContent = false;
+    current_literal.ContentStart = this.te;
+    if(was_content)
+    {
         fbreak;
     }
 }
 
 
-STRING_CONTENT := |*
+# String with no interpolation
+STRING_LITERAL := |*
     c_eof => EofLiteralError;
     string_delimiter => StringDelimiter;
 
-    char_escape - '\\\n';
-    octal_escape;
-    hex_escape;
-    multi_unicode_escape;
-    control_escape;
+    # The only allowed escapes in a non interpolation string
+    '\\' string_delimiter => StringDelimiterEscape;
+    '\\\\' => { current_literal.WasContent = true; };
 
-    '\\'? '\n'  => StringNl;
-    '#{'        => StringDBeg;
-    '#' any_var => StringDVar;
+    # Not an escape, but it's content for words
+    ( '\\' '\r'? ) >TokStart '\n' => StringNl;
 
-    [\[{(<] => {
-        if(((Literal) current_literal).BeginDelimiter == CurrentToken())
-        {
-            current_literal.Nesting++;
-        }
-    };
+    [\[{(<] => StringNesting;
 
-    ^([\\\n] | c_eof | string_delimiter | [\[{(<]);
+    ( space | '\n' @StringNl )+ => WordSpace;
+
+    # This can match backslash escape ('\\')
+    ^(c_eof | string_delimiter | space | [\n\[{(<]) => { current_literal.WasContent = true; };
 *|;
 
 
-WORD_CONTENT := |*
+STRING_INTERPOLATION := |*
     c_eof => EofLiteralError;
+    string_delimiter => StringDelimiter;
 
-    string_delimiter => {
-        if(current_literal.IsNested)
-        {
-            current_literal.Nesting--;
-        }
-        else
-        {
-            if(current_literal.WasContent)
-            {
-                GenStringContentToken();
-                GenToken(tSPACE, token: "");
-            }
-            GenStringEndToken();
-            if(current_literal.IsDelimiter("\n") && line_jump > this.p)
-            {
-                fexec line_jump;
-            }
-            PopFcall();
-            fnext EXPR_END;
-            fbreak;
-        }
-    };
+    '\\' string_delimiter => StringDelimiterEscape;
 
-    '\\\n' => {
-        current_literal.WasContent = true;
-        if(line_jump > this.p)
-        {
-            GenStringContentToken(this.te);
-            current_literal.ContentStart = line_jump;
-            fexec line_jump;
-            fbreak;
-        }
-    };
+    [\[{(<] => StringNesting;
 
-    '\\' string_delimiter => {
-        current_literal.WasContent = true;
-        if(current_literal.IsDelimiter("\n") && line_jump > this.p)
-        {
-            GenStringContentToken(this.te);
-            current_literal.ContentStart = line_jump;
-            fexec line_jump;
-            fbreak;
-        }
-    };
+    ( '\\' '\r'? ) >TokStart '\n' => StringNl;
 
-    '#{' % { current_literal.WasContent = true; } => StringDBeg;
+    '#' any_var => StringDVar;
+    '#{'        => StringDBeg;
 
-    '#' any_var => {
-        GenInterpolationTokens(token_type);
-        current_literal.WasContent = true;
-        if(current_literal.Interpolates)
-        {
-            fbreak;
-        }
-    };
+    char_escape - '\\\n' - '\\' string_delimiter => { current_literal.WasContent = true; };
+    octal_escape                                 => { current_literal.WasContent = true; };
+    hex_escape                                   => { current_literal.WasContent = true; };
+    multi_unicode_escape                         => { current_literal.WasContent = true; };
+    control_escape                               => { current_literal.WasContent = true; };
 
-    (char_escape - '\\\n' - '\\' string_delimiter) => { current_literal.WasContent = true; };
-    octal_escape                                   => { current_literal.WasContent = true; };
-    hex_escape                                     => { current_literal.WasContent = true; };
-    multi_unicode_escape                           => { current_literal.WasContent = true; };
-    control_escape                                 => { current_literal.WasContent = true; };
+    ( space | '\n' @StringNl )+ => WordSpace;
 
-    [\[{(<] => {
-        current_literal.WasContent = true;
-        if(((Literal) current_literal).BeginDelimiter == CurrentToken())
-        {
-            current_literal.Nesting++;
-        }
-    };
-    
-    ^('\\' | c_eof | string_delimiter | space | [\[{(<]) => { current_literal.WasContent = true; };
-
-    (
-          space
-        | '\n' @ {
-            if(line_jump > this.p)
-            {
-                var was_content = current_literal.WasContent;
-                if(was_content)
-                {
-                    GenStringContentToken();
-                    GenToken(tSPACE, te: this.p + 1);
-                }
-                current_literal.WasContent = false;
-                current_literal.ContentStart = line_jump;
-                fexec line_jump;
-                if(was_content)
-                {
-                    fbreak;
-                }
-                else
-                {
-                    te = line_jump;
-                    ts = p;
-                }
-            }
-        }
-    )+ => {
-        var was_content = current_literal.WasContent;
-        if(was_content)
-        {
-            GenStringContentToken();
-            GenToken(tSPACE);
-        }
-        current_literal.WasContent = false;
-        current_literal.ContentStart = this.te;
-        if(was_content)
-        {
-            fbreak;
-        }
-    };
-
+    ^(c_eof | string_delimiter | space | [\\\n\[{(<]) => { current_literal.WasContent = true; };
 *|;
 
 
@@ -1345,4 +1411,5 @@ CHAR := |*
 *|;
 
 
+}%%
 }%%

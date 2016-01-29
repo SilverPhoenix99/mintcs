@@ -18,7 +18,7 @@ namespace mint.Compiler
 			top,
 			line_jump;
 
-        bool __end__seen = false;
+        int __end__ = -1;
 		int[] stack = new int[10];
         int[] lines;
         Token eof_token;
@@ -45,17 +45,12 @@ namespace mint.Compiler
 		}
 
         public BitStack Cmdarg;
-
         public BitStack Cond;
 
         public bool Eof => p > Data.Length;
-
         public bool InCmd { get; set; }
-
         public bool InKwarg { get; set; }
-
         public int LParBeg { get; set; }
-
         public int ParenNest { get; set; }
         //private int paren_nest;
         //public int ParenNest
@@ -66,6 +61,8 @@ namespace mint.Compiler
         //        paren_nest = value;
         //    }
         //}
+
+        public bool CanLabel { get; set; }
 
         public States State
         {
@@ -94,7 +91,7 @@ namespace mint.Compiler
 			Cond = new BitStack();
 			Cmdarg = new BitStack();
             LParBeg = 0;
-			__end__seen = false;
+			__end__ = -1;
 			InCmd = true;
             InKwarg = false;
 
@@ -155,7 +152,7 @@ namespace mint.Compiler
 
             if(c > 0
                 && translate_delimiter
-                && (cs == (int) STRING_CONTENT || cs == (int) WORD_CONTENT))
+                && literals.Count != 0)
             {
                 return literals.Peek().TranslateDelimiter((char) c);
             }
@@ -220,13 +217,14 @@ namespace mint.Compiler
             
             switch(type)
             {
-                case kLPAREN2:    goto case kLPAREN;
-                case kLPAREN_ARG: goto case kLPAREN;
-                case kLBRACK:     goto case kLPAREN;
-                case kLBRACK2:    goto case kLPAREN;
-                case kLPAREN:
+                case kLPAREN2:    goto case kLBRACK;
+                case kLPAREN_ARG: goto case kLBRACK;
+                case kLPAREN:     goto case kLBRACK;
+                case kLBRACK2:    goto case kLBRACK;
+                case kLBRACK:
                 {
                     ParenNest++;
+                    CanLabel = true;
                     if(cs != (uint) EXPR_FNAME && cs != (uint) EXPR_DOT)
                     {
                         Cond.Push(false);
@@ -244,8 +242,9 @@ namespace mint.Compiler
                     break;
                 }
 
-                case kLBRACE2: goto case kLBRACE;
-                case kLAMBEG:  goto case kLBRACE;
+                case kLBRACE2:    goto case kLBRACE;
+                case kLAMBEG:     goto case kLBRACE;
+                case kLBRACE_ARG: goto case kLBRACE;
                 case kLBRACE:
                 {
                     if(literals.Count != 0)
@@ -264,6 +263,7 @@ namespace mint.Compiler
                     {
                         InCmd = type != kLBRACE;
                     }
+                    CanLabel = type != kLBRACE_ARG;
                     break;
                 }
 
@@ -362,6 +362,7 @@ namespace mint.Compiler
             if(State != EXPR_BEG && State != EXPR_LABELARG && alt_type != type)
             {
                 State = EXPR_BEG;
+                CanLabel = true;
                 return alt_type;
             }
 
@@ -383,27 +384,26 @@ namespace mint.Compiler
             return heredoc;
         }
 
-        private Token GenLiteralToken(int ts = -1)
+        private Token GenLiteralToken(bool in_cmd, bool can_label, int ts = -1)
         {
             if(ts < 0) { ts = this.ts; }
 
             var token = CurrentToken(ts: ts);
 
-            var can_label = (token == "\"" || token == "'")
-                            && (
-                                (
-                                    !InCmd
-                                    && (
-                                        cs == (uint) EXPR_BEG
-                                        || cs == (uint) EXPR_ENDFN
-                                        || FcalledBy(EXPR_BEG, EXPR_ENDFN)
-                                    )
+            can_label = (token == "\"" || token == "'")
+                        && (
+                            (
+                                !in_cmd
+                                && (can_label
+                                    || cs == (uint) EXPR_ENDFN
+                                    || FcalledBy(EXPR_ENDFN)
                                 )
-                                || cs == (uint) EXPR_ARG 
-                                || cs == (uint) EXPR_CMDARG 
-                                || cs == (uint) EXPR_LABELARG 
-                                || FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG)
-                            );
+                            )
+                            || cs == (uint) EXPR_ARG 
+                            || cs == (uint) EXPR_CMDARG 
+                            || cs == (uint) EXPR_LABELARG 
+                            || FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG)
+                        );
 
             var lit = new Literal(token, te, can_label);
             literals.Push(lit);
@@ -417,6 +417,7 @@ namespace mint.Compiler
             lit.CommitIndent();
             if(!lit.Interpolates)
             {
+                lit.WasContent = true;
                 return false;
             }
             var tok = CurrentToken(ts + 1);
@@ -455,9 +456,17 @@ namespace mint.Compiler
                 token.Properties["flags"] = regexp_options;
                 return token;
             }
-            
-            if(tok[tok.Length - 1] == ':')
+
+            if(lit.CanLabel && IsLabel(1)
+                && (
+                       (FcalledBy(EXPR_BEG, EXPR_ENDFN) && !Cond.Peek)
+                    || FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG)
+                )
+            )
             {
+                tok += ':';
+                ++p;
+                CanLabel = true;
                 return GenToken(tLABEL_END, token: tok, ts: ts);
             }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using static mint.Compiler.TokenType;
+using static mint.Compiler.Lexer.States;
 
 namespace mint.Compiler
 {
@@ -32,7 +33,7 @@ namespace mint.Compiler
         public bool         IsRegexp            => Delimiter[0] == '/' || Delimiter.StartsWith("%r");
         public bool         IsWords             => Delimiter[0] == '%' && "WwIi".IndexOf(Delimiter[1]) >= 0;
         public int          LineIndent          { get { return 0; } set { } } // Do nothing
-        public Lexer.States State               => IsWords ? Lexer.States.WORD_CONTENT : Lexer.States.STRING_CONTENT;
+        public Lexer.States State               => Interpolates ? STRING_INTERPOLATION : STRING_LITERAL;
         public string       UnterminatedMessage => "unterminated string meets end of file";
         public bool         WasContent          { get; set; }
         public int          Nesting             { get; set; }

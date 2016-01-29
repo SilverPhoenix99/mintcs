@@ -741,6 +741,7 @@ primary :
       PushSingle();
       in_single = true;
       Lexer.State = Lexer.States.EXPR_ENDFN;
+      Lexer.CanLabel = true;
     }
     f_arglist bodystmt kEND
     {
@@ -1251,6 +1252,7 @@ f_arglist :
   | {
       PushKwarg();
       Lexer.InKwarg = true;
+      Lexer.CanLabel = true;
     }
     f_args term
     {
