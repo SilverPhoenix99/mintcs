@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Mint.Types;
 using static Mint.Parser.Lexer.States;
 using static Mint.Parser.TokenType;
 
