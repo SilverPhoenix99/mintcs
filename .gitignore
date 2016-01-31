@@ -1,3 +1,4 @@
+.vs
 bin
-gen
 obj
+Mint.Parser/gen
