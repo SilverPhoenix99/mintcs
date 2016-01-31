@@ -107,7 +107,7 @@ bodystmt :
 
         if(opt_rescue.List.Count != 0)
         {
-            $$ = ENSURE_NODE + compstmt + opt_rescue + sexp();
+            $$ = EnsureNode() + compstmt + opt_rescue + sexp();
             break;
         }
 
@@ -148,7 +148,7 @@ stmt :
   | stmt kUNLESS_MOD expr { $$ = $2 + $3 + $1; }
   | stmt kWHILE_MOD expr  { $$ = $2 + $3 + $1; }
   | stmt kUNTIL_MOD expr  { $$ = $2 + $3 + $1; }
-  | stmt kRESCUE_MOD stmt { $$ = ENSURE_NODE + $1 + ($2 + $3) + sexp(); }
+  | stmt kRESCUE_MOD stmt { $$ = EnsureNode() + $1 + ($2 + $3) + sexp(); }
   | kAPP_END kLBRACE2 compstmt kRBRACE
     {
         if(in_def || in_single)
@@ -204,11 +204,11 @@ fcall :
 ;
 
 command :
-    fcall command_args %prec tLOWEST { $$ = CALL_NODE + sexp() + $1 + $2; }
+    fcall command_args %prec tLOWEST { $$ = CallNode() + sexp() + $1 + $2; }
   | fcall command_args cmd_brace_block
     {
       //block_dup_check($2,$3);
-      $$ = CALL_NODE + sexp() + $1 + ($2 + $3);
+      $$ = CallNode() + sexp() + $1 + ($2 + $3);
     }
   | primary call_op operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary call_op operation2 command_args cmd_brace_block
@@ -461,12 +461,12 @@ arg :
     lhs kASSIGN arg { $$ = $2 + $1 + $3; }
   | lhs kASSIGN arg kRESCUE_MOD arg
     {
-      $$ = ENSURE_NODE + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
+      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
     }
   | var_lhs tOP_ASGN arg { $$ = $2 + $1 + $3; }
   | var_lhs tOP_ASGN arg kRESCUE_MOD arg
     {
-      $$ = ENSURE_NODE + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
+      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
     }
   | primary kLBRACK2 opt_call_args rbracket tOP_ASGN arg
     {
@@ -650,7 +650,7 @@ primary :
   | kDEFINED opt_nl kLPAREN2 { in_defined = true; } expr { in_defined = false; } rparen { $$ = $1 + $5; }
   | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
   | kNOT kLPAREN2 rparen      { $$ = $1 + sexp(); }
-  | fcall brace_block         { $$ = CALL_NODE + sexp() + $1 + sexp($2); }
+  | fcall brace_block         { $$ = CallNode() + sexp() + $1 + sexp($2); }
   | method_call
   | method_call brace_block
     {
@@ -664,7 +664,7 @@ primary :
         {
             // the last in the list are the parameters => append to it
             var index = method_call.List.Count-1;
-            ((IList<Ast<Token>>) method_call.List)[index] = method_call.List[index].Append($2);
+            ((IList<Ast<Token>>) method_call.List)[index] = method_call[index].Append($2);
         }
         $$ = method_call;
     }
@@ -971,7 +971,7 @@ block_call :
 
         var command = $1;
         var index = command.List.Count-1;
-        ((IList<Ast<Token>>) command.List)[index] = command.List[index].Append($2);
+        ((IList<Ast<Token>>) command.List)[index] = command[index].Append($2);
         $$ = command;
     }
   | block_call call_op2 operation2 opt_paren_args
@@ -991,7 +991,7 @@ block_call :
 ;
 
 method_call :
-    fcall paren_args                          { $$ = CALL_NODE + sexp() + $1 + $2; }
+    fcall paren_args                          { $$ = CallNode() + sexp() + $1 + $2; }
   | primary call_op operation2 opt_paren_args { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 paren_args     { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + sexp(); }
@@ -999,7 +999,7 @@ method_call :
   | primary kCOLON2 paren_args                { $$ = $2 + $1 + sexp() + $3; }
   | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
-  | primary kLBRACK2 opt_call_args rbracket   { $$ = CALL_NODE + $1 + $2 + $3; }
+  | primary kLBRACK2 opt_call_args rbracket   { $$ = CallNode() + $1 + $2 + $3; }
 ;
 
 brace_block :

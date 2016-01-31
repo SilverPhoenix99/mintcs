@@ -13,7 +13,7 @@ namespace Mint.Parser
     {
         public Ast() { }
 
-        public Ast(T value)
+        public Ast(T value) : this()
         {
             Value = value;
         }
@@ -33,10 +33,19 @@ namespace Mint.Parser
         }
 
         // Adds the element to the end of the list.
-        public Ast<T> Append(Ast<T> other) =>
-            Value == null && other.Value == null
-            ? new Ast<T>(Value, List.Concat(other.List))
-            : new Ast<T>(Value, List.Concat(new[] { other }));
+        public Ast<T> Append(Ast<T> other)
+        {
+            if(Value == null && other.Value == null)
+            {
+                ((List<Ast<T>>) List).AddRange(other.List);
+            }
+            else
+            {
+                ((List<Ast<T>>) List).Add(other);
+            }
+
+            return this;
+        }
         
         // Append operator
         public static Ast<T> operator +(Ast<T> left, Ast<T> right) => left?.Append(right) ?? right;

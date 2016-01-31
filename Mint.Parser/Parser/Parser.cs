@@ -57,15 +57,13 @@ namespace Mint.Parser
         // TODO: Assigns (kASSIGN and tOP_ASGN) will have to know if they are calling into a kASET ('[]=').
         //       They are: kLBRACK2
 
-        protected static readonly Ast<Token> ENSURE_NODE =
+        protected static Ast<Token> EnsureNode() =>
             (Ast<Token>) new Token(kENSURE, "ensure", new Tuple<int, int>(-1, -1));
 
-        protected static readonly Ast<Token> CALL_NODE =
+        protected static Ast<Token> CallNode() =>
             (Ast<Token>) new Token(kDOT, ".", new Tuple<int, int>(-1, -1));
 
-        protected static readonly Ast<Token> EMPTY = new Ast<Token>();
-
-        private static Ast<Token> sexp() => EMPTY;
+        private static Ast<Token> sexp() => new Ast<Token>();
 
         private static Ast<Token> sexp(params Ast<Token>[] nodes) => new Ast<Token>(null, nodes);
 
