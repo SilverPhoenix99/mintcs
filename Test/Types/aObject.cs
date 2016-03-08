@@ -30,6 +30,9 @@ namespace Mint.Types
         internal virtual string InspectInternal() => $"{Inspect()}:{Class.Name}";
 
 
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
 

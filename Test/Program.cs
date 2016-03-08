@@ -19,16 +19,18 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
-            //var fragment = "include ::A";
+            var fragment = "nil";
 
             //var tokens = new Lexer(fragment).ToArray();
-            //var ast2 = Parser.Parse(fragment);
-            //var doc2 = AstXmlSerializer.ToXml(ast2);
+            var ast2 = Parser.Parse(fragment);
+            var doc2 = AstXmlSerializer.ToXml(ast2);
+
+            var val = new Interpreter.Interpreter().Visit(ast2);
 
             //Console.WriteLine(doc2.ToString());
             //AstPrinter<Token>.Print(ast2, indent_size: 4);
 
+            //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //TestGems();
             //InvokeDynamicMethods.Test();
         }

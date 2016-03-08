@@ -20,13 +20,17 @@ namespace Mint.Types
 
         public string Inspect() => "nil";
 
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
         public static implicit operator bool (Nil n) => false;
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
+        public static bool IsNil(iObject other) => other == null || other is Nil;
+
         static Nil()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            Object.DefineClass(CLASS);
         }
     }
 }

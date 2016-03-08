@@ -53,15 +53,21 @@ namespace Mint.Types
         }
 
 
+        public static void DefineClass(Class klass)
+        {
+            CLASS.Constants[klass.Name] = klass;
+        }
+
+
         static Object()
         {
-            CLASS.Constants[CLASS.Name] = CLASS;
-            CLASS.Constants[BASIC_OBJECT_CLASS.Name] = BASIC_OBJECT_CLASS;
+            DefineClass(CLASS);
+            DefineClass(BASIC_OBJECT_CLASS);
 
             // difficult cyclical dependency:
             if(Class.CLASS != null)
             {
-                CLASS.Constants[Class.CLASS.Name] = Class.CLASS;
+                DefineClass(Class.CLASS);
             }
 
             BASIC_OBJECT_CLASS.Def("!", (Func<iObject, bool>) (

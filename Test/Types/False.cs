@@ -22,11 +22,13 @@ namespace Mint.Types
 
         public static implicit operator bool(False f) => false;
 
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         static False()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            Object.DefineClass(CLASS);
         }
     }
 }

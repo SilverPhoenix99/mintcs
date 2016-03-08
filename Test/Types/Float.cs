@@ -30,7 +30,7 @@ namespace Mint.Types
 
         static Float()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            Object.DefineClass(CLASS);
         }
     }
 }

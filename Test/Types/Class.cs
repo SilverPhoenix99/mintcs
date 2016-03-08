@@ -188,12 +188,31 @@ namespace Mint.Types
         public new static readonly Class CLASS = new Class(name: "Class");
 
 
+        public static bool IsA(iObject o, Class c)
+        {
+            if(Nil.IsNil(c))
+            {
+                throw new TypeError("class or module required");
+            }
+
+            for(var k = o.Class; k != null; k = k.Super)
+            {
+                if(c == k)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
         static Class()
         {
             // difficult cyclical dependency:
             if(CLASS != null)
             {
-                Object.CLASS.Constants[CLASS.Name] = CLASS;
+                DefineClass(CLASS);
             }
 
             CLASS.Def<Class>("to_s", "FullName");

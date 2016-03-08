@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Mint.Parser
 {
-    public interface AstVisitor<T>
+    public interface AstVisitor<T, TRet>
     {
-        void Visit(Ast<T> node);
+        TRet Visit(Ast<T> node);
     }
 
     public class Ast<T> : IEnumerable<Ast<T>>
@@ -27,9 +27,9 @@ namespace Mint.Parser
         public IReadOnlyList<Ast<T>> List { get; } = new List<Ast<T>>();
         public Ast<T> this[int index] => List[index];
 
-        public void Accept(AstVisitor<T> visitor)
+        public TRet Accept<TRet>(AstVisitor<T, TRet> visitor)
         {
-            visitor.Visit(this);
+            return visitor.Visit(this);
         }
 
         // Adds the element to the end of the list.

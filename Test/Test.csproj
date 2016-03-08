@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\Condition.cs" />
+    <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Program.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\aObject.cs" />
     <Compile Include="Types\Class.cs" />
+    <Compile Include="Types\Complex.cs" />
     <Compile Include="Types\False.cs" />
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
@@ -60,6 +62,7 @@
     <Compile Include="Types\Nil.cs" />
     <Compile Include="Types\Object.cs" />
     <Compile Include="Types\Object.Meta.cs" />
+    <Compile Include="Types\Rational.cs" />
     <Compile Include="Types\Regexp.cs" />
     <Compile Include="Types\String.cs" />
     <Compile Include="Types\Symbol.cs" />

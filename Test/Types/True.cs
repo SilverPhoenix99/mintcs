@@ -20,13 +20,15 @@ namespace Mint.Types
 
         public string Inspect() => ToString();
 
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
         public static implicit operator bool(True t) => true;
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         static True()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;            
+            Object.DefineClass(CLASS);
         }
     }
 }

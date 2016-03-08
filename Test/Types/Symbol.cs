@@ -21,25 +21,27 @@ namespace Mint.Types
         }
 
 
-        public long   Id               => sym.id;
-        public Class Class             => CLASS;
-        public Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class RealClass         => CLASS;
-        public bool  HasSingletonClass => false;
-        public bool  Frozen            => true;
-        public string Name             => sym.name;
+        public long   Id                => sym.id;
+        public string Name              => sym.name;
+        public Class  Class             => CLASS;
+        public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
+        public Class  RealClass         => CLASS;
+        public bool   HasSingletonClass => false;
+        public bool   Frozen            => true;
 
         public void Freeze() {}
 
         public override string ToString() => sym.name;
         
         public string Inspect() => ":" + sym.name;
-        
+
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         static Symbol()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            Object.DefineClass(CLASS);
         }
 
         private class Sym

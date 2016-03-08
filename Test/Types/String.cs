@@ -44,7 +44,7 @@ namespace Mint.Types
 
         static String()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            DefineClass(CLASS);
         }
     }
 }

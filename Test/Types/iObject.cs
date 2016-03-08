@@ -19,5 +19,7 @@ namespace Mint.Types
         void Freeze();
 
         string Inspect();
+
+        bool IsA(Class klass);
     }
 }

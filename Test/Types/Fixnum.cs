@@ -1,27 +1,31 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Linq.Expressions;
 
 namespace Mint.Types
 {
     public struct Fixnum : iObject
     {
-        // TODO Superclass = Integer < Numeric
-        public static Class CLASS = new Class(name: "Fixnum");
+        public static Class NUMERIC_CLASS = new Class(name: "Numeric");
 
-        private long value;
+        public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, "Integer");
+
+        public static Class CLASS = new Class(INTEGER_CLASS, "Fixnum");
+
+
 
         public Fixnum(long value)
         {
-            this.value = value << 2 | 1;
+            Value = value;
         }
         
-        public long  Id                => value;
+        public long  Id                => Value << 2 | 1;
         public Class Class             => CLASS;
         public Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
         public Class RealClass         => CLASS;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
-        public long Value              => value >> 2;
+        public long Value              { get; }
 
         public void Freeze() {}
 
@@ -30,7 +34,9 @@ namespace Mint.Types
         public string Inspect() => ToString();
         
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-        
+
+        public bool IsA(Class klass) => Class.IsA(this, klass);
+
         public static implicit operator Fixnum(long v) => new Fixnum(v);
 
         public static explicit operator Fixnum(Float v) => new Fixnum((long) v.Value);
@@ -41,7 +47,9 @@ namespace Mint.Types
 
         static Fixnum()
         {
-            Object.CLASS.Constants[CLASS.Name] = CLASS;
+            Object.DefineClass(CLASS);
+            Object.DefineClass(INTEGER_CLASS);
+            Object.DefineClass(NUMERIC_CLASS);
         }
     }
 }
