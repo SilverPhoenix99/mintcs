@@ -19,7 +19,7 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            var fragment = "nil";
+            var fragment = "'a'";
 
             //var tokens = new Lexer(fragment).ToArray();
             var ast2 = Parser.Parse(fragment);
@@ -32,6 +32,7 @@ namespace Test
 
             //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //TestGems();
+            //TestSymbolGC();
             //InvokeDynamicMethods.Test();
         }
 
@@ -79,5 +80,24 @@ namespace Test
             }
         }
         
+        static void TestSymbolGC()
+        {
+            var r = new Random(345757345);
+            for(int j = 0; j < 100; j++)
+            {
+                var s = "";
+
+                for(int i = 0; i < 1000; i++)
+                {
+                    s += r.Next() + " ";
+                }
+
+                new Symbol(s);
+            }
+
+            GC.Collect();
+
+            Debug.Assert(Symbol.Count < 100);
+        }
     }
 }

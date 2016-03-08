@@ -39,6 +39,10 @@ namespace Mint.Types
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
+#if DEBUG
+        internal static int Count => SYMBOLS.Count;
+#endif
+
         static Symbol()
         {
             Object.DefineClass(CLASS);
@@ -60,10 +64,7 @@ namespace Mint.Types
             {
                 lock(SYMBOLS)
                 {
-                    if(SYMBOLS.Remove(name))
-                    {
-                        Console.WriteLine($"Deleted symbol {id} :{name}");
-                    }
+                    SYMBOLS.Remove(name);
                 }
             }
 
@@ -79,7 +80,7 @@ namespace Mint.Types
                     }
 
                     sym = new Sym(name);
-                    SYMBOLS[name] = new WeakReference<Sym>(sym);
+                    SYMBOLS[name] = new WeakReference<Sym>(sym, false);
                     return sym;
                 }
             }

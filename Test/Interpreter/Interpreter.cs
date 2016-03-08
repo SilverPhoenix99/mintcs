@@ -17,6 +17,7 @@ namespace Test.Interpreter
             Register(kTRUE,    ProcessTrue);
             Register(kFALSE,   ProcessFalse);
             Register(kNIL,     ProcessNil);
+            Register(tSYMBEG,  ProcessSymbol);
             //Register(tSTRING_BEG, ProcessString);
         }
 
@@ -78,6 +79,20 @@ namespace Test.Interpreter
         protected iObject ProcessNil(Ast<Token> ast)
         {
             return new Nil();
+        }
+
+        protected iObject ProcessSymbol(Ast<Token> ast)
+        {
+            var tok = ast.Value;
+            var content = ast.List[0].Value;
+
+            if(content == null)
+            {
+                // TODO: process string contents
+                throw new NotImplementedException();
+            }
+
+            return new Symbol(content.Value);
         }
     }
 }

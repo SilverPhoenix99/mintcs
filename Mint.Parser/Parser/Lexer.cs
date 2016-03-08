@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using static Mint.Parser.Lexer.States;
 using static Mint.Parser.TokenType;
@@ -561,7 +562,7 @@ namespace Mint.Parser
         }
 
         private static readonly IReadOnlyDictionary<string, TokenType> OPERATORS =
-            (IReadOnlyDictionary<string, TokenType>) new SortedList<string, TokenType>(9)
+            new ReadOnlyDictionary<string, TokenType>(new SortedList<string, TokenType>(9)
             {
                 { "*",  kMUL     },
                 { "**", kPOW     },
@@ -572,10 +573,10 @@ namespace Mint.Parser
                 { "(",  kLPAREN2 },
                 { "[",  kLBRACK2 },
                 { "{",  kLBRACE2 },
-            };
+            });
 
         private static readonly IReadOnlyDictionary<string, TokenType> KEYWORDS =
-            (IReadOnlyDictionary<string, TokenType>) new SortedList<string, TokenType>(51)
+            new ReadOnlyDictionary<string, TokenType>(new SortedList<string, TokenType>(51)
             {
                 { "!",   kNOTOP     },
                 { "!=",  kNEQ       },
@@ -628,10 +629,10 @@ namespace Mint.Parser
                 { "~@",  kNEG       },
                 { "%",   kPERCENT   },
                 { "\\",  kBACKSLASH },
-            };
+            });
 
         private static readonly IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>> RESERVED =
-            (IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>>)
+            new ReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>>(
             new SortedList<string, Tuple<States, TokenType, TokenType>>(41)
             {
                 { "alias",        new Tuple<States, TokenType, TokenType>(EXPR_FNAME, kALIAS,        kALIAS)        },
@@ -675,6 +676,6 @@ namespace Mint.Parser
                 { "__ENCODING__", new Tuple<States, TokenType, TokenType>(EXPR_END,   k__ENCODING__, k__ENCODING__) },
                 { "__FILE__",     new Tuple<States, TokenType, TokenType>(EXPR_END,   k__FILE__,     k__FILE__)     },
                 { "__LINE__",     new Tuple<States, TokenType, TokenType>(EXPR_END,   k__LINE__,     k__LINE__)     }
-            };
+            });
     }
 }
