@@ -92,15 +92,9 @@ namespace Test.Interpreter
 
         protected iObject ProcessSymbol(Ast<Token> ast)
         {
-            var content = ast.List[0].Value;
-
-            if(content == null)
-            {
-                // TODO: process string contents
-                throw new NotImplementedException();
-            }
-
-            return new Symbol(content.Value);
+            var content = ast.List[0];
+            var value = content.Value?.Value ?? ((Mint.Types.String) ProcessString(content)).Value;
+            return new Symbol(value);
         }
 
         protected iObject ProcessString(Ast<Token> ast)
