@@ -22,7 +22,10 @@ namespace Test
             //TestGems();
             //TestSymbolGC();
             //InvokeDynamicMethods.Test();
+
             TestInterpreter(args);
+            //TestInterpreter(new[] { "1e2r" });
+
 
             //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //var tokens = new Lexer(fragment).ToArray();

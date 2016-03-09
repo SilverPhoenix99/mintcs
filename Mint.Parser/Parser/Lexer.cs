@@ -480,18 +480,18 @@ namespace Mint.Parser
             return GenToken(tSTRING_END, token: tok, ts: ts);
         }
 
-        private const int RATIONAL_FLAG = 1;
-        private const int IMAGINARY_FLAG = 2;
+        private const int RATIONAL_FLAG  = 0x1;
+        private const int IMAGINARY_FLAG = 0x2;
 
         private Token GenNumberToken(TokenType type, int num_base, int num_flags, int ts = -1)
         {
-            if((num_flags & RATIONAL_FLAG) == 1)
-            {
-                type = tRATIONAL;
-            }
-            else if((num_flags & IMAGINARY_FLAG) == 1)
+            if((num_flags & IMAGINARY_FLAG) != 0)
             {
                 type = tIMAGINARY;
+            }
+            else if((num_flags & RATIONAL_FLAG) != 0)
+            {
+                type = tRATIONAL;
             }
 
             var tok = GenToken(type, ts: ts);

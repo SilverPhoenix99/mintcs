@@ -157,8 +157,8 @@ real_number =
     int_number
     (
           real_exp
-        | real_frac ( real_exp | ('r' %RacSuf)? )?
-    ) %FloNum
+        | real_frac ( real_exp | ('r' @RacSuf)? )?
+    ) >FloNum
 ;
 
 rationable_number = (
@@ -167,9 +167,9 @@ rationable_number = (
     | dec_number
     | hex_number
     | int_number
-) >IntNum ('r' %RacSuf)? ;
+) >IntNum ('r' @RacSuf)? ;
 
-number = ( rationable_number | real_number ) ('i' %CmxSuf)? ;
+number = ( rationable_number | real_number ) ('i' @CmxSuf)? ;
 
 
 # ------------------------------------------------------------------------------
