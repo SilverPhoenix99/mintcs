@@ -19,21 +19,41 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            var fragment = "'a'";
-
-            //var tokens = new Lexer(fragment).ToArray();
-            var ast2 = Parser.Parse(fragment);
-            var doc2 = AstXmlSerializer.ToXml(ast2);
-
-            var val = new Interpreter.Interpreter().Visit(ast2);
-
-            //Console.WriteLine(doc2.ToString());
-            //AstPrinter<Token>.Print(ast2, indent_size: 4);
-
-            //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //TestGems();
             //TestSymbolGC();
             //InvokeDynamicMethods.Test();
+            TestInterpreter(args);
+
+            //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
+            //var tokens = new Lexer(fragment).ToArray();
+
+            //var ast = Parser.Parse(fragment);
+            //AstPrinter<Token>.Print(ast, indent_size: 4);
+        }
+
+        static void TestInterpreter(string[] args)
+        {
+                foreach(var fragment in args)
+                {
+                    try
+                    {
+                        var ast = Parser.Parse(fragment);
+
+                        var doc = AstXmlSerializer.ToXml(ast);
+                        Console.WriteLine(doc.ToString());
+                        Console.WriteLine();
+
+                        var val = new Interpreter.Interpreter().Visit(ast);
+
+                        Console.WriteLine(val.Inspect());
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+
+                    Console.WriteLine();
+                }
         }
 
         static void TestGems()
@@ -79,7 +99,7 @@ namespace Test
                 Console.WriteLine($"Parsed {count} files: {rel_path}");
             }
         }
-        
+
         static void TestSymbolGC()
         {
             var r = new Random(345757345);

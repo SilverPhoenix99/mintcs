@@ -182,7 +182,7 @@ namespace Mint.Types
         }
 
 
-        public override string ToString() => FullName;
+        public override string ToString() => FullName.Value;
 
 
         public new static readonly Class CLASS = new Class(name: "Class");

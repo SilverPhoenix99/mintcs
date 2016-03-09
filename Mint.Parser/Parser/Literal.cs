@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using static Mint.Parser.TokenType;
 using static Mint.Parser.Lexer.States;
@@ -63,7 +64,7 @@ namespace Mint.Parser
         private static readonly Regex INTERPOLATES = new Regex("^(/|`|:?\"|%[^qwis])", RegexOptions.Compiled);
 
         private static readonly IReadOnlyDictionary<string, TokenType> STRING_BEG =
-            (IReadOnlyDictionary<string, TokenType>) new SortedList<string, TokenType>(11)
+            new ReadOnlyDictionary<string, TokenType>(new SortedList<string, TokenType>(11)
             {
                 { "%W",  tWORDS_BEG    },
                 { "%w",  tQWORDS_BEG   },
@@ -76,15 +77,15 @@ namespace Mint.Parser
                 { "%s",  tSYMBEG       },
                 { ":'",  tSYMBEG       },
                 { ":\"", tSYMBEG       },
-            };
+            });
 
         private static readonly IReadOnlyDictionary<string, string> STRING_END =
-            (IReadOnlyDictionary<string, string>) new SortedList<string, string>(4)
+            new ReadOnlyDictionary<string, string>(new SortedList<string, string>(4)
             {
                 { "{", "}" },
                 { "<", ">" },
                 { "[", "]" },
                 { "(", ")" },
-            };
+            });
     }
 }

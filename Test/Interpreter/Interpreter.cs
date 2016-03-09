@@ -12,13 +12,15 @@ namespace Test.Interpreter
     {
         public Interpreter()
         {
-            Register(tINTEGER, ProcessInteger);
-            Register(tFLOAT,   ProcessFloat);
-            Register(kTRUE,    ProcessTrue);
-            Register(kFALSE,   ProcessFalse);
-            Register(kNIL,     ProcessNil);
-            Register(tSYMBEG,  ProcessSymbol);
-            //Register(tSTRING_BEG, ProcessString);
+            Register(tINTEGER,        ProcessInteger);
+            Register(tFLOAT,          ProcessFloat);
+            Register(kTRUE,           ProcessTrue);
+            Register(kFALSE,          ProcessFalse);
+            Register(kNIL,            ProcessNil);
+            Register(tSYMBEG,         ProcessSymbol);
+            Register(tSTRING_BEG,     ProcessString);
+            Register(tSTRING_CONTENT, ProcessStringContent);
+            Register(tCHAR,           ProcessChar);
         }
 
         private Dictionary<TokenType, Func<Ast<Token>, iObject>> Actions { get; } =
@@ -44,7 +46,14 @@ namespace Test.Interpreter
                 return result;
             }
 
-            return Actions[ast.Value.Type](ast);
+            try
+            {
+                return Actions[ast.Value.Type](ast);
+            }
+            catch(KeyNotFoundException e)
+            {
+                throw new ArgumentException($"Token type {ast.Value.Type} not registered.", "ast", e);
+            }
         }
 
         private Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
@@ -83,7 +92,6 @@ namespace Test.Interpreter
 
         protected iObject ProcessSymbol(Ast<Token> ast)
         {
-            var tok = ast.Value;
             var content = ast.List[0].Value;
 
             if(content == null)
@@ -93,6 +101,43 @@ namespace Test.Interpreter
             }
 
             return new Symbol(content.Value);
+        }
+
+        protected iObject ProcessString(Ast<Token> ast)
+        {
+            var str = new Mint.Types.String();
+            ProcessStringInternal(ast, str);
+            return str;
+        }
+        
+        protected iObject ProcessStringContent(Ast<Token> ast)
+        {
+            return new Mint.Types.String(ast.Value.Value);
+        }
+        
+        protected iObject ProcessChar(Ast<Token> ast)
+        {
+            var str = new Mint.Types.String(ast.Value.Value);
+            ProcessStringInternal(ast, str);
+            return str;
+        }
+
+        protected void ProcessStringInternal(Ast<Token> ast, Mint.Types.String str)
+        {
+            foreach(var content in ast.List)
+            {
+                if(content.Value != null)
+                {
+                    str.Concat( Visit(content) );
+                    continue;
+                }
+
+                // it's a list
+                foreach(var subcontent in content.List)
+                {
+                    str.Concat( Visit(subcontent) );
+                }
+            }
         }
     }
 }

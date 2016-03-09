@@ -9,6 +9,12 @@ namespace Mint.Types
 
         private string value;
 
+        
+        public String() : base(CLASS)
+        {
+            Value = "";
+        }
+        
 
         public String(string value) : base(CLASS)
         {
@@ -28,8 +34,30 @@ namespace Mint.Types
                 this.value = value;
             }
         }
+        
+        
+        public String Concat(iObject other)
+        {
+            if(other is Fixnum )// TODO || other is Bignum)
+            {
+                // TODO: convert to codepoint
+                throw new NotImplementedException();
+            }
+            
+            if(!(other is String))
+            {
+                var type = (other == null || other is Nil)
+                         ? "nil"
+                         : other.Class.Name;
+                throw new TypeError($"no implicit conversion of {type} into String");
+            }
+            
+            value += ((String) other).Value;
+            return this;
+        }
+        
 
-        // TODO
+        // TODO: transform special chars into escapes
         public override string Inspect() => $"\"{Value}\"";
 
 
@@ -39,7 +67,7 @@ namespace Mint.Types
         public static explicit operator String(string s) => new String(s);
 
 
-        public static implicit operator string(String s) => s.Value;
+        public static explicit operator string(String s) => s.Value;
 
 
         static String()
