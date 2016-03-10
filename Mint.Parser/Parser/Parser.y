@@ -247,7 +247,7 @@ mlhs_basic :
   | mlhs_head kSTAR                            { $$ = $1 + $2; }
   | mlhs_head kSTAR kCOMMA mlhs_post           { $$ = $1 + $2 + $4; }
   | kSTAR mlhs_node                            { $$ = $1 + $2; }
-  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = sexp($1 + $2) + $3; }
+  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = sexp($1 + $2) + $4; }
   | kSTAR                                      { $$ = sexp($1); }
   | kSTAR kCOMMA mlhs_post                     { $$ = sexp($1) + $3; }
 ;
@@ -377,7 +377,7 @@ fitem :
 
 undef_list :
     fitem { $$ = sexp($1); }
-  | undef_list kCOMMA { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + sexp($2); }
+  | undef_list kCOMMA { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + sexp($4); }
 ;
 
 op :
@@ -604,7 +604,7 @@ mrhs_arg :
 ;
 
 mrhs :
-    args kCOMMA arg       { $$ = $1 + $2; }
+    args kCOMMA arg       { $$ = $1 + $3; }
   | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
   | kSTAR arg             { $$ = sexp($1 + $2); }
 ;
