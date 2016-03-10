@@ -48,8 +48,8 @@ namespace Mint.Parser
         {
             if(!((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
             {
-                var token = ValueStack[ValueStack.Depth-1];
-                throw new SyntaxError(token.Value.Location.Item1, $"unexpected {token.Value.Type}");
+                var token = Scanner.yylval.Value;
+                throw new SyntaxError(token.Location.Item1, $"unexpected {token.Type}");
             }
             return Result;
         }

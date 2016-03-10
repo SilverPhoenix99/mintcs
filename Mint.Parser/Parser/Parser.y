@@ -71,7 +71,7 @@ top_stmts :
     { $$ = sexp(); } // nothing
   | top_stmt                 { $$ = sexp($1); }
   | top_stmts terms top_stmt { $$ = $1 + $3; }
-  | error top_stmt           { $$ = sexp($2); }
+  //| error top_stmt           { $$ = sexp($2); } // Must give error
 ;
 
 top_stmt :
@@ -123,7 +123,7 @@ stmts :
     { $$ = sexp(); } // nothing
   | stmt_or_begin             { $$ = sexp($1); }
   | stmts terms stmt_or_begin { $$ = $1 + $3; }
-  | error stmt                { $$ = sexp($2); }
+  //| error stmt                { $$ = sexp($2); } // Must give error
 ;
 
 stmt_or_begin :
