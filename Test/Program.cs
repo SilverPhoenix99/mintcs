@@ -27,7 +27,9 @@ namespace Test
 
             if(InVisualStudio)
             {
-                TestInterpreter(new[] { "1e2r" });
+                TestInterpreter(@"<<A
+blah
+A");
             }
             else
             {
@@ -41,29 +43,30 @@ namespace Test
             //AstPrinter<Token>.Print(ast, indent_size: 4);
         }
 
-        static void TestInterpreter(string[] args)
+        static void TestInterpreter(params string[] args)
         {
-                foreach(var fragment in args)
-                {
-                    try
-                    {
-                        var ast = Parser.Parse(fragment);
+            var fragment = string.Join("\n", args);
 
-                        var doc = AstXmlSerializer.ToXml(ast);
-                        Console.WriteLine(doc.ToString());
-                        Console.WriteLine();
+            try
+            {
+                var ast = Parser.Parse(fragment);
 
-                        var val = new Interpreter.Interpreter().Visit(ast);
+                var doc = AstXmlSerializer.ToXml(ast);
+                Console.WriteLine(doc.ToString());
+                Console.WriteLine();
 
-                        Console.WriteLine(val.Inspect());
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine(e.ToString());
-                    }
+                var val = new Interpreter.Interpreter().Visit(ast);
 
-                    Console.WriteLine();
-                }
+                Console.WriteLine(val.Inspect());
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            finally
+            {
+                Console.WriteLine();
+            }
         }
 
         static void TestGems()

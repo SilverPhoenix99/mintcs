@@ -165,7 +165,9 @@ namespace Mint.Parser
             if(ts < 0) { ts = this.ts; }
             if(te < 0) { te = this.te; }
 
-            return data.Substring(ts, te - ts);
+            var len = Math.Min(te, data.Length) - ts;
+
+            return data.Substring(ts, len);
         }
 
         private bool FcalledBy(bool reject, uint offset, params States[] states)
