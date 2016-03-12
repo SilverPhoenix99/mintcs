@@ -42,12 +42,12 @@ namespace Mint.Types
         }
 
 
-        public static iObject Convert(string s) => new String(s);
+        public static iObject Box(string s) => new String(s);
 
 
-        public static iObject Convert(object o)
+        public static iObject Box(object o)
         {
-            if(o is string) return Convert((string) o);
+            if(o is string) return Box((string) o);
 
             return (iObject) o;
         }

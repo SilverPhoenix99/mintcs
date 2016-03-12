@@ -36,6 +36,16 @@ namespace Mint.Types
         public string Inspect() => ":" + sym.name;
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
+        
+        public bool Equals(Symbol obj) => sym.id == obj.sym.id;
+
+        public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
+
+        public override int GetHashCode() => sym.id.GetHashCode();
+
+        public static bool operator == (Symbol s, object obj) => s.Equals(obj);
+
+        public static bool operator != (Symbol s, object obj) => !s.Equals(obj);
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 

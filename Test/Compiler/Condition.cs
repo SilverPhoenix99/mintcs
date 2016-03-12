@@ -2,12 +2,7 @@
 {
     class Condition
     {
-        public bool Valid { get; private set; }
-
-        public Condition()
-        {
-            Valid = true;
-        }
+        public bool Valid { get; private set; } = true;
 
         public void Invalidate()
         {

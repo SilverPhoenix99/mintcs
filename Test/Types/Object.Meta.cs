@@ -3,6 +3,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.Types
 {
@@ -51,32 +52,32 @@ namespace Mint.Types
 
                 var info = RuntimeType?.GetMethod(name, args.Select(_ => _.RuntimeType).ToArray());
 
-                var instanceExpr = Expression.Convert(Expression, typeof(iObject));
+                var instanceExpr = Convert(Expression, typeof(iObject));
 
-                var propExpr = Expression.Property(instanceExpr, REAL_CLASS_PROPERTY);
+                var propExpr = Property(instanceExpr, REAL_CLASS_PROPERTY);
 
-                var resultParam = Expression.Parameter(typeof(iObject), "result");
+                var resultParam = Parameter(typeof(iObject), "result");
 
                 var callArgs = new Expression[]
                 {
                     instanceExpr,
-                    Expression.Constant(name),
+                    Constant(name),
                     resultParam,
-                    Expression.NewArrayInit(typeof(object), args.Select(_ => _.Expression))
+                    NewArrayInit(typeof(object), args.Select(_ => _.Expression))
                 };
 
                 Expression callSite;
                 if(info != null)
                 {
-                    var fallback = Expression.Call(
-                        typeof(Object).GetMethod("Convert", new[] { typeof(object) }),
+                    var fallback = Call(
+                        typeof(Object).GetMethod("Box", new[] { typeof(object) }),
                         fallbackExpr()
                     );
 
-                    callSite = Expression.Block(
+                    callSite = Block(
                         new[] { resultParam },
-                        Expression.Condition(
-                            Expression.Call(propExpr, TRY_INVOKE_METHOD, callArgs),
+                        Condition(
+                            Call(propExpr, TRY_INVOKE_METHOD, callArgs),
                             resultParam,
                             fallback,
                             typeof(iObject)
@@ -88,22 +89,22 @@ namespace Mint.Types
                     // expression:
                     //     throw new NoMethodError("undefined method `{0}' for " + <value>.InternalInspect())
 
-                    var fallback = Expression.Throw(
-                        Expression.New(
+                    var fallback = Throw(
+                        New(
                             NO_METHOD_ERROR_CTOR,
-                            Expression.Call(
+                            Call(
                                 STRING_CONCAT_METHOD,
-                                Expression.Constant($"undefined method `{name}' for "),
+                                Constant($"undefined method `{name}' for "),
                                 Expression,
-                                Expression.Call(Expression, typeof(aObject).GetMethod("InspectInternal"))
+                                Call(Expression, typeof(aObject).GetMethod("InspectInternal"))
                             )
                         )
                     );
 
-                    callSite = Expression.Block(
+                    callSite = Block(
                         new[] { resultParam },
-                        Expression.IfThen(
-                            Expression.Not(Expression.Call(propExpr, TRY_INVOKE_METHOD, callArgs)),
+                        IfThen(
+                            Not(Call(propExpr, TRY_INVOKE_METHOD, callArgs)),
                             fallback
                         ),
                         resultParam

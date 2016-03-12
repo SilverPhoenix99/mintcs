@@ -1,11 +1,10 @@
-﻿using Mint.Parser;
+﻿using Mint;
+using Mint.Parser;
 using Mint.Types;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace Test
 {
@@ -24,16 +23,15 @@ namespace Test
             //TestGems();
             //TestSymbolGC();
             //InvokeDynamicMethods.Test();
+            //TestRoslyn.TestLambdaCompilation();
 
             if(InVisualStudio)
             {
-                TestInterpreter(@"<<A
-blah
-A");
+                TestInterpreter.Test("<<A", "blah", "A");
             }
             else
             {
-                TestInterpreter(args);
+                TestInterpreter.Test(args);
             }
 
             //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
@@ -41,32 +39,6 @@ A");
 
             //var ast = Parser.Parse(fragment);
             //AstPrinter<Token>.Print(ast, indent_size: 4);
-        }
-
-        static void TestInterpreter(params string[] args)
-        {
-            var fragment = string.Join("\n", args);
-
-            try
-            {
-                var ast = Parser.Parse(fragment);
-
-                var doc = AstXmlSerializer.ToXml(ast);
-                Console.WriteLine(doc.ToString());
-                Console.WriteLine();
-
-                var val = new Interpreter.Interpreter().Visit(ast);
-
-                Console.WriteLine(val.Inspect());
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            finally
-            {
-                Console.WriteLine();
-            }
         }
 
         static void TestGems()

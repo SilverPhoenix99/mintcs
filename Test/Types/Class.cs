@@ -151,7 +151,7 @@ namespace Mint.Types
 
             var args2 = new[] { value }.Concat(args).ToArray();
 
-            result = Object.Convert(deleg.DynamicInvoke(args2));
+            result = Object.Box(deleg.DynamicInvoke(args2));
 
             // make sure ref/out parameters get assigned
             Array.Copy(args2, 1, args, 0, args.Length);

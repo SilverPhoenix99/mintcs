@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using static Mint.Parser.TokenType;
 
-namespace Test.Interpreter
+namespace Mint
 {
     class Interpreter : AstVisitor<Token, iObject>
     {
