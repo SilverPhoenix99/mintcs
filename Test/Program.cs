@@ -22,17 +22,17 @@ namespace Test
 
             //TestGems();
             //TestSymbolGC();
-            //InvokeDynamicMethods.Test();
+            InvokeDynamicMethods.Test();
             //TestRoslyn.TestLambdaCompilation();
 
-            if(InVisualStudio)
+            /*if(InVisualStudio)
             {
                 TestInterpreter.Test("<<A", "blah", "A");
             }
             else
             {
                 TestInterpreter.Test(args);
-            }
+            }*/
 
             //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //var tokens = new Lexer(fragment).ToArray();

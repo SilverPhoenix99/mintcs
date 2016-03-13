@@ -25,6 +25,9 @@ namespace Mint.Types
             internal Meta(Expression expression, iObject value)
                 : base(expression, BindingRestrictions.Empty, value)
             { }
+
+
+            public new iObject Value => (iObject) ((DynamicMetaObject) this).Value;
                         
 
             public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
@@ -43,12 +46,12 @@ namespace Mint.Types
 
             private DynamicMetaObject CompileMethodInvoke(string name, DynamicMetaObject[] args, Func<Expression> fallbackExpr)
             {
-                // TODO Method resolution:
-                //   1. Methods defined in the object's singleton class (i.e. the object itself)
-                //   2. Modules mixed into the singleton class in reverse order of inclusion
-                //   3. Methods defined by the object's class
-                //   4. Modules included into the object's class in reverse order of inclusion
-                //   5. Methods defined by the object's superclass.
+                var method = Value.RealClass.FindDynamicMethod(name);
+
+                if(method != null)
+                {
+
+                }
 
                 var info = RuntimeType?.GetMethod(name, args.Select(_ => _.RuntimeType).ToArray());
 

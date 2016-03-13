@@ -12,24 +12,24 @@ namespace Test
 
             f.Class.Def<Fixnum>("to_s", "ToString");
 
-            try
+            /*try
             {
                 f.Class.Def<Fixnum>("to_n", "ToNative");
                 throw new InvalidOperationException();
             }
-            catch(NoMethodError) {}
+            catch(NoMethodError) {}*/
 
             var s = ((dynamic) f).to_s();
 
 
             var s2 = ((dynamic) f).ToString();
 
-            try
+            /*try
             {
                 var n = ((dynamic) f).to_n();
                 throw new InvalidOperationException();
             }
-            catch(NoMethodError) {}
+            catch(NoMethodError) {}*/
         }
     }
 }

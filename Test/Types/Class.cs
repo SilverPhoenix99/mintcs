@@ -126,17 +126,23 @@ namespace Mint.Types
 
         public Delegate FindMethod(string name)
         {
-            Delegate deleg = null;
+            // TODO Method resolution:
+            //   1. Methods defined in the object's singleton class (i.e. the object itself)
+            //   2. Modules mixed into the singleton class in reverse order of inclusion
+            //   3. Methods defined by the object's class
+            //   4. Modules included into the object's class in reverse order of inclusion
+            //   5. Methods defined by the object's superclass.
+
             for(var klass = this; klass != null; klass = klass.Super)
             {
-                deleg = klass.GetMethod(name);
+                var deleg = klass.GetMethod(name);
                 if(deleg != null)
                 {
-                    break;
+                    return deleg;
                 }
             }
 
-            return deleg;
+            return null;
         }
 
 
@@ -173,11 +179,11 @@ namespace Mint.Types
             var parms = from p in info.GetParameters()
                         select Parameter(p.ParameterType, p.Name);
 
-            var allParms = new[] { Parameter(info.DeclaringType, "_") }.Concat(parms);
+            var lambdaParm = Parameter(info.DeclaringType, "_");
 
             var wrapper = Lambda(
-                Call(allParms.First(), info, parms),
-                allParms
+                Call(lambdaParm, info, parms),
+                new[] { lambdaParm }.Concat(parms)
             );
 
             return wrapper.Compile();

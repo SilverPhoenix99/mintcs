@@ -5,10 +5,6 @@ namespace Mint.Types
 {
     public partial class Object : aObject
     {
-        public static readonly Class BASIC_OBJECT_CLASS = new Class("BasicObject") { Super = null };
-
-        public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, "Object");
-
         private Class realClass;
         protected IDictionary<string, iObject> variables = new Dictionary<string, iObject>();
         
@@ -41,6 +37,11 @@ namespace Mint.Types
             Frozen = true;
         }
 
+        #region Static
+
+        public static readonly Class BASIC_OBJECT_CLASS = new Class("BasicObject") { Super = null };
+
+        public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, "Object");
 
         public static iObject Box(string s) => new String(s);
 
@@ -94,5 +95,7 @@ namespace Mint.Types
             //instance_eval
             //instance_exec
         }
+
+        #endregion
     }
 }
