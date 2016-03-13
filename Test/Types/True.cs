@@ -5,7 +5,7 @@ namespace Mint.Types
 {
     public struct True : iObject
     {
-        public static readonly Class CLASS = new Class(name: "TrueClass");
+        public static readonly Class CLASS = new Class("TrueClass");
 
         public long  Id                => 0x1a;
         public Class Class             => CLASS;

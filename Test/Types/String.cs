@@ -4,7 +4,7 @@ namespace Mint.Types
 {
     public class String : Object
     {
-        public static new readonly Class CLASS = new Class(name: "String");
+        public static new readonly Class CLASS = new Class("String");
 
 
         private string value;

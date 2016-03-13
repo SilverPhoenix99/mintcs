@@ -5,7 +5,7 @@ namespace Mint.Types
     public class Float : aObject
     {
         // TODO Superclass = Integer < Numeric
-        public static Class CLASS = new Class(name: "Float");
+        public static Class CLASS = new Class("Float");
 
 
         public Float(double value) : base()

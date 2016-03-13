@@ -8,7 +8,7 @@ namespace Mint.Types
 {
     public class Complex : Object
     {
-        public static new readonly Class CLASS = new Class(name: "Complex");
+        public static new readonly Class CLASS = new Class("Complex");
 
         public iObject Real { get; }
         public iObject Imag { get; }

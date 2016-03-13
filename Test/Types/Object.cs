@@ -5,7 +5,7 @@ namespace Mint.Types
 {
     public partial class Object : aObject
     {
-        public static readonly Class BASIC_OBJECT_CLASS = new Class(name: "BasicObject") { Super = null };
+        public static readonly Class BASIC_OBJECT_CLASS = new Class("BasicObject") { Super = null };
 
         public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, "Object");
 

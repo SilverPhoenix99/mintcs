@@ -6,7 +6,7 @@ namespace Mint.Types
 {
     public struct Fixnum : iObject
     {
-        public static Class NUMERIC_CLASS = new Class(name: "Numeric");
+        public static Class NUMERIC_CLASS = new Class("Numeric");
 
         public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, "Integer");
 

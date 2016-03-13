@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Ex=System.Linq.Expressions.Expression;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.Types
 {
     public class Class : Object
     {
-        public Class(Class superclass = null, string name = null) : base(CLASS)
+        public Class(Class superclass, string name = null) : base(CLASS)
         {
             Super = superclass ?? Object.CLASS;
             Name = name;
         }
+
+
+        public Class(string name) : this(null, name) { }
 
 
         public string                        Name        { get; set; }
@@ -74,7 +76,7 @@ namespace Mint.Types
                 .Concat(new[] { info.ReturnType })
                 .ToArray();
 
-            var delegateType = Ex.GetDelegateType(parms);
+            var delegateType = GetDelegateType(parms);
 
             object instance = null;
             if(!info.IsStatic && info.DeclaringType.Name.StartsWith("<>"))
@@ -169,12 +171,12 @@ namespace Mint.Types
         private Delegate WrapInstanceMethod(MethodInfo info)
         {
             var parms = from p in info.GetParameters()
-                        select Ex.Parameter(p.ParameterType, p.Name);
+                        select Parameter(p.ParameterType, p.Name);
 
-            var allParms = new[] { Ex.Parameter(info.DeclaringType, "_") }.Concat(parms);
+            var allParms = new[] { Parameter(info.DeclaringType, "_") }.Concat(parms);
 
-            var wrapper = Ex.Lambda(
-                Ex.Call(allParms.First(), info, parms),
+            var wrapper = Lambda(
+                Call(allParms.First(), info, parms),
                 allParms
             );
 
@@ -185,7 +187,7 @@ namespace Mint.Types
         public override string ToString() => FullName.Value;
 
 
-        public new static readonly Class CLASS = new Class(name: "Class");
+        public new static readonly Class CLASS = new Class("Class");
 
 
         public static bool IsA(iObject o, Class c)

@@ -8,7 +8,7 @@ namespace Mint.Types
 {
     public struct Symbol : iObject
     {
-        public static Class CLASS = new Class(name: "Symbol");
+        public static Class CLASS = new Class("Symbol");
 
         private static IDictionary<string, WeakReference<Sym>> SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
 
