@@ -6,20 +6,17 @@ namespace Mint.Types
     public partial class Object : aObject
     {
         private Class realClass;
-        protected IDictionary<string, iObject> variables = new Dictionary<string, iObject>();
+        protected IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
         
-
         public Object(Class klass = null) : base()
         {
             realClass = klass ?? CLASS;
         }
-        
 
         public override Class Class             => realClass.IsSingleton ? realClass.Super : realClass;
         public override Class RealClass         => realClass;
         public override bool  HasSingletonClass => realClass.IsSingleton;
         public override bool  Frozen            { get; protected set; }
-
 
         public override Class SingletonClass
         {
@@ -30,7 +27,6 @@ namespace Mint.Types
                     : realClass;
             }
         }
-
         
         public override void Freeze()
         {

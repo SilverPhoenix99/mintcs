@@ -46,11 +46,12 @@ namespace Mint.Types
 
             private DynamicMetaObject CompileMethodInvoke(string name, DynamicMetaObject[] args, Func<Expression> fallbackExpr)
             {
-                var method = Value.RealClass.FindDynamicMethod(name);
+                var method = Value.RealClass.FindMethod(name);
 
                 if(method != null)
                 {
-
+                    // TODO
+                    throw new NotImplementedException();
                 }
 
                 var info = RuntimeType?.GetMethod(name, args.Select(_ => _.RuntimeType).ToArray());
