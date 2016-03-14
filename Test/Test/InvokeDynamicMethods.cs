@@ -19,10 +19,12 @@ namespace Test
             }
             catch(NoMethodError) {}*/
 
-            var s = ((dynamic) f).to_s();
+            var d = (dynamic) f;
 
-
-            var s2 = ((dynamic) f).ToString();
+            var s = d.to_s();
+            s = d.to_s;
+            s = d.Class;
+            s = d.ToString();
 
             /*try
             {
