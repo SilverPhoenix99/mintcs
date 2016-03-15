@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Mint.Types
+namespace Mint
 {
     public class Float : aObject
     {
         // TODO Superclass = Integer < Numeric
-        public static Class CLASS = new Class("Float");
+        public static Class CLASS = new Class(new Symbol("Float"));
 
 
         public Float(double value) : base()

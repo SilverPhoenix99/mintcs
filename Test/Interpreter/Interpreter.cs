@@ -1,5 +1,4 @@
 ﻿using Mint.Parser;
-using Mint.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -93,30 +92,30 @@ namespace Mint
         protected iObject ProcessSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
-            var value = content.Value?.Value ?? ((Mint.Types.String) ProcessString(content)).Value;
+            var value = content.Value?.Value ?? ((Mint.String) ProcessString(content)).Value;
             return new Symbol(value);
         }
 
         protected iObject ProcessString(Ast<Token> ast)
         {
-            var str = new Mint.Types.String();
+            var str = new Mint.String();
             ProcessStringInternal(ast, str);
             return str;
         }
         
         protected iObject ProcessStringContent(Ast<Token> ast)
         {
-            return new Mint.Types.String(ast.Value.Value);
+            return new Mint.String(ast.Value.Value);
         }
         
         protected iObject ProcessChar(Ast<Token> ast)
         {
-            var str = new Mint.Types.String(ast.Value.Value);
+            var str = new Mint.String(ast.Value.Value);
             ProcessStringInternal(ast, str);
             return str;
         }
 
-        protected void ProcessStringInternal(Ast<Token> ast, Mint.Types.String str)
+        protected void ProcessStringInternal(Ast<Token> ast, Mint.String str)
         {
             foreach(var content in ast.List)
             {

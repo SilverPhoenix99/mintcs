@@ -1,6 +1,6 @@
 ﻿namespace Mint.Compiler
 {
-    class Condition
+    public class Condition
     {
         public bool Valid { get; private set; } = true;
 

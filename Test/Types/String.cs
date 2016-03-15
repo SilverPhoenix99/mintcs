@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Mint.Types
+namespace Mint
 {
     public class String : Object
     {
-        public static new readonly Class CLASS = new Class("String");
+        public static new readonly Class CLASS = new Class(new Symbol("String"));
 
 
         private string value;
@@ -47,8 +47,8 @@ namespace Mint.Types
             if(!(other is String))
             {
                 var type = (other == null || other is Nil)
-                         ? "nil"
-                         : other.Class.Name;
+                         ? new String("nil")
+                         : new String(other.Class.FullName);
                 throw new TypeError($"no implicit conversion of {type} into String");
             }
             

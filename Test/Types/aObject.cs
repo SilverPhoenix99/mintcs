@@ -3,7 +3,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
 
-namespace Mint.Types
+namespace Mint
 {
     public abstract class aObject : iObject
     {
@@ -12,7 +12,7 @@ namespace Mint.Types
         public virtual  long  Id                { get; } = Interlocked.Increment(ref nextId) << 2;
         public abstract Class Class             { get; }
         public virtual  bool  HasSingletonClass => false;
-        public virtual  Class RealClass         => HasSingletonClass ? SingletonClass : Class;
+        public virtual  Class CalculatedClass   => HasSingletonClass ? SingletonClass : Class;
         public virtual  Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
 
         public virtual bool Frozen
@@ -34,22 +34,6 @@ namespace Mint.Types
 
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
-
-        public static iObject ToObject(object o)
-        {
-            if(o is string)
-            {
-                return new String((string) o);
-            }
-
-            if(o is bool)
-            {
-                return (bool) o ? (iObject) new True() : new False();
-            }
-
-            return (iObject) o;
-        }
 
 
         // Convert from ExpressionType to operator name

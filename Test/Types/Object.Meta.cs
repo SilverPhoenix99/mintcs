@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.Types
+namespace Mint
 {
     partial class Object
     {
@@ -46,7 +46,7 @@ namespace Mint.Types
 
             private DynamicMetaObject CompileMethodInvoke(string name, DynamicMetaObject[] args, Func<Expression> fallbackExpr)
             {
-                var method = Value.RealClass.FindMethod(name);
+                var method = Value.CalculatedClass.FindMethod(new Symbol(name));
 
                 if(method != null)
                 {

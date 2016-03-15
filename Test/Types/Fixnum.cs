@@ -2,15 +2,15 @@
 using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Mint.Types
+namespace Mint
 {
     public struct Fixnum : iObject
     {
-        public static Class NUMERIC_CLASS = new Class("Numeric");
+        public static Class NUMERIC_CLASS = new Class(new Symbol("Numeric"));
 
-        public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, "Integer");
+        public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
 
-        public static Class CLASS = new Class(INTEGER_CLASS, "Fixnum");
+        public static Class CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
 
 
 
@@ -22,7 +22,7 @@ namespace Mint.Types
         public long  Id                => Value << 2 | 1;
         public Class Class             => CLASS;
         public Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class RealClass         => CLASS;
+        public Class CalculatedClass   => CLASS;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
         public long Value              { get; }

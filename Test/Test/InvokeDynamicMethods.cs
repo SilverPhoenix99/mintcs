@@ -1,5 +1,4 @@
 ﻿using System;
-using Mint.Types;
 using Mint;
 
 namespace Test
@@ -10,7 +9,9 @@ namespace Test
         {
             Fixnum f = (Fixnum) 132;
 
-            f.Class.Def<Fixnum>("to_s", "ToString");
+            f.Class.DefineMethod(new Symbol("to_s"), (Func<Fixnum, Mint.String>)
+                ( (self) => new Mint.String(self.ToString()) )
+            );
 
             /*try
             {
@@ -21,10 +22,10 @@ namespace Test
 
             var d = (dynamic) f;
 
-            var s = d.to_s();
-            s = d.to_s;
-            s = d.Class;
-            s = d.ToString();
+            Console.WriteLine(d.to_s());
+            Console.WriteLine(d.to_s);
+            Console.WriteLine(d.Class);
+            Console.WriteLine(d.ToString());
 
             /*try
             {

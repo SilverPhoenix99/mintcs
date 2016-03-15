@@ -1,20 +1,23 @@
 ﻿using System.Dynamic;
 
-namespace Mint.Types
+namespace Mint
 {
     public interface iObject : IDynamicMetaObjectProvider
     {
-        long  Id                { get; }
-       
-        Class Class             { get; } // Always returns the class that isn't singleton
+        long  Id { get; }
 
-        Class SingletonClass    { get; } // Creates a new singleton class if needed
-                
-        Class RealClass         { get; } // Returns singleton class if it exists, otherwise it returns the Class
+        // Always returns the class that isn't singleton
+        Class Class { get; }
+
+        // Creates a new singleton class if needed
+        Class SingletonClass { get; }
+
+        // Returns SingletonClass if it exists, otherwise it returns Class
+        Class CalculatedClass { get; }
 
         bool  HasSingletonClass { get; }
         
-        bool Frozen             { get; }
+        bool Frozen { get; }
 
         void Freeze();
 

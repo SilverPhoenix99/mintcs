@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mint.Types
+namespace Mint
 {
     public class Complex : Object
     {
-        public static new readonly Class CLASS = new Class("Complex");
+        public static new readonly Class CLASS = new Class(new Symbol("Complex"));
 
         public iObject Real { get; }
         public iObject Imag { get; }

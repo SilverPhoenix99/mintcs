@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Mint.Types
+namespace Mint
 {
     public partial class Object : aObject
     {
-        private Class realClass;
+        private Class calculatedClass;
         protected IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
         
         public Object(Class klass = null) : base()
         {
-            realClass = klass ?? CLASS;
+            calculatedClass = klass ?? CLASS;
         }
 
-        public override Class Class             => realClass.IsSingleton ? realClass.Super : realClass;
-        public override Class RealClass         => realClass;
-        public override bool  HasSingletonClass => realClass.IsSingleton;
+        public override Class Class             => HasSingletonClass ? calculatedClass.Superclass : calculatedClass;
+        public override Class CalculatedClass   => calculatedClass;
+        public override bool  HasSingletonClass => calculatedClass.IsSingleton;
         public override bool  Frozen            { get; protected set; }
 
         public override Class SingletonClass
         {
             get
             {
-                return !realClass.IsSingleton
-                    ? realClass = new Class(realClass) { IsSingleton = true }
-                    : realClass;
+                return !calculatedClass.IsSingleton
+                    ? calculatedClass = new Class(calculatedClass, isSingleton: true)
+                    : calculatedClass;
             }
         }
         
@@ -32,30 +32,45 @@ namespace Mint.Types
         {
             Frozen = true;
         }
+        
+        public virtual Method FindMethod(Symbol name)
+        {
+            // Method resolution:
+            //   1. Methods defined in the object's singleton class (i.e. the object itself)
+            //   2. Modules mixed into the singleton class in reverse order of inclusion
+            //   3. Methods defined by the object's class
+            //   4. Modules included into the object's class in reverse order of inclusion
+            //   5. Methods defined by the object's superclass.
+
+            return CalculatedClass.FindMethod(name);
+        }
 
         #region Static
 
-        public static readonly Class BASIC_OBJECT_CLASS = new Class("BasicObject") { Super = null };
+        public static readonly Class BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
 
-        public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, "Object");
+        public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol("Object"));
 
-        public static iObject Box(string s) => new String(s);
+        public static iObject Box(string obj) => new String(obj);
 
-
+        public static iObject Box(bool obj) => obj ? new True() : (iObject) new False();
+        
         public static iObject Box(object o)
         {
             if(o is string) return Box((string) o);
+            if(o is bool)   return Box((bool) o);
 
             return (iObject) o;
         }
-
-
+        
         public static void DefineClass(Class klass)
         {
-            CLASS.Constants[klass.Name] = klass;
+            if(klass.Name.HasValue)
+            {
+                CLASS.Constants[klass.Name.Value] = klass;
+            }
         }
-
-
+        
         static Object()
         {
             DefineClass(CLASS);
@@ -67,23 +82,23 @@ namespace Mint.Types
                 DefineClass(Class.CLASS);
             }
 
-            BASIC_OBJECT_CLASS.Def("!", (Func<iObject, bool>) (
+            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("!"), (Func<iObject, bool>) (
                 (self) => !(self is False || self is Nil)
             ));
 
-            BASIC_OBJECT_CLASS.Def("==", (Func<iObject, iObject, bool>) (
+            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("=="), (Func<iObject, iObject, bool>) (
                 (self, o) => self == o
             ));
 
-            BASIC_OBJECT_CLASS.Def("!=", (Func<iObject, iObject, bool>) (
+            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("!="), (Func<iObject, iObject, bool>) (
                 (self, o) => self != o
             ));
 
-            BASIC_OBJECT_CLASS.Def("__id__", (Func<iObject, Fixnum>) (
+            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("__id__"), (Func<iObject, Fixnum>) (
                 (self) => self.Id
             ));
 
-            BASIC_OBJECT_CLASS.Def("equal?", (Func<iObject, iObject, bool>) (
+            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("equal?"), (Func<iObject, iObject, bool>) (
                 (self, o) => self == o
             ));
 

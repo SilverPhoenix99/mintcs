@@ -4,151 +4,46 @@ using System.Linq;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.Types
+namespace Mint
 {
-    public class Class : Object
+    public class Class : Module
     {
-        public Class(Class superclass, string name = null) : base(CLASS)
+        public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
+            : base(CLASS, name, container)
         {
-            Super = superclass ?? Object.CLASS;
-            Name = name;
+            Superclass = superclass;
+            IsSingleton = isSingleton;
         }
 
+        public Class(Symbol? name = null, Module container = null, bool isSingleton = false)
+            : this(Object.CLASS, name, container, isSingleton)
+        { }
+        
+        public Class         Superclass  { get; }
+        public bool          IsSingleton { get; }
+        public override bool IsModule    => false;
 
-        public Class(string name) : this(null, name) { }
-
-
-        public string                        Name        { get; set; }
-        public Class                         Super       { get; set; }
-        public Class                         Container   { get; set; }
-        public IDictionary<string, Delegate> Methods     { get; } = new Dictionary<string, Delegate>();
-        public IDictionary<string, iObject>  Constants   { get; } = new Dictionary<string, iObject>();
-        public bool                          IsSingleton { get; set; }
-        public bool                          IsModule    { get; set; }
-
-
-        public String FullName
+        public override Method FindMethod(Symbol name)
         {
-            get
+            // Method resolution: See Object#FindMethod
+
+            throw new NotImplementedException();
+
+            for(var klass = this; klass != null; klass = klass.Superclass)
             {
-                if(IsSingleton)
+                Method method;
+                if(Methods.TryGetValue(name, out method))
                 {
-                    return (String) $"#<Class:{Super.FullName}>";
-                }
-
-                if(Name == null)
-                {
-                    return (String) base.ToString();
-                }
-
-                var names = new List<string>();
-                names.Add(Name);
-                var container = Container;
-                while(container != null)
-                {
-                    names.Add(container.Name);
-                    container = container.Container;
-                }
-
-                names.Reverse();
-                return (String) string.Join("::", names);
-            }
-        }
-
-
-        public string Def(string name, Delegate func)
-        {
-            Methods[name] = func;
-            return name;
-        }
-
-
-        public string Def(string name, MethodInfo info)
-        {
-            // is it an instance method from an iObject?
-            if(!info.IsStatic && typeof(iObject).IsAssignableFrom(info.DeclaringType))
-            {
-                // generate wrapping delegate
-                return Def(name, WrapInstanceMethod(info));
-            }
-
-            var parms = info.GetParameters().Select(((_) => _.ParameterType))
-                .Concat(new[] { info.ReturnType })
-                .ToArray();
-
-            var delegateType = GetDelegateType(parms);
-
-            object instance = null;
-            if(!info.IsStatic && info.DeclaringType.Name.StartsWith("<>"))
-            {
-                instance = info.DeclaringType.GetConstructor(Type.EmptyTypes).Invoke(null);
-            }
-
-            var deleg = Delegate.CreateDelegate(delegateType, instance, info);
-            return Def(name, deleg);
-        }
-
-
-        public string Def<Type>(string ruby_name, string native_name)
-        {
-            var mInfo = typeof(Type).GetMethod(native_name);
-
-            if(mInfo != null)
-            {
-                return Def(ruby_name, mInfo);
-            }
-
-            var pInfo = typeof(Type).GetProperty(native_name);
-
-            if(pInfo == null)
-            {
-                throw new NoMethodError("undefined native method `" + native_name + "' for type " + typeof(Type).FullName);
-            }
-
-            mInfo = ruby_name.EndsWith("=") ? pInfo.GetSetMethod() : pInfo.GetGetMethod();
-
-            if(mInfo == null)
-            {
-                throw new NoMethodError("undefined native property `" + native_name + "' for " + typeof(Type).FullName);
-            }
-
-            return Def(ruby_name, mInfo);
-        }
-
-
-        public Delegate GetMethod(string name)
-        {
-            Delegate deleg;
-            Methods.TryGetValue(name, out deleg);
-            return deleg;
-        }
-
-
-        public Delegate FindMethod(string name)
-        {
-            // TODO Method resolution:
-            //   1. Methods defined in the object's singleton class (i.e. the object itself)
-            //   2. Modules mixed into the singleton class in reverse order of inclusion
-            //   3. Methods defined by the object's class
-            //   4. Modules included into the object's class in reverse order of inclusion
-            //   5. Methods defined by the object's superclass.
-
-            for(var klass = this; klass != null; klass = klass.Super)
-            {
-                var deleg = klass.GetMethod(name);
-                if(deleg != null)
-                {
-                    return deleg;
+                    return method;
                 }
             }
 
             return null;
         }
 
-
         // Tries to call the dynamically defined (at runtime) instance method.
         // If the method was created statically or doesn't exist, returns false.
-        public bool TryInvokeMethod(iObject value, string name, out iObject result, params object[] args)
+        /*public bool TryInvokeMethod(iObject value, string name, out iObject result, params object[] args)
         {
             var deleg = FindMethod(name);
             if(deleg == null)
@@ -171,7 +66,7 @@ namespace Mint.Types
         {
             iObject result;
             return TryInvokeMethod(value, name, out result, args);
-        }
+        }*/
 
         
         private Delegate WrapInstanceMethod(MethodInfo info)
@@ -189,12 +84,9 @@ namespace Mint.Types
             return wrapper.Compile();
         }
 
+        #region Static
 
-        public override string ToString() => FullName.Value;
-
-
-        public new static readonly Class CLASS = new Class("Class");
-
+        public new static readonly Class CLASS = new Class(Module.CLASS, new Symbol("Class"));
 
         public static bool IsA(iObject o, Class c)
         {
@@ -203,7 +95,7 @@ namespace Mint.Types
                 throw new TypeError("class or module required");
             }
 
-            for(var k = o.Class; k != null; k = k.Super)
+            for(var k = o.Class; k != null; k = k.Superclass)
             {
                 if(c == k)
                 {
@@ -214,7 +106,6 @@ namespace Mint.Types
             return false;
         }
 
-
         static Class()
         {
             // difficult cyclical dependency:
@@ -223,7 +114,10 @@ namespace Mint.Types
                 DefineClass(CLASS);
             }
 
-            CLASS.Def<Class>("to_s", "FullName");
+            CLASS.DefineMethod(new Symbol("to_s"),
+                (Func<Class, String>) ((self) => new String(self.FullName)));
         }
+
+        #endregion
     }
 }

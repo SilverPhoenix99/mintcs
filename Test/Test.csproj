@@ -39,6 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\Condition.cs" />
+    <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
@@ -58,6 +60,8 @@
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\iObject.cs" />
+    <Compile Include="Types\Method.cs" />
+    <Compile Include="Types\Module.cs" />
     <Compile Include="Types\Nil.cs" />
     <Compile Include="Types\Object.cs" />
     <Compile Include="Types\Object.Meta.cs" />

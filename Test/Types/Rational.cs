@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mint.Types
+namespace Mint
 {
     public class Rational : Object
     {
-        public static new readonly Class CLASS = new Class("Rational");
+        public static new readonly Class CLASS = new Class(new Symbol("Rational"));
 
         // This class is a headache => do later
     }

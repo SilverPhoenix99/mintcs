@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Mint.Types
+namespace Mint
 {
     public class Regexp
     {

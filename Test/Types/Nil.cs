@@ -1,17 +1,17 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
 
-namespace Mint.Types
+namespace Mint
 {
     public struct Nil : iObject
     {
-        public static readonly Class CLASS = new Class("NilClass");
+        public static readonly Class CLASS = new Class(new Symbol("NilClass"));
 
-        public long  Id                => 0x2;
+        public long  Id                => 0x4;
         public Class Class             => CLASS;
         public Class SingletonClass    => CLASS;
         public bool  HasSingletonClass => false;
-        public Class RealClass         => CLASS;
+        public Class CalculatedClass   => CLASS;
         public bool  Frozen            => true;
 
         public void Freeze() {}

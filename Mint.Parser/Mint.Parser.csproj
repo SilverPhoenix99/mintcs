@@ -46,8 +46,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\ArrayExtensions.cs" />
-    <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="gen\Lexer_data.cs" />
     <Compile Include="gen\Lexer_exec.cs" />
     <Compile Include="gen\Parser.cs" />
