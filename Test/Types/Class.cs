@@ -43,7 +43,8 @@ namespace Mint
 
         protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
 
-        public override IEnumerable<Module> Ancestors { get { throw new NotImplementedException(); } }
+        public override IEnumerable<Module> Ancestors =>
+            Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
 
         public override Method FindMethod(Symbol name)
         {
