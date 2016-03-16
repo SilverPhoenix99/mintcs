@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mint
 {
@@ -25,39 +26,68 @@ namespace Mint
             : this(CLASS, name, container)
         { }
 
-        public Symbol?                      Name      { get; }
-        public string                       FullName  { get; }
-        public Module                       Container { get; }
-        public LinkedList<Module>           Included  { get; } = new LinkedList<Module>();
-        public IDictionary<Symbol, Method>  Methods   { get; } = new Dictionary<Symbol, Method>();
-        public IDictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
+        public         Symbol?              Name      { get; }
+        public         string               FullName  { get; }
+        public         Module               Container { get; }
         public virtual bool                 IsModule  => true;
+        public virtual IEnumerable<Module> Ancestors       => Prepended.Concat(new[] { this }).Concat(Included);
+        public         IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
+
+        protected internal Dictionary<Symbol, Method>  Methods   { get; } = new Dictionary<Symbol, Method>();
+        protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
+        protected internal List<Module>                Included  { get; protected set; } = new List<Module>();
+        protected internal List<Module>                Prepended { get; protected set; } = new List<Module>();
 
         public override string ToString() => FullName;
 
         public Symbol DefineMethod(Method method) => ( Methods[method.Name] = method ).Name;
 
-        public Symbol DefineMethod(Symbol name, Delegate function) =>
-            DefineMethod(Method.Create(name, this, function));
+        public Symbol DefineMethod(Symbol name, Delegate function) => DefineMethod(Method.Create(name, this, function));
 
-        public void Include(Module mod)
+        public virtual void Include(Module module)
         {
-            throw new NotImplementedException();
-
-            if(!Included.Contains(mod))
-            {
-                Included.AddFirst(mod);
-            }
+            Included = AppendModule(Included, module, null);
         }
 
-        public void Prepend(Module mod)
+        public virtual void Prepend(Module module)
         {
-            throw new NotImplementedException();
+            Prepended = AppendModule(Prepended, module, null);
+        }
 
-            if(!Included.Contains(mod))
+        protected List<Module> AppendModule(List<Module> modules,
+                                            Module module,
+                                            IEnumerable<Module> superclassAncestors)
+        {
+            if(module.GetType() != typeof(Module))
             {
-                Included.AddLast(mod);
+                throw new TypeError($"wrong argument type {module.Class.FullName} (expected Module)");
             }
+
+            var included = new List<Module>(modules.Count + module.Prepended.Count + module.Included.Count + 1);
+            included.AddRange(modules);
+
+            var index = 0;
+            foreach(var mod in module.Ancestors)
+            {
+                if(mod == this)
+                {
+                    throw new ArgumentError("cyclic include detected");
+                }
+
+                var mod_index = included.IndexOf(mod);
+                if(mod_index >= 0)
+                {
+                    index = mod_index + 1;
+                    continue;
+                }
+
+                // TODO exclude modules already included by superclasses
+
+                included.Insert(index++, mod);
+                // TODO mod.included(this) if mod.respond_to?(:included)
+            }
+
+            return included;
         }
 
         public override Method FindMethod(Symbol name)

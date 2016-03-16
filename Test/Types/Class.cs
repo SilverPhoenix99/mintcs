@@ -36,11 +36,14 @@ namespace Mint
                 }
             }
         }
-        
+
         public Class         Superclass  { get; }
         public bool          IsSingleton { get; }
         public override bool IsModule    => false;
-        public IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
+
+        protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
+
+        public override IEnumerable<Module> Ancestors { get { throw new NotImplementedException(); } }
 
         public override Method FindMethod(Symbol name)
         {
