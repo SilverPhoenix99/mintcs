@@ -18,10 +18,29 @@ namespace Mint
         public Class(Symbol? name = null, Module container = null, bool isSingleton = false)
             : this(Object.CLASS, name, container, isSingleton)
         { }
+
+        ~Class()
+        {
+            if(Superclass != null)
+            {
+                var list = Superclass.Subclasses;
+                for(int i = 0; i < list.Count; i++)
+                {
+                    Class klass;
+                    WeakReference<Class> wr = list[i];
+                    if(wr.TryGetTarget(out klass) && klass == this)
+                    {
+                        list.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+        }
         
         public Class         Superclass  { get; }
         public bool          IsSingleton { get; }
         public override bool IsModule    => false;
+        public IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
 
         public override Method FindMethod(Symbol name)
         {
@@ -68,7 +87,6 @@ namespace Mint
             return TryInvokeMethod(value, name, out result, args);
         }*/
 
-        
         private Delegate WrapInstanceMethod(MethodInfo info)
         {
             var parms = from p in info.GetParameters()

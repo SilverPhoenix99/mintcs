@@ -55,11 +55,13 @@
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\aObject.cs" />
     <Compile Include="Types\Class.cs" />
+    <Compile Include="Types\CompiledMethod.cs" />
     <Compile Include="Types\Complex.cs" />
     <Compile Include="Types\False.cs" />
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\iObject.cs" />
+    <Compile Include="Types\LambdaMethod.cs" />
     <Compile Include="Types\Method.cs" />
     <Compile Include="Types\Module.cs" />
     <Compile Include="Types\Nil.cs" />

@@ -35,6 +35,7 @@ namespace Mint
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
+        #region Static
 
         // Convert from ExpressionType to operator name
         public static string Operator(ExpressionType type)
@@ -131,5 +132,7 @@ namespace Mint
 
             return null;
         }
+
+        #endregion
     }
 }

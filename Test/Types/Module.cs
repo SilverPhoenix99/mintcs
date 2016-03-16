@@ -37,7 +37,8 @@ namespace Mint
 
         public Symbol DefineMethod(Method method) => ( Methods[method.Name] = method ).Name;
 
-        public Symbol DefineMethod(Symbol name, Delegate function) => DefineMethod(new Method(name, this, function));
+        public Symbol DefineMethod(Symbol name, Delegate function) =>
+            DefineMethod(Method.Create(name, this, function));
 
         public void Include(Module mod)
         {

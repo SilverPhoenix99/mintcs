@@ -6,14 +6,6 @@ namespace Mint
 {
     public struct Fixnum : iObject
     {
-        public static Class NUMERIC_CLASS = new Class(new Symbol("Numeric"));
-
-        public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
-
-        public static Class CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
-
-
-
         public Fixnum(long value)
         {
             Value = value;
@@ -45,11 +37,23 @@ namespace Mint
         
         public static implicit operator long (Fixnum s) => s.Value;
 
+        #region Static
+
+        //public static Class NUMERIC_CLASS = new Class(new Symbol("Numeric"));
+
+        //public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
+        public static Class INTEGER_CLASS = null;
+
+        //public static Class CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
+        public static Class CLASS = null;
+
         static Fixnum()
         {
-            Object.DefineClass(CLASS);
-            Object.DefineClass(INTEGER_CLASS);
-            Object.DefineClass(NUMERIC_CLASS);
+            //Object.DefineClass(CLASS);
+            //Object.DefineClass(INTEGER_CLASS);
+            //Object.DefineClass(NUMERIC_CLASS);
         }
+
+        #endregion
     }
 }

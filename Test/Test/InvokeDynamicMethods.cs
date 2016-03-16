@@ -9,9 +9,9 @@ namespace Test
         {
             Fixnum f = (Fixnum) 132;
 
-            f.Class.DefineMethod(new Symbol("to_s"), (Func<Fixnum, Mint.String>)
+            /*f.Class.DefineMethod(new Symbol("to_s"), (Func<Fixnum, Mint.String>)
                 ( (self) => new Mint.String(self.ToString()) )
-            );
+            );*/
 
             /*try
             {
@@ -22,9 +22,9 @@ namespace Test
 
             var d = (dynamic) f;
 
-            Console.WriteLine(d.to_s());
+            //Console.WriteLine(d.to_s());
             Console.WriteLine(d.to_s);
-            Console.WriteLine(d.Class);
+            //Console.WriteLine(d.Class);
             Console.WriteLine(d.ToString());
 
             /*try

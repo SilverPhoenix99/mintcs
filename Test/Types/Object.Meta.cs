@@ -21,14 +21,17 @@ namespace Mint
             private static readonly MethodInfo TRY_INVOKE_METHOD = typeof(Class).GetMethod("TryInvokeMethod",
                 new[] { typeof(iObject), typeof(string), typeof(iObject).MakeByRefType(), typeof(object[]) });
 
-
             internal Meta(Expression expression, iObject value)
                 : base(expression, BindingRestrictions.Empty, value)
             { }
 
+            public new iObject Value => (iObject) base.Value;
 
-            public new iObject Value => (iObject) ((DynamicMetaObject) this).Value;
-                        
+            /*public override DynamicMetaObject BindInvoke(InvokeBinder binder, DynamicMetaObject[] args)
+            {
+                Func<Expression> fallbackExpr = () => binder.FallbackInvoke(this, args).Expression;
+                return CompileMethodInvoke(binder.CallInfo., args, fallbackExpr);
+            }*/
 
             public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
             {
