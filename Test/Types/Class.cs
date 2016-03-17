@@ -46,6 +46,16 @@ namespace Mint
         public override IEnumerable<Module> Ancestors =>
             Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
 
+        public override void Include(Module module)
+        {
+            Included = AppendModule(Included, module, Superclass);
+        }
+
+        public override void Prepend(Module module)
+        {
+            Prepended = AppendModule(Prepended, module, Superclass);
+        }
+
         public override Method FindMethod(Symbol name)
         {
             // Method resolution: See Object#FindMethod

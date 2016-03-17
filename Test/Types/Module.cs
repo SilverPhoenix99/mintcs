@@ -56,7 +56,7 @@ namespace Mint
 
         protected List<Module> AppendModule(List<Module> modules,
                                             Module module,
-                                            IEnumerable<Module> superclassAncestors)
+                                            Class superclass)
         {
             if(module.GetType() != typeof(Module))
             {
@@ -67,6 +67,7 @@ namespace Mint
             included.AddRange(modules);
 
             var index = 0;
+            var superclassAncestors = new HashSet<Module>(superclass.Ancestors);
             foreach(var mod in module.Ancestors)
             {
                 if(mod == this)
@@ -74,6 +75,13 @@ namespace Mint
                     throw new ArgumentError("cyclic include detected");
                 }
 
+                // exclude modules already included by superclasses
+                if(superclassAncestors != null && superclassAncestors.Contains(mod))
+                {
+                    continue;
+                }
+
+                // 
                 var mod_index = included.IndexOf(mod);
                 if(mod_index >= 0)
                 {
@@ -81,9 +89,8 @@ namespace Mint
                     continue;
                 }
 
-                // TODO exclude modules already included by superclasses
-
                 included.Insert(index++, mod);
+
                 // TODO mod.included(this) if mod.respond_to?(:included)
             }
 
