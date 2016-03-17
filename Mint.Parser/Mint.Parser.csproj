@@ -50,6 +50,7 @@
     <Compile Include="gen\Lexer_exec.cs" />
     <Compile Include="gen\Parser.cs" />
     <Compile Include="Parser\Ast.cs" />
+    <Compile Include="Parser\AstVisitor.cs" />
     <Compile Include="Parser\BitStack.cs" />
     <Compile Include="Parser\Heredoc.cs" />
     <Compile Include="Parser\iLiteral.cs" />

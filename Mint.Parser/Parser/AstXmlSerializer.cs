@@ -2,7 +2,7 @@
 
 namespace Mint.Parser
 {
-    public class AstXmlSerializer : AstVisitor<Token, object>
+    public class AstXmlSerializer : AstVisitor<Token>
     {
         private XContainer current;
 
@@ -21,7 +21,7 @@ namespace Mint.Parser
             return Document;
         }
 
-        public object Visit(Ast<Token> node)
+        public void Visit(Ast<Token> node)
         {
             var token = node.Value;
             var prev = current;
@@ -55,8 +55,6 @@ namespace Mint.Parser
             }
 
             current = prev;
-
-            return null;
         }
 
         public static XDocument ToXml(Ast<Token> ast)

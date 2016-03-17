@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Mint
 {
@@ -41,6 +42,8 @@ namespace Mint
         public override string ToString() => FullName;
 
         public Symbol DefineMethod(Method method) => ( Methods[method.Name] = method ).Name;
+
+        public Symbol DefineMethod(Symbol name, MethodInfo function) => DefineMethod(Method.Create(name, this, function));
 
         public Symbol DefineMethod(Symbol name, Delegate function) => DefineMethod(Method.Create(name, this, function));
 

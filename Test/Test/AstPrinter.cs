@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Test
 {
-    class AstPrinter<T> : AstVisitor<T, object>
+    class AstPrinter<T> : AstVisitor<T>
     {
         public AstPrinter(Ast<T> ast, TextWriter writer = null, int indent_size = 2)
         {
@@ -24,12 +24,12 @@ namespace Test
             Ast.Accept(this);
         }
 
-        public object Visit(Ast<T> node)
+        public void Visit(Ast<T> node)
         {
             if(node.List.Count == 0)
             {
                 WriteLine(node.Value == null ? (object) "[]" : node.Value);
-                return null;
+                return;
             }
            
             if(node.Value != null)
@@ -47,9 +47,7 @@ namespace Test
             }
 
             Indent--;
-            WriteLine("]");
-
-            return null;
+            WriteLine("]");            
         }
         
         private void Write<V>(V obj)
