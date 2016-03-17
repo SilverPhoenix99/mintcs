@@ -5,7 +5,7 @@ namespace Mint
 {
     public struct False : iObject
     {
-        public static readonly Class CLASS = new Class(new Symbol("FalseClass"));
+        public static readonly Class CLASS;
 
         public long  Id                => 0x0;
         public Class Class             => CLASS;
@@ -28,7 +28,8 @@ namespace Mint
 
         static False()
         {
-            Object.DefineClass(CLASS);
+            CLASS = new Class(new Symbol("FalseClass"));
+            //Object.DefineClass(CLASS);
         }
     }
 }

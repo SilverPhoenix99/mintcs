@@ -5,14 +5,12 @@ namespace Mint
     public class Float : aObject
     {
         // TODO Superclass = Integer < Numeric
-        public static Class CLASS = new Class(new Symbol("Float"));
-
+        public static readonly Class CLASS;
 
         public Float(double value) : base()
         {
             Value = value;
         }
-
 
         public override Class  Class => CLASS;
         public          double Value { get; private set; }
@@ -30,7 +28,8 @@ namespace Mint
 
         static Float()
         {
-            Object.DefineClass(CLASS);
+            CLASS = new Class(new Symbol("Float"));
+            //Object.DefineClass(CLASS);
         }
     }
 }

@@ -39,9 +39,9 @@ namespace Mint
 
         public override int GetHashCode() => sym.id.GetHashCode();
 
-        public static Class CLASS = new Class((Symbol) "Symbol");
+        public static readonly Class CLASS;
 
-        private static IDictionary<string, WeakReference<Sym>> SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
+        private static IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
         public static bool operator == (Symbol s, object obj) => s.Equals(obj);
 
@@ -57,7 +57,10 @@ namespace Mint
 
         static Symbol()
         {
-            Object.DefineClass(CLASS);
+            SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
+            CLASS = new Class(new Symbol("Symbol"));
+
+            //Object.DefineClass(CLASS);
         }
 
         private class Sym

@@ -19,7 +19,7 @@ namespace Mint.Compilation
             Register(kTRUE,           CompileTrue);
             Register(kFALSE,          CompileFalse);
             Register(kNIL,            CompileNil);
-            //Register(tSYMBEG,         CompileSymbol);
+            Register(tSYMBEG,         CompileSymbol);
         }
         
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
@@ -82,11 +82,14 @@ namespace Mint.Compilation
             return Constant(new Nil());
         }
 
-        /*protected Expression CompileSymbol(Ast<Token> ast)
+        protected Expression CompileSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
-            var value = content.Value?.Value ?? ((Mint.String) ProcessString(content)).Value;
+            var value = content.Value?.Value ;//?? ((Mint.String) ProcessString(content)).Value;
+            
+            if(value == null) throw new NotImplementedException("Symbol with string content");
+            
             return Constant(new Symbol(value));
-        }*/
+        }
     }
 }

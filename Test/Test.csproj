@@ -53,6 +53,7 @@
     <Compile Include="Test\Native.cs" />
     <Compile Include="Test\NativeCallback.cs" />
     <Compile Include="Test\TestInterpreter.cs" />
+    <Compile Include="Test\TestCompiler.cs" />
     <Compile Include="Test\TestRoslyn.cs" />
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\aObject.cs" />

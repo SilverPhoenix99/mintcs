@@ -118,7 +118,7 @@ namespace Mint
 
         #region Static
 
-        public new static readonly Class CLASS = new Class(Module.CLASS, new Symbol("Class"));
+        public new static readonly Class CLASS;
 
         public static bool IsA(iObject o, Class c)
         {
@@ -140,14 +140,17 @@ namespace Mint
 
         static Class()
         {
+            CLASS = new Class(Module.CLASS, new Symbol("Class"));
+        
             // difficult cyclical dependency:
-            if(CLASS != null)
+            /*if(CLASS != null)
             {
                 DefineClass(CLASS);
             }
 
             CLASS.DefineMethod(new Symbol("to_s"),
                 (Func<Class, String>) ((self) => new String(self.FullName)));
+            */
         }
 
         #endregion

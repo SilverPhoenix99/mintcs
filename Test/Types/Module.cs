@@ -109,7 +109,12 @@ namespace Mint
 
         #region Static
 
-        public static new Class CLASS = new Class(new Symbol("Module"));
+        public static readonly new Class CLASS;
+
+        static Module()
+        {
+            CLASS = new Class(new Symbol("Module"));
+        }
 
         #endregion
     }

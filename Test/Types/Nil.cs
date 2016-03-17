@@ -5,7 +5,7 @@ namespace Mint
 {
     public struct Nil : iObject
     {
-        public static readonly Class CLASS = new Class(new Symbol("NilClass"));
+        public static readonly Class CLASS;
 
         public long  Id                => 0x4;
         public Class Class             => CLASS;
@@ -30,7 +30,8 @@ namespace Mint
 
         static Nil()
         {
-            Object.DefineClass(CLASS);
+            CLASS = new Class(new Symbol("NilClass"));
+            //Object.DefineClass(CLASS);
         }
     }
 }

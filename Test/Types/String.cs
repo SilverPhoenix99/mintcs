@@ -4,7 +4,7 @@ namespace Mint
 {
     public class String : Object
     {
-        public static new readonly Class CLASS = new Class(new Symbol("String"));
+        public static new readonly Class CLASS;
 
 
         private string value;
@@ -72,7 +72,8 @@ namespace Mint
 
         static String()
         {
-            DefineClass(CLASS);
+            CLASS = new Class(new Symbol("String"));
+            //DefineClass(CLASS);
         }
     }
 }

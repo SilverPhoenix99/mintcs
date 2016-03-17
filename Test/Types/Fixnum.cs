@@ -39,16 +39,16 @@ namespace Mint
 
         #region Static
 
-        //public static Class NUMERIC_CLASS = new Class(new Symbol("Numeric"));
-
-        //public static Class INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
-        public static Class INTEGER_CLASS = null;
-
-        //public static Class CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
-        public static Class CLASS = null;
+        public static readonly Class NUMERIC_CLASS;
+        public static readonly Class INTEGER_CLASS;
+        public static readonly Class CLASS;
 
         static Fixnum()
         {
+            NUMERIC_CLASS = new Class(new Symbol("Numeric"));
+            INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
+            CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
+            
             //Object.DefineClass(CLASS);
             //Object.DefineClass(INTEGER_CLASS);
             //Object.DefineClass(NUMERIC_CLASS);

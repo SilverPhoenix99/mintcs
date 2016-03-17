@@ -47,9 +47,9 @@ namespace Mint
 
         #region Static
 
-        public static readonly Class BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
+        public static readonly Class BASIC_OBJECT_CLASS;
 
-        public static readonly Class CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol("Object"));
+        public static readonly Class CLASS;
 
         public static iObject Box(string obj) => new String(obj);
 
@@ -73,7 +73,10 @@ namespace Mint
         
         static Object()
         {
-            DefineClass(CLASS);
+            BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
+            CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol("Object"));
+        
+            /*DefineClass(CLASS);
             DefineClass(BASIC_OBJECT_CLASS);
 
             // difficult cyclical dependency:
@@ -100,7 +103,7 @@ namespace Mint
 
             BASIC_OBJECT_CLASS.DefineMethod(new Symbol("equal?"), (Func<iObject, iObject, bool>) (
                 (self, o) => self == o
-            ));
+            ));*/
 
             //__send__
             //instance_eval
