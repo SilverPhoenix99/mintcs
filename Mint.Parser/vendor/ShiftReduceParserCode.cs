@@ -6,7 +6,6 @@ using System;
 using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace QUT.Gppg {
@@ -136,29 +135,23 @@ namespace QUT.Gppg {
         protected void InitNonTerminals( string[] names ) { nonTerminals = names; }
 
         #region YYAbort, YYAccept etcetera.
-        [Serializable]
         [SuppressMessage( "Microsoft.Design", "CA1064:ExceptionsShouldBePublic" )]
         // Reason for FxCop message suppression -
         // This exception cannot escape from the local context
         private class AcceptException : Exception {
             internal AcceptException() { }
-            protected AcceptException( SerializationInfo i, StreamingContext c ) : base( i, c ) { }
         }
-        [Serializable]
         [SuppressMessage( "Microsoft.Design", "CA1064:ExceptionsShouldBePublic" )]
         // Reason for FxCop message suppression -
         // This exception cannot escape from the local context
         private class AbortException : Exception {
             internal AbortException() { }
-            protected AbortException( SerializationInfo i, StreamingContext c ) : base( i, c ) { }
         }
-        [Serializable]
         [SuppressMessage( "Microsoft.Design", "CA1064:ExceptionsShouldBePublic" )]
         // Reason for FxCop message suppression -
         // This exception cannot escape from the local context
         private class ErrorException : Exception {
             internal ErrorException() { }
-            protected ErrorException( SerializationInfo i, StreamingContext c ) : base( i, c ) { }
         }
 
         // The following methods are only called from within

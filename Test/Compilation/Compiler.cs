@@ -21,9 +21,7 @@ namespace Mint.Compilation
             Register(kNIL,            CompileNil);
             //Register(tSYMBEG,         CompileSymbol);
         }
-
-        public Expression Result { get; private set; }
-
+        
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
