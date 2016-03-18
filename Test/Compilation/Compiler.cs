@@ -124,11 +124,11 @@ namespace Mint.Compilation
 
         protected Expression CompileString(Ast<Token> ast)
         {
-            var list = ast.List.SelectMany(_ => _.Accept(this));
+            /*var list = ast.List.SelectMany(_ => _.Accept(this));
 
             list = list.SelectMany(_ => (IEnumerable<Expression>) (
                  (_ as BlockExpression)?.Expressions ?? new Expression[] { _ }
-            ));
+            ));*/
 
             throw new NotImplementedException("CompileString");
         }

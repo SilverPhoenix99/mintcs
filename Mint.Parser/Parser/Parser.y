@@ -1053,7 +1053,17 @@ strings :
 string :
     tCHAR
   | string1
-  | string string1 { $$ = $1 + $2; }
+  | string string1 {
+		if($1.List.Count == 0)
+		{
+			$$ = $1 + $2[0];
+		}
+		else
+		{
+			$1[0].Append($2[0].List);
+			$$ = $1;
+		}
+  }
 ;
 
 string1 :

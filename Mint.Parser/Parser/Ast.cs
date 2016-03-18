@@ -15,7 +15,7 @@ namespace Mint.Parser
 
         public Ast(T value, IEnumerable<Ast<T>> children) : this(value)
         {
-            ((List<Ast<T>>) List).AddRange(children);
+            Append(children);
         }
 
         public T Value { get; }
@@ -41,10 +41,16 @@ namespace Mint.Parser
 
             return this;
         }
-        
+
+        public Ast<T> Append(IEnumerable<Ast<T>> children)
+        {
+            ((List<Ast<T>>) List).AddRange(children);
+            return this;
+        }
+
         // Append operator
         public static Ast<T> operator +(Ast<T> left, Ast<T> right) => left?.Append(right) ?? right;
-        
+
         public static explicit operator Ast<T>(T value) => new Ast<T>(value);
 
         public IEnumerator<Ast<T>> GetEnumerator() => List.GetEnumerator();
