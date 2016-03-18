@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 namespace Mint
 {
     public class Complex : Object
     {
-        public static new readonly Class CLASS = new Class(new Symbol("Complex"));
-
         public iObject Real { get; }
         public iObject Imag { get; }
 
+        // TODO accept string
         public Complex(iObject real, iObject imag)
         {
-            if(Nil.IsNil(real) || Nil.IsNil(imag))
+            if(NilClass.IsNil(real) || NilClass.IsNil(imag))
             {
                 throw new TypeError("can't convert nil into Complex");
             }
@@ -34,7 +29,6 @@ namespace Mint
             Imag = imag;
         }
 
-
         public override string ToString()
         {
             dynamic imag = Imag;
@@ -42,7 +36,6 @@ namespace Mint
             imag = imag.abs();
             return $"{Real.ToString()}{sign}{imag.ToString()}i";
         }
-
 
         public override string Inspect()
         {
@@ -52,13 +45,16 @@ namespace Mint
             return $"({Real.Inspect()}{sign}{imag.Inspect()}i)";
         }
 
+        #region Static
 
-        // TODO accept string
-        //public Complex(String s) {  }
+        public static new readonly Class CLASS;
 
         static Complex()
         {
-            DefineClass(CLASS);
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            //DefineClass(CLASS);
         }
+
+        #endregion
     }
 }

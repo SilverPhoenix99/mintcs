@@ -21,6 +21,7 @@ namespace Mint.Parser
         public T Value { get; }
         public IReadOnlyList<Ast<T>> List { get; } = new List<Ast<T>>();
         public Ast<T> this[int index] => List[index];
+        public bool IsList => Value == null;
 
         public TRet Accept<TRet>(AstVisitor<T, TRet> visitor) => visitor.Visit(this);
 

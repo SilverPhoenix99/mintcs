@@ -42,6 +42,7 @@
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Condition.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\ExpressionExtension.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="NameError.cs" />
@@ -52,29 +53,31 @@
     <Compile Include="Test\InvokeDynamicMethods.cs" />
     <Compile Include="Test\Native.cs" />
     <Compile Include="Test\NativeCallback.cs" />
+    <Compile Include="Test\TestGems.cs" />
     <Compile Include="Test\TestInterpreter.cs" />
     <Compile Include="Test\TestCompiler.cs" />
     <Compile Include="Test\TestRoslyn.cs" />
+    <Compile Include="Test\TestSymbolGC.cs" />
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\aObject.cs" />
     <Compile Include="Types\Class.cs" />
     <Compile Include="Types\CompiledMethod.cs" />
     <Compile Include="Types\Complex.cs" />
-    <Compile Include="Types\False.cs" />
+    <Compile Include="Types\FalseClass.cs" />
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\iObject.cs" />
     <Compile Include="Types\LambdaMethod.cs" />
     <Compile Include="Types\Method.cs" />
     <Compile Include="Types\Module.cs" />
-    <Compile Include="Types\Nil.cs" />
+    <Compile Include="Types\NilClass.cs" />
     <Compile Include="Types\Object.cs" />
     <Compile Include="Types\Object.Meta.cs" />
     <Compile Include="Types\Rational.cs" />
     <Compile Include="Types\Regexp.cs" />
     <Compile Include="Types\String.cs" />
     <Compile Include="Types\Symbol.cs" />
-    <Compile Include="Types\True.cs" />
+    <Compile Include="Types\TrueClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

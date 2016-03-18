@@ -1,26 +1,21 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Mint
 {
     public class String : Object
     {
-        public static new readonly Class CLASS;
-
-
         private string value;
-
         
         public String() : base(CLASS)
         {
             Value = "";
         }
         
-
         public String(string value) : base(CLASS)
         {
             Value = value;
         }
-
 
         public string Value
         {
@@ -34,8 +29,7 @@ namespace Mint
                 this.value = value;
             }
         }
-        
-        
+                
         public String Concat(iObject other)
         {
             if(other is Fixnum )// TODO || other is Bignum)
@@ -46,7 +40,7 @@ namespace Mint
             
             if(!(other is String))
             {
-                var type = (other == null || other is Nil)
+                var type = (other == null || other is NilClass)
                          ? new String("nil")
                          : new String(other.Class.FullName);
                 throw new TypeError($"no implicit conversion of {type} into String");
@@ -56,24 +50,25 @@ namespace Mint
             return this;
         }
         
-
         // TODO: transform special chars into escapes
         public override string Inspect() => $"\"{Value}\"";
-
-
+        
         public override string ToString() => Value;
-
-
+        
         public static explicit operator String(string s) => new String(s);
-
-
+        
         public static explicit operator string(String s) => s.Value;
 
+        #region Static
 
+        public static new readonly Class CLASS;
+        
         static String()
         {
-            CLASS = new Class(new Symbol("String"));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             //DefineClass(CLASS);
         }
+
+        #endregion
     }
 }

@@ -113,7 +113,7 @@ namespace Mint
 
         static Module()
         {
-            CLASS = new Class(new Symbol("Module"));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
         }
 
         #endregion

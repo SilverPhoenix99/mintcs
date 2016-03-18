@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mint
 {
@@ -47,7 +48,7 @@ namespace Mint
         {
             NUMERIC_CLASS = new Class(new Symbol("Numeric"));
             INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
-            CLASS = new Class(INTEGER_CLASS, new Symbol("Fixnum"));
+            CLASS = new Class(INTEGER_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             
             //Object.DefineClass(CLASS);
             //Object.DefineClass(INTEGER_CLASS);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 
 namespace Mint
@@ -39,6 +40,8 @@ namespace Mint
 
         public override int GetHashCode() => sym.id.GetHashCode();
 
+        #region Static
+
         public static readonly Class CLASS;
 
         private static IDictionary<string, WeakReference<Sym>> SYMBOLS;
@@ -58,10 +61,12 @@ namespace Mint
         static Symbol()
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
-            CLASS = new Class(new Symbol("Symbol"));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
 
             //Object.DefineClass(CLASS);
         }
+
+        #endregion
 
         private class Sym
         {

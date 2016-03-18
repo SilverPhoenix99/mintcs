@@ -1,13 +1,12 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mint
 {
-    public struct False : iObject
+    public struct TrueClass : iObject
     {
-        public static readonly Class CLASS;
-
-        public long  Id                => 0x0;
+        public long  Id                => 0x2;
         public Class Class             => CLASS;
         public Class SingletonClass    => CLASS;
         public bool  HasSingletonClass => false;
@@ -16,20 +15,26 @@ namespace Mint
 
         public void Freeze() {}
         
-        public override string ToString() => "false";
+        public override string ToString() => "true";
 
         public string Inspect() => ToString();
-
-        public static implicit operator bool(False f) => false;
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
-        static False()
+        public static implicit operator bool(TrueClass t) => true;
+
+        #region Static
+
+        public static readonly Class CLASS;
+
+        static TrueClass()
         {
-            CLASS = new Class(new Symbol("FalseClass"));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             //Object.DefineClass(CLASS);
         }
+
+        #endregion
     }
 }

@@ -1,11 +1,8 @@
-﻿using Mint;
-using Mint.Compilation;
+﻿using Mint.Compilation;
 using Mint.Parser;
 using System;
-using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Xml.Linq;
-using static System.Linq.Expressions.Expression;
 
 namespace Test
 {
@@ -24,9 +21,9 @@ namespace Test
                 Console.WriteLine();
 
                 var expr = new Compiler().Visit(ast);
-                
-                doc = new XDocument(new XElement("Expression"));
-                expr.XmlDump(doc.Root);
+
+                doc = new XDocument();
+                expr.XmlDump(doc);
                 Console.WriteLine(doc.ToString());
             }
             catch(Exception e)
@@ -39,7 +36,7 @@ namespace Test
             }
         }
         
-        static void XmlDump(this Expression expr, XElement element)
+        static void XmlDump(this Expression expr, XContainer element)
         {
             if(expr is BlockExpression)
             {
@@ -68,7 +65,7 @@ namespace Test
             throw new NotImplementedException(expr.GetType().ToString());
         }
         
-        static void XmlDump(this BlockExpression expr, XElement element)
+        static void XmlDump(this BlockExpression expr, XContainer element)
         {
             element.Add(element = new XElement("Block"));
             foreach(var node in expr.Expressions)
@@ -77,7 +74,7 @@ namespace Test
             }
         }
         
-        static void XmlDump(this ConstantExpression expr, XElement element)
+        static void XmlDump(this ConstantExpression expr, XContainer element)
         {
             element.Add( new XElement("Constant",
                 new XAttribute("Type", expr.Value.GetType().ToString()),

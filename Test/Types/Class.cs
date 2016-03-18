@@ -122,7 +122,7 @@ namespace Mint
 
         public static bool IsA(iObject o, Class c)
         {
-            if(Nil.IsNil(c))
+            if(NilClass.IsNil(c))
             {
                 throw new TypeError("class or module required");
             }
@@ -140,7 +140,7 @@ namespace Mint
 
         static Class()
         {
-            CLASS = new Class(Module.CLASS, new Symbol("Class"));
+            CLASS = new Class(Module.CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
         
             // difficult cyclical dependency:
             /*if(CLASS != null)

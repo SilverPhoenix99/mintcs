@@ -32,14 +32,12 @@ namespace Mint
 
         public iObject Visit(Ast<Token> ast)
         {
-            if(ast.Value == null)
+            if(ast.IsList)
             {
-                // It's a list
-
-                iObject result = new Nil();
+                iObject result = new NilClass();
                 foreach(var child in ast.List)
                 {
-                    result = Visit(child);
+                    result = child.Accept(this);
                 }
 
                 return result;
@@ -76,56 +74,55 @@ namespace Mint
 
         protected iObject ProcessTrue(Ast<Token> ast)
         {
-            return new True();
+            return new TrueClass();
         }
 
         protected iObject ProcessFalse(Ast<Token> ast)
         {
-            return new False();
+            return new FalseClass();
         }
 
         protected iObject ProcessNil(Ast<Token> ast)
         {
-            return new Nil();
+            return new NilClass();
         }
 
         protected iObject ProcessSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
-            var value = content.Value?.Value ?? ((Mint.String) ProcessString(content)).Value;
+            var value = content.Value?.Value ?? ((String) ProcessString(content)).Value;
             return new Symbol(value);
         }
 
         protected iObject ProcessString(Ast<Token> ast)
         {
-            var str = new Mint.String();
+            var str = new String();
             ProcessStringInternal(ast, str);
             return str;
         }
         
         protected iObject ProcessStringContent(Ast<Token> ast)
         {
-            return new Mint.String(ast.Value.Value);
+            return new String(ast.Value.Value);
         }
         
         protected iObject ProcessChar(Ast<Token> ast)
         {
-            var str = new Mint.String(ast.Value.Value);
+            var str = new String(ast.Value.Value);
             ProcessStringInternal(ast, str);
             return str;
         }
 
-        protected void ProcessStringInternal(Ast<Token> ast, Mint.String str)
+        protected void ProcessStringInternal(Ast<Token> ast, String str)
         {
             foreach(var content in ast.List)
             {
-                if(content.Value != null)
+                if(!content.IsList)
                 {
                     str.Concat( Visit(content) );
                     continue;
                 }
 
-                // it's a list
                 foreach(var subcontent in content.List)
                 {
                     str.Concat( Visit(subcontent) );

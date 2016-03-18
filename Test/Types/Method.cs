@@ -14,16 +14,14 @@ namespace Mint
             Condition = new Condition();
         }
 
-        public Symbol    Name        { get; }
-        public Module    Owner       { get; }
-        public Condition Condition   { get; }
+        public Symbol    Name      { get; }
+        public Module    Owner     { get; }
+        public Condition Condition { get; }
 
         public abstract Expression Bind(Expression target, params Expression[] args);
 
-        public static Method Create(Symbol name, Module owner, MethodInfo info) =>
-            new CompiledMethod(name, owner, info);
+        public static Method Create(Symbol name, Module owner, MethodInfo info) => new CompiledMethod(name, owner, info);
 
-        public static Method Create(Symbol name, Module owner, Delegate lambda) =>
-            new LambdaMethod(name, owner, lambda);
+        public static Method Create(Symbol name, Module owner, Delegate lambda) => new LambdaMethod(name, owner, lambda);
     }
 }

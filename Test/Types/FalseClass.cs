@@ -1,37 +1,40 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mint
 {
-    public struct Nil : iObject
+    public struct FalseClass : iObject
     {
-        public static readonly Class CLASS;
-
-        public long  Id                => 0x4;
+        public long  Id                => 0x0;
         public Class Class             => CLASS;
         public Class SingletonClass    => CLASS;
         public bool  HasSingletonClass => false;
         public Class CalculatedClass   => CLASS;
         public bool  Frozen            => true;
 
-        public void Freeze() {}
+        public void Freeze() { }
+        
+        public override string ToString() => "false";
 
-        public override string ToString() => "";
-
-        public string Inspect() => "nil";
+        public string Inspect() => ToString();
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
-        public static implicit operator bool (Nil n) => false;
-
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
-        public static bool IsNil(iObject other) => other == null || other is Nil;
+        #region Static
 
-        static Nil()
+        public static readonly Class CLASS;
+
+        public static implicit operator bool(FalseClass f) => false;
+
+        static FalseClass()
         {
-            CLASS = new Class(new Symbol("NilClass"));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             //Object.DefineClass(CLASS);
         }
+
+        #endregion
     }
 }

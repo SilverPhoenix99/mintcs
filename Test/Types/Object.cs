@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Mint
 {
@@ -53,7 +54,7 @@ namespace Mint
 
         public static iObject Box(string obj) => new String(obj);
 
-        public static iObject Box(bool obj) => obj ? new True() : (iObject) new False();
+        public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
         
         public static iObject Box(object o)
         {
@@ -74,7 +75,7 @@ namespace Mint
         static Object()
         {
             BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
-            CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol("Object"));
+            CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
         
             /*DefineClass(CLASS);
             DefineClass(BASIC_OBJECT_CLASS);
