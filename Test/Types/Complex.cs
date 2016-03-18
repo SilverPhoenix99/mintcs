@@ -2,13 +2,13 @@
 
 namespace Mint
 {
-    public class Complex : Object
+    public class Complex : aObject
     {
         public iObject Real { get; }
         public iObject Imag { get; }
 
         // TODO accept string
-        public Complex(iObject real, iObject imag)
+        public Complex(iObject real, iObject imag) : base(CLASS)
         {
             if(NilClass.IsNil(real) || NilClass.IsNil(imag))
             {
@@ -47,7 +47,7 @@ namespace Mint
 
         #region Static
 
-        public static new readonly Class CLASS;
+        public static readonly Class CLASS;
 
         static Complex()
         {

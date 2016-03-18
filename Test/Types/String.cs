@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class String : Object
+    public class String : aObject
     {
         private string value;
         
@@ -61,7 +61,7 @@ namespace Mint
 
         #region Static
 
-        public static new readonly Class CLASS;
+        public static readonly Class CLASS;
         
         static String()
         {

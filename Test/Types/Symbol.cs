@@ -20,18 +20,18 @@ namespace Mint
         public string Name              => sym.name;
         public Class  Class             => CLASS;
         public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public bool   HasSingletonClass => false;
         public Class  CalculatedClass   => CLASS;
+        public bool   HasSingletonClass => false;
         public bool   Frozen            => true;
 
-        public void Freeze() {}
+        public void Freeze() { }
 
         public override string ToString() => sym.name;
-        
-        public string Inspect() => ":" + sym.name;
+
+        public string Inspect() => ":" + sym.name; // TODO: use String#Inspect if there is whitespace or non-ascii
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
-        
+
         public bool Equals(Symbol obj) => sym.id == obj.sym.id;
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
@@ -61,7 +61,7 @@ namespace Mint
         static Symbol()
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
 
             //Object.DefineClass(CLASS);
         }

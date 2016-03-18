@@ -16,7 +16,7 @@ namespace Mint
         Class CalculatedClass { get; }
 
         bool  HasSingletonClass { get; }
-        
+
         bool Frozen { get; }
 
         void Freeze();
@@ -24,5 +24,7 @@ namespace Mint
         string Inspect();
 
         bool IsA(Class klass);
+
+        //iObject MethodMissing(params iObject[] args);
     }
 }

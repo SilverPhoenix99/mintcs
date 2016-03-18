@@ -3,7 +3,7 @@ using Mint;
 
 namespace Test
 {
-    class InvokeDynamicMethods
+    static class InvokeDynamicMethods
     {
         public static void Test()
         {

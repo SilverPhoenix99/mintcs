@@ -9,12 +9,12 @@ namespace Mint
         public long  Id                => 0x2;
         public Class Class             => CLASS;
         public Class SingletonClass    => CLASS;
-        public bool  HasSingletonClass => false;
         public Class CalculatedClass   => CLASS;
+        public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
-        public void Freeze() {}
-        
+        public void Freeze() { }
+
         public override string ToString() => "true";
 
         public string Inspect() => ToString();
@@ -31,7 +31,7 @@ namespace Mint
 
         static TrueClass()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
             //Object.DefineClass(CLASS);
         }
 

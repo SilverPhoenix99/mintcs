@@ -1,16 +1,25 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Mint
 {
-    public class Rational : Object
+    public class Rational : aObject
     {
-        public static new readonly Class CLASS;
+        public Rational(iObject numerator, iObject denominator) : base(CLASS)
+        {
+            throw new NotImplementedException();
+        }
 
-        // This class is a headache => do later
+        #region Static
+
+        public static readonly Class CLASS;
 
         static Rational()
         {
             CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            //DefineClass(CLASS);
         }
+
+        #endregion
     }
 }

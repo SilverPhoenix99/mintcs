@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Float : aObject
+    public class Float : aFrozenObject
     {
         public Float(double value) : base()
         {
@@ -11,20 +11,22 @@ namespace Mint
         }
 
         public override Class  Class => CLASS;
-        public          double Value { get; private set; }
+        public          double Value { get; }
 
         public override string ToString() => Value.ToString();
 
         public static explicit operator Float(double s) => new Float(s);
 
+        public static explicit operator double(Float s) => s.Value;
+
         public static explicit operator Float(float s) => new Float(s);
+
+        public static explicit operator float (Float s) => (float) s.Value;
 
         public static explicit operator Float(Fixnum s) => new Float(s.Value);
 
-        public static explicit operator double (Float s) => s.Value;
-
         #region Static
-        
+
         public static readonly Class CLASS;
 
         static Float()

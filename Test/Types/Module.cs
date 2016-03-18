@@ -5,11 +5,17 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Module : Object
+    public class Module : aObject
     {
+        public Module(Symbol? name = null, Module container = null)
+            : this(CLASS, name, container)
+        { }
+
         protected Module(Class klass, Symbol? name = null, Module container = null)
             : base(klass)
         {
+            // Called by subclasses to prepare Class property. See class Class.
+
             Name = name;
             Container = container;
 
@@ -23,14 +29,10 @@ namespace Mint
             }
         }
 
-        public Module(Symbol? name = null, Module container = null)
-            : this(CLASS, name, container)
-        { }
-
-        public         Symbol?              Name      { get; }
-        public         string               FullName  { get; }
-        public         Module               Container { get; }
-        public virtual bool                 IsModule  => true;
+        public         Symbol?             Name            { get; }
+        public         string              FullName        { get; }
+        public         Module              Container       { get; }
+        public virtual bool                IsModule        => true;
         public virtual IEnumerable<Module> Ancestors       => Prepended.Concat(new[] { this }).Concat(Included);
         public         IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
 
@@ -84,7 +86,7 @@ namespace Mint
                     continue;
                 }
 
-                // 
+                //
                 var mod_index = included.IndexOf(mod);
                 if(mod_index >= 0)
                 {
@@ -109,7 +111,7 @@ namespace Mint
 
         #region Static
 
-        public static readonly new Class CLASS;
+        public static readonly Class CLASS;
 
         static Module()
         {

@@ -141,7 +141,7 @@ namespace Mint
         static Class()
         {
             CLASS = new Class(Module.CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-        
+
             // difficult cyclical dependency:
             /*if(CLASS != null)
             {

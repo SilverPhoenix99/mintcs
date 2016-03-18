@@ -24,9 +24,10 @@ namespace Mint.Compilation
             Register(kNIL,            CompileNil);
             Register(tSYMBEG,         CompileSymbol);
             Register(tSTRING_CONTENT, CompileStringContent);
+            Register(tSTRING_BEG,     CompileString);
             //Register(tCHAR,           CompileChar);
         }
-        
+
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
@@ -95,7 +96,7 @@ namespace Mint.Compilation
             {
                 return Constant(new Symbol(content.Value.Value));
             }
-            
+
             var list = content.List.Select(_ => _.Accept(this));
             var first = list.First();
 
@@ -121,6 +122,17 @@ namespace Mint.Compilation
             throw new NotImplementedException("Symbol with string content");
         }
 
+        protected Expression CompileString(Ast<Token> ast)
+        {
+            var list = ast.List.SelectMany(_ => _.Accept(this));
+
+            list = list.SelectMany(_ => (IEnumerable<Expression>) (
+                 (_ as BlockExpression)?.Expressions ?? new Expression[] { _ }
+            ));
+
+            throw new NotImplementedException("CompileString");
+        }
+
         protected Expression CompileStringContent(Ast<Token> ast)
         {
             return Constant(new String(ast.Value.Value));
@@ -137,7 +149,7 @@ namespace Mint.Compilation
             else
             {
                 parameterFlags = Enumerable.Repeat<object>(null, numArgs).Select(
-                    _ => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
+                    _ => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
                 );
             }
 
