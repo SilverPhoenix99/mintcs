@@ -25,6 +25,10 @@ namespace Test
                 doc = new XDocument();
                 expr.XmlDump(doc);
                 Console.WriteLine(doc.ToString());
+                Console.WriteLine();
+
+                var lambda = Expression.Lambda(expr).Compile();
+                Console.WriteLine(lambda.DynamicInvoke());
             }
             catch(Exception e)
             {
@@ -35,7 +39,7 @@ namespace Test
                 Console.WriteLine();
             }
         }
-        
+
         static void XmlDump(this Expression expr, XContainer element)
         {
             if(expr is BlockExpression)
@@ -43,43 +47,83 @@ namespace Test
                 ((BlockExpression) expr).XmlDump(element);
                 return;
             }
-        
+
             if(expr is ConstantExpression)
             {
                 ((ConstantExpression) expr).XmlDump(element);
                 return;
             }
-        
-            /*if(expr is LambdaExpression)
+
+            if(expr is MethodCallExpression)
             {
-                ((LambdaExpression) expr).XmlDump(element);
+                ((MethodCallExpression) expr).XmlDump(element);
                 return;
             }
-            
-            if(expr is BinaryExpression)
+
+            if(expr is NewExpression)
             {
-                ((BinaryExpression) expr).XmlDump(element);
+                ((NewExpression) expr).XmlDump(element);
                 return;
-            }*/
-            
+            }
+
             throw new NotImplementedException(expr.GetType().ToString());
         }
-        
-        static void XmlDump(this BlockExpression expr, XContainer element)
+
+        static void XmlDump(this BlockExpression expr, XContainer root)
         {
-            element.Add(element = new XElement("Block"));
+            XElement element;
+
+            root.Add(element = new XElement("Block"));
             foreach(var node in expr.Expressions)
             {
                 node.XmlDump(element);
             }
         }
-        
-        static void XmlDump(this ConstantExpression expr, XContainer element)
+
+        static void XmlDump(this ConstantExpression expr, XContainer root)
         {
-            element.Add( new XElement("Constant",
+            root.Add( new XElement("Constant",
                 new XAttribute("Type", expr.Value.GetType().ToString()),
-                expr.Value)
-            );
+                expr.Value
+            ));
+        }
+
+        static void XmlDump(this MethodCallExpression expr, XContainer root)
+        {
+            XElement element;
+
+            root.Add(element = new XElement("MethodCall",
+                new XAttribute("Method", expr.Method.Name),
+                new XAttribute("DeclaringType", expr.Method.DeclaringType.FullName)
+            ));
+
+            if(expr.Object != null)
+            {
+                var obj = new XElement("Object");
+                element.Add(obj);
+                expr.Object.XmlDump(obj);
+            }
+
+            var args = new XElement("Arguments");
+            element.Add(args);
+            foreach(var argExpr in expr.Arguments)
+            {
+                argExpr.XmlDump(args);
+            }
+        }
+
+        static void XmlDump(this NewExpression expr, XContainer root)
+        {
+            XElement element;
+
+            root.Add(element = new XElement("New",
+                new XAttribute("DeclaringType", expr.Constructor.DeclaringType.FullName)
+            ));
+
+            foreach(var argExpr in expr.Arguments)
+            {
+                argExpr.XmlDump(element);
+            }
         }
     }
 }

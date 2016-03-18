@@ -1053,29 +1053,19 @@ strings :
 string :
     tCHAR
   | string1
-  | string string1 {
-		if($1.List.Count == 0)
-		{
-			$$ = $1 + $2[0];
-		}
-		else
-		{
-			$1[0].Append($2[0].List);
-			$$ = $1;
-		}
-  }
+  | string string1 { $$ = $1.Append($2.List); }
 ;
 
 string1 :
-    tSTRING_BEG string_contents tSTRING_END { $$ = $1 + $2; }
+    tSTRING_BEG string_contents tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 xstring :
-    tXSTRING_BEG xstring_contents tSTRING_END { $$ = $1 + $2; }
+    tXSTRING_BEG xstring_contents tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 regexp :
-    tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $3 + $2; }
+    tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $3.Append($2.List); }
         // properties are always at tREGEXP_END if they exist
 ;
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using static Mint.Parser.TokenType;
@@ -23,9 +24,9 @@ namespace Mint.Compilation
             Register(kFALSE,          CompileFalse);
             Register(kNIL,            CompileNil);
             Register(tSYMBEG,         CompileSymbol);
-            Register(tSTRING_CONTENT, CompileStringContent);
             Register(tSTRING_BEG,     CompileString);
-            //Register(tCHAR,           CompileChar);
+            Register(tCHAR,           CompileChar);
+            Register(tSTRING_CONTENT, CompileStringContent);
         }
 
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
@@ -54,7 +55,7 @@ namespace Mint.Compilation
             }
         }
 
-        private Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
+        private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
 
         protected Expression CompileInteger(Ast<Token> ast)
         {
@@ -122,15 +123,38 @@ namespace Mint.Compilation
             throw new NotImplementedException("Symbol with string content");
         }
 
+        protected static readonly ConstructorInfo STRING_CTOR =
+            typeof(String).GetConstructor(new[] { typeof(String) });
+
         protected Expression CompileString(Ast<Token> ast)
         {
-            /*var list = ast.List.SelectMany(_ => _.Accept(this));
+            //var first = list.First();
+            Expression first = null;
 
-            list = list.SelectMany(_ => (IEnumerable<Expression>) (
-                 (_ as BlockExpression)?.Expressions ?? new Expression[] { _ }
-            ));*/
+            /*if(ast[0].Count == 1 && ast[0][0].Value.Type == TokenType.tSTRING_CONTENT)
+            {
+                return New(STRING_CTOR, first);
+            }*/
 
-            throw new NotImplementedException("CompileString");
+            first = New(STRING_CTOR, Constant(new String("")));
+            var list = new Expression[] { first }.Concat( ast[0].Select(_ => _.Accept(this)) );
+
+            return list.Aggregate( (l, r) => Call(l, "Concat", null, r) );
+        }
+
+        protected Expression CompileChar(Ast<Token> ast)
+        {
+            var first = CompileStringContent(ast);
+
+            /*if(ast[0].Count == 0)
+            {
+                return New(STRING_CTOR, first);
+            }*/
+
+            first = New(STRING_CTOR, first);
+            var list = new Expression[] { first }.Concat( ast[0].Select(_ => _.Accept(this)) );
+
+            return list.Aggregate( (l, r) => Call(l, "Concat", null, r) );
         }
 
         protected Expression CompileStringContent(Ast<Token> ast)
@@ -156,7 +180,8 @@ namespace Mint.Compilation
             parameterFlags = new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) }
                 .Concat(parameterFlags);
 
-            return Binder.InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
+            return Microsoft.CSharp.RuntimeBinder.Binder
+                .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
     }
 }
