@@ -19,14 +19,21 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum)) <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol)) <= IntPtr.Size);
 
-            if(InVisualStudio)
+            Repl.Run();
+
+            /*if(InVisualStudio)
             {
-                TestCompiler.Test("'a' 'b' \"c#{:d;:e}\"");
+                TestCompiler.Test(":a?");
+
+                Console.WriteLine("------------------------------------------------------");
+                Console.WriteLine();
+
+                TestCompiler.Test(":\"a#{:c;'b'}\"");
             }
             else
             {
                 TestCompiler.Test(args);
-            }
+            }*/
         }
 
         /*

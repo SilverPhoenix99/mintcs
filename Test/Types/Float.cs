@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Globalization;
 using System.Reflection;
 
 namespace Mint
@@ -13,7 +13,7 @@ namespace Mint
         public override Class  Class => CLASS;
         public          double Value { get; }
 
-        public override string ToString() => Value.ToString();
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
         public static explicit operator Float(double s) => new Float(s);
 

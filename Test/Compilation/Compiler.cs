@@ -27,6 +27,7 @@ namespace Mint.Compilation
             Register(tSTRING_BEG,     CompileString);
             Register(tCHAR,           CompileChar);
             Register(tSTRING_CONTENT, CompileStringContent);
+            Register(tSTRING_DBEG,    CompileList);
         }
 
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
@@ -41,21 +42,24 @@ namespace Mint.Compilation
         {
             if(ast.IsList)
             {
-                var list = ast.List.Select(_ => _.Accept(this));
-                return list.Count() == 1 ? list.First() : Block(list);
+                return CompileList(ast);
             }
 
-            try
+            Func<Ast<Token>, Expression> action;
+            if(Actions.TryGetValue(ast.Value.Type, out action))
             {
-                return Actions[ast.Value.Type](ast);
+                return action(ast);
             }
-            catch(KeyNotFoundException e)
-            {
-                throw new ArgumentException($"Token type {ast.Value.Type} not registered.", "ast", e);
-            }
+
+            throw new ArgumentException($"Token type {ast.Value.Type} not registered.", "ast");
         }
 
         private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
+
+        protected Expression CompileList(Ast<Token> ast)
+        {
+            return ast.List.Count == 1 ? ast[0].Accept(this) : Block(ast.List.Select(_ => _.Accept(this)));
+        }
 
         protected Expression CompileInteger(Ast<Token> ast)
         {
@@ -89,6 +93,9 @@ namespace Mint.Compilation
             return Constant(new NilClass());
         }
 
+        protected static readonly ConstructorInfo STRING_CTOR =
+            typeof(String).GetConstructor(new[] { typeof(String) });
+
         protected Expression CompileSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
@@ -98,33 +105,13 @@ namespace Mint.Compilation
                 return Constant(new Symbol(content.Value.Value));
             }
 
-            var list = content.List.Select(_ => _.Accept(this));
-            var first = list.First();
-
-            if(!first.IsConstant<String>())
-            {
-                // prepend an empty string
-                list = new[] { Constant(new String()) }.Concat(list);
-            }
-            else if(list.SingleOrDefault() != null) // if list.Count == 1
-            {
-                var constant = (ConstantExpression) first;
-                return Constant(new Symbol(constant.Value.ToString()));
-            }
-
-            list.Select(e =>
-                (e.IsConstant<Fixnum>())
-                ? (Expression) Call(e, e.Type.GetMethod("ToString", new Type[0]))
-                : Dynamic( InvokeMember("to_s"), typeof(iObject) )
-            );
+            var first = New(STRING_CTOR, Constant(new String("")));
+            var expr = CompileString(first, content);
 
             // TODO
 
             throw new NotImplementedException("Symbol with string content");
         }
-
-        protected static readonly ConstructorInfo STRING_CTOR =
-            typeof(String).GetConstructor(new[] { typeof(String) });
 
         protected Expression CompileString(Ast<Token> ast)
         {
@@ -151,6 +138,9 @@ namespace Mint.Compilation
 
         private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
         {
+            var tmp = ast.Select(_ => _.Accept(this))
+                .Select(_ => _.Type == typeof(String) ? _ : New(STRING_CTOR, Call(_, "ToString", null))).ToArray();
+
             var list = ast.Select(_ => _.Accept(this))
                 .Select(_ => _.IsConstant() ? _ : New(STRING_CTOR, Call(_, "ToString", null)));
 

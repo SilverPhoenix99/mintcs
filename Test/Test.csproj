@@ -49,6 +49,7 @@
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repl.cs" />
     <Compile Include="Test\AstPrinter.cs" />
     <Compile Include="Test\InvokeDynamicMethods.cs" />
     <Compile Include="Test\Native.cs" />
