@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Mint
 {
@@ -44,6 +45,8 @@ namespace Mint
             imag = imag.abs();
             return $"({Real.Inspect()}{sign}{imag.Inspect()}i)";
         }
+
+        public static Complex operator -(Complex v) { throw new NotImplementedException(); }
 
         #region Static
 

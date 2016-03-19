@@ -87,7 +87,7 @@ bodystmt :
         var opt_else   = $3;
         var opt_ensure = $4;
 
-        if(opt_else.Value != null)
+        if(!opt_else.IsList)
         {
             if(opt_rescue.List.Count != 0)
             {
@@ -693,7 +693,7 @@ primary :
     bodystmt kEND
     {
         var superclass = $3;
-        if(superclass.Value != null)
+        if(!superclass.IsList)
         {
             superclass = (Ast<Token>) superclass.Value + $2 + superclass[0];
         }
@@ -764,8 +764,8 @@ do :
 ;
 
 if_tail :
-    opt_else                          { $$ = $1.Value == null ? $1 : sexp($1); }
-  | kELSIF expr then compstmt if_tail { $$ = sexp($1 + $2 + $4) + $5; }
+    opt_else
+  | kELSIF expr then compstmt if_tail { $$ = $1 + $2 + $4 + $5; }
 ;
 
 opt_else :
@@ -1012,7 +1012,7 @@ case_body :
 ;
 
 cases :
-    opt_else { $$ = $1.Value == null ? $1 : sexp($1); }
+    opt_else { $$ = $1.IsList ? $1 : sexp($1); }
   | case_body
 ;
 

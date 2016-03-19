@@ -1,5 +1,4 @@
-﻿using System;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -29,6 +28,8 @@ namespace Mint
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+
+        public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);
 
         public static implicit operator Fixnum(long v) => new Fixnum(v);
 

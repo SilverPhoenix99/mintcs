@@ -28,6 +28,13 @@ namespace Mint.Compilation
             Register(tCHAR,           CompileChar);
             Register(tSTRING_CONTENT, CompileStringContent);
             Register(tSTRING_DBEG,    CompileList);
+            Register(kUMINUS_NUM,     CompileUMinusNum);
+            Register(kIF,             CompileIf);
+            Register(kIF_MOD,         CompileIf);
+            Register(kELSIF,          CompileIf);
+            Register(kELSE,           CompileList);
+            Register(kUNLESS,         CompileIf);
+            Register(kUNLESS_MOD,     CompileIf);
         }
 
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
@@ -93,11 +100,6 @@ namespace Mint.Compilation
             return Constant(new NilClass());
         }
 
-        protected static readonly ConstructorInfo STRING_CTOR1 = Ctor<String>();
-        protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
-        protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
-
         protected Expression CompileSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
@@ -147,6 +149,29 @@ namespace Mint.Compilation
             return Constant(new String(ast.Value.Value));
         }
 
+        protected Expression CompileUMinusNum(Ast<Token> ast)
+        {
+            return Negate(ast[0].Accept(this));
+        }
+
+        protected Expression CompileIf(Ast<Token> ast)
+        {
+            Expression condition = Call(OBJECT_TOBOOL, Convert(ast[0].Accept(this), typeof(iObject)));
+
+            if(ast.Value.Type == kUNLESS || ast.Value.Type == kUNLESS_MOD)
+            {
+                condition = Not(condition);
+            }
+
+            var ifTrue = Convert(ast[1].Accept(this), typeof(iObject));
+
+            var ifFalse = ast.List.Count < 3 || ast[2].List.Count == 0
+                        ? DFT_ELSE
+                        : Convert(ast[2].Accept(this), typeof(iObject));
+
+            return Condition(condition, ifTrue, ifFalse);
+        }
+
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
             IEnumerable<CSharpArgumentInfo> parameterFlags;
@@ -169,6 +194,16 @@ namespace Mint.Compilation
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
 
+        protected static readonly ConstructorInfo STRING_CTOR1  = Ctor<String>();
+        protected static readonly ConstructorInfo STRING_CTOR2  = Ctor<String>(typeof(string));
+        protected static readonly ConstructorInfo STRING_CTOR3  = Ctor<String>(typeof(String));
+        protected static readonly ConstructorInfo SYMBOL_CTOR   = Ctor<Symbol>(typeof(string));
+        protected static readonly MethodInfo      OBJECT_TOBOOL = Method<Object>("ToBool", typeof(iObject));
+
+        protected static readonly Expression DFT_ELSE = Convert(Constant(new NilClass()), typeof(iObject));
+
         protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
+
+        protected static MethodInfo Method<T>(string name, params Type[] argTypes) => typeof(T).GetMethod(name, argTypes);
     }
 }

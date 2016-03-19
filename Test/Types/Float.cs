@@ -15,15 +15,17 @@ namespace Mint
 
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
-        public static explicit operator Float(double s) => new Float(s);
+        public static Float operator -(Float v) => new Float(-v.Value);
 
-        public static explicit operator double(Float s) => s.Value;
+        public static explicit operator Float(double v) => new Float(v);
 
-        public static explicit operator Float(float s) => new Float(s);
+        public static explicit operator double(Float v) => v.Value;
 
-        public static explicit operator float (Float s) => (float) s.Value;
+        public static explicit operator Float(float v) => new Float(v);
 
-        public static explicit operator Float(Fixnum s) => new Float(s.Value);
+        public static explicit operator float (Float v) => (float) v.Value;
+
+        public static explicit operator Float(Fixnum v) => new Float(v.Value);
 
         #region Static
 

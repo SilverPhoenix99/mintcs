@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mint
@@ -27,6 +26,8 @@ namespace Mint
         }
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
+
+        public static bool ToBool(iObject obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass);
 
         public static void DefineClass(Class klass)
         {
