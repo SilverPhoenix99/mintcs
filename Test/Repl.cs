@@ -1,4 +1,5 @@
-﻿using Mint.Compilation;
+﻿using Mint;
+using Mint.Compilation;
 using Mint.Parser;
 using System;
 using System.Linq.Expressions;
@@ -60,7 +61,8 @@ namespace Test
         static void RunExpression(Expression expr)
         {
             var lambda = Expression.Lambda(expr).Compile();
-            Console.WriteLine(lambda.DynamicInvoke());
+            var result = (iObject) lambda.DynamicInvoke();
+            Console.WriteLine(result.Inspect());
             Console.WriteLine();
         }
     }

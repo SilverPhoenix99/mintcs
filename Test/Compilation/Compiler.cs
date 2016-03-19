@@ -35,6 +35,10 @@ namespace Mint.Compilation
             Register(kELSE,           CompileList);
             Register(kUNLESS,         CompileIf);
             Register(kUNLESS_MOD,     CompileIf);
+            Register(kQMARK,          CompileQMark);
+            Register(kNOT,            CompileNot);
+            Register(kAND,            CompileAnd);
+            Register(kOR,             CompileOr);
         }
 
         private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
@@ -85,12 +89,12 @@ namespace Mint.Compilation
             return Constant(new Float(val));
         }
 
-        protected Expression CompileTrue(Ast<Token> ast)
+        protected Expression CompileTrue(Ast<Token> ast = null)
         {
             return Constant(new TrueClass());
         }
 
-        protected Expression CompileFalse(Ast<Token> ast)
+        protected Expression CompileFalse(Ast<Token> ast = null)
         {
             return Constant(new FalseClass());
         }
@@ -156,7 +160,7 @@ namespace Mint.Compilation
 
         protected Expression CompileIf(Ast<Token> ast)
         {
-            Expression condition = Call(OBJECT_TOBOOL, Convert(ast[0].Accept(this), typeof(iObject)));
+            Expression condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
 
             if(ast.Value.Type == kUNLESS || ast.Value.Type == kUNLESS_MOD)
             {
@@ -170,6 +174,38 @@ namespace Mint.Compilation
                         : Convert(ast[2].Accept(this), typeof(iObject));
 
             return Condition(condition, ifTrue, ifFalse);
+        }
+
+        protected Expression CompileQMark(Ast<Token> ast)
+        {
+            var condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
+            var ifTrue    = Convert(ast[1].Accept(this), typeof(iObject));
+            var ifFalse   = Convert(ast[2].Accept(this), typeof(iObject));
+            return Condition(condition, ifTrue, ifFalse);
+        }
+
+        protected Expression CompileNot(Ast<Token> ast)
+        {
+            var cond = Convert(ast[0].Accept(this), typeof(iObject));
+            return Condition(
+                ToBool(cond),
+                Convert(CompileFalse(), typeof(iObject)),
+                Convert(CompileTrue(), typeof(iObject))
+            );
+        }
+
+        protected Expression CompileAnd(Ast<Token> ast)
+        {
+            var left  = Convert(ast[0].Accept(this), typeof(iObject));
+            var right = Convert(ast[1].Accept(this), typeof(iObject));
+            return Condition(ToBool(left), right, left);
+        }
+
+        protected Expression CompileOr(Ast<Token> ast)
+        {
+            var left = Convert(ast[0].Accept(this), typeof(iObject));
+            var right = Convert(ast[1].Accept(this), typeof(iObject));
+            return Condition(ToBool(left), left, right);
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
@@ -194,11 +230,29 @@ namespace Mint.Compilation
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
 
+        private Expression ToBool(Expression expr)
+        {
+            // (obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass)
+
+            var obj = Variable(typeof(iObject));
+
+            return Block(
+                new[] { obj },
+                Assign(obj, expr),
+                And(
+                    NotEqual(obj, Constant(null)),
+                    And(
+                        Not(TypeIs(obj, typeof(NilClass))),
+                        Not(TypeIs(obj, typeof(FalseClass)))
+                    )
+                )
+            );
+        }
+
         protected static readonly ConstructorInfo STRING_CTOR1  = Ctor<String>();
         protected static readonly ConstructorInfo STRING_CTOR2  = Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3  = Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR   = Ctor<Symbol>(typeof(string));
-        protected static readonly MethodInfo      OBJECT_TOBOOL = Method<Object>("ToBool", typeof(iObject));
 
         protected static readonly Expression DFT_ELSE = Convert(Constant(new NilClass()), typeof(iObject));
 
