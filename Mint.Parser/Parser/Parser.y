@@ -1143,7 +1143,7 @@ string_content :
     {
       PopCond();
       PopCmdarg();
-      $$ = $1 + $3;
+      $$ = $1.Append($3.List);
     }
 ;
 

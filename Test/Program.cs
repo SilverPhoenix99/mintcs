@@ -21,26 +21,30 @@ namespace Test
 
             if(InVisualStudio)
             {
-                TestCompiler.Test(":'a'");
+                TestCompiler.Test("'a' 'b' \"c#{:d;:e}\"");
             }
             else
             {
                 TestCompiler.Test(args);
             }
+        }
 
+        /*
+        static void OtherTests()
+        {
             //TestGems.Test();
             //TestSymbolGC.Test();
             //InvokeDynamicMethods.Test();
             //TestRoslyn.TestLambdaCompilation();
 
-            /*if(InVisualStudio)
-            {
-                TestInterpreter.Test("<<A", "blah", "A");
-            }
-            else
-            {
-                TestInterpreter.Test(args);
-            }*/
+            //if(InVisualStudio)
+            //{
+            //    TestInterpreter.Test("<<A", "blah", "A");
+            //}
+            //else
+            //{
+            //    TestInterpreter.Test(args);
+            //}
             
             //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
             //var tokens = new Lexer(fragment).ToArray();
@@ -48,5 +52,6 @@ namespace Test
             //var ast = Parser.Parse(fragment);
             //AstPrinter<Token>.Print(ast, indent_size: 4);
         }
+        */
     }
 }

@@ -128,33 +128,35 @@ namespace Mint.Compilation
 
         protected Expression CompileString(Ast<Token> ast)
         {
-            //var first = list.First();
-            Expression first = null;
-
-            /*if(ast[0].Count == 1 && ast[0][0].Value.Type == TokenType.tSTRING_CONTENT)
+            if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
             {
-                return New(STRING_CTOR, first);
-            }*/
+                return New(STRING_CTOR, CompileStringContent(ast[0]));
+            }
 
-            first = New(STRING_CTOR, Constant(new String("")));
-            var list = new Expression[] { first }.Concat( ast[0].Select(_ => _.Accept(this)) );
-
-            return list.Aggregate( (l, r) => Call(l, "Concat", null, r) );
+            var first = New(STRING_CTOR, Constant(new String("")));
+            return CompileString(first, ast);
         }
 
         protected Expression CompileChar(Ast<Token> ast)
         {
-            var first = CompileStringContent(ast);
+            var first = New(STRING_CTOR, CompileStringContent(ast));
 
-            /*if(ast[0].Count == 0)
+            if(ast.List.Count == 0)
             {
-                return New(STRING_CTOR, first);
-            }*/
+                return first;
+            }
 
-            first = New(STRING_CTOR, first);
-            var list = new Expression[] { first }.Concat( ast[0].Select(_ => _.Accept(this)) );
+            return CompileString(first, ast);
+        }
 
-            return list.Aggregate( (l, r) => Call(l, "Concat", null, r) );
+        private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
+        {
+            var list = ast.Select(_ => _.Accept(this))
+                .Select(_ => _.IsConstant() ? _ : New(STRING_CTOR, Call(_, "ToString", null)));
+
+            list = new Expression[] { first }.Concat(list);
+
+            return list.Aggregate((l, r) => Call(l, "Concat", null, r));
         }
 
         protected Expression CompileStringContent(Ast<Token> ast)
