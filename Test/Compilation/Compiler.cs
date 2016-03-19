@@ -93,8 +93,10 @@ namespace Mint.Compilation
             return Constant(new NilClass());
         }
 
-        protected static readonly ConstructorInfo STRING_CTOR =
-            typeof(String).GetConstructor(new[] { typeof(String) });
+        protected static readonly ConstructorInfo STRING_CTOR1 = Ctor<String>();
+        protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
+        protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
+        protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
 
         protected Expression CompileSymbol(Ast<Token> ast)
         {
@@ -104,29 +106,23 @@ namespace Mint.Compilation
             {
                 return Constant(new Symbol(content.Value.Value));
             }
-
-            var first = New(STRING_CTOR, Constant(new String("")));
-            var expr = CompileString(first, content);
-
-            // TODO
-
-            throw new NotImplementedException("Symbol with string content");
+            
+            return New(SYMBOL_CTOR, Call(CompileString(New(STRING_CTOR1), content), "ToString", null));
         }
 
         protected Expression CompileString(Ast<Token> ast)
         {
             if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
             {
-                return New(STRING_CTOR, CompileStringContent(ast[0]));
+                return New(STRING_CTOR3, CompileStringContent(ast[0]));
             }
-
-            var first = New(STRING_CTOR, Constant(new String("")));
-            return CompileString(first, ast);
+            
+            return CompileString(New(STRING_CTOR1), ast);
         }
 
         protected Expression CompileChar(Ast<Token> ast)
         {
-            var first = New(STRING_CTOR, CompileStringContent(ast));
+            var first = New(STRING_CTOR3, CompileStringContent(ast));
 
             if(ast.List.Count == 0)
             {
@@ -138,11 +134,8 @@ namespace Mint.Compilation
 
         private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
         {
-            var tmp = ast.Select(_ => _.Accept(this))
-                .Select(_ => _.Type == typeof(String) ? _ : New(STRING_CTOR, Call(_, "ToString", null))).ToArray();
-
             var list = ast.Select(_ => _.Accept(this))
-                .Select(_ => _.IsConstant() ? _ : New(STRING_CTOR, Call(_, "ToString", null)));
+                .Select(_ => _.Type == typeof(String) ? _ : New(STRING_CTOR2, Call(_, "ToString", null)));
 
             list = new Expression[] { first }.Concat(list);
 
@@ -175,5 +168,7 @@ namespace Mint.Compilation
             return Microsoft.CSharp.RuntimeBinder.Binder
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
+
+        protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
     }
 }
