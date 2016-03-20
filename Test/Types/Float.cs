@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Float : aFrozenObject
+    public class Float : FrozenObject
     {
         public Float(double value) : base()
         {

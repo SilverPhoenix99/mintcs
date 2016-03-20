@@ -24,7 +24,7 @@ namespace Test
                 {
                     var ast = Parser.Parse(fragment);
                     DumpAst(ast);
-                    var expr = ast.Accept(new Compiler());
+                    var expr = ast.Accept(new Compiler("(imt)"));
                     DumpExpression(expr);
                     RunExpression(expr);
                 }

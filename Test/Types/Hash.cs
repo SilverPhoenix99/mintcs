@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Hash : aObject
+    public class Hash : BaseObject
     {
         public Hash() : base(CLASS)
         {

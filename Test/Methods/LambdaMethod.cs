@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
@@ -14,7 +15,7 @@ namespace Mint
 
         public Delegate Lambda { get; }
 
-        public override Expression Bind(Expression target, params Expression[] args)
+        public override Expression Bind(Expression target, IEnumerable<Expression> args)
         {
             return Call(Constant(Lambda.Target), Lambda.Method, new[] { target }.Concat(args));
         }

@@ -16,8 +16,18 @@ namespace Mint.Compilation
 {
     public class Compiler : AstVisitor<Token, Expression>
     {
-        public Compiler()
+        private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
+            new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
+        protected readonly string filename;
+        protected readonly Stack<GotoExpression> breakExpressions = new Stack<GotoExpression>();
+        protected readonly Stack<Dictionary<string, ParameterExpression>> locals =
+            new Stack<Dictionary<string, ParameterExpression>>();
+
+        public Compiler(string filename)
         {
+            this.filename = filename;
+            locals.Push(new Dictionary<string, ParameterExpression>());
+
             Register(tINTEGER,        CompileInteger);
             Register(tFLOAT,          CompileFloat);
             Register(kTRUE,           CompileTrue);
@@ -39,14 +49,17 @@ namespace Mint.Compilation
             Register(kNOT,            CompileNot);
             Register(kAND,            CompileAnd);
             Register(kOR,             CompileOr);
+            Register(k__LINE__,       CompileLineNumber);
+            Register(k__FILE__,       CompileFileName);
+            Register(kWHILE,          CompileWhile);
+            Register(kWHILE_MOD,      CompileWhile);
+            Register(kUNTIL,          CompileWhile);
+            Register(kUNTIL_MOD,      CompileWhile);
         }
-
-        private Dictionary<TokenType, Func<Ast<Token>, Expression>> Actions { get; } =
-            new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
         public void Register(TokenType type, Func<Ast<Token>, Expression> action)
         {
-            Actions[type] = action;
+            actions[type] = action;
         }
 
         public Expression Visit(Ast<Token> ast)
@@ -57,7 +70,7 @@ namespace Mint.Compilation
             }
 
             Func<Ast<Token>, Expression> action;
-            if(Actions.TryGetValue(ast.Value.Type, out action))
+            if(actions.TryGetValue(ast.Value.Type, out action))
             {
                 return action(ast);
             }
@@ -206,6 +219,48 @@ namespace Mint.Compilation
             var left = Convert(ast[0].Accept(this), typeof(iObject));
             var right = Convert(ast[1].Accept(this), typeof(iObject));
             return Condition(ToBool(left), left, right);
+        }
+
+        protected Expression CompileLineNumber(Ast<Token> ast)
+        {
+            return Constant(new Fixnum(ast.Value.Location.Item1));
+        }
+
+        protected Expression CompileFileName(Ast<Token> ast)
+        {
+            return Constant(new String(filename));
+        }
+
+        protected Expression CompileWhile(Ast<Token> ast)
+        {
+            Expression condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
+            var body = Convert(ast[1].Accept(this), typeof(iObject));
+
+            if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
+            {
+                condition = Not(condition);
+            }
+
+            var breakLabel = Label(typeof(iObject));
+            var parm       = Parameter(typeof(iObject));
+            breakExpressions.Push(Break(breakLabel, parm));
+
+            try
+            {
+                if(ast[1].Value.Type == kBEGIN
+                && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
+                {
+                    // postfix while
+                    // TODO is postfix if `begin' statement with no `rescue' or `ensure' clauses
+                    throw new NotImplementedException();
+                }
+
+                throw new NotImplementedException();
+            }
+            finally
+            {
+                breakExpressions.Pop();
+            }
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)

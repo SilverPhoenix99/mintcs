@@ -1,11 +1,10 @@
-using System;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
 
 namespace Mint
 {
-    public abstract class aFrozenObject : iObject
+    public abstract class FrozenObject : iObject
     {
         private static long nextId = 0;
 

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Complex : aObject
+    public class Complex : BaseObject
     {
         public iObject Real { get; }
         public iObject Imag { get; }

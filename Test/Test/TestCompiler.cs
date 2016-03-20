@@ -20,7 +20,7 @@ namespace Test
                 Console.WriteLine(doc.ToString());
                 Console.WriteLine();
 
-                var expr = ast.Accept(new Compiler());
+                var expr = ast.Accept(new Compiler("(TestCompiler)"));
 
                 Console.WriteLine(Repl.DEBUGVIEW_INFO.Invoke(expr, new object[0]));
                 Console.WriteLine();

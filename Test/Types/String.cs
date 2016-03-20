@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class String : aObject
+    public class String : BaseObject
     {
         private string value;
 

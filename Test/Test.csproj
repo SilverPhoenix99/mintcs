@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
@@ -45,6 +46,8 @@
     <Compile Include="Extensions\ExpressionExtension.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Interpreter\Interpreter.cs" />
+    <Compile Include="LinkedDictionary.cs" />
+    <Compile Include="Methods\AttrReaderMethod.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Program.cs" />
@@ -60,23 +63,24 @@
     <Compile Include="Test\TestRoslyn.cs" />
     <Compile Include="Test\TestSymbolGC.cs" />
     <Compile Include="TypeError.cs" />
-    <Compile Include="Types\aFrozenObject.cs" />
-    <Compile Include="Types\aObject.cs" />
+    <Compile Include="Types\FrozenObject.cs" />
+    <Compile Include="Types\BaseObject.cs" />
     <Compile Include="Types\Array.cs" />
     <Compile Include="Types\Class.cs" />
-    <Compile Include="Types\CompiledMethod.cs" />
+    <Compile Include="Methods\CompiledMethod.cs" />
     <Compile Include="Types\Complex.cs" />
     <Compile Include="Types\FalseClass.cs" />
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\Hash.cs" />
     <Compile Include="Types\iObject.cs" />
-    <Compile Include="Types\LambdaMethod.cs" />
-    <Compile Include="Types\Method.cs" />
+    <Compile Include="Methods\LambdaMethod.cs" />
+    <Compile Include="Methods\Method.cs" />
     <Compile Include="Types\Module.cs" />
     <Compile Include="Types\NilClass.cs" />
     <Compile Include="Types\Object.cs" />
     <Compile Include="Types\Object.Meta.cs" />
+    <Compile Include="Types\Range.cs" />
     <Compile Include="Types\Rational.cs" />
     <Compile Include="Types\Regexp.cs" />
     <Compile Include="Types\String.cs" />

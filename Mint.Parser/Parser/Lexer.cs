@@ -10,23 +10,23 @@ namespace Mint.Parser
 {
     public partial class Lexer : IEnumerable<Token>
     {
-		int p,
-            cs,
-			ts,
-			te,
-			act,
-			top,
-			line_jump;
+		private int p,
+                    cs,
+			        ts,
+			        te,
+			        act,
+			        top,
+			        line_jump;
 
-        int __end__ = -1;
-		int[] stack = new int[10];
-        int[] lines;
-        Token eof_token;
+        private int __end__ = -1;
+		private int[] stack = new int[10];
+        private int[] lines;
+        private Token eof_token;
 
-		readonly Queue<Token> tokens = new Queue<Token>();
-        readonly Stack<iLiteral> literals = new Stack<iLiteral>();
+		private readonly Queue<Token> tokens = new Queue<Token>();
+        private readonly Stack<iLiteral> literals = new Stack<iLiteral>();
 
-		string data;
+		private string data;
 
         public Lexer(string data = "")
         {
@@ -532,11 +532,11 @@ namespace Mint.Parser
                 return line_jump;
             }
 
-            for(int p = this.p; p < data.Length; p++)
+            for(var i = p; i < data.Length; i++)
             {
-                if(data[p] == '\n')
+                if(data[i] == '\n')
                 {
-                    return p + 1;
+                    return i + 1;
                 }
             }
 

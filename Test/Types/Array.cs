@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Array : aObject
+    public class Array : BaseObject
     {
         public Array() : base(CLASS)
         {

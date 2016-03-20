@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public partial class Object : aObject
+    public partial class Object : BaseObject
     {
         public Object(Class klass = null) : base(klass) { }
 
@@ -17,6 +17,8 @@ namespace Mint
 
         public static iObject Box(string obj) => new String(obj);
 
+        public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
+
         public static iObject Box(object o)
         {
             if(o is string) return Box((string) o);
@@ -24,8 +26,6 @@ namespace Mint
 
             return (iObject) o;
         }
-
-        public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
 
         public static bool ToBool(iObject obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass);
 

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Regexp : aObject
+    public class Regexp : BaseObject
     {
         public Regexp() : base(CLASS)
         {

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
@@ -14,7 +15,7 @@ namespace Mint
 
         public MethodInfo MethodInfo { get; }
 
-        public override Expression Bind(Expression target, params Expression[] args)
+        public override Expression Bind(Expression target, IEnumerable<Expression> args)
         {
             if(MethodInfo.IsStatic)
             {

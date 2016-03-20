@@ -103,7 +103,7 @@ namespace Mint
                                 STRING_CONCAT_METHOD,
                                 Constant($"undefined method `{name}' for "),
                                 Expression,
-                                Call(Expression, typeof(aObject).GetMethod("InspectInternal"))
+                                Call(Expression, typeof(BaseObject).GetMethod("InspectInternal"))
                             )
                         )
                     );

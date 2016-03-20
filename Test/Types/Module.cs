@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    public class Module : aObject
+    public class Module : BaseObject
     {
         public Module(Symbol? name = null, Module container = null)
             : this(CLASS, name, container)
