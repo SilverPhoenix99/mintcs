@@ -48,14 +48,18 @@ namespace Mint
         public iObject InstanceVariableGet(String name) => InstanceVariableGet(new Symbol(name.Value));
 
         #region Static
-        
-        protected static readonly Regex CVAR = new Regex(
-            @"@@[a-z_\u0080-\uffff][a-z0-9_\u0080-\uffff]*",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        protected static readonly Regex IVAR = new Regex(
-            @"@[a-z_\u0080-\uffff][a-z0-9_\u0080-\uffff]*",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        public const string VAR_START   = @"[a-zA-Z_\u0080-\uffff]";
+        public const string IDENT_CHAR  = $"(?:{VAR_START}|\\d)";
+
+        public static readonly Regex IVAR = new Regex($"^@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
+        public static readonly Regex CVAR = new Regex($"^@@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
+        public static readonly Regex BACK_REF = new Regex(@"^$[&+`']", RegexOptions.Compiled);
+        public static readonly Regex NTH_REF = new Regex(@"^$[1-9]\d*", RegexOptions.Compiled);
+
+        public static readonly Regex GVAR = new Regex(
+            $"^\\$(?:-{IDENT_CHAR}|(?:{VAR_START}|0){IDENT_CHAR}*|[~*$?!@/\\;,.=:<>\"])$",
+            RegexOptions.Compiled);
 
         #endregion
     }
