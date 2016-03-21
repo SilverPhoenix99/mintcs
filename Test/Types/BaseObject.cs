@@ -49,8 +49,8 @@ namespace Mint
 
         #region Static
 
-        public const string VAR_START   = @"[a-zA-Z_\u0080-\uffff]";
-        public const string IDENT_CHAR  = $"(?:{VAR_START}|\\d)";
+        public const string VAR_START = @"[a-zA-Z_\u0080-\uffff]";
+        public static readonly string IDENT_CHAR = $"(?:{VAR_START}|\\d)";
 
         public static readonly Regex IVAR = new Regex($"^@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
         public static readonly Regex CVAR = new Regex($"^@@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
