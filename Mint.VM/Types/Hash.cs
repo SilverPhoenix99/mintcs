@@ -1,4 +1,5 @@
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Mint
@@ -10,8 +11,29 @@ namespace Mint
         public Hash() : base(CLASS)
         {
             map = new LinkedDictionary<iObject, iObject>();
-            throw new NotImplementedException();
         }
+
+        public Hash(int capacity) : base(CLASS)
+        {
+            map = new LinkedDictionary<iObject, iObject>(capacity);
+        }
+
+        public iObject this[iObject key]
+        {
+            get
+            {
+                iObject value;
+                map.TryGetValue(key, out value);
+                return value;
+            }
+            set { map[key] = value; }
+        }
+
+        public IEnumerable<iObject> Keys => map.Keys;
+
+        public IEnumerable<iObject> Values => map.Values;
+
+        public Array ToArray() => new Array(map.Select(_ => new Array(_.Key, _.Value)));
 
         #region Static
 

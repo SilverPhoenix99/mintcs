@@ -1,15 +1,20 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Mint
 {
     public class Range : BaseObject
     {
-        public Range()
+        public Range(iObject begin, iObject end, bool excludeEnd = false)
         {
-            throw new NotImplementedException();
+            Begin = begin;
+            End = End;
+            ExcludeEnd = excludeEnd;
         }
-        
+
+        public iObject Begin { get; }
+        public iObject End { get; }
+        public bool ExcludeEnd { get; }
+
         #region Static
 
         public static readonly Class CLASS;
@@ -21,6 +26,5 @@ namespace Mint
         }
 
         #endregion
-
     }
 }
