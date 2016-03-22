@@ -5,8 +5,11 @@ namespace Mint
 {
     public class Hash : BaseObject
     {
+        private readonly LinkedDictionary<iObject, iObject> map;
+
         public Hash() : base(CLASS)
         {
+            map = new LinkedDictionary<iObject, iObject>();
             throw new NotImplementedException();
         }
 

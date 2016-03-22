@@ -9,11 +9,11 @@ namespace Test
         static void Test()
         {
             var r = new Random(345757345);
-            for(int j = 0; j < 100; j++)
+            for(var j = 0; j < 100; j++)
             {
                 var s = "";
 
-                for(int i = 0; i < 1000; i++)
+                for(var i = 0; i < 1000; i++)
                 {
                     s += r.Next() + " ";
                 }

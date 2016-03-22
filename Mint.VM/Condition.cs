@@ -1,4 +1,4 @@
-﻿namespace Mint.Compilation
+﻿namespace Mint
 {
     public class Condition
     {

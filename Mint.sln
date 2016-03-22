@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Parser", "Mint.Parser\Mint.Parser.csproj", "{7E8EB224-55E0-408E-AFDA-0258E01211CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.VM", "Mint.VM\Mint.VM.csproj", "{B446F5D9-5BCC-4B36-945D-FF50036C85D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7E8EB224-55E0-408E-AFDA-0258E01211CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E8EB224-55E0-408E-AFDA-0258E01211CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E8EB224-55E0-408E-AFDA-0258E01211CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B446F5D9-5BCC-4B36-945D-FF50036C85D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B446F5D9-5BCC-4B36-945D-FF50036C85D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B446F5D9-5BCC-4B36-945D-FF50036C85D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B446F5D9-5BCC-4B36-945D-FF50036C85D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

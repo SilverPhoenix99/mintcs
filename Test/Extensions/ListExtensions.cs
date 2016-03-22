@@ -25,7 +25,7 @@ namespace Mint.Extensions
             {
                 if(compare == null)
                 {
-                    throw new ArgumentNullException("comparison");
+                    throw new ArgumentNullException(nameof(compare));
                 }
                 comparison = new Comparison<T>(compare);
             }

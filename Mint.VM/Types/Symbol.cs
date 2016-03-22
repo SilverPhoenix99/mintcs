@@ -55,7 +55,7 @@ namespace Mint
         public static explicit operator string(Symbol s) => s.Name;
 
 #if DEBUG
-        internal static int Count => SYMBOLS.Count;
+        public static int Count => SYMBOLS.Count;
 #endif
 
         static Symbol()

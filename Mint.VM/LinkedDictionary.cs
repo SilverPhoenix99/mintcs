@@ -1,11 +1,9 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Test
+namespace Mint
 {
     public class LinkedDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
                                                   IReadOnlyDictionary<TKey, TValue>,
@@ -136,7 +134,7 @@ namespace Test
             }
         }
 
-        public void CopyTo(Array array, int arrayIndex)
+        public void CopyTo(System.Array array, int arrayIndex)
         {
             var node = head;
             for(int i = arrayIndex; i < array.Length && node != null; i++)
