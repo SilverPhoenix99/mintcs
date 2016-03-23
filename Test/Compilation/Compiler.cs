@@ -1,5 +1,4 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
-using Mint.Extensions;
 using Mint.Parser;
 using System;
 using System.Collections.Generic;
@@ -19,14 +18,13 @@ namespace Mint.Compilation
         private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
         protected readonly string filename;
-        protected readonly Stack<GotoExpression> breakExpressions = new Stack<GotoExpression>();
-        protected readonly Stack<Dictionary<string, ParameterExpression>> locals =
-            new Stack<Dictionary<string, ParameterExpression>>();
+
+        protected readonly Stack<Scope> scopes = new Stack<Scope>();
 
         public Compiler(string filename)
         {
             this.filename = filename;
-            locals.Push(new Dictionary<string, ParameterExpression>());
+            scopes.Push(new Scope(ScopeType.Method));
 
             Register(tINTEGER,        CompileInteger);
             Register(tFLOAT,          CompileFloat);
@@ -55,7 +53,10 @@ namespace Mint.Compilation
             Register(kWHILE_MOD,      CompileWhile);
             Register(kUNTIL,          CompileWhile);
             Register(kUNTIL_MOD,      CompileWhile);
+            Register(kBREAK,          CompileBreak);
         }
+
+        protected Scope CurrentScope => scopes.Peek();
 
         public void Register(TokenType type, Func<Ast<Token>, Expression> action)
         {
@@ -82,7 +83,9 @@ namespace Mint.Compilation
 
         protected Expression CompileList(Ast<Token> ast)
         {
-            return ast.List.Count == 1 ? ast[0].Accept(this) : Block(ast.List.Select(_ => _.Accept(this)));
+            return ast.List.Count == 1
+                ? ast[0].Accept(this)
+                : Block(ast.List.Select(_ => _.Accept(this)));
         }
 
         protected Expression CompileInteger(Ast<Token> ast)
@@ -91,7 +94,7 @@ namespace Mint.Compilation
             var str = CLEAN_INTEGER.Replace(tok.Value.ToUpper(), "");
             var num_base = (int) tok.Properties["num_base"];
             var val = System.Convert.ToInt64(str, num_base);
-            return Constant(new Fixnum(val));
+            return Constant(new Fixnum(val), typeof(iObject));
         }
 
         protected Expression CompileFloat(Ast<Token> ast)
@@ -99,22 +102,22 @@ namespace Mint.Compilation
             var tok = ast.Value;
             var str = tok.Value.Replace("_", "");
             var val = System.Convert.ToDouble(str, CultureInfo.InvariantCulture);
-            return Constant(new Float(val));
+            return Constant(new Float(val), typeof(iObject));
         }
 
         protected Expression CompileTrue(Ast<Token> ast = null)
         {
-            return Constant(new TrueClass());
+            return Constant(new TrueClass(), typeof(iObject));
         }
 
         protected Expression CompileFalse(Ast<Token> ast = null)
         {
-            return Constant(new FalseClass());
+            return Constant(new FalseClass(), typeof(iObject));
         }
 
         protected Expression CompileNil(Ast<Token> ast)
         {
-            return Constant(new NilClass());
+            return CONSTANT_NIL;
         }
 
         protected Expression CompileSymbol(Ast<Token> ast)
@@ -123,17 +126,29 @@ namespace Mint.Compilation
 
             if(!content.IsList)
             {
-                return Constant(new Symbol(content.Value.Value));
+                return Constant(new Symbol(content.Value.Value), typeof(iObject));
             }
             
-            return New(SYMBOL_CTOR, Call(CompileString(New(STRING_CTOR1), content), "ToString", null));
+            return Convert(
+                New(
+                    SYMBOL_CTOR,
+                    Call(CompileString(New(STRING_CTOR1), content), "ToString", null)
+                ),
+                typeof(iObject)
+            );
         }
 
         protected Expression CompileString(Ast<Token> ast)
         {
             if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
             {
-                return New(STRING_CTOR3, CompileStringContent(ast[0]));
+                return Convert(
+                    New(
+                        STRING_CTOR3,
+                        CompileStringContent(ast[0])
+                    ),
+                    typeof(iObject)
+                );
             }
             
             return CompileString(New(STRING_CTOR1), ast);
@@ -143,12 +158,9 @@ namespace Mint.Compilation
         {
             var first = New(STRING_CTOR3, CompileStringContent(ast));
 
-            if(ast.List.Count == 0)
-            {
-                return first;
-            }
-
-            return CompileString(first, ast);
+            return ast.List.Count == 0
+                ? Convert(first, typeof(iObject))
+                : CompileString(first, ast);
         }
 
         private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
@@ -156,9 +168,10 @@ namespace Mint.Compilation
             var list = ast.Select(_ => _.Accept(this))
                 .Select(_ => _.Type == typeof(String) ? _ : New(STRING_CTOR2, Call(_, "ToString", null)));
 
-            list = new Expression[] { first }.Concat(list);
+            list = new[] { first }.Concat(list);
+            first = list.Aggregate((l, r) => Call(l, "Concat", null, r));
 
-            return list.Aggregate((l, r) => Call(l, "Concat", null, r));
+            return Convert(first, typeof(iObject));
         }
 
         protected Expression CompileStringContent(Ast<Token> ast)
@@ -173,94 +186,130 @@ namespace Mint.Compilation
 
         protected Expression CompileIf(Ast<Token> ast)
         {
-            Expression condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
+            var condition = ToBool(ast[0].Accept(this));
 
             if(ast.Value.Type == kUNLESS || ast.Value.Type == kUNLESS_MOD)
             {
-                condition = Not(condition);
+                condition = Negate(condition);
             }
 
-            var ifTrue = Convert(ast[1].Accept(this), typeof(iObject));
+            var ifTrue = ast[1].Accept(this);
 
             var ifFalse = ast.List.Count < 3 || ast[2].List.Count == 0
-                        ? DFT_ELSE
-                        : Convert(ast[2].Accept(this), typeof(iObject));
+                        ? CONSTANT_NIL
+                        : ast[2].Accept(this);
 
-            return Condition(condition, ifTrue, ifFalse);
+            return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
         protected Expression CompileQMark(Ast<Token> ast)
         {
-            var condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
-            var ifTrue    = Convert(ast[1].Accept(this), typeof(iObject));
-            var ifFalse   = Convert(ast[2].Accept(this), typeof(iObject));
-            return Condition(condition, ifTrue, ifFalse);
+            var condition = ToBool(ast[0].Accept(this));
+            var ifTrue    = ast[1].Accept(this);
+            var ifFalse   = ast[2].Accept(this);
+            return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
         protected Expression CompileNot(Ast<Token> ast)
         {
-            var cond = Convert(ast[0].Accept(this), typeof(iObject));
             return Condition(
-                ToBool(cond),
-                Convert(CompileFalse(), typeof(iObject)),
-                Convert(CompileTrue(), typeof(iObject))
+                ToBool(ast[0].Accept(this)),
+                CompileFalse(),
+                CompileTrue(),
+                typeof(iObject)
             );
         }
 
         protected Expression CompileAnd(Ast<Token> ast)
         {
-            var left  = Convert(ast[0].Accept(this), typeof(iObject));
-            var right = Convert(ast[1].Accept(this), typeof(iObject));
-            return Condition(ToBool(left), right, left);
+            var left  = ast[0].Accept(this);
+            var right = ast[1].Accept(this);
+            return Condition(ToBool(left), right, left, typeof(iObject));
         }
 
         protected Expression CompileOr(Ast<Token> ast)
         {
-            var left = Convert(ast[0].Accept(this), typeof(iObject));
-            var right = Convert(ast[1].Accept(this), typeof(iObject));
-            return Condition(ToBool(left), left, right);
+            var left  = ast[0].Accept(this);
+            var right = ast[1].Accept(this);
+            return Condition(ToBool(left), left, right, typeof(iObject));
         }
 
         protected Expression CompileLineNumber(Ast<Token> ast)
         {
-            return Constant(new Fixnum(ast.Value.Location.Item1));
+            return Constant(new Fixnum(ast.Value.Location.Item1), typeof(iObject));
         }
 
         protected Expression CompileFileName(Ast<Token> ast)
         {
-            return Constant(new String(filename));
+            return Constant(new String(filename), typeof(iObject));
         }
 
         protected Expression CompileWhile(Ast<Token> ast)
         {
-            Expression condition = ToBool(Convert(ast[0].Accept(this), typeof(iObject)));
-            var body = Convert(ast[1].Accept(this), typeof(iObject));
-
-            if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
+            return WithScope(ScopeType.Loop, scope =>
             {
-                condition = Not(condition);
-            }
+                var breakLabel = scope.Label("break", typeof(iObject));
+                var nextLabel  = scope.Label("next");
 
-            var breakLabel = Label(typeof(iObject));
-            var parm       = Parameter(typeof(iObject));
-            breakExpressions.Push(Break(breakLabel, parm));
+                var body = ast[1].Accept(this);
 
-            try
-            {
-                if(ast[1].Value.Type == kBEGIN
-                && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
+                var condition = ToBool(ast[0].Accept(this));
+                if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
                 {
-                    // postfix while
-                    // TODO is postfix if `begin' statement with no `rescue' or `ensure' clauses
-                    throw new NotImplementedException();
+                    condition = Negate(condition);
                 }
 
-                throw new NotImplementedException();
-            }
-            finally
+                if(ast[1].Value?.Type == kBEGIN
+                && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
+                {
+                    scope.Labels["retry"] = nextLabel;
+
+                    // postfix `while'
+                    // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
+
+                    throw new NotImplementedException();
+                }
+                
+                var retryLabel = scope.Label("retry");
+                
+                return Loop(
+                    Condition(
+                        condition,
+                        Block(
+                            Label(retryLabel),
+                            body
+                        ),
+                        Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
+                        typeof(iObject)
+                    ),
+                    breakLabel,
+                    nextLabel
+                );
+            });
+        }
+
+        protected Expression CompileBreak(Ast<Token> ast)
+        {
+            var value = CONSTANT_NIL;
+            switch(ast.List.Count)
             {
-                breakExpressions.Pop();
+                case 0:
+                    break;
+
+                case 1:
+                    if(ast.IsList)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    value = ast[0].Accept(this);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
             }
+
+            return Break(CurrentScope.Label("break"), value, typeof(iObject));
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
@@ -289,6 +338,11 @@ namespace Mint.Compilation
         {
             // (obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass)
 
+            if(expr.Type != typeof(iObject))
+            {
+                expr = Convert(expr, typeof(iObject));
+            }
+
             var obj = Variable(typeof(iObject));
 
             return Block(
@@ -304,15 +358,33 @@ namespace Mint.Compilation
             );
         }
 
+        private Expression WithScope(ScopeType type, Func<Scope, Expression> action)
+        {
+            var scope = new Scope(type);
+            scopes.Push(scope);
+
+            try
+            {
+                return action(scope);
+            }
+            finally
+            {
+                scopes.Pop();
+            }
+        }
+
         protected static readonly ConstructorInfo STRING_CTOR1  = Ctor<String>();
         protected static readonly ConstructorInfo STRING_CTOR2  = Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3  = Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR   = Ctor<Symbol>(typeof(string));
 
-        protected static readonly Expression DFT_ELSE = Convert(Constant(new NilClass()), typeof(iObject));
+        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 
         protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
 
         protected static MethodInfo Method<T>(string name, params Type[] argTypes) => typeof(T).GetMethod(name, argTypes);
+
+        protected static Expression Negate(Expression expr) =>
+            expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
     }
 }
