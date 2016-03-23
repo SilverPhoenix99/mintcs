@@ -83,12 +83,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="'gen\Lexer_data.cs' 'gen\Lexer_exec.cs'">
-    <Message Text="Generating Lexer" Importance="high" />
+  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="gen\Lexer_data.cs;gen\Lexer_exec.cs">
     <Exec Command="GenLexer.bat" />
   </Target>
-  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="'gen\Parser.cs'">
-    <Message Text="Generating Parser" Importance="high" />
+  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
     <Exec Command="GenParser.bat" />
   </Target>
 </Project>
