@@ -262,7 +262,7 @@ namespace Mint.Compilation
                 if(ast[1].Value?.Type == kBEGIN
                 && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
                 {
-                    scope.Labels["retry"] = nextLabel;
+                    scope.Labels["redo"] = nextLabel;
 
                     // postfix `while'
                     // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
@@ -278,13 +278,13 @@ namespace Mint.Compilation
                     );
                 }
                 
-                var retryLabel = scope.Label("retry");
+                var redoLabel = scope.Label("redo");
                 
                 return Loop(
                     Condition(
                         condition,
                         Block(
-                            Label(retryLabel),
+                            Label(redoLabel),
                             body
                         ),
                         Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
