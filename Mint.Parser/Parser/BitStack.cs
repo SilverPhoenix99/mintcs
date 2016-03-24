@@ -4,10 +4,7 @@
     {
         private ulong stack;
 
-        public bool Peek
-        {
-            get { return (stack & 1) == 1; }
-        }
+        public bool Peek => (stack & 1) == 1;
 
         public void Push(bool value)
         {

@@ -21,19 +21,23 @@ namespace Mint
 
         ~Class()
         {
-            if(Superclass != null)
+            if(Superclass == null)
             {
-                var list = Superclass.Subclasses;
-                for(int i = 0; i < list.Count; i++)
+                return;
+            }
+
+            var list = Superclass.Subclasses;
+            for(var i = 0; i < list.Count; i++)
+            {
+                Class klass;
+                var weakRef = list[i];
+                if(!weakRef.TryGetTarget(out klass) || klass != this)
                 {
-                    Class klass;
-                    WeakReference<Class> wr = list[i];
-                    if(wr.TryGetTarget(out klass) && klass == this)
-                    {
-                        list.RemoveAt(i);
-                        break;
-                    }
+                    continue;
                 }
+
+                list.RemoveAt(i);
+                break;
             }
         }
 

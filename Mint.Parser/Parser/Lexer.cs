@@ -28,11 +28,14 @@ namespace Mint.Parser
 
 		private string data;
 
-        public Lexer(string data = "")
+        public Lexer(string filename, string data)
         {
-			Data = data ?? "";
+            Filename = filename;
+			Data = data;
             TabWidth = 8;
         }
+
+        public string Filename { get; }
 
 		public string Data
 		{
@@ -448,7 +451,7 @@ namespace Mint.Parser
             return GenToken(tSTRING_CONTENT, token: tok, ts: lit.ContentStart);
         }
 
-        private Token GenStringEndToken(int ts = -1, int te = -1, Regexp.Flags regexp_options = Regexp.Flags.None)
+        private Token GenStringEndToken(int ts = -1, int te = -1, RegexpFlags regexp_options = RegexpFlags.None)
         {
             var lit = literals.Pop();
             var tok = CurrentToken(ts, te);

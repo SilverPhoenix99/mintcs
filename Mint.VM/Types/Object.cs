@@ -5,9 +5,9 @@ namespace Mint
 {
     public partial class Object : BaseObject
     {
-        public Object(Class klass = null) : base(klass) { }
+        public Object() { }
 
-        public Object() : base() { }
+        public Object(Class klass = null) : base(klass) { }
 
         #region Static
 
@@ -128,47 +128,47 @@ namespace Mint
                 case ExpressionType.SubtractAssignChecked: return "-=";
                 case ExpressionType.OnesComplement:        return "~";
 
-                    //case ExpressionType.ArrayLength = 4,
-                    //case ExpressionType.Conditional = 8,
-                    //case ExpressionType.Constant = 9,
-                    //case ExpressionType.Convert = 10,
-                    //case ExpressionType.ConvertChecked = 11,
-                    //case ExpressionType.Invoke = 17,
-                    //case ExpressionType.Lambda = 18,
-                    //case ExpressionType.ListInit = 22,
-                    //case ExpressionType.MemberAccess = 23,
-                    //case ExpressionType.MemberInit = 24,
-                    //case ExpressionType.New = 31,
-                    //case ExpressionType.NewArrayInit = 32,
-                    //case ExpressionType.NewArrayBounds = 33,
-                    //case ExpressionType.Parameter = 38,
-                    //case ExpressionType.Quote = 40,
-                    //case ExpressionType.TypeAs = 44,
-                    //case ExpressionType.TypeIs = 45,
-                    //case ExpressionType.Assign = 46,
-                    //case ExpressionType.Block = 47,
-                    //case ExpressionType.DebugInfo = 48,
-                    //case ExpressionType.Decrement = 49,
-                    //case ExpressionType.Dynamic = 50,
-                    //case ExpressionType.Default = 51,
-                    //case ExpressionType.Extension = 52,
-                    //case ExpressionType.Goto = 53,
-                    //case ExpressionType.Increment = 54,
-                    //case ExpressionType.Index = 55,
-                    //case ExpressionType.Label = 56,
-                    //case ExpressionType.RuntimeVariables = 57,
-                    //case ExpressionType.Loop = 58,
-                    //case ExpressionType.Switch = 59,
-                    //case ExpressionType.Throw = 60,
-                    //case ExpressionType.Try = 61,
-                    //case ExpressionType.Unbox = 62,
-                    //case ExpressionType.PreIncrementAssign = 77,
-                    //case ExpressionType.PreDecrementAssign = 78,
-                    //case ExpressionType.PostIncrementAssign = 79,
-                    //case ExpressionType.PostDecrementAssign = 80,
-                    //case ExpressionType.TypeEqual = 81,
-                    //case ExpressionType.IsTrue = 83,
-                    //case ExpressionType.IsFalse = 84
+                //case ExpressionType.ArrayLength = 4,
+                //case ExpressionType.Conditional = 8,
+                //case ExpressionType.Constant = 9,
+                //case ExpressionType.Convert = 10,
+                //case ExpressionType.ConvertChecked = 11,
+                //case ExpressionType.Invoke = 17,
+                //case ExpressionType.Lambda = 18,
+                //case ExpressionType.ListInit = 22,
+                //case ExpressionType.MemberAccess = 23,
+                //case ExpressionType.MemberInit = 24,
+                //case ExpressionType.New = 31,
+                //case ExpressionType.NewArrayInit = 32,
+                //case ExpressionType.NewArrayBounds = 33,
+                //case ExpressionType.Parameter = 38,
+                //case ExpressionType.Quote = 40,
+                //case ExpressionType.TypeAs = 44,
+                //case ExpressionType.TypeIs = 45,
+                //case ExpressionType.Assign = 46,
+                //case ExpressionType.Block = 47,
+                //case ExpressionType.DebugInfo = 48,
+                //case ExpressionType.Decrement = 49,
+                //case ExpressionType.Dynamic = 50,
+                //case ExpressionType.Default = 51,
+                //case ExpressionType.Extension = 52,
+                //case ExpressionType.Goto = 53,
+                //case ExpressionType.Increment = 54,
+                //case ExpressionType.Index = 55,
+                //case ExpressionType.Label = 56,
+                //case ExpressionType.RuntimeVariables = 57,
+                //case ExpressionType.Loop = 58,
+                //case ExpressionType.Switch = 59,
+                //case ExpressionType.Throw = 60,
+                //case ExpressionType.Try = 61,
+                //case ExpressionType.Unbox = 62,
+                //case ExpressionType.PreIncrementAssign = 77,
+                //case ExpressionType.PreDecrementAssign = 78,
+                //case ExpressionType.PostIncrementAssign = 79,
+                //case ExpressionType.PostDecrementAssign = 80,
+                //case ExpressionType.TypeEqual = 81,
+                //case ExpressionType.IsTrue = 83,
+                //case ExpressionType.IsFalse = 84
             };
 
             return null;

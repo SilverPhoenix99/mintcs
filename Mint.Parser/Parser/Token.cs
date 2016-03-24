@@ -7,7 +7,7 @@ namespace Mint.Parser
     {
 		public TokenType Type                        { get; }
         public string Value                          { get; }
-        public Tuple<int, int> Location              { get; }
+        public Tuple<int, int> Location              { get; } // < line, column >
         public Dictionary<string, object> Properties { get; }
 
         public Token(TokenType type, string token, Tuple<int, int> location)

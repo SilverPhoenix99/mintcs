@@ -9,7 +9,7 @@ namespace Mint
 {
     public struct Symbol : iObject
     {
-        private Sym sym;
+        private readonly Sym sym;
 
         public Symbol(string name)
         {
@@ -44,7 +44,7 @@ namespace Mint
 
         public static readonly Class CLASS;
 
-        private static IDictionary<string, WeakReference<Sym>> SYMBOLS;
+        private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
         public static bool operator == (Symbol s, object obj) => s.Equals(obj);
 

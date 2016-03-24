@@ -42,7 +42,7 @@ namespace Test
                     continue;
                 }
 
-                var ast = Parser.Parse(file_text);
+                var ast = Parser.Parse("(test gems)", file_text);
                 var doc = AstXmlSerializer.ToXml(ast);
                 //Console.WriteLine(doc.ToString());
                 ++count;

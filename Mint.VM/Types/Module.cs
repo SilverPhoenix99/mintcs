@@ -21,7 +21,7 @@ namespace Mint
 
             FullName = name != null
                      ? name.ToString()
-                     : string.Format("#<{0}:0x{1:x}>", Class.Name, Id);
+                     : $"#<{Class.Name}:0x{Id:x}>";
 
             if(container != null)
             {
@@ -71,8 +71,11 @@ namespace Mint
             var included = new List<Module>(modules.Count + module.Prepended.Count + module.Included.Count + 1);
             included.AddRange(modules);
 
+            var superclassAncestors = superclass == null
+                ? null
+                : new HashSet<Module>(superclass.Ancestors);
+
             var index = 0;
-            var superclassAncestors = new HashSet<Module>(superclass.Ancestors);
             foreach(var mod in module.Ancestors)
             {
                 if(mod == this)
@@ -85,12 +88,11 @@ namespace Mint
                 {
                     continue;
                 }
-
-                //
-                var mod_index = included.IndexOf(mod);
-                if(mod_index >= 0)
+                
+                var modIndex = included.IndexOf(mod);
+                if(modIndex >= 0)
                 {
-                    index = mod_index + 1;
+                    index = modIndex + 1;
                     continue;
                 }
 

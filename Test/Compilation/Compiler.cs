@@ -54,6 +54,8 @@ namespace Mint.Compilation
             Register(kUNTIL,          CompileWhile);
             Register(kUNTIL_MOD,      CompileWhile);
             Register(kBREAK,          CompileBreak);
+            Register(kNEXT,           CompileNext);
+            Register(kRETRY,          CompileRetry);
         }
 
         protected Scope CurrentScope => scopes.Peek();
@@ -244,7 +246,7 @@ namespace Mint.Compilation
             return Constant(new String(filename), typeof(iObject));
         }
 
-        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ScopeType.Loop, scope => CompileWhile(ast, scope));
+        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ScopeType.While, scope => CompileWhile(ast, scope));
 
         protected Expression CompileWhile(Ast<Token> ast, Scope scope)
         {
@@ -317,6 +319,28 @@ namespace Mint.Compilation
             }
 
             return Break(CurrentScope.Label("break"), value, typeof(iObject));
+        }
+
+        protected Expression CompileNext(Ast<Token> ast)
+        {
+            if(CurrentScope.Type == ScopeType.While)
+            {
+                // value is ignored, so there's no need to compile it
+                return Continue(CurrentScope.Label("next"), typeof(iObject));
+            }
+
+            throw new NotImplementedException();
+        }
+
+        protected Expression CompileRetry(Ast<Token> ast)
+        {
+            if(CurrentScope.Type == ScopeType.While)
+            {
+                // value is ignored, so there's no need to compile it
+                throw new SyntaxError(filename, ast.Value.Location.Item1, "Invalid retry");
+            }
+
+            throw new NotImplementedException();
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)

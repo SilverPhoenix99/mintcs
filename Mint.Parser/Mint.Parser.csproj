@@ -59,7 +59,7 @@
     <Compile Include="Parser\Lexer_States.cs" />
     <Compile Include="Parser\Literal.cs" />
     <Compile Include="Parser\Parser.cs" />
-    <Compile Include="Parser\Regexp.cs" />
+    <Compile Include="Parser\RegexpFlags.cs" />
     <Compile Include="Parser\Token.cs" />
     <Compile Include="SyntaxError.cs" />
     <Compile Include="Parser\AstXmlSerializer.cs" />

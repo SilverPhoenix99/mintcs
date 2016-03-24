@@ -7,7 +7,8 @@ namespace Mint.Compilation
     public enum ScopeType
     {
         Method = 1,
-        Loop,
+        While,
+        For,
         Block
     }
 

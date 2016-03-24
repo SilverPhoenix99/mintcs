@@ -7,13 +7,13 @@ namespace Mint
         public Range(iObject begin, iObject end, bool excludeEnd = false)
         {
             Begin = begin;
-            End = End;
+            End = end;
             ExcludeEnd = excludeEnd;
         }
 
-        public iObject Begin { get; }
-        public iObject End { get; }
-        public bool ExcludeEnd { get; }
+        public iObject Begin      { get; }
+        public iObject End        { get; }
+        public bool    ExcludeEnd { get; }
 
         #region Static
 

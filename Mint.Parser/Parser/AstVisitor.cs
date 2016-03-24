@@ -1,6 +1,6 @@
 ﻿namespace Mint.Parser
 {
-    public interface AstVisitor<T, TRet>
+    public interface AstVisitor<T, out TRet>
     {
         TRet Visit(Ast<T> node);
     }

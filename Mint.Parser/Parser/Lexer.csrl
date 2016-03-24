@@ -98,7 +98,7 @@ action StringStart {
 
 line_comment = '#' ^nl_eof*;
 
-action EmbDocEof { throw new SyntaxError(Location(p).Item1, "embedded document meets end of file"); }
+action EmbDocEof { throw new SyntaxError(Filename, Location(p).Item1, "embedded document meets end of file"); }
 
 block_trail = (space - nl) ^nl*;
 
@@ -130,7 +130,7 @@ action RacSuf { num_flags |= RATIONAL_FLAG; }
 action CmxSuf { num_flags |= IMAGINARY_FLAG; }
 action IntNum { token_type = tINTEGER; }
 action FloNum { token_type = tFLOAT; }
-action TrailError { throw new SyntaxError(Location(p).Item1, "trailing `_' in number"); }
+action TrailError { throw new SyntaxError(Filename, Location(p).Item1, "trailing `_' in number"); }
 
 bdigit = [01];
 odigit = [0-7];
@@ -215,8 +215,8 @@ e_arg_unary_sign = ws+ (
 # or if the unicode is invalid.
 # In here, unicode is explicitly disabled.
 percent_string = '%' string_term? (
-    c_eof @{ throw new SyntaxError(Location(p).Item1, "unknown type of %string"); }
-  | (ascii - alnum) @lerr{ throw new SyntaxError(Location(p).Item1, "unknown type of %string"); }
+    c_eof @{ throw new SyntaxError(Filename, Location(p).Item1, "unknown type of %string"); }
+  | (ascii - alnum) @lerr{ throw new SyntaxError(Filename, Location(p).Item1, "unknown type of %string"); }
 );
 
 
@@ -233,7 +233,7 @@ action Heredoc {
   fbreak;
 }
 
-action UnterminatedHeredoc { throw new SyntaxError(Location(p).Item1, "unterminated here document identifier"); }
+action UnterminatedHeredoc { throw new SyntaxError(Filename, Location(p).Item1, "unterminated here document identifier"); }
 
 # This is different from MRI: MRI accepts \n in identifiers,
 # but then it can't find the identifier anywhere after. (MRI bug)
@@ -371,8 +371,8 @@ gvar = '$' (
       '-' ident_char
     | ( ident_char - [1-9] ) ident_char*
     | gvar_char
-    | (space | c_eof) @ { throw new SyntaxError(Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
-    | invalid_gvar @ { throw new SyntaxError(Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name"); }
+    | (space | c_eof) @ { throw new SyntaxError(Filename, Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
+    | invalid_gvar @ { throw new SyntaxError(Filename, Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name"); }
 ) % { token_type = tGVAR; };
 
 var =
@@ -380,14 +380,14 @@ var =
     | ( digit | ^ident_char ) % {
         var tok = CurrentToken();
         var type_str = token_type == tIVAR ? "n instance" : " class";
-        throw new SyntaxError(Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
+        throw new SyntaxError(Filename, Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
       }
 
   | ( c_eof | space ) % {
         var tok = CurrentToken(te: te - 1);
         var type_str = token_type == tIVAR ? "n instance" : " class";
         var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
-        throw new SyntaxError(Location(p).Item1, msg);
+        throw new SyntaxError(Filename, Location(p).Item1, msg);
     }
 ;
 
@@ -933,7 +933,7 @@ COMMON_EXPR := |*
           Console.WriteLine($"invalid character syntax; use ?\\{c}");
         }
 
-      | c_eof % { throw new SyntaxError(Location(p).Item1, "incomplete character syntax"); }
+      | c_eof % { throw new SyntaxError(Filename, Location(p).Item1, "incomplete character syntax"); }
 
     )
 
@@ -950,13 +950,13 @@ COMMON_EXPR := |*
 
   number => Number;
 
-  '.' digit => { throw new SyntaxError(Location(p).Item1, "no .<digit> floating literal anymore; put 0 before dot"); };
+  '.' digit => { throw new SyntaxError(Filename, Location(p).Item1, "no .<digit> floating literal anymore; put 0 before dot"); };
 
   ^ident_char => {
-    throw new SyntaxError(Location(p).Item1, $"Invalid char `{CurrentToken()}' in expression at {ts}");
+    throw new SyntaxError(Filename, Location(p).Item1, $"Invalid char `{CurrentToken()}' in expression at {ts}");
   };
 
-  any => { throw new SyntaxError(Location(p).Item1, $"Don't know what to do with `{CurrentToken()}' at {ts}"); };
+  any => { throw new SyntaxError(Filename, Location(p).Item1, $"Don't know what to do with `{CurrentToken()}' at {ts}"); };
 
 *|;
 
@@ -966,7 +966,7 @@ COMMON_EXPR := |*
 # Strings: <<Heredocs, 'strings', %w(words) and ?chars
 #
 
-action EofLiteralError { throw new SyntaxError(Location(p).Item1, current_literal.UnterminatedMessage); }
+action EofLiteralError { throw new SyntaxError(Filename, Location(p).Item1, current_literal.UnterminatedMessage); }
 
 
 # ------------------------------------------------------------------------------
@@ -977,7 +977,7 @@ action EofLiteralError { throw new SyntaxError(Location(p).Item1, current_litera
 action InvalidUnicode {
     if(!in_literal)
     {
-        throw new SyntaxError(Location(p).Item1, "invalid Unicode escape");
+        throw new SyntaxError(Filename, Location(p).Item1, "invalid Unicode escape");
     }
 }
 
@@ -985,7 +985,7 @@ action InvalidUnicode {
 action UntermUnicode  {
     if(!in_literal)
     {
-        throw new SyntaxError(Location(p).Item1, "unterminated Unicode escape");
+        throw new SyntaxError(Filename, Location(p).Item1, "unterminated Unicode escape");
     }
 }
 
@@ -1005,12 +1005,12 @@ char_escape = '\\' (any - [CMcux0-7] - c_eof);
 octal_escape = '\\' odigit{1,3};
 
 
-action InvalidHex { throw new SyntaxError(Location(p).Item1, "invalid hex escape"); }
+action InvalidHex { throw new SyntaxError(Filename, Location(p).Item1, "invalid hex escape"); }
 
 hex_escape   = '\\x' ( xdigit{1,2} >lerr InvalidHex );
 
 
-action InvalidControl { throw new SyntaxError(Location(p).Item1, "Invalid escape character syntax"); }
+action InvalidControl { throw new SyntaxError(Filename, Location(p).Item1, "Invalid escape character syntax"); }
 
 ctrl_char = '\\' ( 'c' | 'C-' );
 meta_char = '\\M-';
@@ -1361,21 +1361,21 @@ STRING_INTERPOLATION := |*
 
 REGEXP_END := |*
     (
-          'm' @ { regexp_options |= Regexp.Flags.Multiline; }
-        | 'i' @ { regexp_options |= Regexp.Flags.IgnoreCase; }
-        | 'x' @ { regexp_options |= Regexp.Flags.Extend; }
-        | 'o' @ { regexp_options |= Regexp.Flags.Once; }
+          'm' @ { regexp_options |= RegexpFlags.Multiline; }
+        | 'i' @ { regexp_options |= RegexpFlags.IgnoreCase; }
+        | 'x' @ { regexp_options |= RegexpFlags.Extend; }
+        | 'o' @ { regexp_options |= RegexpFlags.Once; }
         # accept the last encoding option
-        | 'n' @ { regexp_options = (regexp_options & ~Regexp.Flags.EncodingMask) | Regexp.Flags.ASCII8; }
-        | 'e' @ { regexp_options = (regexp_options & ~Regexp.Flags.EncodingMask) | Regexp.Flags.EUC_JP; }
-        | 's' @ { regexp_options = (regexp_options & ~Regexp.Flags.EncodingMask) | Regexp.Flags.Windows_31J; }
-        | 'u' @ { regexp_options = (regexp_options & ~Regexp.Flags.EncodingMask) | Regexp.Flags.UTF_8; }
+        | 'n' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.ASCII8; }
+        | 'e' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.EUC_JP; }
+        | 's' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.Windows_31J; }
+        | 'u' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.UTF_8; }
     )+;
 
     ( alpha - [mixo] )+ => {
         var tok = CurrentToken();
         var opt = tok.Length == 1 ? "" : "s";
-        throw new SyntaxError(Location(p).Item1, $"unknown regexp option{opt} - {tok}");
+        throw new SyntaxError(Filename, Location(p).Item1, $"unknown regexp option{opt} - {tok}");
     };
 
     ^alpha => {
@@ -1394,7 +1394,7 @@ REGEXP_END := |*
 #
 
 CHAR := |*
-  c_eof => { throw new SyntaxError(Location(p).Item1, "incomplete character syntax"); };
+  c_eof => { throw new SyntaxError(Filename, Location(p).Item1, "incomplete character syntax"); };
 
     unicode_escape
   | octal_escape

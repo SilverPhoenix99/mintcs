@@ -5,7 +5,7 @@ namespace Mint
 {
     public class Float : FrozenObject
     {
-        public Float(double value) : base()
+        public Float(double value)
         {
             Value = value;
         }

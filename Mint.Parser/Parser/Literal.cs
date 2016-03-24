@@ -6,20 +6,20 @@ using static Mint.Parser.Lexer.States;
 
 namespace Mint.Parser
 {
-    class Literal : iLiteral
+    internal class Literal : iLiteral
     {
-        public Literal(string delimiter, int content_start, bool can_label)
+        public Literal(string delimiter, int contentStart, bool canLabel)
         {
             Delimiter = delimiter;
-            ContentStart = content_start;
-            CanLabel = can_label;
+            ContentStart = contentStart;
+            CanLabel = canLabel;
 
             EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
-            string end_delimiter;
+            string endDelimiter;
 
-            if(STRING_END.TryGetValue(EndDelimiter, out end_delimiter))
+            if(STRING_END.TryGetValue(EndDelimiter, out endDelimiter))
             {
-                EndDelimiter = end_delimiter;
+                EndDelimiter = endDelimiter;
             }
         }
 
@@ -27,9 +27,7 @@ namespace Mint.Parser
         public bool         CanLabel            { get; }
         public int          ContentStart        { get; set; }
         public bool         Dedents             => false;
-        public string       Delimiter           { get; }
-        public string       EndDelimiter        { get; }
-        public int          Indent              { get { return 0; } set { } } // Do nothing
+        public int          Indent              => 0; // Do nothing
         public bool         Interpolates        => INTERPOLATES.IsMatch(Delimiter);
         public bool         IsRegexp            => Delimiter[0] == '/' || Delimiter.StartsWith("%r");
         public bool         IsWords             => Delimiter[0] == '%' && "WwIi".IndexOf(Delimiter[1]) >= 0;
@@ -41,6 +39,9 @@ namespace Mint.Parser
         public bool         IsNested            => STRING_END.ContainsKey(BeginDelimiter) && Nesting > 0;
 
         // Not inherited
+        private string      Delimiter           { get; }
+        private string      EndDelimiter        { get; }
+
         // Returns the last character from the begin delimiter
         public string BeginDelimiter => Delimiter.Substring(Delimiter.Length - 1);
 

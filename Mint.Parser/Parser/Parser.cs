@@ -11,8 +11,8 @@ namespace Mint.Parser
              in_single,
              in_defined;
 
-        Stack<BitStack> cmdarg_stack { get; } = new Stack<BitStack>();
-        Stack<BitStack> cond_stack { get; } = new Stack<BitStack>();
+        readonly Stack<BitStack> cmdarg_stack = new Stack<BitStack>();
+        readonly Stack<BitStack> cond_stack = new Stack<BitStack>();
         BitStack in_def_stack = new BitStack();
         BitStack in_single_stack = new BitStack();
         Stack<int> lpar_beg_stack = new Stack<int>();
@@ -20,11 +20,13 @@ namespace Mint.Parser
 
         public Parser(Lexer lexer) : base(new LexerAdapter(lexer)) { }
 
-        public Parser(string data) : this(new Lexer(data)) { }
+        public Parser(string filename, string data) : this(new Lexer(filename, data)) { }
 
         public Lexer Lexer => ((LexerAdapter) Scanner).Lexer;
 
         public Ast<Token> Result => CurrentSemanticValue;
+
+        public string Filename => Lexer.Filename;
         
         private void PushCmdarg() { cmdarg_stack.Push(Lexer.Cmdarg); }
         private void PopCmdarg()  { Lexer.Cmdarg = cmdarg_stack.Pop(); }
@@ -49,7 +51,7 @@ namespace Mint.Parser
             if(!((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
             {
                 var token = Scanner.yylval.Value;
-                throw new SyntaxError(token.Location.Item1, $"unexpected {token.Type}");
+                throw new SyntaxError(Filename, token.Location.Item1, $"unexpected {token.Type}");
             }
             return Result;
         }
@@ -67,9 +69,9 @@ namespace Mint.Parser
 
         private static Ast<Token> sexp(params Ast<Token>[] nodes) => new Ast<Token>(null, nodes);
 
-        public static Ast<Token> Parse(string data)
+        public static Ast<Token> Parse(string filename, string data)
         {
-            return new Parser(data).Parse();
+            return new Parser(filename, data).Parse();
         }
 
         class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>

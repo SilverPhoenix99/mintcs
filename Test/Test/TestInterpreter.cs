@@ -12,7 +12,7 @@ namespace Test
 
             try
             {
-                var ast = Parser.Parse(fragment);
+                var ast = Parser.Parse("(test interpreter)", fragment);
 
                 var doc = AstXmlSerializer.ToXml(ast);
                 Console.WriteLine(doc.ToString());

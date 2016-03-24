@@ -28,7 +28,7 @@ namespace Mint.Parser
             var num_base = 0;
             
             var regexp_delim   = -1;
-            var regexp_options = Regexp.Flags.None;
+            var regexp_options = RegexpFlags.None;
 
 			var in_cmd = InCmd;
 			InCmd = false;

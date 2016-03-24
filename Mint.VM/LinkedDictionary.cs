@@ -83,7 +83,7 @@ namespace Mint
 
         public void Add(TKey key, TValue value)
         {
-            Node node = new Node(key, value);
+            var node = new Node(key, value);
             map.Add(key, node);
 
             if(head == null)
@@ -122,12 +122,12 @@ namespace Mint
                 && EqualityComparer<TValue>.Default.Equals(value, item.Value);
         }
 
-        public bool Contains(object item) => Contains((TKey) item);
+        public bool Contains(object item) => item is TKey && ContainsKey((TKey) item);
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             var node = head;
-            for(int i = arrayIndex; i < array.Length && node != null; i++)
+            for(var i = arrayIndex; i < array.Length && node != null; i++)
             {
                 array[i] = node.Value;
                 node = node.Next;
@@ -137,7 +137,7 @@ namespace Mint
         public void CopyTo(System.Array array, int arrayIndex)
         {
             var node = head;
-            for(int i = arrayIndex; i < array.Length && node != null; i++)
+            for(var i = arrayIndex; i < array.Length && node != null; i++)
             {
                 array.SetValue(node.Value, i);
                 node = node.Next;
@@ -222,7 +222,7 @@ namespace Mint
 
         private class KeyCollection : ICollection<TKey>
         {
-            private LinkedDictionary<TKey, TValue> dictionary;
+            private readonly LinkedDictionary<TKey, TValue> dictionary;
 
             public KeyCollection(LinkedDictionary<TKey, TValue> dictionary)
             {
@@ -247,7 +247,7 @@ namespace Mint
             public void CopyTo(TKey[] array, int arrayIndex)
             {
                 var node = dictionary.head;
-                for(int i = arrayIndex; i < array.Length && node != null; i++)
+                for(var i = arrayIndex; i < array.Length && node != null; i++)
                 {
                     array[i] = node.Value.Key;
                     node = node.Next;
@@ -272,7 +272,7 @@ namespace Mint
 
         private class ValueCollection : ICollection<TValue>
         {
-            private LinkedDictionary<TKey, TValue> dictionary;
+            private readonly LinkedDictionary<TKey, TValue> dictionary;
 
             public ValueCollection(LinkedDictionary<TKey, TValue> dictionary)
             {
@@ -297,7 +297,7 @@ namespace Mint
             public void CopyTo(TValue[] array, int arrayIndex)
             {
                 var node = dictionary.head;
-                for(int i = arrayIndex; i < array.Length && node != null; i++)
+                for(var i = arrayIndex; i < array.Length && node != null; i++)
                 {
                     array[i] = node.Value.Value;
                     node = node.Next;

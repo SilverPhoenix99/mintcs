@@ -35,7 +35,7 @@ namespace Mint
             dynamic imag = Imag;
             var sign = imag < 0 ? "-" : "+";
             imag = imag.abs();
-            return $"{Real.ToString()}{sign}{imag.ToString()}i";
+            return $"{Real}{sign}{imag.ToString()}i";
         }
 
         public override string Inspect()
