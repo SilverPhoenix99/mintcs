@@ -258,7 +258,7 @@ namespace Mint.Compilation
                 {
                     condition = Negate(condition);
                 }
-
+                
                 if(ast[1].Value?.Type == kBEGIN
                 && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
                 {
@@ -267,7 +267,15 @@ namespace Mint.Compilation
                     // postfix `while'
                     // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
 
-                    throw new NotImplementedException();
+                    return Loop(
+                        Block(
+                            body,
+                            IfThen(condition, Continue(nextLabel)),
+                            Break(breakLabel, CONSTANT_NIL, typeof(iObject))
+                            ),
+                        breakLabel,
+                        nextLabel
+                    );
                 }
                 
                 var retryLabel = scope.Label("retry");
