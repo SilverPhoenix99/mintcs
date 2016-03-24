@@ -244,56 +244,55 @@ namespace Mint.Compilation
             return Constant(new String(filename), typeof(iObject));
         }
 
-        protected Expression CompileWhile(Ast<Token> ast)
+        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ScopeType.Loop, scope => CompileWhile(ast, scope));
+
+        protected Expression CompileWhile(Ast<Token> ast, Scope scope)
         {
-            return WithScope(ScopeType.Loop, scope =>
+            var breakLabel = scope.Label("break", typeof(iObject));
+            var nextLabel = scope.Label("next");
+
+            var body = ast[1].Accept(this);
+
+            var condition = ToBool(ast[0].Accept(this));
+            if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
             {
-                var breakLabel = scope.Label("break", typeof(iObject));
-                var nextLabel  = scope.Label("next");
+                condition = Negate(condition);
+            }
 
-                var body = ast[1].Accept(this);
+            if(ast[1].Value?.Type == kBEGIN
+            && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
+            {
+                scope.Labels["redo"] = nextLabel;
 
-                var condition = ToBool(ast[0].Accept(this));
-                if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
-                {
-                    condition = Negate(condition);
-                }
-                
-                if(ast[1].Value?.Type == kBEGIN
-                && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
-                {
-                    scope.Labels["redo"] = nextLabel;
+                // postfix `while'
+                // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
 
-                    // postfix `while'
-                    // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
-
-                    return Loop(
-                        Block(
-                            body,
-                            IfThen(condition, Continue(nextLabel)),
-                            Break(breakLabel, CONSTANT_NIL, typeof(iObject))
-                            ),
-                        breakLabel,
-                        nextLabel
-                    );
-                }
-                
-                var redoLabel = scope.Label("redo");
-                
                 return Loop(
-                    Condition(
-                        condition,
-                        Block(
-                            Label(redoLabel),
-                            body
-                        ),
-                        Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
-                        typeof(iObject)
+                    Block(
+                        body,
+                        IfThen(condition, Continue(nextLabel)),
+                        Break(breakLabel, CONSTANT_NIL, typeof(iObject))
                     ),
                     breakLabel,
                     nextLabel
                 );
-            });
+            }
+
+            var redoLabel = scope.Label("redo");
+
+            return Loop(
+                Condition(
+                    condition,
+                    Block(
+                        Label(redoLabel),
+                        body
+                    ),
+                    Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
+                    typeof(iObject)
+                ),
+                breakLabel,
+                nextLabel
+            );
         }
 
         protected Expression CompileBreak(Ast<Token> ast)
@@ -342,8 +341,40 @@ namespace Mint.Compilation
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
 
-        private Expression ToBool(Expression expr)
+        private Expression WithScope(ScopeType type, Func<Scope, Expression> action)
         {
+            var scope = new Scope(type);
+            scopes.Push(scope);
+
+            try
+            {
+                return action(scope);
+            }
+            finally
+            {
+                scopes.Pop();
+            }
+        }
+
+        protected static readonly ConstructorInfo STRING_CTOR1 = Ctor<String>();
+        protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
+        protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
+        protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
+
+        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
+
+        protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
+
+        protected static MethodInfo Method<T>(string name, params Type[] argTypes) => typeof(T).GetMethod(name, argTypes);
+
+        private static Expression ToBool(Expression expr)
+        {
+            var cnst = expr as ConstantExpression;
+            if(cnst != null)
+            {
+                return Constant(!(cnst.Value is NilClass) && !(cnst.Value is FalseClass));
+            }
+
             // (obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass)
 
             if(expr.Type != typeof(iObject))
@@ -365,32 +396,6 @@ namespace Mint.Compilation
                 )
             );
         }
-
-        private Expression WithScope(ScopeType type, Func<Scope, Expression> action)
-        {
-            var scope = new Scope(type);
-            scopes.Push(scope);
-
-            try
-            {
-                return action(scope);
-            }
-            finally
-            {
-                scopes.Pop();
-            }
-        }
-
-        protected static readonly ConstructorInfo STRING_CTOR1  = Ctor<String>();
-        protected static readonly ConstructorInfo STRING_CTOR2  = Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3  = Ctor<String>(typeof(String));
-        protected static readonly ConstructorInfo SYMBOL_CTOR   = Ctor<Symbol>(typeof(string));
-
-        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-
-        protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
-
-        protected static MethodInfo Method<T>(string name, params Type[] argTypes) => typeof(T).GetMethod(name, argTypes);
 
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);

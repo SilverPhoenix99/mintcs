@@ -60,12 +60,14 @@ namespace Mint.Parser
         public override string ToString()
         {
             var s = Value == null ? "" : Value.ToString();
-            s += " -> (";
+            s += " : [";
             if(List.Count != 0)
             {
+                s += " ";
                 s += List.Select(ast => ast.ToString()).Aggregate((current, next) => current + ", " + next);
+                s += " ";
             }
-            s += ")";
+            s += "]";
 
             return s;
         }
