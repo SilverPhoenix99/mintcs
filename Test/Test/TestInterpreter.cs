@@ -1,10 +1,9 @@
-﻿using Mint;
-using Mint.Parser;
-using System;
+﻿using System;
+using Mint.Parse;
 
-namespace Test
+namespace Mint.Test
 {
-    static class TestInterpreter
+    internal static class TestInterpreter
     {
         public static void Test(params string[] args)
         {

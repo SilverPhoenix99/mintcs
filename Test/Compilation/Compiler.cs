@@ -1,5 +1,5 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
-using Mint.Parser;
+using Mint.Parse;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using static Mint.Parser.TokenType;
+using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation
@@ -56,6 +56,7 @@ namespace Mint.Compilation
             Register(kBREAK,          CompileBreak);
             Register(kNEXT,           CompileNext);
             Register(kRETRY,          CompileRetry);
+            Register(kREDO,           CompileRedo);
         }
 
         protected Scope CurrentScope => scopes.Peek();
@@ -246,7 +247,7 @@ namespace Mint.Compilation
             return Constant(new String(filename), typeof(iObject));
         }
 
-        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ScopeType.While, scope => CompileWhile(ast, scope));
+        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileWhile);
 
         protected Expression CompileWhile(Ast<Token> ast, Scope scope)
         {
@@ -343,6 +344,17 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
+        protected Expression CompileRedo(Ast<Token> ast)
+        {
+            if(CurrentScope.Type == ScopeType.While)
+            {
+                // value is ignored, so there's no need to compile it
+                return Goto(CurrentScope.Label("redo"), typeof(iObject));
+            }
+
+            throw new NotImplementedException();
+        }
+
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
             IEnumerable<CSharpArgumentInfo> parameterFlags;
@@ -365,14 +377,14 @@ namespace Mint.Compilation
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
 
-        private Expression WithScope(ScopeType type, Func<Scope, Expression> action)
+        private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Scope, Expression> action)
         {
             var scope = new Scope(type);
             scopes.Push(scope);
 
             try
             {
-                return action(scope);
+                return action(ast, scope);
             }
             finally
             {

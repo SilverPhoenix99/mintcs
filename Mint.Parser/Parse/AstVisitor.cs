@@ -1,4 +1,4 @@
-﻿namespace Mint.Parser
+﻿namespace Mint.Parse
 {
     public interface AstVisitor<T, out TRet>
     {

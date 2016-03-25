@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using static Mint.Parser.Lexer.States;
-using static Mint.Parser.TokenType;
+using static Mint.Parse.Lexer.States;
+using static Mint.Parse.TokenType;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     public partial class Lexer : IEnumerable<Token>
     {

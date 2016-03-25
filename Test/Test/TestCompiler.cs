@@ -1,12 +1,11 @@
-﻿using Mint.Compilation;
-using Mint.Parser;
-using System;
+﻿using System;
 using System.Linq.Expressions;
-using System.Xml.Linq;
+using Mint.Compilation;
+using Mint.Parse;
 
-namespace Test
+namespace Mint.Test
 {
-    static class TestCompiler
+    internal static class TestCompiler
     {
         public static void Test(params string[] args)
         {

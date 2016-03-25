@@ -1,12 +1,11 @@
-﻿using Mint;
-using System;
+﻿using System;
 using System.Diagnostics;
 
-namespace Test
+namespace Mint.Test
 {
-    static class TestSymbolGC
+    internal static class TestSymbolGC
     {
-        static void Test()
+        private static void Test()
         {
             var r = new Random(345757345);
             for(var j = 0; j < 100; j++)

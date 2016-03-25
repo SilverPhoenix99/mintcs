@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
-using static Mint.Parser.TokenType;
+using static Mint.Parse.TokenType;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     internal class Heredoc : iLiteral
     {

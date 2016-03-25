@@ -1,9 +1,8 @@
 ﻿using System;
-using Mint;
 
-namespace Test
+namespace Mint.Test
 {
-    static class InvokeDynamicMethods
+    internal static class InvokeDynamicMethods
     {
         public static void Test()
         {

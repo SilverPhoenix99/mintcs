@@ -50,19 +50,19 @@
     <Compile Include="gen\Lexer_data.cs" />
     <Compile Include="gen\Lexer_exec.cs" />
     <Compile Include="gen\Parser.cs" />
-    <Compile Include="Parser\Ast.cs" />
-    <Compile Include="Parser\AstVisitor.cs" />
-    <Compile Include="Parser\BitStack.cs" />
-    <Compile Include="Parser\Heredoc.cs" />
-    <Compile Include="Parser\iLiteral.cs" />
-    <Compile Include="Parser\Lexer.cs" />
-    <Compile Include="Parser\Lexer_States.cs" />
-    <Compile Include="Parser\Literal.cs" />
-    <Compile Include="Parser\Parser.cs" />
-    <Compile Include="Parser\RegexpFlags.cs" />
-    <Compile Include="Parser\Token.cs" />
+    <Compile Include="Parse\Ast.cs" />
+    <Compile Include="Parse\AstVisitor.cs" />
+    <Compile Include="Parse\BitStack.cs" />
+    <Compile Include="Parse\Heredoc.cs" />
+    <Compile Include="Parse\iLiteral.cs" />
+    <Compile Include="Parse\Lexer.cs" />
+    <Compile Include="Parse\Lexer_States.cs" />
+    <Compile Include="Parse\Literal.cs" />
+    <Compile Include="Parse\Parser.cs" />
+    <Compile Include="Parse\RegexpFlags.cs" />
+    <Compile Include="Parse\Token.cs" />
     <Compile Include="SyntaxError.cs" />
-    <Compile Include="Parser\AstXmlSerializer.cs" />
+    <Compile Include="Parse\AstXmlSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="vendor\ShiftReduceParserCode.cs" />
   </ItemGroup>
@@ -70,10 +70,10 @@
     <None Include="App.config" />
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
-    <Gppg Include="Parser\Parser.y" />
-    <Ragel Include="Parser\Lexer_exec.csrl" />
-    <Ragel Include="Parser\Lexer_data.csrl" />
-    <Ragel Include="Parser\Lexer.csrl" />
+    <Gppg Include="Parse\Parser.y" />
+    <Ragel Include="Parse\Lexer_exec.csrl" />
+    <Ragel Include="Parse\Lexer_data.csrl" />
+    <Ragel Include="Parse\Lexer.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

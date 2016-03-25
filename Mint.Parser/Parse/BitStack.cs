@@ -1,4 +1,4 @@
-﻿namespace Mint.Parser
+﻿namespace Mint.Parse
 {
     public struct BitStack
     {

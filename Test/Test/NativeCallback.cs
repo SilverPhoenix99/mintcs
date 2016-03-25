@@ -1,26 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Test
+namespace Mint.Test
 {
-    static class NativeCallback
+    internal static class NativeCallback
     {
         [DllImport("test.so", CallingConvention = CallingConvention.Cdecl)]
-        static extern void testCallback(Action callback);
+        private static extern void testCallback(Action callback);
 
         [DllImport("test.so", CallingConvention = CallingConvention.Cdecl)]
-        static extern void saveCallback(Action callback);
+        private static extern void saveCallback(Action callback);
 
         [DllImport("test.so", CallingConvention = CallingConvention.Cdecl)]
-        static extern void testSavedCallback();
+        private static extern void testSavedCallback();
 
-        static readonly Action callback = Hello;
+        private static readonly Action CALLBACK = Hello;
 
-        static void Hello()
+        private static void Hello()
         {
             Console.WriteLine("Hello C world");
         }
@@ -29,11 +25,11 @@ namespace Test
         {
             //testCallback(callback);
 
-            saveCallback(callback);
+            saveCallback(CALLBACK);
 
             var r = new Random();
             int[] arr;
-            for(int i = 0; i < 5; i++)
+            for(var i = 0; i < 5; i++)
             {
                 arr = new int[r.Next(100)];
             }
@@ -41,7 +37,7 @@ namespace Test
             arr = null;
             r = null;
 
-            for(int i = 0; i < 5; i++) GC.Collect();
+            for(var i = 0; i < 5; i++) GC.Collect();
 
             testSavedCallback();
         }

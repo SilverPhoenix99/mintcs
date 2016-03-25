@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     [Flags]
     public enum RegexpFlags : uint

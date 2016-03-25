@@ -4,7 +4,7 @@ setlocal
 
 set MINT_DIR=%~dp0
 set MINT_GEN_DIR=%MINT_DIR%gen\
-set MINT_PARSER_DIR=%MINT_DIR%Parser\
+set MINT_PARSER_DIR=%MINT_DIR%Parse\
 
 if not exist "%MINT_GEN_DIR%" mkdir "%MINT_GEN_DIR%"
 

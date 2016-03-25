@@ -27,7 +27,7 @@ namespace Mint
             }
             set
             {
-                if(value == null) throw new ArgumentNullException("Value");
+                if(value == null) throw new ArgumentNullException(nameof(value));
                 this.value = value;
             }
         }

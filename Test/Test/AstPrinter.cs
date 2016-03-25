@@ -1,11 +1,10 @@
-﻿using Mint.Parser;
+﻿using Mint.Parse;
 using System;
 using System.IO;
-using System.Linq;
 
-namespace Test
+namespace Mint.Test
 {
-    class AstPrinter<T> : AstVisitor<T>
+    internal class AstPrinter<T> : AstVisitor<T>
     {
         public AstPrinter(Ast<T> ast, TextWriter writer = null, int indent_size = 2)
         {
@@ -67,9 +66,9 @@ namespace Test
             Writer.Write(new string(' ', IndentSize * Indent));
         }
 
-        public static void Print(Ast<T> ast, TextWriter writer = null, int indent_size = 2)
+        public static void Print(Ast<T> ast, TextWriter writer = null, int indentSize = 2)
         {
-            new AstPrinter<T>(ast, writer, indent_size).Print();
+            new AstPrinter<T>(ast, writer, indentSize).Print();
         }
     }
 }

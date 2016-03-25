@@ -7,9 +7,9 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 
-namespace Test
+namespace Mint.Test
 {
-    static class TestRoslyn
+    internal static class TestRoslyn
     {
         public static void TestLambdaCompilation()
         {

@@ -1,4 +1,4 @@
-%namespace  Mint.Parser
+%namespace  Mint.Parse
 %parsertype Parser
 %partial
 %visibility public

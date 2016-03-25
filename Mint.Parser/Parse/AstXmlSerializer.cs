@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     public class AstXmlSerializer : AstVisitor<Token>
     {

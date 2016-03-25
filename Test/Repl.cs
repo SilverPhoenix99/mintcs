@@ -1,14 +1,13 @@
-﻿using Mint;
-using Mint.Compilation;
-using Mint.Parser;
-using System;
+﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mint.Compilation;
+using Mint.Parse;
 using static System.Reflection.BindingFlags;
 
-namespace Test
+namespace Mint
 {
-    static class Repl
+    internal static class Repl
     {
         public static readonly MethodInfo DEBUGVIEW_INFO =
             typeof(Expression).GetProperty("DebugView", Instance | NonPublic).GetMethod;

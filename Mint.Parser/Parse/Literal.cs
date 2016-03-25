@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using static Mint.Parser.TokenType;
-using static Mint.Parser.Lexer.States;
+using static Mint.Parse.TokenType;
+using static Mint.Parse.Lexer.States;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     internal class Literal : iLiteral
     {

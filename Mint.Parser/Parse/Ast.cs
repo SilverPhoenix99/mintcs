@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mint.Parser
+namespace Mint.Parse
 {
     public class Ast<T> : IEnumerable<Ast<T>>
     {

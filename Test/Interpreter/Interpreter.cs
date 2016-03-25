@@ -1,9 +1,9 @@
-﻿using Mint.Parser;
+﻿using Mint.Parse;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using static Mint.Parser.TokenType;
+using static Mint.Parse.TokenType;
 
 namespace Mint
 {
