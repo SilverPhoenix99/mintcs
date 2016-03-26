@@ -57,6 +57,7 @@ namespace Mint.Compilation
             Register(kNEXT,           CompileNext);
             Register(kRETRY,          CompileRetry);
             Register(kREDO,           CompileRedo);
+            //Register(kBEGIN,          CompileBegin);
         }
 
         protected Scope CurrentScope => scopes.Peek();

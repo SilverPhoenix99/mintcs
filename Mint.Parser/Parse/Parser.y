@@ -224,9 +224,9 @@ command :
     }
   | kSUPER command_args { $$ = $1 + $2; }
   | kYIELD command_args { $$ = $1 + $2; }
-  | kRETURN call_args   { $$ = $1 + $2; }
-  | kBREAK call_args    { $$ = $1 + $2; }
-  | kNEXT call_args     { $$ = $1 + $2; }
+  | kRETURN call_args   { $$ = $1.Append($2.List); }
+  | kBREAK call_args    { $$ = $1.Append($2.List); }
+  | kNEXT call_args     { $$ = $1.Append($2.List); }
 ;
 
 mlhs :
@@ -626,7 +626,7 @@ primary :
       PushCmdarg();
       Lexer.Cmdarg = new BitStack();
     }
-    bodystmt kEND { PopCmdarg(); $$ = $1 + $3; }
+    bodystmt kEND { PopCmdarg(); $$ = $1.Append($3.List); }
   | kLPAREN_ARG { Lexer.State = Lexer.States.EXPR_ENDARG; } rparen { $$ = sexp(); }
   | kLPAREN_ARG
     {

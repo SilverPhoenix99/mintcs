@@ -6,7 +6,7 @@ namespace Mint.Test
     {
         public static void Test()
         {
-            Fixnum f = (Fixnum) 132;
+            var f = (Fixnum) 132;
 
             /*f.Class.DefineMethod(new Symbol("to_s"), (Func<Fixnum, Mint.String>)
                 ( (self) => new Mint.String(self.ToString()) )
