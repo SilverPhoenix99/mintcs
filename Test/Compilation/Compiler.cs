@@ -57,7 +57,8 @@ namespace Mint.Compilation
             Register(kNEXT,           CompileNext);
             Register(kRETRY,          CompileRetry);
             Register(kREDO,           CompileRedo);
-            //Register(kBEGIN,          CompileBegin);
+            Register(kBEGIN,          CompileList);
+            Register(kLBRACK,         CompileArray);
         }
 
         protected Scope CurrentScope => scopes.Peek();
@@ -301,10 +302,11 @@ namespace Mint.Compilation
 
         protected Expression CompileBreak(Ast<Token> ast)
         {
-            var value = CONSTANT_NIL;
+            Expression value;
             switch(ast.List.Count)
             {
                 case 0:
+                    value = CONSTANT_NIL;
                     break;
 
                 case 1:
@@ -317,7 +319,8 @@ namespace Mint.Compilation
                     break;
 
                 default:
-                    throw new NotImplementedException();
+                    value = CompileArray(ast);
+                    break;
             }
 
             return Break(CurrentScope.Label("break"), value, typeof(iObject));
@@ -354,6 +357,20 @@ namespace Mint.Compilation
             }
 
             throw new NotImplementedException();
+        }
+
+        protected Expression CompileArray(Ast<Token> ast)
+        {
+            return Convert(
+                New(
+                    ARRAY_CTOR,
+                    NewArrayInit(
+                        typeof(iObject),
+                        ast.Select(_ => _.Accept(this))
+                    )
+                ),
+                typeof(iObject)
+            );
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
@@ -397,6 +414,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
+        protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>(typeof(iObject[]));
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 

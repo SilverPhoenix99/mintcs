@@ -641,8 +641,8 @@ primary :
   | kLPAREN compstmt kRPAREN   { $$ = $2; }
   | primary kCOLON2 tCONSTANT  { $$ = $2 + $1 + $3; }
   | kCOLON3 tCONSTANT          { $$ = $1 + $2; }
-  | kLBRACK aref_args kRBRACK  { $$ = $1 + $2; }
-  | kLBRACE assoc_list kRBRACE { $$ = $1 + $2; }
+  | kLBRACK aref_args kRBRACK  { $$ = $1.Append($2.List); }
+  | kLBRACE assoc_list kRBRACE { $$ = $1.Append($2.List); }
   | kRETURN
   | kYIELD kLPAREN2 call_args rparen { $$ = $1 + $3; }
   | kYIELD kLPAREN2 rparen           { $$ = $1 + sexp(); }

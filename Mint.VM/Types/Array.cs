@@ -62,6 +62,8 @@ namespace Mint
             }
         }
 
+        public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
+
         #region Static
 
         public static readonly Class CLASS;
