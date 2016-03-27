@@ -15,6 +15,18 @@ namespace Mint
         public iObject End        { get; }
         public bool    ExcludeEnd { get; }
 
+        public override string ToString()
+        {
+            var s = ExcludeEnd ? "." : "";
+            return $"{Begin}..{s}{End}";
+        }
+
+        public override string Inspect()
+        {
+            var s = ExcludeEnd ? "." : "";
+            return $"{Begin.Inspect()}..{s}{End.Inspect()}";
+        }
+
         #region Static
 
         public static readonly Class CLASS;

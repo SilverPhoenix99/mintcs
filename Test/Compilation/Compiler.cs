@@ -59,6 +59,8 @@ namespace Mint.Compilation
             Register(kREDO,           CompileRedo);
             Register(kBEGIN,          CompileList);
             Register(kLBRACK,         CompileArray);
+            Register(kDOT2,           CompileRange);
+            Register(kDOT3,           CompileRange);
         }
 
         protected Scope CurrentScope => scopes.Peek();
@@ -90,7 +92,7 @@ namespace Mint.Compilation
         {
             return ast.List.Count == 1
                 ? ast[0].Accept(this)
-                : Block(ast.List.Select(_ => _.Accept(this)));
+                : Block(ast.Select(_ => _.Accept(this)));
         }
 
         protected Expression CompileInteger(Ast<Token> ast)
@@ -373,6 +375,19 @@ namespace Mint.Compilation
             );
         }
 
+        protected Expression CompileRange(Ast<Token> ast)
+        {
+            return Convert(
+                New(
+                    RANGE_CTOR,
+                    ast[0].Accept(this),
+                    ast[1].Accept(this),
+                    Constant(ast.Value.Type == kDOT3)
+                ),
+                typeof(iObject)
+            );
+        }
+
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
             IEnumerable<CSharpArgumentInfo> parameterFlags;
@@ -415,6 +430,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
         protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>(typeof(iObject[]));
+        protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 
