@@ -258,14 +258,12 @@ namespace Mint.Compilation
             var breakLabel = scope.Label("break", typeof(iObject));
             var nextLabel = scope.Label("next");
 
-            var body = ast[1].Accept(this);
-
             var condition = ToBool(ast[0].Accept(this));
             if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
             {
                 condition = Negate(condition);
             }
-
+            
             if(ast[1].Value?.Type == kBEGIN
             && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
             {
@@ -276,7 +274,7 @@ namespace Mint.Compilation
 
                 return Loop(
                     Block(
-                        body,
+                        ast[1].Accept(this),
                         IfThen(condition, Continue(nextLabel)),
                         Break(breakLabel, CONSTANT_NIL, typeof(iObject))
                     ),
@@ -292,7 +290,7 @@ namespace Mint.Compilation
                     condition,
                     Block(
                         Label(redoLabel),
-                        body
+                        ast[1].Accept(this)
                     ),
                     Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
                     typeof(iObject)
