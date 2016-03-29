@@ -135,7 +135,7 @@ namespace Mint.Compilation
             {
                 return Constant(new Symbol(content.Value.Value), typeof(iObject));
             }
-            
+
             return Convert(
                 New(
                     SYMBOL_CTOR,
@@ -157,7 +157,7 @@ namespace Mint.Compilation
                     typeof(iObject)
                 );
             }
-            
+
             return CompileString(New(STRING_CTOR1), ast);
         }
 
@@ -231,14 +231,38 @@ namespace Mint.Compilation
         {
             var left  = ast[0].Accept(this);
             var right = ast[1].Accept(this);
-            return Condition(ToBool(left), right, left, typeof(iObject));
+
+            if(left is ConstantExpression || left is ParameterExpression)
+            {
+                return Condition(ToBool(left), right, left, typeof(iObject));
+            }
+
+            var leftVar = Variable(typeof(iObject));
+
+            return Block(
+                new[] { leftVar },
+                Assign(leftVar, left),
+                Condition(ToBool(leftVar), right, leftVar, typeof(iObject))
+            );
         }
 
         protected Expression CompileOr(Ast<Token> ast)
         {
             var left  = ast[0].Accept(this);
             var right = ast[1].Accept(this);
-            return Condition(ToBool(left), left, right, typeof(iObject));
+
+            if(left is ConstantExpression || left is ParameterExpression)
+            {
+                return Condition(ToBool(left), left, right, typeof(iObject));
+            }
+
+            var leftVar = Variable(typeof(iObject));
+
+            return Block(
+                new[] { leftVar },
+                Assign(leftVar, left),
+                Condition(ToBool(leftVar), leftVar, right, typeof(iObject))
+            );
         }
 
         protected Expression CompileLineNumber(Ast<Token> ast)
@@ -263,7 +287,7 @@ namespace Mint.Compilation
             {
                 condition = Negate(condition);
             }
-            
+
             if(ast[1].Value?.Type == kBEGIN
             && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
             {
@@ -451,16 +475,27 @@ namespace Mint.Compilation
                 expr = Convert(expr, typeof(iObject));
             }
 
-            var obj = Variable(typeof(iObject));
+            if(expr is ParameterExpression)
+            {
+                return And(
+                    NotEqual(expr, Constant(null)),
+                    And(
+                        Not(TypeIs(expr, typeof(NilClass))),
+                        Not(TypeIs(expr, typeof(FalseClass)))
+                    )
+                );
+            }
+
+            var parm = Variable(typeof(iObject));
 
             return Block(
-                new[] { obj },
-                Assign(obj, expr),
+                new[] { parm },
+                Assign(parm, expr),
                 And(
-                    NotEqual(obj, Constant(null)),
+                    NotEqual(parm, Constant(null)),
                     And(
-                        Not(TypeIs(obj, typeof(NilClass))),
-                        Not(TypeIs(obj, typeof(FalseClass)))
+                        Not(TypeIs(parm, typeof(NilClass))),
+                        Not(TypeIs(parm, typeof(FalseClass)))
                     )
                 )
             );
