@@ -19,12 +19,15 @@ namespace Mint.Compilation
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
         protected readonly string filename;
 
-        protected readonly Stack<Scope> scopes = new Stack<Scope>();
+        public Stack<Scope> Scopes { get; } = new Stack<Scope>();
 
         public Compiler(string filename)
         {
             this.filename = filename;
-            scopes.Push(new Scope(ScopeType.Method));
+            var scope = new Scope(ScopeType.Method);
+            scope.Variables[Symbol.SELF] = Parameter(typeof(iObject), Symbol.SELF.Name);
+            Scopes.Push(scope);
+
 
             Register(tINTEGER,        CompileInteger);
             Register(tFLOAT,          CompileFloat);
@@ -61,9 +64,11 @@ namespace Mint.Compilation
             Register(kLBRACK,         CompileArray);
             Register(kDOT2,           CompileRange);
             Register(kDOT3,           CompileRange);
+            Register(kASSIGN,         CompileAssign);
+            Register(kDOT,            CompileMethodInvoke);
         }
 
-        protected Scope CurrentScope => scopes.Peek();
+        public virtual Scope CurrentScope => Scopes.Peek();
 
         public void Register(TokenType type, Func<Ast<Token>, Expression> action)
         {
@@ -88,14 +93,14 @@ namespace Mint.Compilation
 
         private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
 
-        protected Expression CompileList(Ast<Token> ast)
+        protected virtual Expression CompileList(Ast<Token> ast)
         {
             return ast.List.Count == 1
                 ? ast[0].Accept(this)
                 : Block(ast.Select(_ => _.Accept(this)));
         }
 
-        protected Expression CompileInteger(Ast<Token> ast)
+        protected virtual Expression CompileInteger(Ast<Token> ast)
         {
             var tok = ast.Value;
             var str = CLEAN_INTEGER.Replace(tok.Value.ToUpper(), "");
@@ -104,7 +109,7 @@ namespace Mint.Compilation
             return Constant(new Fixnum(val), typeof(iObject));
         }
 
-        protected Expression CompileFloat(Ast<Token> ast)
+        protected virtual Expression CompileFloat(Ast<Token> ast)
         {
             var tok = ast.Value;
             var str = tok.Value.Replace("_", "");
@@ -112,22 +117,22 @@ namespace Mint.Compilation
             return Constant(new Float(val), typeof(iObject));
         }
 
-        protected Expression CompileTrue(Ast<Token> ast = null)
+        protected virtual Expression CompileTrue(Ast<Token> ast = null)
         {
             return Constant(new TrueClass(), typeof(iObject));
         }
 
-        protected Expression CompileFalse(Ast<Token> ast = null)
+        protected virtual Expression CompileFalse(Ast<Token> ast = null)
         {
             return Constant(new FalseClass(), typeof(iObject));
         }
 
-        protected Expression CompileNil(Ast<Token> ast)
+        protected virtual Expression CompileNil(Ast<Token> ast)
         {
             return CONSTANT_NIL;
         }
 
-        protected Expression CompileSymbol(Ast<Token> ast)
+        protected virtual Expression CompileSymbol(Ast<Token> ast)
         {
             var content = ast.List[0];
 
@@ -145,7 +150,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileString(Ast<Token> ast)
+        protected virtual Expression CompileString(Ast<Token> ast)
         {
             if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
             {
@@ -161,7 +166,7 @@ namespace Mint.Compilation
             return CompileString(New(STRING_CTOR1), ast);
         }
 
-        protected Expression CompileChar(Ast<Token> ast)
+        protected virtual Expression CompileChar(Ast<Token> ast)
         {
             var first = New(STRING_CTOR3, CompileStringContent(ast));
 
@@ -181,17 +186,17 @@ namespace Mint.Compilation
             return Convert(first, typeof(iObject));
         }
 
-        protected Expression CompileStringContent(Ast<Token> ast)
+        protected virtual Expression CompileStringContent(Ast<Token> ast)
         {
             return Constant(new String(ast.Value.Value));
         }
 
-        protected Expression CompileUMinusNum(Ast<Token> ast)
+        protected virtual Expression CompileUMinusNum(Ast<Token> ast)
         {
             return Negate(ast[0].Accept(this));
         }
 
-        protected Expression CompileIf(Ast<Token> ast)
+        protected virtual Expression CompileIf(Ast<Token> ast)
         {
             var condition = ToBool(ast[0].Accept(this));
 
@@ -209,7 +214,7 @@ namespace Mint.Compilation
             return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
-        protected Expression CompileQMark(Ast<Token> ast)
+        protected virtual Expression CompileQMark(Ast<Token> ast)
         {
             var condition = ToBool(ast[0].Accept(this));
             var ifTrue    = ast[1].Accept(this);
@@ -217,7 +222,7 @@ namespace Mint.Compilation
             return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
-        protected Expression CompileNot(Ast<Token> ast)
+        protected virtual Expression CompileNot(Ast<Token> ast)
         {
             return Condition(
                 ToBool(ast[0].Accept(this)),
@@ -227,7 +232,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileAnd(Ast<Token> ast)
+        protected virtual Expression CompileAnd(Ast<Token> ast)
         {
             var left  = ast[0].Accept(this);
             var right = ast[1].Accept(this);
@@ -246,7 +251,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileOr(Ast<Token> ast)
+        protected virtual Expression CompileOr(Ast<Token> ast)
         {
             var left  = ast[0].Accept(this);
             var right = ast[1].Accept(this);
@@ -265,19 +270,19 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileLineNumber(Ast<Token> ast)
+        protected virtual Expression CompileLineNumber(Ast<Token> ast)
         {
             return Constant(new Fixnum(ast.Value.Location.Item1), typeof(iObject));
         }
 
-        protected Expression CompileFileName(Ast<Token> ast)
+        protected virtual Expression CompileFileName(Ast<Token> ast)
         {
             return Constant(new String(filename), typeof(iObject));
         }
 
-        protected Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileWhile);
+        protected virtual Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileWhile);
 
-        protected Expression CompileWhile(Ast<Token> ast, Scope scope)
+        protected virtual Expression CompileWhile(Ast<Token> ast, Scope scope)
         {
             var breakLabel = scope.Label("break", typeof(iObject));
             var nextLabel = scope.Label("next");
@@ -324,7 +329,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileBreak(Ast<Token> ast)
+        protected virtual Expression CompileBreak(Ast<Token> ast)
         {
             Expression value;
             switch(ast.List.Count)
@@ -350,7 +355,7 @@ namespace Mint.Compilation
             return Break(CurrentScope.Label("break"), value, typeof(iObject));
         }
 
-        protected Expression CompileNext(Ast<Token> ast)
+        protected virtual Expression CompileNext(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -361,7 +366,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected Expression CompileRetry(Ast<Token> ast)
+        protected virtual Expression CompileRetry(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -372,7 +377,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected Expression CompileRedo(Ast<Token> ast)
+        protected virtual Expression CompileRedo(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -383,7 +388,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected Expression CompileArray(Ast<Token> ast)
+        protected virtual Expression CompileArray(Ast<Token> ast)
         {
             return Convert(
                 New(
@@ -397,7 +402,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected Expression CompileRange(Ast<Token> ast)
+        protected virtual Expression CompileRange(Ast<Token> ast)
         {
             return Convert(
                 New(
@@ -408,6 +413,32 @@ namespace Mint.Compilation
                 ),
                 typeof(iObject)
             );
+        }
+
+        protected virtual Expression CompileAssign(Ast<Token> ast)
+        {
+            var lval = ast[0].Value;
+
+            if(lval.Type == kSELF)
+            {
+                throw new SyntaxError(filename, ast[0].Value.Location.Item1, "Can't change the value of self");
+            }
+
+            if(lval.Type == tIDENTIFIER)
+            {
+                var name = new Symbol(ast[0].Value.Value);
+                var local = Variable(typeof(iObject), name.Name);
+                CurrentScope.Variables[name] = local;
+                var rhs = ast[1].Accept(this);
+                return Assign(local, rhs);
+            }
+
+            throw new NotImplementedException();
+        }
+
+        protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
+        {
+            throw new NotImplementedException();
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
@@ -435,7 +466,7 @@ namespace Mint.Compilation
         private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Scope, Expression> action)
         {
             var scope = new Scope(type);
-            scopes.Push(scope);
+            Scopes.Push(scope);
 
             try
             {
@@ -443,7 +474,7 @@ namespace Mint.Compilation
             }
             finally
             {
-                scopes.Pop();
+                Scopes.Pop();
             }
         }
 

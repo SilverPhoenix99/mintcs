@@ -27,6 +27,8 @@ namespace Mint
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
+        public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);

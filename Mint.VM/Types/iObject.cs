@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System.Collections.Generic;
+using System.Dynamic;
 
 namespace Mint
 {
@@ -26,5 +27,7 @@ namespace Mint
         bool IsA(Class klass);
 
         //iObject MethodMissing(params iObject[] args);
+
+        iObject Send(iObject name, params iObject[] args);
     }
 }

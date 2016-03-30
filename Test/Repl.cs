@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Compilation;
@@ -14,18 +16,19 @@ namespace Mint
 
         public static void Run()
         {
-            var i = 0;
-            for(;;)
+            var main = new Object();
+            var binding = new Dictionary<Symbol, iObject>();
+            for(var i = 1; ; i++)
             {
-                var fragment = Prompt($"imt[{++i}]> ");
+                var fragment = Prompt($"imt[{i}]> ");
 
                 try
                 {
                     var ast = Parser.Parse("(imt)", fragment);
                     DumpAst(ast);
-                    var expr = ast.Accept(new Compiler("(imt)"));
+                    var expr = CompileAst(ast, main, binding);
                     DumpExpression(expr);
-                    RunExpression(expr);
+                    RunExpression(expr, main);
                 }
                 catch(Exception e)
                 {
@@ -51,16 +54,21 @@ namespace Mint
             Console.WriteLine();
         }
 
+        static LambdaExpression CompileAst(Ast<Token> ast, iObject main, IDictionary<Symbol, iObject> binding)
+        {
+            throw new NotImplementedException();
+        }
+
         static void DumpExpression(Expression expr)
         {
             Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, new object[0]));
             Console.WriteLine();
         }
 
-        static void RunExpression(Expression expr)
+        static void RunExpression(LambdaExpression expr, iObject self)
         {
-            var lambda = Expression.Lambda(expr).Compile();
-            var result = (iObject) lambda.DynamicInvoke();
+            var lambda = expr.Compile();
+            var result = (iObject) lambda.DynamicInvoke(self);
             Console.WriteLine(result.Inspect());
             Console.WriteLine();
         }

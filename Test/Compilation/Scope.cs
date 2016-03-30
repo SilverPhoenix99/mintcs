@@ -16,7 +16,7 @@ namespace Mint.Compilation
     {
         public ScopeType Type { get; }
 
-        public Dictionary<string, Expression> Variables { get; } = new Dictionary<string, Expression>();
+        public Dictionary<Symbol, ParameterExpression> Variables { get; } = new Dictionary<Symbol, ParameterExpression>();
 
         public Dictionary<string, LabelTarget> Labels { get; } = new Dictionary<string, LabelTarget>();
 

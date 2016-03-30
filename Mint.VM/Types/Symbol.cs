@@ -34,6 +34,8 @@ namespace Mint
 
         public bool Equals(Symbol obj) => sym.id == obj.sym.id;
 
+        public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
@@ -43,6 +45,8 @@ namespace Mint
         #region Static
 
         public static readonly Class CLASS;
+
+        public static readonly Symbol SELF = new Symbol("self");
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 

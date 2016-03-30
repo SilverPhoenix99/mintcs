@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mint
@@ -38,6 +39,29 @@ namespace Mint
         }
 
         internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.FullName}";
+
+        internal static iObject Send(iObject obj, iObject name, params iObject[] args)
+        {
+            Symbol methodName;
+            if(name is Symbol)
+            {
+                methodName = (Symbol) name;
+            }
+            else if(name is String)
+            {
+                methodName = new Symbol(((String) name).Value);
+            }
+            else
+            {
+                throw new TypeError($"{obj.Inspect()} is not a symbol nor a string");
+            }
+
+            //var method = obj.Class.FindMethod(methodName);
+            //return (iObject) method.Invoke(args);
+
+            var info = obj.GetType().GetMethod(methodName.Name);
+            return (iObject) info.Invoke(obj, args);
+        }
 
         static Object()
         {
