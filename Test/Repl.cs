@@ -56,7 +56,48 @@ namespace Mint
 
         static LambdaExpression CompileAst(Ast<Token> ast, iObject main, IDictionary<Symbol, iObject> binding)
         {
-            throw new NotImplementedException();
+            var compiler = new Compiler("(imt)");
+            var body = ast.Accept(compiler);
+
+            Func<Symbol, ParameterExpression, Expression> assignLocal = (name, local) =>
+                Expression.Assign(
+                    local,
+                    Expression.MakeIndex(
+                        Expression.Constant(binding),
+                        binding.GetType().GetProperty("Item"),
+                        new[] { Expression.Constant(name) }
+                    )
+                );
+
+            var locals =
+                from local in compiler.CurrentScope.Variables
+                where local.Key != Symbol.SELF
+                select local.Value;
+
+            Func<Symbol, Expression> property = key =>
+                Expression.MakeIndex(
+                    Expression.Constant(binding),
+                    binding.GetType().GetProperty("Item"),
+                    new[] { Expression.Constant(key) }
+                );
+
+            var assignLocals =
+                from local in compiler.CurrentScope.Variables
+                where local.Key != Symbol.SELF
+                select Expression.Assign(local.Value, property(local.Key));
+
+            var assignBinding =
+                from local in compiler.CurrentScope.Variables
+                where local.Key != Symbol.SELF
+                select Expression.Assign(property(local.Key), local.Value);
+
+            return Expression.Lambda(
+                Expression.Block(
+                    locals,
+                    assignLocals.Concat(new [] { body }).Concat(assignBinding)
+                ),
+                compiler.CurrentScope.Variables[Symbol.SELF]
+            );
         }
 
         static void DumpExpression(Expression expr)
