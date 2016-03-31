@@ -26,7 +26,7 @@ namespace Mint
                 {
                     var ast = Parser.Parse("(imt)", fragment);
                     DumpAst(ast);
-                    var expr = CompileAst(ast, main, binding);
+                    var expr = CompileAst(ast, binding);
                     DumpExpression(expr);
                     RunExpression(expr, main);
                 }
@@ -54,7 +54,7 @@ namespace Mint
             Console.WriteLine();
         }
 
-        static LambdaExpression CompileAst(Ast<Token> ast, iObject main, IDictionary<Symbol, iObject> binding)
+        static LambdaExpression CompileAst(Ast<Token> ast, IDictionary<Symbol, iObject> binding)
         {
             var compiler = new Compiler("(imt)");
             var body = ast.Accept(compiler);
@@ -64,10 +64,12 @@ namespace Mint
                 where local.Key != Symbol.SELF
                 select local.Value;
 
+            var bindingConstant = Expression.Constant(binding);
+            var propertyInfo = binding.GetType().GetProperty("Item");
             Func<Symbol, Expression> property = key =>
                 Expression.MakeIndex(
-                    Expression.Constant(binding),
-                    binding.GetType().GetProperty("Item"),
+                    bindingConstant,
+                    propertyInfo,
                     new[] { Expression.Constant(key) }
                 );
 
