@@ -59,16 +59,6 @@ namespace Mint
             var compiler = new Compiler("(imt)");
             var body = ast.Accept(compiler);
 
-            Func<Symbol, ParameterExpression, Expression> assignLocal = (name, local) =>
-                Expression.Assign(
-                    local,
-                    Expression.MakeIndex(
-                        Expression.Constant(binding),
-                        binding.GetType().GetProperty("Item"),
-                        new[] { Expression.Constant(name) }
-                    )
-                );
-
             var locals =
                 from local in compiler.CurrentScope.Variables
                 where local.Key != Symbol.SELF
