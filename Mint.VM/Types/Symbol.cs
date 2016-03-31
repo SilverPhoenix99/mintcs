@@ -46,7 +46,7 @@ namespace Mint
 
         public static readonly Class CLASS;
 
-        public static readonly Symbol SELF = new Symbol("self");
+        public static readonly Symbol SELF;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -66,6 +66,7 @@ namespace Mint
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
             CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
+            SELF = new Symbol("self");
 
             //Object.DefineClass(CLASS);
         }
