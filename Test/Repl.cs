@@ -16,8 +16,7 @@ namespace Mint
 
         public static void Run()
         {
-            var main = new Object();
-            var binding = new Dictionary<Symbol, iObject>();
+            var binding = new Closure(new Object());
             for(var i = 1; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");
@@ -28,7 +27,7 @@ namespace Mint
                     DumpAst(ast);
                     var expr = CompileAst(ast, binding);
                     DumpExpression(expr);
-                    RunExpression(expr, main);
+                    RunExpression(expr);
                 }
                 catch(Exception e)
                 {
@@ -54,42 +53,11 @@ namespace Mint
             Console.WriteLine();
         }
 
-        static LambdaExpression CompileAst(Ast<Token> ast, IDictionary<Symbol, iObject> binding)
+        static LambdaExpression CompileAst(Ast<Token> ast, Closure binding)
         {
-            var compiler = new Compiler("(imt)");
+            var compiler = new Compiler("(imt)", binding);
             var body = ast.Accept(compiler);
-
-            var locals =
-                from local in compiler.CurrentScope.Variables
-                where local.Key != Symbol.SELF
-                select local.Value;
-
-            var bindingConstant = Expression.Constant(binding);
-            var propertyInfo = binding.GetType().GetProperty("Item");
-            Func<Symbol, Expression> property = key =>
-                Expression.MakeIndex(
-                    bindingConstant,
-                    propertyInfo,
-                    new[] { Expression.Constant(key) }
-                );
-
-            var assignLocals =
-                from local in compiler.CurrentScope.Variables
-                where local.Key != Symbol.SELF
-                select Expression.Assign(local.Value, property(local.Key));
-
-            var assignBinding =
-                from local in compiler.CurrentScope.Variables
-                where local.Key != Symbol.SELF
-                select Expression.Assign(property(local.Key), local.Value);
-
-            return Expression.Lambda(
-                Expression.Block(
-                    locals,
-                    assignLocals.Concat(new [] { body }).Concat(assignBinding)
-                ),
-                compiler.CurrentScope.Variables[Symbol.SELF]
-            );
+            return Expression.Lambda(body);
         }
 
         static void DumpExpression(Expression expr)
@@ -98,10 +66,10 @@ namespace Mint
             Console.WriteLine();
         }
 
-        static void RunExpression(LambdaExpression expr, iObject self)
+        static void RunExpression(LambdaExpression expr)
         {
             var lambda = expr.Compile();
-            var result = (iObject) lambda.DynamicInvoke(self);
+            var result = (iObject) lambda.DynamicInvoke();
             Console.WriteLine(result.Inspect());
             Console.WriteLine();
         }

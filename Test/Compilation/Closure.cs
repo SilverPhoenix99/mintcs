@@ -1,49 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Mint
 {
     public class Closure
     {
         private readonly Dictionary<Symbol, int> indexes = new Dictionary<Symbol, int>();
-        private readonly Array values = new Array();
+        private iObject[] values = new iObject[0];
 
-        public Closure()
+        public Closure(iObject self)
         {
-            indexes[Symbol.SELF] = 0;
+            Self = self;
         }
 
+        public iObject Self { get; }
+        
         public iObject this[Symbol sym]
         {
-            get { return values[new Fixnum(IndexOf(sym))]; }
-            set
-            {
-                int index;
-                if(indexes.TryGetValue(sym, out index))
-                {
-                    values[new Fixnum(index)] = value;
-                }
-                else
-                {
-                    indexes[sym] = values.Count;
-                    values.Push(value);
-                }
-            }
+            get { return values[IndexOf(sym)]; }
+            set { values[IndexOf(sym)] = value; }
         }
 
         public iObject this[int index]
         {
-            get { return values[new Fixnum(index)]; }
-            set { values[new Fixnum(index)] = value; }
+            get { return values[index]; }
+            set { values[index] = value; }
         }
 
-        public int IndexOf(Symbol sym)
+        public int IndexOf(Symbol name)
         {
             int index;
-            return indexes.TryGetValue(sym, out index) ? index : values.Count;
+            if(!indexes.TryGetValue(name, out index))
+            {
+                index = indexes[name] = values.Length;
+                System.Array.Resize(ref values, values.Length + 1);
+                values[index] = new NilClass();
+            }
+            return index;
         }
     }
 }

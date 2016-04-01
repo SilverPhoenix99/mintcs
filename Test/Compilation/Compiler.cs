@@ -19,15 +19,10 @@ namespace Mint.Compilation
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
         protected readonly string filename;
 
-        public Stack<Scope> Scopes { get; } = new Stack<Scope>();
-
-        public Compiler(string filename)
+        public Compiler(string filename, Closure binding)
         {
             this.filename = filename;
-            var scope = new Scope(ScopeType.Method);
-            scope.Variables[Symbol.SELF] = Parameter(typeof(iObject), Symbol.SELF.Name);
-            Scopes.Push(scope);
-
+            CurrentScope = new Scope(ScopeType.Method, binding);
 
             Register(tINTEGER,        CompileInteger);
             Register(tFLOAT,          CompileFloat);
@@ -66,9 +61,10 @@ namespace Mint.Compilation
             Register(kDOT3,           CompileRange);
             Register(kASSIGN,         CompileAssign);
             Register(kDOT,            CompileMethodInvoke);
+            Register(kSELF,           CompileSelf);
         }
 
-        public virtual Scope CurrentScope => Scopes.Peek();
+        public Scope CurrentScope { get; protected set; }
 
         public void Register(TokenType type, Func<Ast<Token>, Expression> action)
         {
@@ -280,12 +276,12 @@ namespace Mint.Compilation
             return Constant(new String(filename), typeof(iObject));
         }
 
-        protected virtual Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileWhile);
+        protected virtual Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileScopedWhile);
 
-        protected virtual Expression CompileWhile(Ast<Token> ast, Scope scope)
+        protected virtual Expression CompileScopedWhile(Ast<Token> ast)
         {
-            var breakLabel = scope.Label("break", typeof(iObject));
-            var nextLabel = scope.Label("next");
+            var breakLabel = CurrentScope.Label("break", typeof(iObject));
+            var nextLabel = CurrentScope.Label("next");
 
             var condition = ToBool(ast[0].Accept(this));
             if(ast.Value.Type == kUNTIL || ast.Value.Type == kUNTIL_MOD)
@@ -296,7 +292,7 @@ namespace Mint.Compilation
             if(ast[1].Value?.Type == kBEGIN
             && (ast.Value.Type == kWHILE_MOD || ast.Value.Type == kUNTIL_MOD))
             {
-                scope.Labels["redo"] = nextLabel;
+                CurrentScope.Labels["redo"] = nextLabel;
 
                 // postfix `while'
                 // it's postfix if `begin' statement with no `rescue' or `ensure' clauses
@@ -312,7 +308,7 @@ namespace Mint.Compilation
                 );
             }
 
-            var redoLabel = scope.Label("redo");
+            var redoLabel = CurrentScope.Label("redo");
 
             return Loop(
                 Condition(
@@ -427,13 +423,17 @@ namespace Mint.Compilation
             if(lval.Type == tIDENTIFIER)
             {
                 var name = new Symbol(ast[0].Value.Value);
-                var local = Variable(typeof(iObject), name.Name);
-                CurrentScope.Variables[name] = local;
+                var local = CurrentScope.Variable(name);
                 var rhs = ast[1].Accept(this);
                 return Assign(local, rhs);
             }
 
             throw new NotImplementedException();
+        }
+
+        protected virtual Expression CompileSelf(Ast<Token> ast)
+        {
+            return Constant(CurrentScope.Closure.Self);
         }
 
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
@@ -463,18 +463,16 @@ namespace Mint.Compilation
                 .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
         }
 
-        private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Scope, Expression> action)
+        private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Expression> action)
         {
-            var scope = new Scope(type);
-            Scopes.Push(scope);
-
+            CurrentScope = CurrentScope.Enter(type);
             try
             {
-                return action(ast, scope);
+                return action(ast);
             }
             finally
             {
-                Scopes.Pop();
+                CurrentScope = CurrentScope.Previous;
             }
         }
 

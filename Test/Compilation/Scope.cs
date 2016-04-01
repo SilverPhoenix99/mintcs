@@ -14,18 +14,19 @@ namespace Mint.Compilation
 
     public class Scope
     {
-        public Scope(ScopeType type)
+        public Scope(ScopeType type, Closure closure)
         {
             Type = type;
+            Closure = closure;
         }
-
+        
         public ScopeType Type { get; }
 
-        public Dictionary<Symbol, ParameterExpression> Variables { get; } = new Dictionary<Symbol, ParameterExpression>();
-
+        public Closure Closure { get; }
+        
         public Dictionary<string, LabelTarget> Labels { get; } = new Dictionary<string, LabelTarget>();
 
-        public Scope Previous { get; set; }
+        public Scope Previous { get; private set; }
 
         public LabelTarget Label(string label, Type type = null)
         {
@@ -40,6 +41,19 @@ namespace Mint.Compilation
             return target;
         }
 
-        public Scope Enter(ScopeType type) => new Scope(type) { Previous = this };
+        public Expression Variable(Symbol name) =>
+            Expression.Property(
+                Expression.Constant(Closure),
+                typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) }),
+                Expression.Constant(Closure.IndexOf(name))
+            );
+
+            //Expression.MakeIndex(
+            //    Expression.Constant(Closure),
+            //    typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) }),
+            //    new[] { Expression.Constant(Closure.IndexOf(name)) }
+            //);
+
+        public Scope Enter(ScopeType type, Closure closure = null) => new Scope(type, closure ?? new Closure(Closure.Self)) { Previous = this };
     }
 }

@@ -19,7 +19,7 @@ namespace Mint.Test
                 Console.WriteLine(doc.ToString());
                 Console.WriteLine();
 
-                var expr = ast.Accept(new Compiler("(TestCompiler)"));
+                var expr = ast.Accept(new Compiler("(TestCompiler)", new Closure(new Object())));
 
                 Console.WriteLine(Repl.DEBUGVIEW_INFO.Invoke(expr, new object[0]));
                 Console.WriteLine();
