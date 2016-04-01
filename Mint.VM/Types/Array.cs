@@ -24,6 +24,8 @@ namespace Mint
         public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)
         { }
 
+        public int Count => list.Count;
+
         public iObject this[iObject index]
         {
             get
@@ -60,6 +62,12 @@ namespace Mint
                 }
                 list[i] = value;
             }
+        }
+
+        public iObject Push(params iObject[] elements)
+        {
+            list.AddRange(elements);
+            return this;
         }
 
         public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";

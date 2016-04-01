@@ -14,16 +14,18 @@ namespace Mint.Compilation
 
     public class Scope
     {
+        public Scope(ScopeType type)
+        {
+            Type = type;
+        }
+
         public ScopeType Type { get; }
 
         public Dictionary<Symbol, ParameterExpression> Variables { get; } = new Dictionary<Symbol, ParameterExpression>();
 
         public Dictionary<string, LabelTarget> Labels { get; } = new Dictionary<string, LabelTarget>();
 
-        public Scope(ScopeType type)
-        {
-            Type = type;
-        }
+        public Scope Previous { get; set; }
 
         public LabelTarget Label(string label, Type type = null)
         {
@@ -37,5 +39,7 @@ namespace Mint.Compilation
 
             return target;
         }
+
+        public Scope Enter(ScopeType type) => new Scope(type) { Previous = this };
     }
 }

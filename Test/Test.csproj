@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstXmlSerializer.cs" />
+    <Compile Include="Compilation\Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Scope.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
