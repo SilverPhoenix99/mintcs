@@ -62,6 +62,7 @@ namespace Mint.Compilation
             Register(kASSIGN,         CompileAssign);
             Register(kDOT,            CompileMethodInvoke);
             Register(kSELF,           CompileSelf);
+            Register(tIDENTIFIER,     CompileIdentifier);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -431,14 +432,25 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
+        protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
+        {
+            throw new NotImplementedException();
+        }
+
         protected virtual Expression CompileSelf(Ast<Token> ast)
         {
             return Constant(CurrentScope.Closure.Self);
         }
 
-        protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
+        protected virtual Expression CompileIdentifier(Ast<Token> ast)
         {
-            throw new NotImplementedException();
+            var name = new Symbol(ast.Value.Value);
+            if(!CurrentScope.Closure.IsDefined(name))
+            {
+                throw new NotImplementedException("variable not found. methods not implemented.");
+            }
+
+            return CurrentScope.Variable(name);
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)

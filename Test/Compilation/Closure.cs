@@ -37,5 +37,7 @@ namespace Mint
             }
             return index;
         }
+
+        public bool IsDefined(Symbol name) => indexes.ContainsKey(name);
     }
 }
