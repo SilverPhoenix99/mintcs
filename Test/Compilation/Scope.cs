@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mint.Compilation
 {
@@ -44,16 +45,12 @@ namespace Mint.Compilation
         public Expression Variable(Symbol name) =>
             Expression.Property(
                 Expression.Constant(Closure),
-                typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) }),
+                CLOSURE_INDEXER,
                 Expression.Constant(Closure.IndexOf(name))
             );
 
-            //Expression.MakeIndex(
-            //    Expression.Constant(Closure),
-            //    typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) }),
-            //    new[] { Expression.Constant(Closure.IndexOf(name)) }
-            //);
-
         public Scope Enter(ScopeType type, Closure closure = null) => new Scope(type, closure ?? new Closure(Closure.Self)) { Previous = this };
+
+        private static readonly PropertyInfo CLOSURE_INDEXER = typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) });
     }
 }
