@@ -140,26 +140,26 @@ namespace Mint.Compilation
         {
             var content = ast.List[0];
 
-            if(!content.IsList)
-            {
-                return Constant(new Symbol(content.Value.Value), typeof(iObject));
-            }
+            return content.IsList
+                ? CompileSymbol(content.List)
+                : Constant(new Symbol(content.Value.Value), typeof(iObject));
+        }
 
-            return Convert(
+        private Expression CompileSymbol(IEnumerable<Ast<Token>> content) =>
+            Convert(
                 New(
                     SYMBOL_CTOR,
                     Call(
                         Convert(
                             CompileString(New(STRING_CTOR1), content),
                             typeof(object)
-                        ),
+                         ),
                         "ToString",
                         null
                     )
                 ),
                 typeof(iObject)
             );
-        }
 
         protected virtual Expression CompileString(Ast<Token> ast)
         {
@@ -427,20 +427,20 @@ namespace Mint.Compilation
         {
             var lval = ast[0].Value;
 
-            if(lval.Type == kSELF)
+            switch(lval.Type)
             {
-                throw new SyntaxError(filename, ast[0].Value.Location.Item1, "Can't change the value of self");
-            }
+                case kSELF:
+                    throw new SyntaxError(filename, ast[0].Value.Location.Item1, "Can't change the value of self");
 
-            if(lval.Type == tIDENTIFIER)
-            {
-                var name = new Symbol(ast[0].Value.Value);
-                var local = CurrentScope.Variable(name);
-                var rhs = ast[1].Accept(this);
-                return Assign(local, rhs);
-            }
+                case tIDENTIFIER:
+                    var name = new Symbol(ast[0].Value.Value);
+                    var local = CurrentScope.Variable(name);
+                    var rhs = ast[1].Accept(this);
+                    return Assign(local, rhs);
 
-            throw new NotImplementedException();
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
@@ -487,21 +487,9 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileWords(Ast<Token> ast)
         {
-            var lists = ast.Aggregate(
-                new List<List<Ast<Token>>>{ new List<Ast<Token>>() },
-                (list, node) => {
-                    if(node.Value.Type == tSPACE)
-                    {
-                        list.Add(new List<Ast<Token>>());
-                    }
-                    else
-                    {
-                        list.Last().Add(node);
-                    }
-                    return list;
-                })
-                .Where(list => list.Count != 0)
-                .Select(list => CompileString(New(STRING_CTOR1), list));
+            var lists = from list in GroupWords(ast)
+                        where list.Count != 0
+                        select CompileString(New(STRING_CTOR1), list);
 
             return Convert(
                 ListInit(New(ARRAY_CTOR), lists),
@@ -511,42 +499,31 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileSymbolWords(Ast<Token> ast)
         {
-            var lists = ast.Aggregate(
-                new List<List<Ast<Token>>>{ new List<Ast<Token>>() },
-                (list, node) => {
-                    if(node.Value.Type == tSPACE)
-                    {
-                        list.Add(new List<Ast<Token>>());
-                    }
-                    else
-                    {
-                        list.Last().Add(node);
-                    }
-                    return list;
-                })
-                .Where(list => list.Count != 0)
-                .Select(list =>
-                    Convert(
-                        New(
-                            SYMBOL_CTOR,
-                            Call(
-                                Convert(
-                                    CompileString(New(STRING_CTOR1), list),
-                                    typeof(object)
-                                ),
-                                "ToString",
-                                null
-                            )
-                        ),
-                        typeof(iObject)
-                    )
-                );
+            var lists = from list in GroupWords(ast)
+                        where list.Count != 0
+                        select CompileSymbol(list);
 
             return Convert(
                 ListInit(New(ARRAY_CTOR), lists),
                 typeof(iObject)
             );
         }
+
+        private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list) =>
+            list.Aggregate(
+                new List<List<Ast<Token>>> { new List<Ast<Token>>() },
+                (l, node) =>
+                {
+                    if(node.Value.Type == tSPACE)
+                    {
+                        l.Add(new List<Ast<Token>>());
+                    }
+                    else
+                    {
+                        l.Last().Add(node);
+                    }
+                    return l;
+                });
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
