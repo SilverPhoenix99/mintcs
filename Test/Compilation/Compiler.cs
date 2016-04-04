@@ -70,6 +70,7 @@ namespace Mint.Compilation
             Register(tQWORDS_BEG,     CompileWords);
             Register(tSYMBOLS_BEG,    CompileSymbolWords);
             Register(tQSYMBOLS_BEG,   CompileSymbolWords);
+            Register(kLBRACE,         CompileHash);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -101,7 +102,7 @@ namespace Mint.Compilation
         {
             return ast.List.Count == 1
                 ? ast[0].Accept(this)
-                : Block(ast.Select(_ => _.Accept(this)));
+                : Block(typeof(iObject), ast.Select(_ => _.Accept(this)));
         }
 
         protected virtual Expression CompileInteger(Ast<Token> ast)
@@ -260,6 +261,7 @@ namespace Mint.Compilation
             var leftVar = Variable(typeof(iObject));
 
             return Block(
+                typeof(iObject),
                 new[] { leftVar },
                 Assign(leftVar, left),
                 Condition(ToBool(leftVar), right, leftVar, typeof(iObject))
@@ -278,6 +280,7 @@ namespace Mint.Compilation
             var leftVar = Variable(typeof(iObject));
 
             return Block(
+                typeof(iObject),
                 new[] { leftVar },
                 Assign(leftVar, left),
                 Condition(ToBool(leftVar), leftVar, right, typeof(iObject))
@@ -317,6 +320,7 @@ namespace Mint.Compilation
 
                 return Loop(
                     Block(
+                        typeof(iObject),
                         ast[1].Accept(this),
                         IfThen(condition, Continue(nextLabel)),
                         Break(breakLabel, CONSTANT_NIL, typeof(iObject))
@@ -332,6 +336,7 @@ namespace Mint.Compilation
                 Condition(
                     condition,
                     Block(
+                        typeof(iObject),
                         Label(redoLabel),
                         ast[1].Accept(this)
                     ),
@@ -525,6 +530,69 @@ namespace Mint.Compilation
                     return l;
                 });
 
+        protected virtual Expression CompileHash(Ast<Token> ast)
+        {
+            if(ast.List.Count == 0)
+            {
+                return Constant(new Hash(), typeof(iObject));
+            }
+
+            var list = new List<Expression>(ast.List.Count);
+            var hash = Variable(typeof(Hash), "hash");
+            list.Add(Assign(hash, Constant(new Hash())));
+
+            foreach(var node in ast.List)
+            {
+                switch(node.Value.Type)
+                {
+                    case kASSOC:
+                    {
+                        var key   = node[0].Accept(this);
+                        var value = node[1].Accept(this);
+                        list.Add(HashAppend(hash, key, value));
+                        break;
+                    }
+
+                    case tLABEL:
+                    {
+                        var key = Constant(
+                            new Symbol(node.Value.Value.Substring(0, node.Value.Value.Length - 1)),
+                            typeof(iObject)
+                        );
+                        var value = node[0].Accept(this);
+                        list.Add(HashAppend(hash, key, value));
+                        break;
+                    }
+
+                    case tLABEL_END:
+                    {
+                        var key   = CompileString(node[0]);
+                        var value = node[1].Accept(this);
+                        list.Add(HashAppend(hash, key, value));
+                        break;
+                    }
+
+                    case kDSTAR:
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            list.Add(hash);
+
+            return Block(
+                typeof(iObject),
+                new[] { hash },
+                list
+            );
+        }
+
+        private static Expression HashAppend(ParameterExpression hash, Expression key, Expression value) => Assign(Property(hash, "Item", key), value);
+
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
             IEnumerable<CSharpArgumentInfo> parameterFlags;
@@ -566,6 +634,8 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
         protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
         protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+
+        protected static readonly MethodInfo HASH_ADD = Method<Hash>("Add", typeof(iObject), typeof(iObject));
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 
