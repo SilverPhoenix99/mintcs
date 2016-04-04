@@ -44,7 +44,9 @@ namespace Mint.Compilation
             Register(kQMARK,          CompileQMark);
             Register(kNOT,            CompileNot);
             Register(kAND,            CompileAnd);
+            Register(kANDOP,          CompileAnd);
             Register(kOR,             CompileOr);
+            Register(kOROP,           CompileOr);
             Register(k__LINE__,       CompileLineNumber);
             Register(k__FILE__,       CompileFileName);
             Register(kWHILE,          CompileWhile);
@@ -63,6 +65,7 @@ namespace Mint.Compilation
             Register(kDOT,            CompileMethodInvoke);
             Register(kSELF,           CompileSelf);
             Register(tIDENTIFIER,     CompileIdentifier);
+            Register(tOP_ASGN,        CompileOpAssign);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -229,11 +232,10 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileAnd(Ast<Token> ast)
-        {
-            var left  = ast[0].Accept(this);
-            var right = ast[1].Accept(this);
+        protected virtual Expression CompileAnd(Ast<Token> ast) => AndOperation(ast[0].Accept(this), ast[1].Accept(this));
 
+        protected Expression AndOperation(Expression left, Expression right)
+        {
             if(left is ConstantExpression || left is ParameterExpression)
             {
                 return Condition(ToBool(left), right, left, typeof(iObject));
@@ -248,11 +250,10 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileOr(Ast<Token> ast)
-        {
-            var left  = ast[0].Accept(this);
-            var right = ast[1].Accept(this);
+        protected virtual Expression CompileOr(Ast<Token> ast) => OrOperation(ast[0].Accept(this), ast[1].Accept(this));
 
+        protected Expression OrOperation(Expression left, Expression right)
+        {
             if(left is ConstantExpression || left is ParameterExpression)
             {
                 return Condition(ToBool(left), left, right, typeof(iObject));
@@ -451,6 +452,27 @@ namespace Mint.Compilation
             }
 
             return CurrentScope.Variable(name);
+        }
+
+        protected virtual Expression CompileOpAssign(Ast<Token> ast)
+        {
+            var left = ast[0].Value.Type == tIDENTIFIER
+                ? CurrentScope.Variable(new Symbol(ast[0].Value.Value))
+                : ast[0].Accept(this);
+
+            var right = ast[1].Accept(this);
+
+            switch(ast.Value.Value)
+            {
+                case "||":
+                    return OrOperation(left, Assign(left, right));
+
+                case "&&":
+                    return AndOperation(left, Assign(left, right));
+
+                default:
+                    throw new NotImplementedException($"unknown operation `{ast.Value.Value}='");
+            }
         }
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
