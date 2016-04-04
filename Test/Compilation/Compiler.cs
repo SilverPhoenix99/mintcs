@@ -68,6 +68,8 @@ namespace Mint.Compilation
             Register(tOP_ASGN,        CompileOpAssign);
             Register(tWORDS_BEG,      CompileWords);
             Register(tQWORDS_BEG,     CompileWords);
+            Register(tSYMBOLS_BEG,    CompileSymbolWords);
+            Register(tQSYMBOLS_BEG,   CompileSymbolWords);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -497,9 +499,48 @@ namespace Mint.Compilation
                         list.Last().Add(node);
                     }
                     return list;
-                }
-            ).Where(list => list.Count != 0)
-            .Select(list => CompileString(New(STRING_CTOR1), list));
+                })
+                .Where(list => list.Count != 0)
+                .Select(list => CompileString(New(STRING_CTOR1), list));
+
+            return Convert(
+                ListInit(New(ARRAY_CTOR), lists),
+                typeof(iObject)
+            );
+        }
+
+        protected virtual Expression CompileSymbolWords(Ast<Token> ast)
+        {
+            var lists = ast.Aggregate(
+                new List<List<Ast<Token>>>{ new List<Ast<Token>>() },
+                (list, node) => {
+                    if(node.Value.Type == tSPACE)
+                    {
+                        list.Add(new List<Ast<Token>>());
+                    }
+                    else
+                    {
+                        list.Last().Add(node);
+                    }
+                    return list;
+                })
+                .Where(list => list.Count != 0)
+                .Select(list =>
+                    Convert(
+                        New(
+                            SYMBOL_CTOR,
+                            Call(
+                                Convert(
+                                    CompileString(New(STRING_CTOR1), list),
+                                    typeof(object)
+                                ),
+                                "ToString",
+                                null
+                            )
+                        ),
+                        typeof(iObject)
+                    )
+                );
 
             return Convert(
                 ListInit(New(ARRAY_CTOR), lists),
