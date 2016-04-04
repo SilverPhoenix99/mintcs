@@ -1,19 +1,18 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace Mint
 {
-    public class Array : BaseObject
+    public class Array : BaseObject, IEnumerable<iObject>
     {
         private readonly List<iObject> list;
 
         public Array() : base(CLASS)
         {
             list = new List<iObject>();
-
-            throw new NotImplementedException();
         }
 
         public Array(IEnumerable<iObject> objs) : base(CLASS)
@@ -69,6 +68,15 @@ namespace Mint
             list.AddRange(elements);
             return this;
         }
+
+        internal void Add(iObject element)
+        {
+            list.Add(element);
+        }
+
+        public IEnumerator<iObject> GetEnumerator() => list.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
         public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
 

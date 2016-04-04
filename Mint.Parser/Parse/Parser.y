@@ -1071,7 +1071,7 @@ regexp :
 
 words :
     tWORDS_BEG tSPACE tSTRING_END
-  | tWORDS_BEG word_list tSTRING_END { $$ = $1 + $2; }
+  | tWORDS_BEG word_list tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 word_list :
@@ -1086,7 +1086,7 @@ word :
 
 symbols :
     tSYMBOLS_BEG tSPACE tSTRING_END
-  | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = $1 + $2; }
+  | tSYMBOLS_BEG symbol_list tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 symbol_list :
@@ -1096,12 +1096,12 @@ symbol_list :
 
 qwords :
     tQWORDS_BEG tSPACE tSTRING_END
-  | tQWORDS_BEG qword_list tSTRING_END { $$ = $1 + $2; }
+  | tQWORDS_BEG qword_list tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 qsymbols :
     tQSYMBOLS_BEG tSPACE tSTRING_END
-  | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = $1 + $2; }
+  | tQSYMBOLS_BEG qsym_list tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 qword_list :

@@ -66,6 +66,8 @@ namespace Mint.Compilation
             Register(kSELF,           CompileSelf);
             Register(tIDENTIFIER,     CompileIdentifier);
             Register(tOP_ASGN,        CompileOpAssign);
+            Register(tWORDS_BEG,      CompileWords);
+            Register(tQWORDS_BEG,     CompileWords);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -144,7 +146,14 @@ namespace Mint.Compilation
             return Convert(
                 New(
                     SYMBOL_CTOR,
-                    Call(CompileString(New(STRING_CTOR1), content), "ToString", null)
+                    Call(
+                        Convert(
+                            CompileString(New(STRING_CTOR1), content),
+                            typeof(object)
+                        ),
+                        "ToString",
+                        null
+                    )
                 ),
                 typeof(iObject)
             );
@@ -178,7 +187,12 @@ namespace Mint.Compilation
         private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
         {
             var list = ast.Select(_ => _.Accept(this))
-                .Select(_ => _.Type == typeof(String) ? _ : New(STRING_CTOR2, Call(_, "ToString", null)));
+                .Select(_ => _.Type == typeof(String)
+                    ? _
+                    : New(
+                        STRING_CTOR2,
+                        Call(Convert(_, typeof(object)), "ToString", null))
+                    );
 
             list = new[] { first }.Concat(list);
             first = list.Aggregate((l, r) => Call(l, "Concat", null, r));
@@ -389,13 +403,7 @@ namespace Mint.Compilation
         protected virtual Expression CompileArray(Ast<Token> ast)
         {
             return Convert(
-                New(
-                    ARRAY_CTOR,
-                    NewArrayInit(
-                        typeof(iObject),
-                        ast.Select(_ => _.Accept(this))
-                    )
-                ),
+                ListInit(New(ARRAY_CTOR), ast.Select(_ => _.Accept(this))),
                 typeof(iObject)
             );
         }
@@ -475,6 +483,30 @@ namespace Mint.Compilation
             }
         }
 
+        protected virtual Expression CompileWords(Ast<Token> ast)
+        {
+            var lists = ast.Aggregate(
+                new List<List<Ast<Token>>>{ new List<Ast<Token>>() },
+                (list, node) => {
+                    if(node.Value.Type == tSPACE)
+                    {
+                        list.Add(new List<Ast<Token>>());
+                    }
+                    else
+                    {
+                        list.Last().Add(node);
+                    }
+                    return list;
+                }
+            ).Where(list => list.Count != 0)
+            .Select(list => CompileString(New(STRING_CTOR1), list));
+
+            return Convert(
+                ListInit(New(ARRAY_CTOR), lists),
+                typeof(iObject)
+            );
+        }
+
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
             IEnumerable<CSharpArgumentInfo> parameterFlags;
@@ -514,7 +546,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
-        protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>(typeof(iObject[]));
+        protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
         protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
