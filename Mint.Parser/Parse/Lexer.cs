@@ -19,7 +19,7 @@ namespace Mint.Parse
 			        line_jump;
 
         private int __end__ = -1;
-		private int[] stack = new int[10];
+		private int[] stack = new int[32];
         private int[] lines;
         private Token eof_token;
 
@@ -115,7 +115,7 @@ namespace Mint.Parse
                     lines.Add(i+1);
                 }
 			}
-            
+
             this.lines = lines.ToArray();
             eof_token = new Token(EOF, "$eof", Location(data.Length));
 		}
@@ -145,7 +145,7 @@ namespace Mint.Parse
             line = Math.Abs(line < 0 ? -line : line);
             return new Tuple<int, int>(line, pos - lines[line - 1] + 1);
         }
-        
+
         private uint Peek(int op = 0, bool translate_delimiter = true)
         {
             // TODO use encoding to advance chars
@@ -162,7 +162,7 @@ namespace Mint.Parse
 
             return c;
         }
-        
+
         private string CurrentToken(int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }
@@ -219,7 +219,7 @@ namespace Mint.Parse
 
             token = token ?? CurrentToken(ts, te);
             location = location ?? Location(ts);
-            
+
             switch(type)
             {
                 case kLPAREN2:    goto case kLBRACK;
@@ -281,6 +281,7 @@ namespace Mint.Parse
                     {
                         break;
                     }
+
                     var lit = literals.Peek();
                     if(lit.BraceCount != 0)
                     {
@@ -290,7 +291,6 @@ namespace Mint.Parse
 
                     type = tSTRING_DEND;
                     lit.ContentStart = te;
-                    PushFcall();
                     cs = (int) lit.State;
                     break;
                 }
@@ -315,7 +315,7 @@ namespace Mint.Parse
                 token = token.Substring(0, token.Length-1);
                 return GenToken(tOP_ASGN, token, location, ts, te);
             }
-            
+
             return GenToken(type[token], token, location, ts, te);
         }
 
@@ -404,9 +404,9 @@ namespace Mint.Parse
                                     || FcalledBy(EXPR_ENDFN)
                                 )
                             )
-                            || cs == (uint) EXPR_ARG 
-                            || cs == (uint) EXPR_CMDARG 
-                            || cs == (uint) EXPR_LABELARG 
+                            || cs == (uint) EXPR_ARG
+                            || cs == (uint) EXPR_CMDARG
+                            || cs == (uint) EXPR_LABELARG
                             || FcalledBy(EXPR_ARG, EXPR_CMDARG, EXPR_LABELARG)
                         );
 

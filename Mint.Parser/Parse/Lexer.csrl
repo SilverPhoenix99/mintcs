@@ -1037,7 +1037,7 @@ control_escape = control_prefix (
 
 HEREDOC_DELIMITER := |*
     c_eof => EofLiteralError;
-    
+
     ^nl_eof* nl_eof => {
         if(current_literal.IsDelimiter(CurrentToken()))
         {
@@ -1266,7 +1266,6 @@ action StringDBeg { // StringDBeg
         GenStringContentToken();
         GenToken(tSTRING_DBEG);
         InCmd = true;
-        PopFcall();
         fnext EXPR_BEG;
         fbreak;
     }
