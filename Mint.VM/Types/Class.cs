@@ -120,6 +120,11 @@ namespace Mint
             return wrapper.Compile();
         }
 
+        public bool IsDefined(Symbol name)
+        {
+            throw new NotImplementedException();
+        }
+
         #region Static
 
         public new static readonly Class CLASS;

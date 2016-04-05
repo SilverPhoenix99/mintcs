@@ -574,6 +574,7 @@ namespace Mint.Compilation
 
                     case kDSTAR:
                     {
+                        // TODO: { **h }
                         throw new NotImplementedException();
                     }
 
@@ -581,6 +582,8 @@ namespace Mint.Compilation
                         throw new NotImplementedException();
                 }
             }
+
+            //TODO : "warning: key {key.inspect} is duplicated and overwritten on line #{line}"
 
             list.Add(hash);
 
