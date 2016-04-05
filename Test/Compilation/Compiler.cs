@@ -539,7 +539,7 @@ namespace Mint.Compilation
 
             var list = new List<Expression>(ast.List.Count);
             var hash = Variable(typeof(Hash), "hash");
-            list.Add(Assign(hash, Constant(new Hash())));
+            list.Add(Assign(hash, New(HASH_CTOR)));
 
             foreach(var node in ast.List)
             {
@@ -566,7 +566,7 @@ namespace Mint.Compilation
 
                     case tLABEL_END:
                     {
-                        var key   = CompileString(node[0]);
+                        var key   = CompileSymbol(node[0].List);
                         var value = node[1].Accept(this);
                         list.Add(HashAppend(hash, key, value));
                         break;
@@ -634,6 +634,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
         protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
         protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+        protected static readonly ConstructorInfo HASH_CTOR    = Ctor<Hash>();
 
         protected static readonly MethodInfo HASH_ADD = Method<Hash>("Add", typeof(iObject), typeof(iObject));
 
