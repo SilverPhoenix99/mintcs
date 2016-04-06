@@ -450,7 +450,11 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
         {
-            throw new NotImplementedException();
+            var parms = ast[2].List;
+            var parmExprs = new[] { ast[0].Accept(this) }
+                .Concat(parms.Select(_ => _.Accept(this)));
+
+            return Dynamic(InvokeMember(ast[1].Value.Value, parms.Count), typeof(object), parmExprs);
         }
 
         protected virtual Expression CompileSelf(Ast<Token> ast)
@@ -598,24 +602,16 @@ namespace Mint.Compilation
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
-            IEnumerable<CSharpArgumentInfo> parameterFlags;
+            var parameterFlags = Enumerable.Repeat<object>(null, numArgs + 1).Select(
+                _ => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
+            );
 
-            if(numArgs == 0)
-            {
-                parameterFlags = new CSharpArgumentInfo[0];
-            }
-            else
-            {
-                parameterFlags = Enumerable.Repeat<object>(null, numArgs).Select(
-                    _ => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-                );
-            }
-
-            parameterFlags = new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) }
-                .Concat(parameterFlags);
-
-            return Microsoft.CSharp.RuntimeBinder.Binder
-                .InvokeMember(CSharpBinderFlags.None, methodName, null, GetType(), parameterFlags);
+            return Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
+                CSharpBinderFlags.None,
+                methodName,
+                null,
+                GetType(),
+                parameterFlags);
         }
 
         private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Expression> action)
@@ -638,9 +634,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
         protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         protected static readonly ConstructorInfo HASH_CTOR    = Ctor<Hash>();
-
-        protected static readonly MethodInfo HASH_ADD = Method<Hash>("Add", typeof(iObject), typeof(iObject));
-
+        
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 
         protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
