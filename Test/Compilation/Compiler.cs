@@ -17,6 +17,7 @@ namespace Mint.Compilation
     {
         private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
+
         protected readonly string filename;
 
         public Compiler(string filename, Closure binding)
@@ -93,10 +94,8 @@ namespace Mint.Compilation
                 return action(ast);
             }
 
-            throw new ArgumentException($"Token type {ast.Value.Type} not registered.", "ast");
+            throw new ArgumentException($"Token type {ast.Value.Type} not registered.", nameof(ast));
         }
-
-        private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
 
         protected virtual Expression CompileList(Ast<Token> ast)
         {
@@ -105,12 +104,14 @@ namespace Mint.Compilation
                 : Block(typeof(iObject), ast.Select(_ => _.Accept(this)));
         }
 
+        private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
+
         protected virtual Expression CompileInteger(Ast<Token> ast)
         {
             var tok = ast.Value;
             var str = CLEAN_INTEGER.Replace(tok.Value.ToUpper(), "");
-            var num_base = (int) tok.Properties["num_base"];
-            var val = System.Convert.ToInt64(str, num_base);
+            var numBase = (int) tok.Properties["num_base"];
+            var val = System.Convert.ToInt64(str, numBase);
             return Constant(new Fixnum(val), typeof(iObject));
         }
 
@@ -146,8 +147,9 @@ namespace Mint.Compilation
                 : Constant(new Symbol(content.Value.Value), typeof(iObject));
         }
 
-        private Expression CompileSymbol(IEnumerable<Ast<Token>> content) =>
-            Convert(
+        private Expression CompileSymbol(IEnumerable<Ast<Token>> content)
+        {
+            return Convert(
                 New(
                     SYMBOL_CTOR,
                     Call(
@@ -155,12 +157,13 @@ namespace Mint.Compilation
                             CompileString(New(STRING_CTOR1), content),
                             typeof(object)
                          ),
-                        "ToString",
+                        METHOD_OBJECT_TOSTRING,
                         null
                     )
                 ),
                 typeof(iObject)
             );
+        }
 
         protected virtual Expression CompileString(Ast<Token> ast)
         {
@@ -194,11 +197,14 @@ namespace Mint.Compilation
                     ? _
                     : New(
                         STRING_CTOR2,
-                        Call(Convert(_, typeof(object)), "ToString", null))
+                        Call(
+                            Convert(_, typeof(object)),
+                            METHOD_OBJECT_TOSTRING,
+                            null))
                     );
 
             list = new[] { first }.Concat(list);
-            first = list.Aggregate((l, r) => Call(l, "Concat", null, r));
+            first = list.Aggregate((l, r) => Call(l, METHOD_STRING_CONCAT, r));
 
             return Convert(first, typeof(iObject));
         }
@@ -251,7 +257,7 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileAnd(Ast<Token> ast) => AndOperation(ast[0].Accept(this), ast[1].Accept(this));
 
-        protected Expression AndOperation(Expression left, Expression right)
+        protected static Expression AndOperation(Expression left, Expression right)
         {
             if(left is ConstantExpression || left is ParameterExpression)
             {
@@ -270,7 +276,7 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileOr(Ast<Token> ast) => OrOperation(ast[0].Accept(this), ast[1].Accept(this));
 
-        protected Expression OrOperation(Expression left, Expression right)
+        protected static Expression OrOperation(Expression left, Expression right)
         {
             if(left is ConstantExpression || left is ParameterExpression)
             {
@@ -451,10 +457,16 @@ namespace Mint.Compilation
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
         {
             var parms = ast[2].List;
-            var parmExprs = new[] { ast[0].Accept(this) }
-                .Concat(parms.Select(_ => _.Accept(this)));
+            var parmExprs = new[] { ast[0].Accept(this) }.Concat(parms.Select(_ => _.Accept(this)));
 
-            return Dynamic(InvokeMember(ast[1].Value.Value, parms.Count), typeof(object), parmExprs);
+            return Call(
+                new Func<iObject, object>(Object.Box).Method,
+                Dynamic(
+                    InvokeMember(ast[1].Value.Value, parms.Count),
+                    typeof(object),
+                    parmExprs
+                )
+            );
         }
 
         protected virtual Expression CompileSelf(Ast<Token> ast)
@@ -518,9 +530,10 @@ namespace Mint.Compilation
             );
         }
 
-        private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list) =>
-            list.Aggregate(
-                new List<List<Ast<Token>>> { new List<Ast<Token>>() },
+        private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list)
+        {
+            return list.Aggregate(
+                new List<List<Ast<Token>>> {new List<Ast<Token>>()},
                 (l, node) =>
                 {
                     if(node.Value.Type == tSPACE)
@@ -533,6 +546,7 @@ namespace Mint.Compilation
                     }
                     return l;
                 });
+        }
 
         protected virtual Expression CompileHash(Ast<Token> ast)
         {
@@ -598,7 +612,7 @@ namespace Mint.Compilation
             );
         }
 
-        private static Expression HashAppend(ParameterExpression hash, Expression key, Expression value) => Assign(Property(hash, "Item", key), value);
+        private static Expression HashAppend(Expression hash, Expression key, Expression value) => Assign(Property(hash, "Item", key), value);
 
         private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
         {
@@ -634,12 +648,13 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
         protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         protected static readonly ConstructorInfo HASH_CTOR    = Ctor<Hash>();
-        
+
+        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Info<object>.Method(_ => _.ToString());
+        protected static readonly MethodInfo METHOD_STRING_CONCAT   = Info<String>.Method(_ => _.Concat(null));
+
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
 
         protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
-
-        protected static MethodInfo Method<T>(string name, params Type[] argTypes) => typeof(T).GetMethod(name, argTypes);
 
         private static Expression ToBool(Expression expr)
         {
@@ -684,5 +699,13 @@ namespace Mint.Compilation
 
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
+
+        private static class Info<T>
+        {
+            public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> expr) => (expr.Body as MethodCallExpression)?.Method;
+
+            public static PropertyInfo Property<TResult>(Expression<Func<T, TResult>> expr)
+                => (expr.Body as MemberExpression)?.Member as PropertyInfo;
+        }
     }
 }
