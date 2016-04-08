@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -52,7 +51,7 @@ namespace Mint
 
         public Symbol DefineMethod(Symbol name, MethodInfo function) => DefineMethod(Method.Create(name, this, function));
 
-        public Symbol DefineMethod(Symbol name, Delegate function) => DefineMethod(Method.Create(name, this, function));
+        public Symbol DefineMethod(Symbol name, Method.Delegate function) => DefineMethod(Method.Create(name, this, function));
 
         public virtual void Include(Module module)
         {

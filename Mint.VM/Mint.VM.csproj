@@ -36,6 +36,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentError.cs" />
+    <Compile Include="Binding\Binder.cs" />
+    <Compile Include="Binding\CallSite.cs" />
+    <Compile Include="Binding\MegamorphicBinder.cs" />
+    <Compile Include="Binding\PolymorphicBinder.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
     <Compile Include="Methods\AttrReaderMethod.cs" />

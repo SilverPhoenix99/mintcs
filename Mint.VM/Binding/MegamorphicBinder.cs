@@ -1,12 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using Mint;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Binding
 {
-    class MegamorphicBinder : Binder
+    public class MegamorphicBinder : Binder
     {
         private Dictionary<long, CachedMethod> cache = new Dictionary<long, CachedMethod>();
 
@@ -17,7 +14,7 @@ namespace Mint.Binding
 
         public Symbol MethodName { get; }
 
-        public CallSite.Function Compile(CallSite site) => Invoke;
+        public Method.Delegate Compile(CallSite site) => Invoke;
 
         private iObject Invoke(iObject instance, iObject[] args)
         {
@@ -41,16 +38,16 @@ namespace Mint.Binding
             }
 
             public Method Method { get; }
-            public CallSite.Function CompiledMethod { get; }
+            public Method.Delegate CompiledMethod { get; }
 
-            private static CallSite.Function CompileMethod(Method method)
+            private static Method.Delegate CompileMethod(Method method)
             {
                 var instance = Parameter(typeof(iObject), "instance");
                 var args = Parameter(typeof(iObject[]), "args");
 
                 var body = method.Bind(instance, new[] { args });
 
-                var lambda = Lambda<CallSite.Function>(body, instance, args);
+                var lambda = Lambda<Method.Delegate>(body, instance, args);
                 return lambda.Compile();
             }
         }

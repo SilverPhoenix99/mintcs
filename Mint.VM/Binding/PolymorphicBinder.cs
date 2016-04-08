@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
-using Mint;
 
 namespace Mint.Binding
 {
-    class PolymorphicBinder : Binder
+    public class PolymorphicBinder : Binder
     {
         //private Dictionary<long, Method> cache = new Dictionary<long, Method>();
 
@@ -15,7 +13,7 @@ namespace Mint.Binding
 
         public Symbol MethodName { get; }
 
-        public CallSite.Function Compile(CallSite site)
+        public Method.Delegate Compile(CallSite site)
         {
             // TODO flush invalid methods : cache.Where(_ => _.Value.Condition.Valid);
             // TODO promote to megamorphic binder when cache is too big

@@ -9,10 +9,13 @@ namespace Mint
 {
     public abstract class Method
     {
+        public delegate iObject Delegate(iObject instance, iObject[] args);
+
         public Method(Symbol name, Module owner)
         {
             Name = name;
             Owner = owner;
+            Condition = new Condition();
         }
 
         public Symbol    Name      { get; }
@@ -33,12 +36,12 @@ namespace Mint
         public Func<iObject> Compile(iObject instance, params iObject[] args) =>
             Compile(instance, (IEnumerable<iObject>) args);
 
-        public Func<iObject, iObject[], iObject> Compile()
+        public Delegate Compile()
         {
             var instance = Parameter(typeof(iObject), "instance");
             var args = Parameter(typeof(iObject[]), "args");
             var body = Bind(instance, args);
-            var lambda = Lambda<Func<iObject, iObject[], iObject>>(body, instance, args);
+            var lambda = Lambda<Delegate>(body, instance, args);
             return lambda.Compile();
         }
 
