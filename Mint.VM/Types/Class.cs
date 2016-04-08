@@ -39,6 +39,8 @@ namespace Mint
                 list.RemoveAt(i);
                 break;
             }
+
+            // TODO : invalidate methods, including subclasses
         }
 
         public Class         Superclass  { get; }
@@ -58,24 +60,6 @@ namespace Mint
         public override void Prepend(Module module)
         {
             Prepended = AppendModule(Prepended, module, Superclass);
-        }
-
-        public override Method FindMethod(Symbol name)
-        {
-            // Method resolution: See Object#FindMethod
-
-            throw new NotImplementedException();
-
-            for(var klass = this; klass != null; klass = klass.Superclass)
-            {
-                Method method;
-                if(Methods.TryGetValue(name, out method))
-                {
-                    return method;
-                }
-            }
-
-            return null;
         }
 
         // Tries to call the dynamically defined (at runtime) instance method.

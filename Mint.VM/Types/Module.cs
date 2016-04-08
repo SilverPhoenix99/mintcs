@@ -59,9 +59,7 @@ namespace Mint
             Prepended = AppendModule(Prepended, module, null);
         }
 
-        protected List<Module> AppendModule(List<Module> modules,
-                                            Module module,
-                                            Class superclass)
+        protected List<Module> AppendModule(List<Module> modules, Module module, Class superclass)
         {
             if(module.GetType() != typeof(Module))
             {
@@ -88,7 +86,7 @@ namespace Mint
                 {
                     continue;
                 }
-                
+
                 var modIndex = included.IndexOf(mod);
                 if(modIndex >= 0)
                 {
@@ -106,9 +104,20 @@ namespace Mint
 
         public override Method FindMethod(Symbol name)
         {
-            // Method resolution: See Object#FindMethod
+            foreach(var mod in Ancestors)
+            {
+                Method method;
+                if(Methods.TryGetValue(name, out method))
+                {
+                    return method;
+                }
+            }
 
-            throw new NotImplementedException();
+            // TODO search CLR instance method and static extension method
+
+            // TODO default : return method_missing
+
+            return null;
         }
 
         #region Static
