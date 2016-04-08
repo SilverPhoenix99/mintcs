@@ -16,6 +16,8 @@ namespace Mint
 
         public static readonly Class CLASS;
 
+        private static readonly Symbol METHOD_MISSING = new Symbol("method_missing");
+
         public static iObject Box(string obj) => new String(obj);
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
@@ -73,9 +75,9 @@ namespace Mint
                 throw new NotImplementedException();
             }
 
-            if(method == null)
+            if(method == null && methodName != METHOD_MISSING)
             {
-                return FindMethod(instance, new Symbol("method_missing"));
+                return FindMethod(instance, METHOD_MISSING);
             }
 
             return method;
