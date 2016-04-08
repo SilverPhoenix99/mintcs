@@ -49,78 +49,79 @@ namespace Mint
 
             private DynamicMetaObject CompileMethodInvoke(string name, DynamicMetaObject[] args, Func<Expression> fallbackExpr)
             {
-                var method = Value.CalculatedClass.FindMethod(new Symbol(name));
-
-                if(method != null)
-                {
-                    // TODO
-                    throw new NotImplementedException();
-                }
-
-                var info = RuntimeType?.GetMethod(name, args.Select(_ => _.RuntimeType).ToArray());
-
-                var instanceExpr = Convert(Expression, typeof(iObject));
-
-                var propExpr = Property(instanceExpr, REAL_CLASS_PROPERTY);
-
-                var resultParam = Parameter(typeof(iObject), "result");
-
-                var callArgs = new Expression[]
-                {
-                    instanceExpr,
-                    Constant(name),
-                    resultParam,
-                    NewArrayInit(typeof(object), args.Select(_ => _.Expression))
-                };
-
-                Expression callSite;
-                if(info != null)
-                {
+                //var method = Value.CalculatedClass.FindMethod(new Symbol(name));
+                //
+                //if(method != null)
+                //{
+                //    // TODO
+                //    throw new NotImplementedException();
+                //}
+                //
+                //var info = RuntimeType?.GetMethod(name, args.Select(_ => _.RuntimeType).ToArray());
+                //
+                //var instanceExpr = Convert(Expression, typeof(iObject));
+                //
+                //var propExpr = Property(instanceExpr, REAL_CLASS_PROPERTY);
+                //
+                //var resultParam = Parameter(typeof(iObject), "result");
+                //
+                //var callArgs = new Expression[]
+                //{
+                //    instanceExpr,
+                //    Constant(name),
+                //    resultParam,
+                //    NewArrayInit(typeof(object), args.Select(_ => _.Expression))
+                //};
+                //
+                //Expression callSite;
+                //if(info != null)
+                //{
                     var fallback = Call(
                         typeof(Object).GetMethod("Box", new[] { typeof(object) }),
                         fallbackExpr()
                     );
-
-                    callSite = Block(
-                        new[] { resultParam },
-                        Condition(
-                            Call(propExpr, TRY_INVOKE_METHOD, callArgs),
-                            resultParam,
-                            fallback,
-                            typeof(iObject)
-                        )
-                    );
-                }
-                else
-                {
-                    // expression:
-                    //     throw new NoMethodError("undefined method `{0}' for " + <value>.InternalInspect())
-
-                    var fallback = Throw(
-                        New(
-                            NO_METHOD_ERROR_CTOR,
-                            Call(
-                                STRING_CONCAT_METHOD,
-                                Constant($"undefined method `{name}' for "),
-                                Expression,
-                                Call(Expression, typeof(BaseObject).GetMethod("InspectInternal"))
-                            )
-                        )
-                    );
-
-                    callSite = Block(
-                        new[] { resultParam },
-                        IfThen(
-                            Not(Call(propExpr, TRY_INVOKE_METHOD, callArgs)),
-                            fallback
-                        ),
-                        resultParam
-                    );
-                }
-
+                //
+                //    callSite = Block(
+                //        new[] { resultParam },
+                //        Condition(
+                //            Call(propExpr, TRY_INVOKE_METHOD, callArgs),
+                //            resultParam,
+                //            fallback,
+                //            typeof(iObject)
+                //        )
+                //    );
+                //}
+                //else
+                //{
+                //    // expression:
+                //    //     throw new NoMethodError("undefined method `{0}' for " + <value>.InternalInspect())
+                //
+                //    var fallback = Throw(
+                //        New(
+                //            NO_METHOD_ERROR_CTOR,
+                //            Call(
+                //                STRING_CONCAT_METHOD,
+                //                Constant($"undefined method `{name}' for "),
+                //                Expression,
+                //                Call(Expression, typeof(BaseObject).GetMethod("InspectInternal"))
+                //            )
+                //        )
+                //    );
+                //
+                //    callSite = Block(
+                //        new[] { resultParam },
+                //        IfThen(
+                //            Not(Call(propExpr, TRY_INVOKE_METHOD, callArgs)),
+                //            fallback
+                //        ),
+                //        resultParam
+                //    );
+                //}
+                //
                 var restrictions = BindingRestrictions.GetTypeRestriction(Expression, LimitType);
-
-                return new DynamicMetaObject(callSite, restrictions);
+                
+                //return new DynamicMetaObject(callSite, restrictions);
+                return new DynamicMetaObject(fallback, restrictions);
             }
         }
     }

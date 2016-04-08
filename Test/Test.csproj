@@ -40,6 +40,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstXmlSerializer.cs" />
+    <Compile Include="Binding\Binder.cs" />
+    <Compile Include="Binding\CachedMethod.cs" />
+    <Compile Include="Binding\CallSite.cs" />
+    <Compile Include="Binding\MegamorphicBinder.cs" />
+    <Compile Include="Binding\PolymorphicBinder.cs" />
     <Compile Include="Compilation\Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Scope.cs" />
