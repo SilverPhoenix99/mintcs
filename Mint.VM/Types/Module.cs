@@ -111,15 +111,17 @@ namespace Mint
             foreach(var mod in Ancestors)
             {
                 Method method;
-                if(Methods.TryGetValue(methodName, out method) && method.Condition.Valid)
+                if(!Methods.TryGetValue(methodName, out method) || !method.Condition.Valid)
                 {
-                    if(mod != this)
-                    {
-                        DefineMethod(method);
-                    }
-
-                    return method;
+                    continue;
                 }
+
+                if(mod != this)
+                {
+                    DefineMethod(method);
+                }
+
+                return method;
             }
 
             return null;

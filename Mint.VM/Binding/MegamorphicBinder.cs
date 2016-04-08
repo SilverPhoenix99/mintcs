@@ -22,7 +22,7 @@ namespace Mint.Binding
             CachedMethod method;
             if(!cache.TryGetValue(klass.Id, out method) || !method.Method.Condition.Valid)
             {
-                var uncompiledMethod = Object.FindMethod(instance, MethodName);
+                var uncompiledMethod = Object.FindMethod(instance, MethodName, args);
                 cache.Remove(klass.Id);
                 cache[klass.Id] = method = new CachedMethod(uncompiledMethod);
             }

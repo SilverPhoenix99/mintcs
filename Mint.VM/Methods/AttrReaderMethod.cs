@@ -10,7 +10,7 @@ namespace Mint
         {
         }
 
-        public override Expression Bind(Expression target, IEnumerable<Expression> args)
+        public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
             throw new NotImplementedException();
         }

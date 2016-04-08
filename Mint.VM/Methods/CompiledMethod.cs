@@ -15,14 +15,37 @@ namespace Mint
 
         public MethodInfo MethodInfo { get; }
 
-        public override Expression Bind(Expression target, IEnumerable<Expression> args)
+        public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
+            var parms = MethodInfo.GetParameters().Select(_ => _.ParameterType);
+
             if(MethodInfo.IsStatic)
             {
-                return Call(MethodInfo, new[] { target }.Concat(args));
+                args     = new[] { instance }.Concat(args);
+                parms    = new[] { MethodInfo.DeclaringType }.Concat(parms);
+                instance = null;
             }
 
-            return Call(target, MethodInfo, args);
+            if(instance != null && MethodInfo.DeclaringType != null)
+            {
+                instance = Convert(instance, MethodInfo.DeclaringType);
+            }
+
+            args = args.Zip(parms, Convert);
+
+            Expression call = Call(instance, MethodInfo, args);
+
+            if(!typeof(iObject).IsAssignableFrom(MethodInfo.ReturnType))
+            {
+                call = Call(
+                    OBJECT_BOX_METHOD,
+                    Convert(call, typeof(object))
+                );
+            }
+
+            return call;
         }
+
+        public static readonly MethodInfo OBJECT_BOX_METHOD = Reflector<object>.Method(_ => Object.Box(_));
     }
 }

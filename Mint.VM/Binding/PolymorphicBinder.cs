@@ -69,7 +69,7 @@ call site stub:
     }
 
     @cache.Remove($class.Id);
-    @cache[$class.Id] = Object.FindMethod(instance, @method_name);
+    @cache[$class.Id] = Object.FindMethod(instance, @method_name, args);
     @site.Call = @binder.Compile(@site);
     return @site.Call(instance, args);
 }

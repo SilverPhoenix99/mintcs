@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -65,22 +66,43 @@ namespace Mint
             return (iObject) info.Invoke(obj, args);
         }
 
-        public static Method FindMethod(iObject instance, Symbol methodName)
+        public static Method FindMethod(iObject instance, Symbol methodName, iObject[] args)
         {
-            var method = instance.CalculatedClass.FindMethod(methodName);
+            return instance.CalculatedClass.FindMethod(methodName)
+                ?? FindClrMethod(instance, methodName, args)
+                ?? FindClrProperty(instance, methodName, args)
+                //?? FindClrExtension(instance, methodName, args)
+            ;
+        }
 
-            if(method == null)
-            {
-                // TODO search CLR instance method or static extension method
-                throw new NotImplementedException();
-            }
+        private static Method FindClrMethod(iObject instance, Symbol methodName, iObject[] args)
+        {
+            var type = instance.GetType();
+            var method = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                .Where(_ => _.Name == methodName.Name)
+                .FirstOrDefault(_ => _.GetParameters().Length == args.Length);
+            
+            return method != null
+                ? new CompiledMethod(methodName, instance.CalculatedClass, method)
+                : null;
+        }
 
-            if(method == null && methodName != METHOD_MISSING)
-            {
-                return FindMethod(instance, METHOD_MISSING);
-            }
+        private static Method FindClrProperty(iObject instance, Symbol methodName, iObject[] args)
+        {
+            var property = instance.GetType().GetProperties(
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
+                ).Where(_ => _.Name == methodName.Name)
+                .FirstOrDefault(_ => _.GetIndexParameters().Length == args.Length);
 
-            return method;
+            return property != null
+                ? new CompiledProperty(methodName, instance.CalculatedClass, property)
+                : null;
+        }
+
+        private static Method FindClrExtension(iObject instance, Symbol methodName, iObject[] args)
+        {
+            // TODO static extension method
+            throw new NotImplementedException();
         }
 
         static Object()

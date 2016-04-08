@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Mint.Binding;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
 
@@ -456,16 +457,15 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
         {
-            var parms = ast[2].List;
-            var parmExprs = new[] { ast[0].Accept(this) }.Concat(parms.Select(_ => _.Accept(this)));
+            var methodName = new Symbol(ast[1].Value.Value);
+            var callSite = Constant(new Binding.CallSite(methodName));
+            var instance = ast[0].Accept(this);
+            var args = NewArrayInit(typeof(iObject), ast[2].Select(_ => _.Accept(this)));
 
-            return Call(
-                new Func<iObject, object>(Object.Box).Method,
-                Dynamic(
-                    InvokeMember(ast[1].Value.Value, parms.Count),
-                    typeof(object),
-                    parmExprs
-                )
+            return Invoke(
+                Property(callSite, MEMBER_CALLSITE_CALL),
+                instance,
+                args
             );
         }
 
@@ -614,20 +614,6 @@ namespace Mint.Compilation
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) => Assign(Property(hash, "Item", key), value);
 
-        private CallSiteBinder InvokeMember(string methodName, int numArgs = 0)
-        {
-            var parameterFlags = Enumerable.Repeat<object>(null, numArgs + 1).Select(
-                _ => CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-            );
-
-            return Microsoft.CSharp.RuntimeBinder.Binder.InvokeMember(
-                CSharpBinderFlags.None,
-                methodName,
-                null,
-                GetType(),
-                parameterFlags);
-        }
-
         private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Expression> action)
         {
             CurrentScope = CurrentScope.Enter(type);
@@ -641,21 +627,20 @@ namespace Mint.Compilation
             }
         }
 
-        protected static readonly ConstructorInfo STRING_CTOR1 = Ctor<String>();
-        protected static readonly ConstructorInfo STRING_CTOR2 = Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3 = Ctor<String>(typeof(String));
-        protected static readonly ConstructorInfo SYMBOL_CTOR  = Ctor<Symbol>(typeof(string));
-        protected static readonly ConstructorInfo ARRAY_CTOR   = Ctor<Array>();
-        protected static readonly ConstructorInfo RANGE_CTOR   = Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
-        protected static readonly ConstructorInfo HASH_CTOR    = Ctor<Hash>();
+        protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
+        protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
+        protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
+        protected static readonly ConstructorInfo SYMBOL_CTOR  = Reflector.Ctor<Symbol>(typeof(string));
+        protected static readonly ConstructorInfo ARRAY_CTOR   = Reflector.Ctor<Array>();
+        protected static readonly ConstructorInfo RANGE_CTOR   = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+        protected static readonly ConstructorInfo HASH_CTOR    = Reflector.Ctor<Hash>();
 
-        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Info<object>.Method(_ => _.ToString());
-        protected static readonly MethodInfo METHOD_STRING_CONCAT   = Info<String>.Method(_ => _.Concat(null));
+        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
+        protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector< Binding.CallSite>.Property(_ => _.Call);
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-
-        protected static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
-
+        
         private static Expression ToBool(Expression expr)
         {
             var cnst = expr as ConstantExpression;
@@ -700,12 +685,5 @@ namespace Mint.Compilation
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
-        private static class Info<T>
-        {
-            public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> expr) => (expr.Body as MethodCallExpression)?.Method;
-
-            public static PropertyInfo Property<TResult>(Expression<Func<T, TResult>> expr)
-                => (expr.Body as MemberExpression)?.Member as PropertyInfo;
-        }
     }
 }

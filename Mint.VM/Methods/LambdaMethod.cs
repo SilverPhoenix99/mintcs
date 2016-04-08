@@ -15,9 +15,9 @@ namespace Mint
 
         public Delegate Lambda { get; }
 
-        public override Expression Bind(Expression target, IEnumerable<Expression> args)
+        public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
-            return Call(Constant(Lambda.Target), Lambda.Method, new[] { target }.Concat(args));
+            return Call(Constant(Lambda.Target), Lambda.Method, new[] { instance }.Concat(args));
         }
     }
 }
