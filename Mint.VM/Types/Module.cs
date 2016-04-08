@@ -29,6 +29,11 @@ namespace Mint
             }
         }
 
+        ~Module()
+        {
+            // TODO : invalidate methods, including subclasses
+        }
+
         public         Symbol?             Name            { get; }
         public         string              FullName        { get; }
         public         Module              Container       { get; }
@@ -102,20 +107,21 @@ namespace Mint
             return included;
         }
 
-        public override Method FindMethod(Symbol name)
+        public Method FindMethod(Symbol methodName)
         {
             foreach(var mod in Ancestors)
             {
                 Method method;
-                if(Methods.TryGetValue(name, out method))
+                if(Methods.TryGetValue(methodName, out method) && method.Condition.Valid)
                 {
+                    if(mod != this)
+                    {
+                        DefineMethod(method);
+                    }
+
                     return method;
                 }
             }
-
-            // TODO search CLR instance method and static extension method
-
-            // TODO default : return method_missing
 
             return null;
         }

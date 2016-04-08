@@ -63,6 +63,24 @@ namespace Mint
             return (iObject) info.Invoke(obj, args);
         }
 
+        public static Method FindMethod(iObject instance, Symbol methodName)
+        {
+            var method = instance.CalculatedClass.FindMethod(methodName);
+
+            if(method == null)
+            {
+                // TODO search CLR instance method or static extension method
+                throw new NotImplementedException();
+            }
+
+            if(method == null)
+            {
+                return FindMethod(instance, new Symbol("method_missing"));
+            }
+
+            return method;
+        }
+
         static Object()
         {
             BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));

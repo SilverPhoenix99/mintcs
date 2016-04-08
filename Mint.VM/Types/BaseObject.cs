@@ -27,18 +27,6 @@ namespace Mint
 
         public override void Freeze() { Frozen = true; }
 
-        public virtual Method FindMethod(Symbol name)
-        {
-            // Method resolution:
-            //   1. Methods defined in the object's singleton class (i.e. the object itself)
-            //   2. Modules mixed into the singleton class in reverse order of inclusion
-            //   3. Methods defined by the object's class
-            //   4. Modules included into the object's class in reverse order of inclusion
-            //   5. Methods defined by the object's superclass.
-
-            return CalculatedClass.FindMethod(name);
-        }
-
         public iObject InstanceVariableGet(Symbol name)
         {
             iObject ivar;

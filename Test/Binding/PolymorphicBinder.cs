@@ -71,7 +71,7 @@ call site stub:
     }
 
     @cache.Remove($class.Id);
-    @cache[$class.Id] = $class.FindMethod(@method_name) ?? $class.FindMethod(MegamorphicBinder.METHOD_MISSING);
+    @cache[$class.Id] = Object.FindMethod(instance, @method_name);
     @site.Call = @binder.Compile(@site);
     return @site.Call(instance, args);
 }

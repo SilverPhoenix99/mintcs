@@ -39,8 +39,6 @@ namespace Mint
                 list.RemoveAt(i);
                 break;
             }
-
-            // TODO : invalidate methods, including subclasses
         }
 
         public Class         Superclass  { get; }

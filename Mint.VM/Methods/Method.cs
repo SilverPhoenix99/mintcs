@@ -13,31 +13,44 @@ namespace Mint
         {
             Name = name;
             Owner = owner;
-            Condition = new Condition();
         }
 
         public Symbol    Name      { get; }
         public Module    Owner     { get; }
         public Condition Condition { get; }
 
-        // TODO parameter positions (simple, kw, rest, ...)
+        public abstract Expression Bind(Expression instance, IEnumerable<Expression> args);
 
-        public abstract Expression Bind(Expression target, IEnumerable<Expression> args);
+        public Expression Bind(Expression instance, params Expression[] args) =>
+            Bind(instance, (IEnumerable<Expression>) args);
 
-        public Expression Bind(Expression target, params Expression[] args) => Bind(target, (IEnumerable<Expression>) args);
-
-        public object Invoke(object target, IEnumerable<object> args)
+        public Func<iObject> Compile(iObject instance, IEnumerable<iObject> args)
         {
-            var argsExpr = args.Select(_ => (Expression) Constant(_));
-            var expr = Bind(Constant(target), argsExpr);
-            var lambda = Lambda(expr).Compile();
-            return lambda.DynamicInvoke();
+            var body = Bind(Constant(instance), args.Select(_ => (Expression) Constant(_)));
+            return Lambda<Func<iObject>>(body).Compile();
         }
 
-        public object Invoke(object target, params object[] args) => Invoke(target, (IEnumerable<object>) args);
+        public Func<iObject> Compile(iObject instance, params iObject[] args) =>
+            Compile(instance, (IEnumerable<iObject>) args);
+
+        public Func<iObject, iObject[], iObject> Compile()
+        {
+            var instance = Parameter(typeof(iObject), "instance");
+            var args = Parameter(typeof(iObject[]), "args");
+            var body = Bind(instance, args);
+            var lambda = Lambda<Func<iObject, iObject[], iObject>>(body, instance, args);
+            return lambda.Compile();
+        }
+
+        public iObject Invoke(iObject instance, IEnumerable<iObject> args) => Compile(instance, args)();
+        public iObject Invoke(iObject instance, params iObject[] args) => Compile(instance, args)();
+
+        #region Static
 
         public static Method Create(Symbol name, Module owner, MethodInfo info) => new CompiledMethod(name, owner, info);
 
         public static Method Create(Symbol name, Module owner, Delegate lambda) => new LambdaMethod(name, owner, lambda);
+
+        #endregion
     }
 }
