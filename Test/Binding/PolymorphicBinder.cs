@@ -6,7 +6,7 @@ namespace Mint.Binding
 {
     class PolymorphicBinder : Binder
     {
-        private Dictionary<Class, CachedMethod> cache = new Dictionary<Class, CachedMethod>();
+        //private Dictionary<long, Method> cache = new Dictionary<long, Method>();
 
         public PolymorphicBinder(Symbol methodName)
         {
@@ -15,42 +15,64 @@ namespace Mint.Binding
 
         public Symbol MethodName { get; }
 
-        public Func<iObject, iObject[], iObject> Compile(CallSite site)
+        public CallSite.Function Compile(CallSite site)
         {
+            // TODO flush invalid methods : cache.Where(_ => _.Value.Condition.Valid);
+            // TODO promote to megamorphic binder when cache is too big
             throw new NotImplementedException();
+        }
+
+        class CachedMethod
+        {
+            public CachedMethod(Method method)
+            {
+                Method = method;
+            }
+
+            public Method Method { get; }
         }
     }
 }
 
 
-// stub:
 /*
-(CallSite site, iObject instance, iObject[] args) : iObject => {
-    // global CallSite                          @site;
-    // global Dictionary<Class, CachedMethod>   @cache;
-    // global Class                             @class1     .. @class99;
-    // global Func<iObject, iObject[], iObject> @method1    .. @method99;
-    // global Condition                         @condition1 .. @condition99;
+call site stub:
+
+(iObject instance, iObject[] args) : iObject => {
+    // constant Symbol                          @method_name;
+    // global   CallSite                        @site;
+    // global   PolymorphicBinder               @binder;
+    // global   Dictionary<Class, CachedMethod> @cache;
+    // constant long                            @class_id1  .. @class_id99;
+    // global   CallSite.Function               @method1    .. @method99;
+    // global   Condition                       @condition1 .. @condition99;
 
     var $class = instance.CalculatedClass;
 
-    switch($class) // object.ReferenceEquals
+    //Expression.Switch(
+    //    typeof(iObject),
+    //    switchValue, // Expression
+    //    null,
+    //    null,
+    //    cases) // IEnumerable<SwitchCase>
+
+    switch($class.Id)
     {
-        case @class1: // .. @class99:
+        case @class_id1:
         {
-            if(!@condition1.Valid)
+            if(@condition1.Valid)
             {
-                return @method1();
-
-                @cache.Remove(@class1);
-                goto default:
+                return @method1(instance, args);
             }
+            break;
         }
 
-        default:
-        {
-            @site.
-        }
+        // repeat for all @class_id*
     }
+
+    @cache.Remove($class.Id);
+    @cache[$class.Id] = $class.FindMethod(@method_name) ?? $class.FindMethod(MegamorphicBinder.METHOD_MISSING);
+    @site.Call = @binder.Compile(@site);
+    return @site.Call(instance, args);
 }
 */

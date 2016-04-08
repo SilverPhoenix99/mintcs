@@ -5,6 +5,8 @@ namespace Mint.Binding
 {
     class CallSite
     {
+        public delegate iObject Function(iObject instance, iObject[] args);
+
         public CallSite(Binder binder)
         {
             Binder = binder;
@@ -12,6 +14,6 @@ namespace Mint.Binding
         }
 
         protected internal Binder Binder { get; set; }
-        protected internal Func<iObject, iObject[], iObject> Call { get; set; }
+        protected internal Function Call { get; set; }
     }
 }
