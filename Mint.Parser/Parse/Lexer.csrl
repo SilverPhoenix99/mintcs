@@ -158,7 +158,7 @@ real_number =
     (
           real_exp
         | real_frac ( real_exp | ('r' @RacSuf)? )?
-    ) >FloNum
+    ) @FloNum
 ;
 
 rationable_number = (

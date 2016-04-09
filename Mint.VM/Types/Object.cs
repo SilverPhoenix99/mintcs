@@ -69,8 +69,8 @@ namespace Mint
         public static Method FindMethod(iObject instance, Symbol methodName, iObject[] args)
         {
             return instance.CalculatedClass.FindMethod(methodName)
-                ?? FindClrMethod(instance, methodName, args)
-                ?? FindClrProperty(instance, methodName, args)
+                //?? FindClrMethod(instance, methodName, args)
+                //?? FindClrProperty(instance, methodName, args)
                 //?? FindClrExtension(instance, methodName, args)
             ;
         }
@@ -109,6 +109,15 @@ namespace Mint
         {
             BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
             CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+
+            // TODO define in Kernel module
+            CLASS.DefineMethod(
+                new CompiledProperty(
+                    new Symbol("class"),
+                    CLASS,
+                    Reflector<iObject>.Property(_ => _.Class)
+                )
+            );
 
             /*DefineClass(CLASS);
             DefineClass(BASIC_OBJECT_CLASS);

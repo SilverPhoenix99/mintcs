@@ -84,8 +84,7 @@ namespace Mint
         public void Add(TKey key, TValue value)
         {
             var node = new Node(key, value);
-            Remove(key);
-            map.Add(key, node);
+            map[key] = node;
 
             if(head == null)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,6 +11,7 @@ namespace Mint
     {
         public CompiledMethod(Symbol name, Module owner, MethodInfo info) : base(name, owner)
         {
+            Contract.Assert(info != null);
             MethodInfo = info;
         }
 
@@ -44,6 +46,16 @@ namespace Mint
             }
 
             return call;
+        }
+
+        public override Method Duplicate()
+        {
+            var method = new CompiledMethod(Name, Owner, MethodInfo);
+            if(!Condition.Valid)
+            {
+                method.Condition.Invalidate();
+            }
+            return method;
         }
 
         public static readonly MethodInfo OBJECT_BOX_METHOD = Reflector<object>.Method(_ => Object.Box(_));

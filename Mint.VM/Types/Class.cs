@@ -45,8 +45,6 @@ namespace Mint
         public bool          IsSingleton { get; }
         public override bool IsModule    => false;
 
-        protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
-
         public override IEnumerable<Module> Ancestors =>
             Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
 

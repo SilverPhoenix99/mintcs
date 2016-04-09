@@ -37,5 +37,15 @@ namespace Mint
 
             return call;
         }
+
+        public override Method Duplicate()
+        {
+            var method = new CompiledProperty(Name, Owner, Property);
+            if(!Condition.Valid)
+            {
+                method.Condition.Invalidate();
+            }
+            return method;
+        }
     }
 }

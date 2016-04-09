@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -44,6 +45,8 @@ namespace Mint
         protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
         protected internal List<Module>                Included  { get; protected set; } = new List<Module>();
         protected internal List<Module>                Prepended { get; protected set; } = new List<Module>();
+
+        protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
 
         public override string ToString() => FullName;
 
@@ -111,14 +114,14 @@ namespace Mint
             foreach(var mod in Ancestors)
             {
                 Method method;
-                if(!Methods.TryGetValue(methodName, out method) || !method.Condition.Valid)
+                if(!mod.Methods.TryGetValue(methodName, out method) || !method.Condition.Valid)
                 {
                     continue;
                 }
 
                 if(mod != this)
                 {
-                    DefineMethod(method);
+                    DefineMethod(method.Duplicate());
                 }
 
                 return method;

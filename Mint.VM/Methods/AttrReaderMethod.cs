@@ -14,5 +14,15 @@ namespace Mint
         {
             throw new NotImplementedException();
         }
+
+        public override Method Duplicate()
+        {
+            var method = new AttrReaderMethod(Name, Owner);
+            if(!Condition.Valid)
+            {
+                method.Condition.Invalidate();
+            }
+            return method;
+        }
     }
 }

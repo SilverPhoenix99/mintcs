@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,6 +14,7 @@ namespace Mint
 
         public Method(Symbol name, Module owner)
         {
+            Contract.Assert(owner != null);
             Name = name;
             Owner = owner;
             Condition = new Condition();
@@ -47,6 +49,8 @@ namespace Mint
 
         public iObject Invoke(iObject instance, IEnumerable<iObject> args) => Compile(instance, args)();
         public iObject Invoke(iObject instance, params iObject[] args) => Compile(instance, args)();
+
+        public abstract Method Duplicate();
 
         #region Static
 
