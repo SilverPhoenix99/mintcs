@@ -111,13 +111,7 @@ namespace Mint
             CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
 
             // TODO define in Kernel module
-            CLASS.DefineMethod(
-                new CompiledProperty(
-                    new Symbol("class"),
-                    CLASS,
-                    Reflector<iObject>.Property(_ => _.Class)
-                )
-            );
+            CLASS.DefineMethod("class", Reflector<iObject>.Property(_ => _.Class));
 
             /*DefineClass(CLASS);
             DefineClass(BASIC_OBJECT_CLASS);

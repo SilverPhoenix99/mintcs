@@ -88,6 +88,9 @@ namespace Mint
         {
             CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             //Object.DefineClass(CLASS);
+
+            CLASS.DefineMethod("to_s", Reflector<Array>.Method(_ => _.ToString()));
+            CLASS.DefineMethod("inspect", Reflector<Array>.Method(_ => _.Inspect()));
         }
 
         #endregion

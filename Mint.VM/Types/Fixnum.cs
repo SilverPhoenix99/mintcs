@@ -57,7 +57,8 @@ namespace Mint
             INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
             CLASS = new Class(INTEGER_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
 
-            CLASS.DefineMethod(new Symbol("to_s"), Reflector<Fixnum>.Method(_ => _.ToString()));
+            CLASS.DefineMethod("to_s", Reflector<Fixnum>.Method(_ => _.ToString()));
+            CLASS.DefineMethod("inspect", Reflector<Fixnum>.Method(_ => _.Inspect()));
 
             //Object.DefineClass(CLASS);
             //Object.DefineClass(INTEGER_CLASS);

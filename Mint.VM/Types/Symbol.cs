@@ -69,6 +69,9 @@ namespace Mint
             SELF = new Symbol("self");
 
             //Object.DefineClass(CLASS);
+
+            CLASS.DefineMethod("to_s", Reflector<Symbol>.Method(_ => _.ToString()));
+            CLASS.DefineMethod("inspect", Reflector<Symbol>.Method(_ => _.Inspect()));
         }
 
         #endregion

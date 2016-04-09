@@ -51,13 +51,5 @@ namespace Mint
         public iObject Invoke(iObject instance, params iObject[] args) => Compile(instance, args)();
 
         public abstract Method Duplicate();
-
-        #region Static
-
-        public static Method Create(Symbol name, Module owner, MethodInfo info) => new CompiledMethod(name, owner, info);
-
-        public static Method Create(Symbol name, Module owner, Delegate lambda) => new LambdaMethod(name, owner, lambda);
-
-        #endregion
     }
 }

@@ -62,6 +62,9 @@ namespace Mint
             CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
             TO_HASH = new Symbol("to_hash");
             //Object.DefineClass(CLASS);
+
+            CLASS.DefineMethod("to_s", Reflector<Hash>.Method(_ => _.ToString()));
+            CLASS.DefineMethod("inspect", Reflector<Hash>.Method(_ => _.Inspect()));
         }
 
         // Double splat to hash: **other

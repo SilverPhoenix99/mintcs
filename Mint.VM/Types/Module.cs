@@ -52,9 +52,20 @@ namespace Mint
 
         public Symbol DefineMethod(Method method) => ( Methods[method.Name] = method ).Name;
 
-        public Symbol DefineMethod(Symbol name, MethodInfo function) => DefineMethod(Method.Create(name, this, function));
+        public Symbol DefineMethod(Symbol name, MethodInfo function) =>
+            DefineMethod(new CompiledMethod(name, this, function));
 
-        public Symbol DefineMethod(Symbol name, Method.Delegate function) => DefineMethod(Method.Create(name, this, function));
+        public Symbol DefineMethod(string name, MethodInfo function) => DefineMethod(new Symbol(name), function);
+
+        public Symbol DefineMethod(Symbol name, Method.Delegate function) =>
+            DefineMethod(new LambdaMethod(name, this, function));
+
+        public Symbol DefineMethod(string name, Method.Delegate function) => DefineMethod(new Symbol(name), function);
+
+        public Symbol DefineMethod(Symbol name, PropertyInfo function) =>
+            DefineMethod(new CompiledProperty(name, this, function));
+
+        public Symbol DefineMethod(string name, PropertyInfo function) => DefineMethod(new Symbol(name), function);
 
         public virtual void Include(Module module)
         {
@@ -137,6 +148,9 @@ namespace Mint
         static Module()
         {
             CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+
+            CLASS.DefineMethod(new Symbol("to_s"), Reflector<Module>.Method(_ => _.ToString()));
+            CLASS.DefineMethod(new Symbol("inspect"), Reflector<Module>.Method(_ => _.Inspect()));
         }
 
         #endregion
