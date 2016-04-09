@@ -43,6 +43,8 @@ namespace Mint
 
         public static explicit operator Fixnum(Float v)  => new Fixnum((long) v.Value);
 
+        public static Fixnum operator +(Fixnum l, Fixnum r) => new Fixnum(l.Value + r.Value);
+
         #region Static
 
         public static readonly Class NUMERIC_CLASS;

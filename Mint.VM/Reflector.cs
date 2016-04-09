@@ -15,9 +15,12 @@ namespace Mint
 
     public static class Reflector<T>
     {
-        public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> expr) => (expr.Body as MethodCallExpression)?.Method;
+        public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> expr) => ((MethodCallExpression) expr.Body).Method;
 
-        public static PropertyInfo Property<TResult>(Expression<Func<T, TResult>> expr)
-            => (expr.Body as MemberExpression)?.Member as PropertyInfo;
+        public static PropertyInfo Property<TResult>(Expression<Func<T, TResult>> expr) => (PropertyInfo) ((MemberExpression) expr.Body).Member;
+
+        public static MethodInfo Operator<TResult>(Expression<Func<T, TResult>> expr)
+            => expr.Body is BinaryExpression ? ((BinaryExpression) expr.Body).Method
+               : ((UnaryExpression) expr.Body).Method;
     }
 }
