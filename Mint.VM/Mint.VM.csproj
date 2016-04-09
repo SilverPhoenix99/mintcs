@@ -61,7 +61,7 @@
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\FrozenObject.cs" />
     <Compile Include="Types\Hash.cs" />
-    <Compile Include="Types\IndexError.cs" />
+    <Compile Include="IndexError.cs" />
     <Compile Include="Types\iObject.cs" />
     <Compile Include="Types\Module.cs" />
     <Compile Include="Types\NilClass.cs" />

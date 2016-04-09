@@ -4,7 +4,7 @@ namespace Mint
 {
     public class Range : BaseObject
     {
-        public Range(iObject begin, iObject end, bool excludeEnd = false)
+        public Range(iObject begin, iObject end, bool excludeEnd = false) : base(CLASS)
         {
             Begin = begin;
             End = end;
