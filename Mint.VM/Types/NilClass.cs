@@ -1,6 +1,5 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Mint
 {
@@ -43,11 +42,10 @@ namespace Mint
 
         static NilClass()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
-            //Object.DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<NilClass>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<NilClass>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<NilClass>.Describe()
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

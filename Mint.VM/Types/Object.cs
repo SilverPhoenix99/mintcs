@@ -16,9 +16,7 @@ namespace Mint
         public static readonly Class BASIC_OBJECT_CLASS;
 
         public static readonly Class CLASS;
-
-        private static readonly Symbol METHOD_MISSING = new Symbol("method_missing");
-
+        
         public static iObject Box(string obj) => new String(obj);
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
@@ -33,12 +31,13 @@ namespace Mint
 
         public static bool ToBool(iObject obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass);
 
-        public static void DefineClass(Class klass)
+        public static Module DefineModule(Module module)
         {
-            if(klass.Name.HasValue)
+            if(module.Name.HasValue)
             {
-                CLASS.Constants[klass.Name.Value] = klass;
+                CLASS.Constants[module.Name.Value] = module;
             }
+            return module;
         }
 
         internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.FullName}";
@@ -107,25 +106,46 @@ namespace Mint
 
         static Object()
         {
-            BASIC_OBJECT_CLASS = new Class(null, new Symbol("BasicObject"));
-            CLASS = new Class(BASIC_OBJECT_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            BASIC_OBJECT_CLASS = ClassBuilder<Object>.Describe(null, "BasicObject")
+                .DefLambda("!", (instance, _) => Box(!ToBool(instance)) )
+            .Class;
 
             // TODO define in Kernel module
-            CLASS.DefineMethod("class", Reflector<iObject>.Property(_ => _.Class));
+            CLASS = ClassBuilder<Object>.Describe(BASIC_OBJECT_CLASS)
+                .DefProperty("class", () => default(iObject).Class)
+                .DefMethod("to_s",    () => default(iObject).ToString())
+                .DefMethod("inspect", () => default(iObject).Inspect())
+            .Class;
 
-            /*DefineClass(CLASS);
-            DefineClass(BASIC_OBJECT_CLASS);
+            DefineModule(BASIC_OBJECT_CLASS);
+            DefineModule(CLASS);
+            DefineModule(Module.CLASS);
+            DefineModule(Class.CLASS);
+            DefineModule(Array.CLASS);
+            DefineModule(Complex.CLASS);
+            DefineModule(FalseClass.CLASS);
+            DefineModule(Fixnum.NUMERIC_CLASS);
+            DefineModule(Fixnum.INTEGER_CLASS);
+            DefineModule(Fixnum.CLASS);
+            DefineModule(Float.CLASS);
+            DefineModule(Hash.CLASS);
+            DefineModule(NilClass.CLASS);
+            DefineModule(Range.CLASS);
+            DefineModule(Rational.CLASS);
+            DefineModule(Regexp.CLASS);
+            DefineModule(String.CLASS);
+            DefineModule(Symbol.CLASS);
+            DefineModule(TrueClass.CLASS);
 
-            // difficult cyclical dependency:
-            if(Class.CLASS != null)
-            {
-                DefineClass(Class.CLASS);
-            }
+            //CLASS.Include( DefineModule(
+            //    ModuleBuilder.Describe("Kernel")
+            //        .DefProperty("class", () => default(iObject).Class)
+            //        .DefMethod("to_s",    () => default(iObject).ToString())
+            //        .DefMethod("inspect", () => default(iObject).Inspect())
+            //    .Module
+            //));
 
-            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("!"), (Func<iObject, bool>) (
-                (self) => !(self is False || self is Nil)
-            ));
-
+            /*
             BASIC_OBJECT_CLASS.DefineMethod(new Symbol("=="), (Func<iObject, iObject, bool>) (
                 (self, o) => self == o
             ));

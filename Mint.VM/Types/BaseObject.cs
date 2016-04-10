@@ -5,7 +5,7 @@ namespace Mint
 {
     public abstract class BaseObject : FrozenObject
     {
-        private Class calculatedClass;
+        protected Class calculatedClass;
         protected readonly IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
 
         protected BaseObject(Class klass)
@@ -15,15 +15,15 @@ namespace Mint
 
         protected BaseObject() : this(Object.CLASS) { }
 
-        public override Class Class             => HasSingletonClass ? calculatedClass.Superclass : calculatedClass;
+        public override Class Class             => HasSingletonClass ? CalculatedClass.Superclass : CalculatedClass;
         public override Class CalculatedClass   => calculatedClass;
-        public override bool  HasSingletonClass => calculatedClass.IsSingleton;
+        public override bool  HasSingletonClass => CalculatedClass.IsSingleton;
         public override bool  Frozen            { get; protected set; }
 
         public override Class SingletonClass =>
-            !calculatedClass.IsSingleton
-                ? calculatedClass = new Class(calculatedClass, isSingleton: true)
-                : calculatedClass;
+            !CalculatedClass.IsSingleton
+                ? calculatedClass = new Class(CalculatedClass, isSingleton: true)
+                : CalculatedClass;
 
         public override void Freeze() { Frozen = true; }
 

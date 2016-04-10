@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Mint
 {
@@ -86,11 +84,10 @@ namespace Mint
 
         static Array()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //Object.DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<Array>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<Array>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<Array>.Describe()
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

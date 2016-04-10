@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace Mint
 {
@@ -67,11 +66,10 @@ namespace Mint
 
         static String()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<String>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<String>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<String>.Describe()
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

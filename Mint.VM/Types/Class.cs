@@ -129,17 +129,14 @@ namespace Mint
 
         static Class()
         {
-            CLASS = new Class(Module.CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
+            CLASS = ClassBuilder<Class>.Describe(Module.CLASS)
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+                .DefProperty("class", _ => _.Class)
+            .Class;
 
-            // difficult cyclical dependency:
-            /*if(CLASS != null)
-            {
-                DefineClass(CLASS);
-            }
-
-            CLASS.DefineMethod(new Symbol("to_s"),
-                (Func<Class, String>) ((self) => new String(self.FullName)));
-            */
+            // required hack
+            CLASS.calculatedClass = CLASS;
         }
 
         #endregion

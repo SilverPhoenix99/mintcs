@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Reflection;
 
 namespace Mint
 {
@@ -33,11 +32,10 @@ namespace Mint
 
         static Float()
         {
-            CLASS = new Class(Fixnum.INTEGER_CLASS, new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //Object.DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<Float>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<Float>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<Float>.Describe(Fixnum.INTEGER_CLASS)
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

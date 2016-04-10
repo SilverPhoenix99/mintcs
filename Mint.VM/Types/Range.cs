@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Mint
+﻿namespace Mint
 {
     public class Range : BaseObject
     {
@@ -33,11 +31,10 @@ namespace Mint
 
         static Range()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<Range>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<Range>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<Range>.Describe()
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

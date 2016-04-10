@@ -634,7 +634,7 @@ namespace Mint.Compilation
 
         protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector< Binding.CallSite>.Property(_ => _.Call);
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<Binding.CallSite>.Property(_ => _.Call);
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
         

@@ -18,8 +18,8 @@ namespace Mint
 
         static Rational()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //DefineClass(CLASS);
+            CLASS = ClassBuilder<Rational>.Describe(Fixnum.NUMERIC_CLASS)
+            .Class;
         }
 
         #endregion

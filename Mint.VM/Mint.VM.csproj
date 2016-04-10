@@ -40,6 +40,7 @@
     <Compile Include="Binding\CallSite.cs" />
     <Compile Include="Binding\MegamorphicBinder.cs" />
     <Compile Include="Binding\PolymorphicBinder.cs" />
+    <Compile Include="ClassBuilder.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
     <Compile Include="Methods\AttrReaderMethod.cs" />

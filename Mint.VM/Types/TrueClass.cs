@@ -1,6 +1,5 @@
 ﻿using System.Dynamic;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Mint
 {
@@ -33,11 +32,10 @@ namespace Mint
 
         static TrueClass()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
-            //Object.DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<TrueClass>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<TrueClass>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<TrueClass>.Describe()
+                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion

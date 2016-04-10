@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace Mint
 {
@@ -54,8 +53,8 @@ namespace Mint
 
         static Complex()
         {
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name));
-            //DefineClass(CLASS);
+            CLASS = ClassBuilder<Complex>.Describe(Fixnum.NUMERIC_CLASS)
+            .Class;
         }
 
         #endregion

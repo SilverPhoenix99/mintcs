@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading;
 
 namespace Mint
@@ -65,13 +64,12 @@ namespace Mint
         static Symbol()
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
-            CLASS = new Class(new Symbol(MethodBase.GetCurrentMethod().DeclaringType.Name), isSingleton: true);
             SELF = new Symbol("self");
 
-            //Object.DefineClass(CLASS);
-
-            CLASS.DefineMethod("to_s", Reflector<Symbol>.Method(_ => _.ToString()));
-            CLASS.DefineMethod("inspect", Reflector<Symbol>.Method(_ => _.Inspect()));
+            CLASS = ClassBuilder<Symbol>.Describe()
+                .DefMethod("to_s", _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
+            .Class;
         }
 
         #endregion
