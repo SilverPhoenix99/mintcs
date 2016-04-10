@@ -24,17 +24,21 @@ namespace Mint
                 try
                 {
                     var ast = Parser.Parse("(imt)", fragment);
+
+                    if(ast.List.Count == 0)
+                    {
+                        continue;
+                    }
+
                     DumpAst(ast);
                     var expr = CompileAst(ast, binding);
                     DumpExpression(expr);
                     RunExpression(expr);
+                    Console.WriteLine();
                 }
                 catch(Exception e)
                 {
                     Console.WriteLine(e);
-                }
-                finally
-                {
                     Console.WriteLine();
                 }
             }
