@@ -4,7 +4,7 @@ namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, iObject[] args);
 
-    public class CallSite
+    public sealed class CallSite
     {
         public CallSite(Symbol methodName, Range arity, CallSiteBinder binder = null)
         {
@@ -18,6 +18,7 @@ namespace Mint.MethodBinding
         public Range          Arity      { get; }
         public CallSiteBinder Binder     { get; set; }
         public Function       Call       { get; set; }
+        //public Visibility Visibility { get; } // TODO (private: "f", protected: "self.f", public: "anything.f")
 
         private iObject DefaultCall(iObject instance, iObject[] args)
         {
