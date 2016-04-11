@@ -46,6 +46,8 @@ namespace Mint
         public static readonly Class CLASS;
 
         public static readonly Symbol SELF;
+        public static readonly Symbol AREF;
+        public static readonly Symbol ASET;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -65,6 +67,8 @@ namespace Mint
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
             SELF = new Symbol("self");
+            AREF = new Symbol("[]");
+            ASET = new Symbol("[]=");
 
             CLASS = ClassBuilder<Symbol>.Describe()
                 .DefMethod("to_s", _ => _.ToString())

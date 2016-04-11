@@ -70,6 +70,7 @@ namespace Mint.Compilation
             Register(tSYMBOLS_BEG,    CompileSymbolWords);
             Register(tQSYMBOLS_BEG,   CompileSymbolWords);
             Register(kLBRACE,         CompileHash);
+            Register(tLABEL,          CompileLabel);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -442,10 +443,28 @@ namespace Mint.Compilation
                     throw new SyntaxError(filename, ast[0].Value.Location.Item1, "Can't change the value of self");
 
                 case tIDENTIFIER:
+                {
                     var name = new Symbol(ast[0].Value.Value);
                     var local = CurrentScope.Variable(name);
                     var rhs = ast[1].Accept(this);
                     return Assign(local, rhs);
+                }
+
+                case kDOT:
+                {
+                    var lhs = ast[0][0].Accept(this);
+                    var name = new Symbol(ast[0][1].Value.Value + "=");
+                    var rhs = ast[1].Accept(this);
+                    return MakeCall(lhs, name, rhs);
+                }
+
+                case kLBRACK2:
+                {
+                    var lhs = ast[0][0].Accept(this);
+                    var rhs = ast[0][1].Select(_ => _.Accept(this))
+                        .Concat(new[] { ast[1].Accept(this) }).ToArray();
+                    return MakeCall(lhs, Symbol.ASET, rhs);
+                }
 
                 default:
                     throw new NotImplementedException();
@@ -455,17 +474,16 @@ namespace Mint.Compilation
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
         {
             var methodName = new Symbol(ast[1].Value.Value);
+
+            // TODO if empty => private method
+            if(ast[0].IsList && ast[0].List.Count == 0)
+            {
+                throw new NotImplementedException("private method");
+            }
+
             var instance = ast[0].Accept(this);
-            var args = NewArrayInit(typeof(iObject), ast[2].Select(_ => _.Accept(this)));
-
-            var arity = new Range(new Fixnum(0), new Fixnum(0)); // TODO : calculate arity
-            var callSite = Constant(new MethodBinding.CallSite(methodName, arity));
-
-            return Invoke(
-                Property(callSite, MEMBER_CALLSITE_CALL),
-                instance,
-                args
-            );
+            var args = ast[2].Select(_ => _.Accept(this)).ToArray();
+            return MakeCall(instance, methodName, args);
         }
 
         protected virtual Expression CompileSelf(Ast<Token> ast)
@@ -572,10 +590,7 @@ namespace Mint.Compilation
 
                     case tLABEL:
                     {
-                        var key = Constant(
-                            new Symbol(node.Value.Value.Substring(0, node.Value.Value.Length - 1)),
-                            typeof(iObject)
-                        );
+                        var key = node.Accept(this);
                         var value = node[0].Accept(this);
                         list.Add(HashAppend(hash, key, value));
                         break;
@@ -592,7 +607,7 @@ namespace Mint.Compilation
                     case kDSTAR:
                     {
                         // TODO: { **h }
-                        throw new NotImplementedException();
+                        throw new NotImplementedException("**h");
                     }
 
                     default:
@@ -611,7 +626,17 @@ namespace Mint.Compilation
             );
         }
 
-        private static Expression HashAppend(Expression hash, Expression key, Expression value) => Assign(Property(hash, "Item", key), value);
+        protected virtual Expression CompileLabel(Ast<Token> ast)
+        {
+            var value = ast.Value.Value;
+            return Constant(
+                new Symbol(value.Substring(0, value.Length - 1)),
+                typeof(iObject)
+            );
+        }
+
+        private static Expression HashAppend(Expression hash, Expression key, Expression value) =>
+            Assign(Property(hash, MEMBER_HASH_ITEM, key), value);
 
         private Expression WithScope(Ast<Token> ast, ScopeType type, Func<Ast<Token>, Expression> action)
         {
@@ -636,10 +661,12 @@ namespace Mint.Compilation
 
         protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<MethodBinding.CallSite>.Property(_ => _.Call);
+        protected static readonly PropertyInfo MEMBER_HASH_ITEM     = Reflector<Hash>.Property(_ => _[default(iObject)]);
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<Binding.CallSite>.Property(_ => _.Call);
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-
+        protected static readonly Expression EMPTY_ARRAY  = Constant(new iObject[0]);
+        
         private static Expression ToBool(Expression expr)
         {
             var cnst = expr as ConstantExpression;
@@ -684,5 +711,19 @@ namespace Mint.Compilation
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
+        private static Expression MakeCall(Expression instance, Symbol methodName, params Expression[] args)
+        {
+            var call = Property(
+                Constant(new Binding.CallSite(methodName)),
+
+                MEMBER_CALLSITE_CALL
+
+
+            );
+
+            var argList = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args);
+
+            return Invoke(call, instance, argList);
+        }
     }
 }
