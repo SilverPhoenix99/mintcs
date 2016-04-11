@@ -54,6 +54,7 @@
     <Compile Include="Test\InvokeDynamicMethods.cs" />
     <Compile Include="Test\Native.cs" />
     <Compile Include="Test\NativeCallback.cs" />
+    <Compile Include="Test\TestExtensionReflection.cs" />
     <Compile Include="Test\TestGems.cs" />
     <Compile Include="Test\TestInterpreter.cs" />
     <Compile Include="Test\TestCompiler.cs" />

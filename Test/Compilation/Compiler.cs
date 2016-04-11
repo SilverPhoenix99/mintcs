@@ -662,7 +662,7 @@ namespace Mint.Compilation
         protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
         protected static readonly PropertyInfo MEMBER_HASH_ITEM     = Reflector<Hash>.Property(_ => _[default(iObject)]);
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<Binding.CallSite>.Property(_ => _.Call);
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<MethodBinding.CallSite>.Property(_ => _.Call);
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
         protected static readonly Expression EMPTY_ARRAY  = Constant(new iObject[0]);
@@ -713,16 +713,10 @@ namespace Mint.Compilation
 
         private static Expression MakeCall(Expression instance, Symbol methodName, params Expression[] args)
         {
-            var call = Property(
-                Constant(new Binding.CallSite(methodName)),
-
-                MEMBER_CALLSITE_CALL
-
-
-            );
-
+            var arity   = new Range(new Fixnum(0), new Fixnum(0));
+            var site    = new MethodBinding.CallSite(methodName, arity);
+            var call    = Property(Constant(site), MEMBER_CALLSITE_CALL);
             var argList = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args);
-
             return Invoke(call, instance, argList);
         }
     }

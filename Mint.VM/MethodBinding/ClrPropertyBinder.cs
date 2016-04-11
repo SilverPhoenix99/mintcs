@@ -7,7 +7,7 @@ namespace Mint.MethodBinding
 {
     public sealed partial class ClrPropertyBinder : BaseMethodBinder
     {
-        private Info[] infos;
+        private readonly Info[] infos;
 
         public ClrPropertyBinder(Symbol name, Module owner, PropertyInfo property)
             : base(name, owner)

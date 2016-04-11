@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace Mint.MethodBinding
 {
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private Info[] infos;
+        private readonly Info[] infos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method)
             : base(name, owner)
@@ -31,12 +33,30 @@ namespace Mint.MethodBinding
 
         private Info[] GetOverloads(MethodInfo method)
         {
+            var methods = GetExtensionMethods(method);
+
             throw new NotImplementedException();
         }
 
         private Range CalculateArity()
         {
             throw new NotImplementedException();
+        }
+
+        public static IEnumerable<MethodInfo> GetExtensionMethods(MethodInfo method)
+        {
+            return from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                   from type in assembly.GetTypes()
+                   where type.IsSealed
+                      && !type.IsGenericType
+                      && !type.IsNested
+                      && type.IsDefined(typeof(ExtensionAttribute), false)
+                   from m in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                   where m.Name == method.Name
+                             && m.IsDefined(typeof(ExtensionAttribute), false)
+                             //&& m.GetParameters()[0].ParameterType.IsAssignableFrom(method.DeclaringType)
+                   select m
+            ;
         }
     }
 }

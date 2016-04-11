@@ -6,7 +6,7 @@ namespace Mint.MethodBinding
 {
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
-        private Function function;
+        private readonly Function function;
 
         public DelegateMethodBinder(Symbol name, Module owner, Function function, Range arity)
             : base(name, owner)

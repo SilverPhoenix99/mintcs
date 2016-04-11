@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using Mint.Test;
 
 namespace Test
 {
@@ -18,6 +19,8 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(FalseClass)) <= sizeof(bool));
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum))     <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
+
+            TestExtensionReflection.MainTest();
 
             Repl.Run();
         }
