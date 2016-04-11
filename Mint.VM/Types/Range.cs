@@ -34,7 +34,7 @@
             CLASS = ClassBuilder<Range>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
         }
 
         #endregion

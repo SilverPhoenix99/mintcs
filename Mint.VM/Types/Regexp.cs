@@ -16,8 +16,7 @@ namespace Mint
 
         static Regexp()
         {
-            CLASS = ClassBuilder<Regexp>.Describe()
-            .Class;
+            CLASS = ClassBuilder<Regexp>.Describe();
         }
 
         #endregion

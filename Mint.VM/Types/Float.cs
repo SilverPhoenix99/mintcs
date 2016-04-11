@@ -35,7 +35,7 @@ namespace Mint
             CLASS = ClassBuilder<Float>.Describe(Fixnum.INTEGER_CLASS)
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
         }
 
         #endregion

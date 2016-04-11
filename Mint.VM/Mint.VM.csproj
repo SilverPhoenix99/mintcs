@@ -36,19 +36,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentError.cs" />
-    <Compile Include="Binding\Binder.cs" />
-    <Compile Include="Binding\CallSite.cs" />
-    <Compile Include="Binding\MegamorphicBinder.cs" />
-    <Compile Include="Binding\PolymorphicBinder.cs" />
     <Compile Include="ClassBuilder.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
-    <Compile Include="Methods\AttrReaderMethod.cs" />
-    <Compile Include="Methods\CompiledMethod.cs" />
-    <Compile Include="Methods\CompiledProperty.cs" />
-    <Compile Include="Methods\LambdaMethod.cs" />
-    <Compile Include="Methods\Method.cs" />
     <Compile Include="NameError.cs" />
+    <Compile Include="MethodBinding\BaseMethodBinder.cs" />
+    <Compile Include="MethodBinding\CallSite.cs" />
+    <Compile Include="MethodBinding\CallSiteBinder.cs" />
+    <Compile Include="MethodBinding\ClrMethodBinder.cs" />
+    <Compile Include="MethodBinding\ClrMethodBinder.Info.cs" />
+    <Compile Include="MethodBinding\ClrMethodBinder.Parameter.cs" />
+    <Compile Include="MethodBinding\ClrPropertyBinder.cs" />
+    <Compile Include="MethodBinding\ClrPropertyBinder.Info.cs" />
+    <Compile Include="MethodBinding\DelegateMethodBinder.cs" />
+    <Compile Include="MethodBinding\MegamorphicSiteBinder.cs" />
+    <Compile Include="MethodBinding\MethodBinder.cs" />
+    <Compile Include="MethodBinding\PolymorphicSiteBinder.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflector.cs" />
@@ -76,7 +79,7 @@
     <Compile Include="Types\TrueClass.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

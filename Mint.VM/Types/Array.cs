@@ -87,7 +87,7 @@ namespace Mint
             CLASS = ClassBuilder<Array>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
         }
 
         #endregion

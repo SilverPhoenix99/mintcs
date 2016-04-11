@@ -61,7 +61,7 @@ namespace Mint
             CLASS = ClassBuilder<Hash>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
 
             TO_HASH = new Symbol("to_hash");
         }

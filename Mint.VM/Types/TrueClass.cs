@@ -35,7 +35,7 @@ namespace Mint
             CLASS = ClassBuilder<TrueClass>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
         }
 
         #endregion

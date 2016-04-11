@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Mint.MethodBinding;
 
 namespace Mint
 {
@@ -41,7 +42,7 @@ namespace Mint
         public virtual IEnumerable<Module> Ancestors       => Prepended.Concat(new[] { this }).Concat(Included);
         public         IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
 
-        protected internal Dictionary<Symbol, Method>  Methods   { get; } = new Dictionary<Symbol, Method>();
+        protected internal Dictionary<Symbol, MethodBinder> Methods { get; } = new Dictionary<Symbol, MethodBinder>();
         protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
         protected internal List<Module>                Included  { get; protected set; } = new List<Module>();
         protected internal List<Module>                Prepended { get; protected set; } = new List<Module>();
@@ -50,22 +51,7 @@ namespace Mint
 
         public override string ToString() => FullName;
 
-        public Symbol DefineMethod(Method method) => ( Methods[method.Name] = method ).Name;
-
-        public Symbol DefineMethod(Symbol name, MethodInfo function) =>
-            DefineMethod(new CompiledMethod(name, this, function));
-
-        public Symbol DefineMethod(string name, MethodInfo function) => DefineMethod(new Symbol(name), function);
-
-        public Symbol DefineMethod(Symbol name, Method.Delegate function) =>
-            DefineMethod(new LambdaMethod(name, this, function));
-
-        public Symbol DefineMethod(string name, Method.Delegate function) => DefineMethod(new Symbol(name), function);
-
-        public Symbol DefineMethod(Symbol name, PropertyInfo function) =>
-            DefineMethod(new CompiledProperty(name, this, function));
-
-        public Symbol DefineMethod(string name, PropertyInfo function) =>DefineMethod(new Symbol(name), function);
+        public Symbol DefineMethod(MethodBinder method) => ( Methods[method.Name] = method ).Name;
 
         public virtual void Include(Module module)
         {
@@ -120,11 +106,11 @@ namespace Mint
             return included;
         }
 
-        public Method FindMethod(Symbol methodName)
+        public MethodBinder FindMethod(Symbol methodName)
         {
             foreach(var mod in Ancestors)
             {
-                Method method;
+                MethodBinder method;
                 if(!mod.Methods.TryGetValue(methodName, out method) || !method.Condition.Valid)
                 {
                     continue;
@@ -132,7 +118,7 @@ namespace Mint
 
                 if(mod != this)
                 {
-                    DefineMethod(method.Duplicate());
+                    DefineMethod(method.Duplicate(false));
                 }
 
                 return method;
@@ -150,7 +136,7 @@ namespace Mint
             CLASS = ClassBuilder<Module>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-            .Class;
+            ;
         }
 
         #endregion

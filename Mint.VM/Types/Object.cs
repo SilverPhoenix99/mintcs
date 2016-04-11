@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mint.MethodBinding;
 
 namespace Mint
 {
@@ -16,7 +17,7 @@ namespace Mint
         public static readonly Class BASIC_OBJECT_CLASS;
 
         public static readonly Class CLASS;
-        
+
         public static iObject Box(string obj) => new String(obj);
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
@@ -65,7 +66,7 @@ namespace Mint
             return (iObject) info.Invoke(obj, args);
         }
 
-        public static Method FindMethod(iObject instance, Symbol methodName, iObject[] args)
+        public static MethodBinder FindMethod(iObject instance, Symbol methodName, iObject[] args)
         {
             return instance.CalculatedClass.FindMethod(methodName)
                 //?? FindClrMethod(instance, methodName, args)
@@ -74,19 +75,20 @@ namespace Mint
             ;
         }
 
-        private static Method FindClrMethod(iObject instance, Symbol methodName, iObject[] args)
+        private static MethodBinder FindClrMethod(iObject instance, Symbol methodName, iObject[] args)
         {
             var type = instance.GetType();
-            var method = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            var method = type.GetMethods(
+                    BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(_ => _.Name == methodName.Name)
                 .FirstOrDefault(_ => _.GetParameters().Length == args.Length);
-            
+
             return method != null
-                ? new CompiledMethod(methodName, instance.CalculatedClass, method)
+                ? new ClrMethodBinder(methodName, instance.CalculatedClass, method)
                 : null;
         }
 
-        private static Method FindClrProperty(iObject instance, Symbol methodName, iObject[] args)
+        /*private static MethodBinder FindClrProperty(iObject instance, Symbol methodName, iObject[] args)
         {
             var property = instance.GetType().GetProperties(
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public
@@ -98,24 +100,24 @@ namespace Mint
                 : null;
         }
 
-        private static Method FindClrExtension(iObject instance, Symbol methodName, iObject[] args)
+        private static MethodBinder FindClrExtension(iObject instance, Symbol methodName, iObject[] args)
         {
             // TODO static extension method
             throw new NotImplementedException();
-        }
+        }*/
 
         static Object()
         {
             BASIC_OBJECT_CLASS = ClassBuilder<Object>.Describe(null, "BasicObject")
-                .DefLambda("!", (instance, _) => Box(!ToBool(instance)) )
-            .Class;
+                .DefLambda("!", (instance, _) => Box(!ToBool(instance)), new Range(new Fixnum(0), new Fixnum(0)) )
+            ;
 
             // TODO define in Kernel module
             CLASS = ClassBuilder<Object>.Describe(BASIC_OBJECT_CLASS)
                 .DefProperty("class", () => default(iObject).Class)
                 .DefMethod("to_s",    () => default(iObject).ToString())
                 .DefMethod("inspect", () => default(iObject).Inspect())
-            .Class;
+            ;
 
             DefineModule(BASIC_OBJECT_CLASS);
             DefineModule(CLASS);
@@ -142,7 +144,6 @@ namespace Mint
             //        .DefProperty("class", () => default(iObject).Class)
             //        .DefMethod("to_s",    () => default(iObject).ToString())
             //        .DefMethod("inspect", () => default(iObject).Inspect())
-            //    .Module
             //));
 
             /*

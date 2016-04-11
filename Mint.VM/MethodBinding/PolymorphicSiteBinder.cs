@@ -1,33 +1,18 @@
 using System;
 
-namespace Mint.Binding
+namespace Mint.MethodBinding
 {
-    public class PolymorphicBinder : Binder
+    public sealed class PolymorphicSiteBinder : CallSiteBinder
     {
-        //private Dictionary<long, Method> cache = new Dictionary<long, Method>();
+        //private Dictionary<long, MegamorphicSiteBinder.CachedMethod> cache = new Dictionary<long, MegamorphicSiteBinder.CachedMethod>();
+        // OR
+        //private Dictionary<long, MethodBinder> cache = new Dictionary<long, MethodBinder>();
 
-        public PolymorphicBinder(Symbol methodName)
-        {
-            MethodName = methodName;
-        }
-
-        public Symbol MethodName { get; }
-
-        public Method.Delegate Compile(CallSite site)
+        public Function Compile(CallSite site)
         {
             // TODO flush invalid methods : cache.Where(_ => _.Value.Condition.Valid);
             // TODO promote to megamorphic binder when cache is too big
             throw new NotImplementedException();
-        }
-
-        class CachedMethod
-        {
-            public CachedMethod(Method method)
-            {
-                Method = method;
-            }
-
-            public Method Method { get; }
         }
     }
 }
@@ -39,7 +24,7 @@ call site stub:
 (iObject instance, iObject[] args) : iObject => {
     // constant Symbol                          @method_name;
     // global   CallSite                        @site;
-    // global   PolymorphicBinder               @binder;
+    // global   PolymorphicSiteBinder           @binder;
     // global   Dictionary<Class, CachedMethod> @cache;
     // constant long                            @class_id1  .. @class_id99;
     // global   CallSite.Function               @method1    .. @method99;

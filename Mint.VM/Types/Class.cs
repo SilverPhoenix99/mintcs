@@ -133,7 +133,7 @@ namespace Mint
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .DefProperty("class", _ => _.Class)
-            .Class;
+            ;
 
             // required hack
             CLASS.calculatedClass = CLASS;

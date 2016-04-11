@@ -455,9 +455,11 @@ namespace Mint.Compilation
         protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
         {
             var methodName = new Symbol(ast[1].Value.Value);
-            var callSite = Constant(new Binding.CallSite(methodName));
             var instance = ast[0].Accept(this);
             var args = NewArrayInit(typeof(iObject), ast[2].Select(_ => _.Accept(this)));
+
+            var arity = new Range(new Fixnum(0), new Fixnum(0)); // TODO : calculate arity
+            var callSite = Constant(new MethodBinding.CallSite(methodName, arity));
 
             return Invoke(
                 Property(callSite, MEMBER_CALLSITE_CALL),
@@ -634,10 +636,10 @@ namespace Mint.Compilation
 
         protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<Binding.CallSite>.Property(_ => _.Call);
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<MethodBinding.CallSite>.Property(_ => _.Call);
 
         protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-        
+
         private static Expression ToBool(Expression expr)
         {
             var cnst = expr as ConstantExpression;

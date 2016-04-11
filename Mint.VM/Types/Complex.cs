@@ -53,8 +53,7 @@ namespace Mint
 
         static Complex()
         {
-            CLASS = ClassBuilder<Complex>.Describe(Fixnum.NUMERIC_CLASS)
-            .Class;
+            CLASS = ClassBuilder<Complex>.Describe(Fixnum.NUMERIC_CLASS);
         }
 
         #endregion

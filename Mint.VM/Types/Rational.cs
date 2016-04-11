@@ -18,8 +18,7 @@ namespace Mint
 
         static Rational()
         {
-            CLASS = ClassBuilder<Rational>.Describe(Fixnum.NUMERIC_CLASS)
-            .Class;
+            CLASS = ClassBuilder<Rational>.Describe(Fixnum.NUMERIC_CLASS);
         }
 
         #endregion

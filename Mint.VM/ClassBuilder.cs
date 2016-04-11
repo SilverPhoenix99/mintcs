@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Mint.MethodBinding;
 
 namespace Mint
 {
@@ -42,7 +43,7 @@ namespace Mint
 
         public ClassBuilder<T> DefMethod<TResult>(Symbol name, Expression<Func<TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledMethod(name, Class, Reflector.Method(lambda)));
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector.Method(lambda)));
             return this;
         }
 
@@ -51,7 +52,7 @@ namespace Mint
 
         public ClassBuilder<T> DefMethod<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledMethod(name, Class, Reflector<T>.Method(lambda)));
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector<T>.Method(lambda)));
             return this;
         }
 
@@ -60,7 +61,7 @@ namespace Mint
 
         public ClassBuilder<T> DefProperty<TResult>(Symbol name, Expression<Func<TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledProperty(name, Class, Reflector.Property(lambda)));
+            Class.DefineMethod(new ClrPropertyBinder(name, Class, Reflector.Property(lambda)));
             return this;
         }
 
@@ -69,7 +70,7 @@ namespace Mint
 
         public ClassBuilder<T> DefProperty<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledProperty(name, Class, Reflector<T>.Property(lambda)));
+            Class.DefineMethod(new ClrPropertyBinder(name, Class, Reflector<T>.Property(lambda)));
             return this;
         }
 
@@ -78,29 +79,31 @@ namespace Mint
 
         public ClassBuilder<T> DefOperator<TResult>(Symbol name, Expression<Func<TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledMethod(name, Class, Reflector.Operator(lambda)));
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector.Operator(lambda)));
             return this;
         }
 
         public ClassBuilder<T> DefOperator<TResult>(string name, Expression<Func<TResult>> lambda) =>
             DefOperator(new Symbol(name), lambda);
-        
+
         public ClassBuilder<T> DefOperator<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
         {
-            Class.DefineMethod(new CompiledMethod(name, Class, Reflector<T>.Operator(lambda)));
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector<T>.Operator(lambda)));
             return this;
         }
 
         public ClassBuilder<T> DefOperator<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
             DefOperator(new Symbol(name), lambda);
 
-        public ClassBuilder<T> DefLambda(Symbol name, Method.Delegate lambda)
+        public ClassBuilder<T> DefLambda(Symbol name, Function lambda, Range arity)
         {
-            Class.DefineMethod(new LambdaMethod(name, Class, lambda));
+            Class.DefineMethod(new DelegateMethodBinder(name, Class, lambda, arity));
             return this;
         }
 
-        public ClassBuilder<T> DefLambda(string name, Method.Delegate lambda) =>
-            DefLambda(new Symbol(name), lambda);
+        public ClassBuilder<T> DefLambda(string name, Function lambda, Range arity) =>
+            DefLambda(new Symbol(name), lambda, arity);
+            
+        public static implicit operator Class(ClassBuilder<T> c) => c.Class;
     }
 }
