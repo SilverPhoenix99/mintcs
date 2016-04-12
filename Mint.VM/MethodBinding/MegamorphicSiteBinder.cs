@@ -7,7 +7,17 @@ namespace Mint.MethodBinding
 {
     public sealed class MegamorphicSiteBinder : CallSiteBinder
     {
-        private Dictionary<long, CachedMethod> cache = new Dictionary<long, CachedMethod>();
+        private readonly Dictionary<long, CachedMethod> cache;
+
+        public MegamorphicSiteBinder()
+        {
+            cache = new Dictionary<long, CachedMethod>();
+        }
+
+        internal MegamorphicSiteBinder(Dictionary<long, MethodBinder> cache)
+        {
+            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value));
+        }
 
         public Function Compile(CallSite site)
         {
@@ -59,7 +69,7 @@ namespace Mint.MethodBinding
             {
                 var instance = Parameter(typeof(iObject), "instance");
                 var args     = Parameter(typeof(iObject[]), "args");
-                var body     = binder.Bind(instance, new[] { args });
+                var body     = binder.Bind(instance, args);
                 var lambda   = Lambda<Function>(body, instance, args);
                 return lambda.Compile();
             }

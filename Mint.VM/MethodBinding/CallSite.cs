@@ -1,5 +1,3 @@
-using System;
-
 namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, iObject[] args);
@@ -22,7 +20,7 @@ namespace Mint.MethodBinding
 
         private iObject DefaultCall(iObject instance, iObject[] args)
         {
-            Binder = new MegamorphicSiteBinder(); // TODO change default to PolymorphicBinder
+            Binder = new PolymorphicSiteBinder();
             Call = Binder.Compile(this);
             return Call(instance, args);
         }

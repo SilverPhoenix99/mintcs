@@ -24,7 +24,8 @@ namespace Mint
         internal static MethodInfo Method(LambdaExpression lambda)
         {
             var body = (MethodCallExpression) Body(lambda);
-            return DeclaringMethod(body.Method, body.Object.Type);
+            var type = body.Object?.Type;
+            return type == null ? body.Method : DeclaringMethod(body.Method, type);
         }
 
         internal static MethodInfo Operator(LambdaExpression lambda)
@@ -75,7 +76,7 @@ namespace Mint
             var properties = method.DeclaringType.GetProperties(
                 BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            return properties.Where(p => p.GetMethod == method || p.SetMethod == method).Single();
+            return properties.Single(p => p.GetMethod == method || p.SetMethod == method);
         }
 
         internal static MethodInfo Getter(LambdaExpression lambda) => Property(lambda).GetMethod;
