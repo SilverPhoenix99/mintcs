@@ -125,7 +125,7 @@ namespace Mint
 
             // TODO define in Kernel module
             CLASS = ClassBuilder<Object>.Describe(BASIC_OBJECT_CLASS)
-                //.DefProperty("class", () => ((FrozenObject) null).Class)
+                .DefMethod("class",   Reflector.Getter( () => ((FrozenObject) null).Class ) )
                 .DefMethod("to_s",    () => ((FrozenObject) null).ToString())
                 .DefMethod("inspect", () => ((FrozenObject) null).Inspect())
             ;

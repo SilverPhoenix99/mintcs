@@ -17,12 +17,14 @@ namespace Mint
 
         public static PropertyInfo Property<TResult>(Expression<Func<TResult>> lambda) => Property((LambdaExpression) lambda);
 
+        public static MethodInfo Getter<TResult>(Expression<Func<TResult>> lambda) => Getter((LambdaExpression) lambda);
+
+        public static MethodInfo Setter<TResult>(Expression<Func<TResult>> lambda) => Setter((LambdaExpression) lambda);
+
         internal static MethodInfo Method(LambdaExpression lambda)
         {
             var body = (MethodCallExpression) Body(lambda);
-            var type = body.Object.Type;
-            var method = body.Method;
-            return DeclaringMethod(method, type);
+            return DeclaringMethod(body.Method, body.Object.Type);
         }
 
         internal static MethodInfo Operator(LambdaExpression lambda)
@@ -62,23 +64,25 @@ namespace Mint
             var member = body as MemberExpression;
             if(member != null)
             {
-                var type = member.Type;
-
-                return (PropertyInfo) member.Member;
+                var property = (PropertyInfo) member.Member;
+                return DeclaringProperty(property, member.Expression.Type);
             }
 
-            // probably indexer
+            // probably an indexer
 
-            var method = (body as MethodCallExpression)?.Method;
-            var properties = method?.DeclaringType?.GetProperties(
+            var call = (MethodCallExpression) body;
+            var method = DeclaringMethod(call.Method, call.Object.Type);
+            var properties = method.DeclaringType.GetProperties(
                 BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            return (from p in properties
-                    where p.GetMethod == method || p.SetMethod == method
-                    select p).Single();
+            return properties.Where(p => p.GetMethod == method || p.SetMethod == method).Single();
         }
 
-        internal static Expression Body(LambdaExpression lambda)
+        internal static MethodInfo Getter(LambdaExpression lambda) => Property(lambda).GetMethod;
+
+        internal static MethodInfo Setter(LambdaExpression lambda) => Property(lambda).SetMethod;
+
+        private static Expression Body(LambdaExpression lambda)
         {
             var body = lambda.Body;
             var convert = body as UnaryExpression;
@@ -87,13 +91,23 @@ namespace Mint
                 : body;
         }
 
-        internal static MethodInfo DeclaringMethod(MethodInfo method, Type declaringType)
+        private static MethodInfo DeclaringMethod(MethodInfo method, Type declaringType)
         {
             var flags = BindingFlags.Default;
             flags |= method.IsStatic ? BindingFlags.Static : BindingFlags.Instance;
             flags |= method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic;
             var parameters = method.GetParameters().Select(_ => _.ParameterType).ToArray();
             return declaringType.GetMethod(method.Name, flags, null, parameters, null);
+        }
+
+        private static PropertyInfo DeclaringProperty(PropertyInfo property, Type declaringType)
+        {
+            var method = property.GetMethod ?? property.SetMethod;
+            var flags = BindingFlags.Default;
+            flags |= method.IsStatic ? BindingFlags.Static : BindingFlags.Instance;
+            flags |= method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic;
+            var parameters = property.GetIndexParameters().Select(_ => _.ParameterType).ToArray();
+            return declaringType.GetProperty(property.Name, flags, null, property.PropertyType, parameters, null);
         }
     }
 
@@ -106,5 +120,9 @@ namespace Mint
         public static MethodInfo Convert<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Convert(lambda);
 
         public static PropertyInfo Property<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Property(lambda);
+
+        public static MethodInfo Getter<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Getter(lambda);
+
+        public static MethodInfo Setter<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Setter(lambda);
     }
 }

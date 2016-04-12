@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using Mint.MethodBinding;
 
 namespace Mint
@@ -59,6 +60,15 @@ namespace Mint
         public ClassBuilder<T> DefMethod<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
             DefMethod(new Symbol(name), lambda);
 
+        public ClassBuilder<T> DefMethod(Symbol name, MethodInfo method)
+        {
+            Class.DefineMethod(new ClrMethodBinder(name, Class, method));
+            return this;
+        }
+
+        public ClassBuilder<T> DefMethod(string name, MethodInfo method) =>
+            DefMethod(new Symbol(name), method);
+
         public ClassBuilder<T> DefProperty<TResult>(Symbol name, Expression<Func<TResult>> lambda)
         {
             Class.DefineMethod(new ClrPropertyBinder(name, Class, Reflector.Property(lambda)));
@@ -103,7 +113,7 @@ namespace Mint
 
         public ClassBuilder<T> DefLambda(string name, Function lambda, Range arity) =>
             DefLambda(new Symbol(name), lambda, arity);
-            
+
         public static implicit operator Class(ClassBuilder<T> c) => c.Class;
     }
 }
