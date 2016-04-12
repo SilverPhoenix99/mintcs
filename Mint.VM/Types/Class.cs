@@ -130,9 +130,6 @@ namespace Mint
         static Class()
         {
             CLASS = ClassBuilder<Class>.Describe(Module.CLASS)
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .DefProperty("class", _ => _.Class)
             ;
 
             // required hack

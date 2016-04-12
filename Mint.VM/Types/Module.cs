@@ -20,9 +20,7 @@ namespace Mint
             Name = name;
             Container = container;
 
-            FullName = name != null
-                     ? name.ToString()
-                     : $"#<{Class.Name}:0x{Id:x}>";
+            FullName = name?.ToString() ?? base.ToString();
 
             if(container != null)
             {

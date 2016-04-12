@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
@@ -26,7 +27,35 @@ namespace Mint.MethodBinding
 
         public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
-            throw new NotImplementedException();
+            //TODO parameters
+
+            var method = infos[0].Method;
+            var parms = method.GetParameters().Select(_ => _.ParameterType);
+            if(method.IsStatic)
+            {
+                args     = new[] { instance }.Concat(args);
+                parms    = new[] { method.DeclaringType }.Concat(parms);
+                instance = null;
+            }
+
+            if(instance != null && method.DeclaringType != null)
+            {
+                instance = Convert(instance, method.DeclaringType);
+            }
+
+            args = args.Zip(parms, Convert);
+
+            Expression call = Call(instance, method, args);
+
+            if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
+            {
+                call = Call(
+                    OBJECT_BOX_METHOD,
+                    Convert(call, typeof(object))
+                );
+            }
+
+            return call;
         }
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
@@ -44,7 +73,8 @@ namespace Mint.MethodBinding
 
         private Range CalculateArity()
         {
-            throw new NotImplementedException();
+            return new Range(new Fixnum(0), new Fixnum(0));
+            // TODO throw new NotImplementedException();
         }
 
         public static IEnumerable<MethodInfo> GetExtensionMethods(MethodInfo method)
@@ -76,5 +106,7 @@ namespace Mint.MethodBinding
             var constraints = info.ParameterType.GetGenericParameterConstraints();
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
+
+        public static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
     }
 }

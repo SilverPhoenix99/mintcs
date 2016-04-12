@@ -64,7 +64,7 @@ namespace Mint
             return Expression.Lambda(body);
         }
 
-        static void DumpExpression(Expression expr)
+        internal static void DumpExpression(Expression expr)
         {
             Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, new object[0]));
             Console.WriteLine();

@@ -19,10 +19,10 @@ namespace Mint
         public static readonly Class CLASS;
 
         public static iObject Box(string obj) => new String(obj);
-        public static iObject Box(short obj) => new Fixnum(obj);
-        public static iObject Box(int obj) => new Fixnum(obj);
-        public static iObject Box(long obj) => new Fixnum(obj);
-        public static iObject Box(float obj) => new Float(obj);
+        public static iObject Box(short obj)  => new Fixnum(obj);
+        public static iObject Box(int obj)    => new Fixnum(obj);
+        public static iObject Box(long obj)   => new Fixnum(obj);
+        public static iObject Box(float obj)  => new Float(obj);
         public static iObject Box(double obj) => new Float(obj);
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
@@ -120,14 +120,14 @@ namespace Mint
         static Object()
         {
             BASIC_OBJECT_CLASS = ClassBuilder<Object>.Describe(null, "BasicObject")
-                .DefLambda("!", (instance, _) => Box(!ToBool(instance)), new Range(new Fixnum(0), new Fixnum(0)) )
+                //.DefLambda("!", (instance, _) => Box(!ToBool(instance)), new Range(new Fixnum(0), new Fixnum(0)) )
             ;
 
             // TODO define in Kernel module
             CLASS = ClassBuilder<Object>.Describe(BASIC_OBJECT_CLASS)
-                .DefProperty("class", () => default(iObject).Class)
-                .DefMethod("to_s",    () => default(iObject).ToString())
-                .DefMethod("inspect", () => default(iObject).Inspect())
+                //.DefProperty("class", () => ((FrozenObject) null).Class)
+                .DefMethod("to_s",    () => ((FrozenObject) null).ToString())
+                .DefMethod("inspect", () => ((FrozenObject) null).Inspect())
             ;
 
             DefineModule(BASIC_OBJECT_CLASS);
@@ -152,9 +152,9 @@ namespace Mint
 
             //CLASS.Include( DefineModule(
             //    ModuleBuilder.Describe("Kernel")
-            //        .DefProperty("class", () => default(iObject).Class)
-            //        .DefMethod("to_s",    () => default(iObject).ToString())
-            //        .DefMethod("inspect", () => default(iObject).Inspect())
+            //        .DefProperty("class", _ => ((FrozenObject) null).Class)
+            //        .DefMethod("to_s",    _ => ((FrozenObject) null).ToString())
+            //        .DefMethod("inspect", _ => ((FrozenObject) null).Inspect())
             //));
 
             /*

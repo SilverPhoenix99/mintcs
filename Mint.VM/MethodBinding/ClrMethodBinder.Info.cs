@@ -20,7 +20,8 @@ namespace Mint.MethodBinding
 
             private Parameter[] InitParameters()
             {
-                throw new NotImplementedException();
+                return new Parameter[0];
+                //TODO throw new NotImplementedException();
             }
         }
     }

@@ -24,5 +24,7 @@ namespace Mint
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+        
+        public override string ToString() => $"#<{Class.FullName}:0x{Id:x}>";
     }
 }
