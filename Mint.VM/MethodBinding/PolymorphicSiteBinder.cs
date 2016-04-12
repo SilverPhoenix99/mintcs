@@ -32,38 +32,34 @@ namespace Mint.MethodBinding
             var instance = Parameter(typeof(iObject), "instance");
             var args = Parameter(typeof(iObject[]), "args"); // TODO : parameters
             var retTarget = Label(typeof(iObject), "return");
-            var klass = Variable(typeof(Class), "class");
+            var classId = Variable(typeof(long), "classId");
 
             var cases = cache.Select(_ => CreateCase(_.Key, _.Value, instance, args, retTarget));
 
-            //var $class = instance.CalculatedClass;
-            var assignClass = Assign(klass, Property(instance, PROP_CALCULATEDCLASS));
-
-            // switch($class.Id) { ... }
-            var @switch = Switch(Property(klass, PROP_ID), null, null, cases);
-
-            //@cache[$class.Id] = Object.FindMethod(instance, @method_name, args);
-            var findMethod = Call(METHOD_FINDMETHOD, instance, Constant(site.MethodName), args);
-            var cacheMethod = Call(Constant(cache), METHOD_CACHE_INDEXER, Property(klass, PROP_ID), findMethod);
-
-            //@site.Call = @binder.Compile(@site);
-            var compile = Call(Constant(this), METHOD_COMPILE, Constant(site));
-            var setCall = Assign(Property(Constant(site), PROP_CALL), compile);
-
-            //return @site.Call(instance, args);
-            var ret = Label(
-                retTarget,
-                Invoke(Property(Constant(site), PROP_CALL), instance, args)
-            );
-
             var body = Block(
                 typeof(iObject),
-                new[] { klass },
-                assignClass,
-                @switch,
-                cacheMethod,
-                setCall,
-                ret
+                new[] { classId },
+                // var $class = instance.CalculatedClass;
+                Assign(classId, Property(Property(instance, PROP_CALCULATEDCLASS), PROP_ID)),
+                // switch($class.Id) { ... }
+                Switch(classId, null, null, cases),
+                // @cache[$class.Id] = Object.FindMethod(instance, @method_name, args);
+                Call(
+                    Constant(cache),
+                    METHOD_CACHE_INDEXER,
+                    classId,
+                    Call(METHOD_FINDMETHOD, instance, Constant(site.MethodName), args)
+                ),
+                // @site.Call = @binder.Compile(@site);
+                Assign(
+                    Property(Constant(site), PROP_CALL),
+                    Call(Constant(this), METHOD_COMPILE, Constant(site))
+                ),
+                // return @site.Call(instance, args);
+                Label(
+                    retTarget,
+                    Invoke(Property(Constant(site), PROP_CALL), instance, args)
+                )
             );
 
             // (iObject instance, iObject[] args) : iObject => { @body }
