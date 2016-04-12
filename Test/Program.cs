@@ -20,8 +20,6 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum))     <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
 
-            TestExtensionReflection.MainTest();
-
             Repl.Run();
         }
 
@@ -32,6 +30,7 @@ namespace Test
             //TestSymbolGC.Test();
             //InvokeDynamicMethods.Test();
             //TestRoslyn.TestLambdaCompilation();
+            //TestExtensionReflection.MainTest();
 
             //if(InVisualStudio)
             //{

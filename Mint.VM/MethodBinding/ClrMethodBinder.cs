@@ -31,11 +31,15 @@ namespace Mint.MethodBinding
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
-        private Info[] GetOverloads(MethodInfo method)
+        private static Info[] GetOverloads(MethodInfo method)
         {
-            var methods = GetExtensionMethods(method);
+            var methods =
+                from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                where m.Name == method.Name
+                select m
+            ;
 
-            throw new NotImplementedException();
+            return methods.Concat(GetExtensionMethods(method)).Select(_ => new Info(_)).ToArray();
         }
 
         private Range CalculateArity()
@@ -45,18 +49,32 @@ namespace Mint.MethodBinding
 
         public static IEnumerable<MethodInfo> GetExtensionMethods(MethodInfo method)
         {
-            return from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                   from type in assembly.GetTypes()
-                   where type.IsSealed
-                      && !type.IsGenericType
-                      && !type.IsNested
-                      && type.IsDefined(typeof(ExtensionAttribute), false)
-                   from m in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                   where m.Name == method.Name
-                             && m.IsDefined(typeof(ExtensionAttribute), false)
-                             //&& m.GetParameters()[0].ParameterType.IsAssignableFrom(method.DeclaringType)
-                   select m
+            return
+                from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                from type in assembly.GetTypes()
+                where type.IsSealed
+                   && !type.IsGenericType
+                   && !type.IsNested
+                   && type.IsDefined(typeof(ExtensionAttribute), false)
+                from m in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                where m.IsDefined(typeof(ExtensionAttribute), false)
+                   && m.Name == method.Name
+                   && Matches(m.GetParameters()[0], method.DeclaringType)
+                select m;
             ;
+        }
+
+        private static bool Matches(ParameterInfo info, Type declaringType)
+        {
+            if(!info.ParameterType.IsGenericParameter)
+            {
+                // return : info.ParameterType is == or superclass of declaringType?
+                var matches = info.ParameterType.IsAssignableFrom(declaringType);
+                return matches;
+            }
+
+            var constraints = info.ParameterType.GetGenericParameterConstraints();
+            return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
     }
 }
