@@ -6,12 +6,12 @@ namespace Mint
     {
         private string value;
 
-        public String() : base(CLASS)
+        public String() : base(Class.STRING)
         {
             Value = "";
         }
 
-        public String(string value) : base(CLASS)
+        public String(string value) : base(Class.STRING)
         {
             Value = value;
         }
@@ -59,19 +59,5 @@ namespace Mint
         public static explicit operator String(string s) => new String(s);
 
         public static explicit operator string(String s) => s.Value;
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static String()
-        {
-            CLASS = ClassBuilder<String>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

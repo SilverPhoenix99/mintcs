@@ -17,9 +17,9 @@ namespace Mint
 
         public long   Id                => sym.id;
         public string Name              => sym.name;
-        public Class  Class             => CLASS;
+        public Class  Class             => Class.SYMBOL;
         public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class  CalculatedClass   => CLASS;
+        public Class  CalculatedClass   => Class.SYMBOL;
         public bool   HasSingletonClass => false;
         public bool   Frozen            => true;
 
@@ -42,8 +42,6 @@ namespace Mint
         public override int GetHashCode() => sym.id.GetHashCode();
 
         #region Static
-
-        public static readonly Class CLASS;
 
         public static readonly Symbol SELF;
         public static readonly Symbol AREF;
@@ -69,11 +67,6 @@ namespace Mint
             SELF = new Symbol("self");
             AREF = new Symbol("[]");
             ASET = new Symbol("[]=");
-
-            CLASS = ClassBuilder<Symbol>.Describe()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
         }
 
         #endregion

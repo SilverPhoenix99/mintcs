@@ -11,9 +11,9 @@ namespace Mint
         }
 
         public long  Id                => (Value << 2) | 1;
-        public Class Class             => CLASS;
+        public Class Class             => Class.FIXNUM;
         public Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class CalculatedClass   => CLASS;
+        public Class CalculatedClass   => Class.FIXNUM;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
         public long  Value             { get; }
@@ -43,23 +43,5 @@ namespace Mint
         public static explicit operator Fixnum(Float v)  => new Fixnum((long) v.Value);
 
         public static Fixnum operator +(Fixnum l, Fixnum r) => new Fixnum(l.Value + r.Value);
-
-        #region Static
-
-        public static readonly Class NUMERIC_CLASS;
-        public static readonly Class INTEGER_CLASS;
-        public static readonly Class CLASS;
-
-        static Fixnum()
-        {
-            NUMERIC_CLASS = new Class(new Symbol("Numeric"));
-            INTEGER_CLASS = new Class(NUMERIC_CLASS, new Symbol("Integer"));
-            CLASS = ClassBuilder<Fixnum>.Describe(INTEGER_CLASS)
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

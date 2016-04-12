@@ -6,9 +6,9 @@ namespace Mint
     public struct FalseClass : iObject
     {
         public long  Id                => 0x0;
-        public Class Class             => CLASS;
-        public Class SingletonClass    => CLASS;
-        public Class CalculatedClass   => CLASS;
+        public Class Class             => Class.FALSE;
+        public Class SingletonClass    => Class.FALSE;
+        public Class CalculatedClass   => Class.FALSE;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
@@ -25,19 +25,5 @@ namespace Mint
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static implicit operator bool(FalseClass f) => false;
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static FalseClass()
-        {
-            CLASS = ClassBuilder<FalseClass>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

@@ -6,7 +6,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint
 {
-    public class Class : Module
+    public partial class Class : Module
     {
         public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
             : base(CLASS, name, container)
@@ -16,7 +16,7 @@ namespace Mint
         }
 
         public Class(Symbol? name = null, Module container = null, bool isSingleton = false)
-            : this(Object.CLASS, name, container, isSingleton)
+            : this(OBJECT, name, container, isSingleton)
         { }
 
         ~Class()
@@ -107,8 +107,6 @@ namespace Mint
 
         #region Static
 
-        public new static readonly Class CLASS;
-
         public static bool IsA(iObject o, Class c)
         {
             if(NilClass.IsNil(c))
@@ -125,15 +123,6 @@ namespace Mint
             }
 
             return false;
-        }
-
-        static Class()
-        {
-            CLASS = ClassBuilder<Class>.Describe(Module.CLASS)
-            ;
-
-            // required hack
-            CLASS.calculatedClass = CLASS;
         }
 
         #endregion

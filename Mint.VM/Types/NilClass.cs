@@ -6,9 +6,9 @@ namespace Mint
     public struct NilClass : iObject
     {
         public long  Id                => 0x4;
-        public Class Class             => CLASS;
-        public Class SingletonClass    => CLASS;
-        public Class CalculatedClass   => CLASS;
+        public Class Class             => Class.NIL;
+        public Class SingletonClass    => Class.NIL;
+        public Class CalculatedClass   => Class.NIL;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
@@ -36,17 +36,7 @@ namespace Mint
 
         #region Static
 
-        public static readonly Class CLASS;
-
         public static bool IsNil(object other) => other == null || other is NilClass;
-
-        static NilClass()
-        {
-            CLASS = ClassBuilder<NilClass>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
 
         #endregion
     }

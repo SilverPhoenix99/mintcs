@@ -5,20 +5,9 @@ namespace Mint
 {
     public class Regexp : BaseObject
     {
-        public Regexp() : base(CLASS)
+        public Regexp() : base(Class.REGEXP)
         {
             throw new NotImplementedException();
         }
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static Regexp()
-        {
-            CLASS = ClassBuilder<Regexp>.Describe();
-        }
-
-        #endregion
     }
 }

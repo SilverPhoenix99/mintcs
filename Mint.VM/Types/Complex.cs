@@ -8,19 +8,19 @@ namespace Mint
         public iObject Imag { get; }
 
         // TODO accept string
-        public Complex(iObject real, iObject imag) : base(CLASS)
+        public Complex(iObject real, iObject imag) : base(Class.COMPLEX)
         {
             if(NilClass.IsNil(real) || NilClass.IsNil(imag))
             {
                 throw new TypeError("can't convert nil into Complex");
             }
             
-            if(!real.IsA(Fixnum.INTEGER_CLASS) && !real.IsA(Float.CLASS))
+            if(!real.IsA(Class.INTEGER) && !real.IsA(Class.FLOAT))
             {
                 throw new TypeError($"can't convert {real.Class} into Complex");
             }
 
-            if(!imag.IsA(Fixnum.INTEGER_CLASS) && !imag.IsA(Float.CLASS))
+            if(!imag.IsA(Class.INTEGER) && !imag.IsA(Class.FLOAT))
             {
                 throw new TypeError($"can't convert {imag.Class} into Complex");
             }
@@ -46,16 +46,5 @@ namespace Mint
         }
 
         public static Complex operator -(Complex v) { throw new NotImplementedException(); }
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static Complex()
-        {
-            CLASS = ClassBuilder<Complex>.Describe(Fixnum.NUMERIC_CLASS);
-        }
-
-        #endregion
     }
 }

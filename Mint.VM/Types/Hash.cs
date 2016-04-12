@@ -8,12 +8,12 @@ namespace Mint
     {
         private readonly LinkedDictionary<iObject, iObject> map;
 
-        public Hash() : base(CLASS)
+        public Hash() : base(Class.HASH)
         {
             map = new LinkedDictionary<iObject, iObject>();
         }
 
-        public Hash(int capacity) : base(CLASS)
+        public Hash(int capacity) : base(Class.HASH)
         {
             map = new LinkedDictionary<iObject, iObject>(capacity);
         }
@@ -53,23 +53,17 @@ namespace Mint
 
         #region Static
 
-        public static readonly Class CLASS;
         internal static readonly Symbol TO_HASH;
 
         static Hash()
         {
-            CLASS = ClassBuilder<Hash>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-
             TO_HASH = new Symbol("to_hash");
         }
 
         // Double splat to hash: **other
         internal static iObject Cast(iObject other)
         {
-            if(!other.IsA(CLASS))
+            if(!other.IsA(Class.HASH))
             {
                 if(!other.CalculatedClass.IsDefined(TO_HASH))
                 {
@@ -77,7 +71,7 @@ namespace Mint
                 }
 
                 var result = other.Send(TO_HASH);
-                if(!result.IsA(CLASS))
+                if(!result.IsA(Class.HASH))
                 {
                     throw new TypeError($"can't convert {other.Class.FullName} to Hash"
                         + $" ({other.Class.FullName}#to_hash gives {result.Class.FullName})");

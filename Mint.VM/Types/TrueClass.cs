@@ -6,9 +6,9 @@ namespace Mint
     public struct TrueClass : iObject
     {
         public long  Id                => 0x2;
-        public Class Class             => CLASS;
-        public Class SingletonClass    => CLASS;
-        public Class CalculatedClass   => CLASS;
+        public Class Class             => Class.TRUE;
+        public Class SingletonClass    => Class.TRUE;
+        public Class CalculatedClass   => Class.TRUE;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
@@ -25,19 +25,5 @@ namespace Mint
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static implicit operator bool(TrueClass t) => true;
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static TrueClass()
-        {
-            CLASS = ClassBuilder<TrueClass>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

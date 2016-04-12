@@ -9,7 +9,7 @@ namespace Mint
     public class Module : BaseObject
     {
         public Module(Symbol? name = null, Module container = null)
-            : this(CLASS, name, container)
+            : this(Class.MODULE, name, container)
         { }
 
         protected Module(Class klass, Symbol? name = null, Module container = null)
@@ -124,19 +124,5 @@ namespace Mint
 
             return null;
         }
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static Module()
-        {
-            CLASS = ClassBuilder<Module>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

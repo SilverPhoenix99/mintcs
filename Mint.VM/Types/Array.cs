@@ -8,12 +8,12 @@ namespace Mint
     {
         private readonly List<iObject> list;
 
-        public Array() : base(CLASS)
+        public Array() : base(Class.ARRAY)
         {
             list = new List<iObject>();
         }
 
-        public Array(IEnumerable<iObject> objs) : base(CLASS)
+        public Array(IEnumerable<iObject> objs) : base(Class.ARRAY)
         {
             list = new List<iObject>(objs);
         }
@@ -77,19 +77,5 @@ namespace Mint
         IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
         public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static Array()
-        {
-            CLASS = ClassBuilder<Array>.Describe()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

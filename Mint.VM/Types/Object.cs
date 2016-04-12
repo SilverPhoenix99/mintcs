@@ -14,10 +14,6 @@ namespace Mint
 
         #region Static
 
-        public static readonly Class BASIC_OBJECT_CLASS;
-
-        public static readonly Class CLASS;
-
         public static iObject Box(string obj) => new String(obj);
         public static iObject Box(short obj)  => new Fixnum(obj);
         public static iObject Box(int obj)    => new Fixnum(obj);
@@ -47,7 +43,7 @@ namespace Mint
         {
             if(module.Name.HasValue)
             {
-                CLASS.Constants[module.Name.Value] = module;
+                Class.OBJECT.Constants[module.Name.Value] = module;
             }
             return module;
         }
@@ -119,36 +115,25 @@ namespace Mint
 
         static Object()
         {
-            BASIC_OBJECT_CLASS = ClassBuilder<Object>.Describe(null, "BasicObject")
-                //.DefLambda("!", (instance, _) => Box(!ToBool(instance)), new Range(new Fixnum(0), new Fixnum(0)) )
-            ;
-
-            // TODO define in Kernel module
-            CLASS = ClassBuilder<Object>.Describe(BASIC_OBJECT_CLASS)
-                .DefMethod("class",   Reflector.Getter( () => ((FrozenObject) null).Class ) )
-                .DefMethod("to_s",    () => ((FrozenObject) null).ToString())
-                .DefMethod("inspect", () => ((FrozenObject) null).Inspect())
-            ;
-
-            DefineModule(BASIC_OBJECT_CLASS);
-            DefineModule(CLASS);
-            DefineModule(Module.CLASS);
+            DefineModule(Class.BASIC_OBJECT);
+            DefineModule(Class.OBJECT);
+            DefineModule(Class.MODULE);
             DefineModule(Class.CLASS);
-            DefineModule(Array.CLASS);
-            DefineModule(Complex.CLASS);
-            DefineModule(FalseClass.CLASS);
-            DefineModule(Fixnum.NUMERIC_CLASS);
-            DefineModule(Fixnum.INTEGER_CLASS);
-            DefineModule(Fixnum.CLASS);
-            DefineModule(Float.CLASS);
-            DefineModule(Hash.CLASS);
-            DefineModule(NilClass.CLASS);
-            DefineModule(Range.CLASS);
-            DefineModule(Rational.CLASS);
-            DefineModule(Regexp.CLASS);
-            DefineModule(String.CLASS);
-            DefineModule(Symbol.CLASS);
-            DefineModule(TrueClass.CLASS);
+            DefineModule(Class.ARRAY);
+            DefineModule(Class.COMPLEX);
+            DefineModule(Class.FALSE);
+            DefineModule(Class.NUMERIC);
+            DefineModule(Class.INTEGER);
+            DefineModule(Class.FIXNUM);
+            DefineModule(Class.FLOAT);
+            DefineModule(Class.HASH);
+            DefineModule(Class.NIL);
+            DefineModule(Class.RANGE);
+            DefineModule(Class.RATIONAL);
+            DefineModule(Class.REGEXP);
+            DefineModule(Class.STRING);
+            DefineModule(Class.SYMBOL);
+            DefineModule(Class.TRUE);
 
             //CLASS.Include( DefineModule(
             //    ModuleBuilder.Describe("Kernel")

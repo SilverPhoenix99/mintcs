@@ -9,7 +9,7 @@ namespace Mint
             Value = value;
         }
 
-        public override Class  Class => CLASS;
+        public override Class  Class => Class.FLOAT;
         public          double Value { get; }
 
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
@@ -25,19 +25,5 @@ namespace Mint
         public static explicit operator float (Float v) => (float) v.Value;
 
         public static explicit operator Float(Fixnum v) => new Float(v.Value);
-
-        #region Static
-
-        public static readonly Class CLASS;
-
-        static Float()
-        {
-            CLASS = ClassBuilder<Float>.Describe(Fixnum.INTEGER_CLASS)
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-            ;
-        }
-
-        #endregion
     }
 }

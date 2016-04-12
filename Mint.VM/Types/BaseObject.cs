@@ -13,7 +13,7 @@ namespace Mint
             calculatedClass = klass;
         }
 
-        protected BaseObject() : this(Object.CLASS) { }
+        protected BaseObject() : this(Class.OBJECT) { }
 
         public override Class Class             => HasSingletonClass ? CalculatedClass.Superclass : CalculatedClass;
         public override Class CalculatedClass   => calculatedClass;
