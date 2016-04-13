@@ -10,7 +10,7 @@ namespace Mint.MethodBinding
 {
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private readonly Info[] infos;
+        private readonly MethodInfo[] infos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method)
             : base(name, owner)
@@ -22,14 +22,23 @@ namespace Mint.MethodBinding
         private ClrMethodBinder(ClrMethodBinder other, bool copyValidation)
             : base(other, copyValidation)
         {
-            infos = (Info[]) other.infos.Clone();
+            infos = (MethodInfo[]) other.infos.Clone();
         }
 
         public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
             //TODO parameters
 
-            var method = infos[0].Method;
+            //if(infos.Length == 1)
+            {
+                return SimpleBind(infos[0], instance, args);
+            }
+
+            // TODO : multiple binding
+        }
+
+        private Expression SimpleBind(MethodInfo method, Expression instance, IEnumerable<Expression> args)
+        {
             var parms = method.GetParameters().Select(_ => _.ParameterType);
             if(method.IsStatic)
             {
@@ -60,7 +69,7 @@ namespace Mint.MethodBinding
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
-        private static Info[] GetOverloads(MethodInfo method)
+        private static MethodInfo[] GetOverloads(MethodInfo method)
         {
             var methods =
                 from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
@@ -68,13 +77,40 @@ namespace Mint.MethodBinding
                 select m
             ;
 
-            return methods.Concat(GetExtensionMethods(method)).Select(_ => new Info(_)).ToArray();
+            return methods.Concat(GetExtensionMethods(method)).ToArray();
         }
 
         private Range CalculateArity()
         {
-            return new Range(new Fixnum(0), new Fixnum(0));
-            // TODO throw new NotImplementedException();
+            var r1 = new Range(0, 0);
+            foreach(var info in infos)
+            {
+                var r2 = CalculateArity(info);
+                r1 = Merge(r1, r2);
+            }
+
+            return r1;
+        }
+
+        private static Range CalculateArity(MethodInfo info)
+        {
+            var infos = info.GetParameters();
+            var min = infos.Where(_ => !_.IsOptional).Count();
+            var max = infos.Length;
+            return new Range(min, max);
+        }
+
+        private static Range Merge(Range r1, Range r2)
+        {
+            var min = (int) (Fixnum) r1.Begin;
+            var val = (int) (Fixnum) r2.Begin;
+            if(val < min) min = val;
+
+            var max = (int) (Fixnum) r1.End;
+            val = (int) (Fixnum) r2.End;
+            if(val > max) max = val;
+
+            return new Range(min, max);
         }
 
         public static IEnumerable<MethodInfo> GetExtensionMethods(MethodInfo method)

@@ -9,6 +9,10 @@
             ExcludeEnd = excludeEnd;
         }
 
+        public Range(Fixnum begin, Fixnum end, bool excludeEnd = false)
+            : this((iObject) begin, (iObject) end, excludeEnd)
+        { }
+
         public iObject Begin      { get; }
         public iObject End        { get; }
         public bool    ExcludeEnd { get; }

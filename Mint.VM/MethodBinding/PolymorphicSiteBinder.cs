@@ -25,16 +25,21 @@ namespace Mint.MethodBinding
 
             if(cache.Count >= MEGAMORPHIC_THREASHOLD)
             {
-                site.Binder = new MegamorphicSiteBinder(cache);
+                site.Binder = new MegamorphicSiteBinder(cache, site);
                 return site.Binder.Compile(site);
             }
 
             var instance = Parameter(typeof(iObject), "instance");
-            var args = Parameter(typeof(iObject[]), "args"); // TODO : parameters
+
+            var args = Parameter(typeof(iObject[]), "args");
+
+            // TODO assuming always ParameterKind.Req. change to accept Block, Rest, KeyReq, KeyRest
+            var unsplatArgs = Enumerable.Range(0, site.Parameters.Length).Select(i => ArrayIndex(args, Constant(i)));
+
             var retTarget = Label(typeof(iObject), "return");
             var classId = Variable(typeof(long), "classId");
 
-            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, instance, args, retTarget));
+            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, instance, unsplatArgs, retTarget));
 
             var body = Block(
                 typeof(iObject),
@@ -68,7 +73,8 @@ namespace Mint.MethodBinding
         }
 
         private static SwitchCase CreateCase(long classId, MethodBinder binder,
-                                             Expression instance, Expression args, LabelTarget retTarget)
+                                             Expression instance, IEnumerable<Expression> args,
+                                             LabelTarget retTarget)
         {
             var ret = Return(retTarget, binder.Bind(instance, args), typeof(iObject));
 

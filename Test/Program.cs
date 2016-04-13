@@ -1,4 +1,5 @@
 ﻿using Mint;
+using Mint.MethodBinding;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -18,6 +19,22 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
 
             Repl.Run();
+            
+            //try
+            //{
+            //    TestCallSite();
+            //}
+            //catch(Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //}
+        }
+
+        static void TestCallSite()
+        {
+            var site = new CallSite(new Symbol("test"), new[] { ParameterKind.Req }, new PolymorphicSiteBinder());
+            var result = site.Call(new Fixnum(1), new Fixnum(42));
+            Console.WriteLine(result);
         }
 
         /*

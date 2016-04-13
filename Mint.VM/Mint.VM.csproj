@@ -44,13 +44,10 @@
     <Compile Include="MethodBinding\CallSite.cs" />
     <Compile Include="MethodBinding\CallSiteBinder.cs" />
     <Compile Include="MethodBinding\ClrMethodBinder.cs" />
-    <Compile Include="MethodBinding\ClrMethodBinder.Info.cs" />
-    <Compile Include="MethodBinding\ClrMethodBinder.Parameter.cs" />
-    <Compile Include="MethodBinding\ClrPropertyBinder.cs" />
-    <Compile Include="MethodBinding\ClrPropertyBinder.Info.cs" />
     <Compile Include="MethodBinding\DelegateMethodBinder.cs" />
     <Compile Include="MethodBinding\MegamorphicSiteBinder.cs" />
     <Compile Include="MethodBinding\MethodBinder.cs" />
+    <Compile Include="MethodBinding\ParameterKind.cs" />
     <Compile Include="MethodBinding\PolymorphicSiteBinder.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -14,30 +14,29 @@ namespace Mint.MethodBinding
             cache = new Dictionary<long, CachedMethod>();
         }
 
-        internal MegamorphicSiteBinder(Dictionary<long, MethodBinder> cache)
+        internal MegamorphicSiteBinder(Dictionary<long, MethodBinder> cache, CallSite site)
         {
-            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value));
+            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value, site));
         }
 
         public Function Compile(CallSite site)
         {
-            var methodName = site.MethodName;
-            return (instance, args) => Invoke(methodName, instance, args);
+            return (instance, args) => Invoke(site, instance, args);
         }
 
-        private iObject Invoke(Symbol methodName, iObject instance, iObject[] args)
+        private iObject Invoke(CallSite site, iObject instance, iObject[] args)
         {
             var klass = instance.CalculatedClass;
             CachedMethod method;
             if(!cache.TryGetValue(klass.Id, out method) || !method.Binder.Condition.Valid)
             {
                 Cleanup();
-                var binder = Object.FindMethod(instance, methodName, args);
+                var binder = Object.FindMethod(instance, site.MethodName, args);
                 if(binder == null)
                 {
                     throw new InvalidOperationException($"No method found for {instance.CalculatedClass.FullName}");
                 }
-                cache[klass.Id] = method = new CachedMethod(binder);
+                cache[klass.Id] = method = new CachedMethod(binder, site);
             }
 
             return method.Call(instance, args);
@@ -57,20 +56,24 @@ namespace Mint.MethodBinding
 
         internal class CachedMethod
         {
-            public CachedMethod(MethodBinder binder)
+            public CachedMethod(MethodBinder binder, CallSite site)
             {
-                Call = CompileMethod(Binder = binder);
+                Call = CompileMethod(Binder = binder, site);
             }
 
             public MethodBinder Binder { get; }
             public Function     Call   { get; }
 
-            private static Function CompileMethod(MethodBinder binder)
+            private static Function CompileMethod(MethodBinder binder, CallSite site)
             {
                 var instance = Parameter(typeof(iObject), "instance");
-                var args     = Parameter(typeof(iObject[]), "args");
-                var body     = binder.Bind(instance, args);
-                var lambda   = Lambda<Function>(body, instance, args);
+                var args = Parameter(typeof(iObject[]), "args");
+
+                // TODO assuming always ParameterKind.Req. change to accept Block, Rest, KeyReq, KeyRest
+                var unsplatArgs = Enumerable.Range(0, site.Parameters.Length).Select(i => ArrayIndex(args, Constant(i)));
+
+                var body   = binder.Bind(instance, unsplatArgs);
+                var lambda = Lambda<Function>(body, instance, args);
                 return lambda.Compile();
             }
         }

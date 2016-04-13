@@ -40,16 +40,20 @@ namespace Mint
         public virtual IEnumerable<Module> Ancestors       => Prepended.Concat(new[] { this }).Concat(Included);
         public         IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
 
-        protected internal Dictionary<Symbol, MethodBinder> Methods { get; } = new Dictionary<Symbol, MethodBinder>();
-        protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
-        protected internal List<Module>                Included  { get; protected set; } = new List<Module>();
-        protected internal List<Module>                Prepended { get; protected set; } = new List<Module>();
+        protected internal Dictionary<Symbol, MethodBinder> Methods   { get; } = new Dictionary<Symbol, MethodBinder>();
+        protected internal Dictionary<Symbol, iObject>      Constants { get; } = new Dictionary<Symbol, iObject>();
+        protected internal List<Module>                     Included  { get; protected set; } = new List<Module>();
+        protected internal List<Module>                     Prepended { get; protected set; } = new List<Module>();
 
         protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
 
         public override string ToString() => FullName;
 
-        public Symbol DefineMethod(MethodBinder method) => ( Methods[method.Name] = method ).Name;
+        public Symbol DefineMethod(MethodBinder method)
+        {
+            // TODO invalidate previously defined method.
+            return ( Methods[method.Name] = method ).Name;
+        }
 
         public virtual void Include(Module module)
         {

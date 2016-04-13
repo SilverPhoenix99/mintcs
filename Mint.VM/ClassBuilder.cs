@@ -69,24 +69,6 @@ namespace Mint
         public ClassBuilder<T> DefMethod(string name, MethodInfo method) =>
             DefMethod(new Symbol(name), method);
 
-        public ClassBuilder<T> DefProperty<TResult>(Symbol name, Expression<Func<TResult>> lambda)
-        {
-            Class.DefineMethod(new ClrPropertyBinder(name, Class, Reflector.Property(lambda)));
-            return this;
-        }
-
-        public ClassBuilder<T> DefProperty<TResult>(string name, Expression<Func<TResult>> lambda) =>
-            DefProperty(new Symbol(name), lambda);
-
-        public ClassBuilder<T> DefProperty<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
-        {
-            Class.DefineMethod(new ClrPropertyBinder(name, Class, Reflector<T>.Property(lambda)));
-            return this;
-        }
-
-        public ClassBuilder<T> DefProperty<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
-            DefProperty(new Symbol(name), lambda);
-
         public ClassBuilder<T> DefOperator<TResult>(Symbol name, Expression<Func<TResult>> lambda)
         {
             Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector.Operator(lambda)));
