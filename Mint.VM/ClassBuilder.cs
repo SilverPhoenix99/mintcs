@@ -87,14 +87,13 @@ namespace Mint
         public ClassBuilder<T> DefOperator<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
             DefOperator(new Symbol(name), lambda);
 
-        public ClassBuilder<T> DefLambda(Symbol name, Function lambda, Range arity)
+        public ClassBuilder<T> DefLambda(Symbol name, Delegate lambda)
         {
-            Class.DefineMethod(new DelegateMethodBinder(name, Class, lambda, arity));
+            Class.DefineMethod(new DelegateMethodBinder(name, Class, lambda));
             return this;
         }
 
-        public ClassBuilder<T> DefLambda(string name, Function lambda, Range arity) =>
-            DefLambda(new Symbol(name), lambda, arity);
+        public ClassBuilder<T> DefLambda(string name, Delegate lambda) => DefLambda(new Symbol(name), lambda);
 
         public static implicit operator Class(ClassBuilder<T> c) => c.Class;
     }

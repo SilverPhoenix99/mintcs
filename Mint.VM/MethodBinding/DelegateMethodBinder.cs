@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
-        private readonly Function function;
+        private readonly Delegate function;
 
-        public DelegateMethodBinder(Symbol name, Module owner, Function function, Range arity)
+        public DelegateMethodBinder(Symbol name, Module owner, Delegate function)
             : base(name, owner)
         {
             this.function = function;
-            Arity = arity;
+            var numParameters = function.Method.GetParameters().Length;
+            Arity = new Range(numParameters, numParameters); // TODO - 1, due to instance?
         }
 
         private DelegateMethodBinder(DelegateMethodBinder other, bool copyValidation)
@@ -23,7 +26,17 @@ namespace Mint.MethodBinding
 
         public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
-            throw new NotImplementedException();
+            Expression expression = Invoke(Constant(function), new[] { instance }.Concat(args));
+
+            if(!typeof(iObject).IsAssignableFrom(function.Method.ReturnType))
+            {
+                expression = Call(
+                    ClrMethodBinder.OBJECT_BOX_METHOD,
+                    Convert(expression, typeof(object))
+                );
+            }
+
+            return expression;
         }
 
         public override MethodBinder Duplicate(bool copyValidation) => new DelegateMethodBinder(this, copyValidation);

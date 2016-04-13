@@ -141,27 +141,6 @@ namespace Mint
             //        .DefMethod("to_s",    _ => ((FrozenObject) null).ToString())
             //        .DefMethod("inspect", _ => ((FrozenObject) null).Inspect())
             //));
-
-            /*
-            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("=="), (Func<iObject, iObject, bool>) (
-                (self, o) => self == o
-            ));
-
-            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("!="), (Func<iObject, iObject, bool>) (
-                (self, o) => self != o
-            ));
-
-            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("__id__"), (Func<iObject, Fixnum>) (
-                (self) => self.Id
-            ));
-
-            BASIC_OBJECT_CLASS.DefineMethod(new Symbol("equal?"), (Func<iObject, iObject, bool>) (
-                (self, o) => self == o
-            ));*/
-
-            //__send__
-            //instance_eval
-            //instance_exec
         }
 
         // Convert from ExpressionType to operator name

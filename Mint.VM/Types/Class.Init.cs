@@ -29,8 +29,18 @@ namespace Mint
 
         static Class()
         {
+            // ==       |  iObject#Equals(iObject)
+            // equals?  |  object::ReferenceEquals(object, object)
+            // eql?     |  (iObject i, iObject a) => i.hash == a.hash
+
             BASIC_OBJECT = ClassBuilder<Object>.Describe(null, "BasicObject")
-                //.DefLambda("!", (instance, _) => Box(!ToBool(instance)), new Range(new Fixnum(0), new Fixnum(0)) )
+                .DefMethod("__id__", Reflector.Getter( () => ((iObject) null).Id ) )
+                //.DefMethod("==", () => ((iObject) null).Equals(default(iObject)) )
+                .DefLambda("!",  (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+                //.DefLambda("!=", (Func<iObject, iObject, iObject>) ((l, r) => Object.Box(!l.Equals(r))) )
+                //.DefMethod("__send__",      () => ??? );
+                //.DefMethod("instance_eval", () => ??? );
+                //.DefMethod("instance_exec", () => ??? );
             ;
 
             // TODO define in Kernel module

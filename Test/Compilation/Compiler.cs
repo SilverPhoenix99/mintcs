@@ -72,6 +72,7 @@ namespace Mint.Compilation
             Register(tQSYMBOLS_BEG,   CompileSymbolWords);
             Register(kLBRACE,         CompileHash);
             Register(tLABEL,          CompileLabel);
+            Register(kNOTOP,          CompileNotOperator);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -634,6 +635,11 @@ namespace Mint.Compilation
                 new Symbol(value.Substring(0, value.Length - 1)),
                 typeof(iObject)
             );
+        }
+
+        protected virtual Expression CompileNotOperator(Ast<Token> ast)
+        {
+            return MakeCallSite(ast[0].Accept(this), new Symbol("!"));
         }
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) =>
