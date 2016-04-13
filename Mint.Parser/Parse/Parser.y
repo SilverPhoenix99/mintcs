@@ -1328,7 +1328,7 @@ f_arg_asgn :
 
 f_arg_item :
     f_arg_asgn { $$ = sexp($1); }
-  | kLPAREN f_margs rparen { $$ = $2; }
+  | kLPAREN f_margs rparen { $$ = sexp($2); }
 ;
 
 f_arg :

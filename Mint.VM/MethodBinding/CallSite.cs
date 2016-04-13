@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using static Mint.MethodBinding.ParameterKind;
@@ -34,8 +33,8 @@ namespace Mint.MethodBinding
 
         private Range CalculateArity()
         {
-            long min, max;
-            min = max = Parameters.Count(p => p == Req || p == Block || p == KeyReq);
+            long max;
+            var min = max = Parameters.Count(p => p == Req || p == Block || p == KeyReq);
 
             if(Parameters.Contains(Rest) || Parameters.Contains(KeyRest))
             {
@@ -47,7 +46,7 @@ namespace Mint.MethodBinding
 
         public override string ToString()
         {
-            var arity = (long) (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
+            var arity = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
             return $"CallSite<{arity}>({string.Join(", ", Parameters)})";
         }
     }

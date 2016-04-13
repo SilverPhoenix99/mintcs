@@ -25,7 +25,8 @@ namespace Mint
         {
             var body = (MethodCallExpression) Body(lambda);
             var type = body.Object?.Type;
-            return type == null ? body.Method : DeclaringMethod(body.Method, type);
+            var method = body.Method;
+            return type == null ? method : (DeclaringMethod(method, type) ?? method);
         }
 
         internal static MethodInfo Operator(LambdaExpression lambda)

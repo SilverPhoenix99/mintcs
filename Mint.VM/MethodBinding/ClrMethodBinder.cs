@@ -8,7 +8,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
-    public sealed partial class ClrMethodBinder : BaseMethodBinder
+    public sealed class ClrMethodBinder : BaseMethodBinder
     {
         private readonly MethodInfo[] infos;
 
@@ -47,27 +47,60 @@ namespace Mint.MethodBinding
                 instance = null;
             }
 
+            var argsArray  = args.ToArray();
+            var parmsArray = parms.ToArray();
+
             if(instance != null && method.DeclaringType != null)
             {
                 instance = Convert(instance, method.DeclaringType);
             }
 
-            args = args.Zip(parms, Convert);
+            Expression call;
 
-            Expression call = Call(instance, method, args);
-
-            if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
+            if(parmsArray.Length != argsArray.Length)
             {
-                call = Call(
-                    OBJECT_BOX_METHOD,
-                    Convert(call, typeof(object))
+                call = Throw(
+                    New(
+                        CTOR_ARGERROR,
+                        Constant($"wrong number of arguments (given {argsArray.Length}, expected {ArityString()})")
+                    ),
+                    typeof(iObject)
                 );
+            }
+            else
+            {
+                args = argsArray.Zip(parmsArray, Convert);
+                call = Call(instance, method, args);
+
+                if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
+                {
+                    call = Call(
+                        OBJECT_BOX_METHOD,
+                        Convert(call, typeof(object))
+                    );
+                }
             }
 
             return call;
         }
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
+
+        private Range CalculateArity()
+        {
+            var r1 = new Range(0, 0);
+            return infos.Select(CalculateArity).Aggregate(r1, Merge);
+        }
+
+        private string ArityString()
+        {
+            long min = (Fixnum) Arity.Begin;
+            long max = (Fixnum) Arity.End;
+
+            return min == max ? min.ToString()
+                 : max == long.MaxValue ? $"{min}+"
+                 : Arity.ToString();
+        }
 
         private static MethodInfo[] GetOverloads(MethodInfo method)
         {
@@ -80,22 +113,10 @@ namespace Mint.MethodBinding
             return methods.Concat(GetExtensionMethods(method)).ToArray();
         }
 
-        private Range CalculateArity()
-        {
-            var r1 = new Range(0, 0);
-            foreach(var info in infos)
-            {
-                var r2 = CalculateArity(info);
-                r1 = Merge(r1, r2);
-            }
-
-            return r1;
-        }
-
         private static Range CalculateArity(MethodInfo info)
         {
             var infos = info.GetParameters();
-            var min = infos.Where(_ => !_.IsOptional).Count();
+            var min = infos.Count(_ => !_.IsOptional);
             var max = infos.Length;
             return new Range(min, max);
         }
@@ -143,6 +164,46 @@ namespace Mint.MethodBinding
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        public static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
+        internal static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
+
+        internal static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
+
+        private class Info
+        {
+            // parameters, if specified, will follow this order:
+            // Req, Opt, Rest, Req, KeyReq | KeyOpt, KeyRest, Block
+
+            public readonly MethodInfo Method;
+            public readonly int  PrefixReq;
+            public readonly int  Optional;
+            public readonly bool Rest;
+            public readonly int  PostfixReq;
+            public readonly int  KeyReq;
+            public readonly int  KeyOpt;
+            public readonly bool KeyRest;
+            public readonly bool Block;
+
+            public Info(int prefixReq, int optional, bool rest, int postfixReq, int keyReq, int keyOpt, bool keyRest, bool block)
+            {
+                PrefixReq  = prefixReq;
+                Optional   = optional;
+                Rest       = rest;
+                PostfixReq = postfixReq;
+                KeyReq     = keyReq;
+                KeyOpt     = keyOpt;
+                KeyRest    = keyRest;
+                Block      = block;
+            }
+
+            public Range Arity
+            {
+                get
+                {
+                    long min = PrefixReq + PostfixReq + KeyReq;
+                    var max = Rest || KeyRest ? long.MaxValue : min + Optional + KeyOpt + (Block ? 1 : 0);
+                    return new Range(min, max);
+                }
+            }
+        }
     }
 }

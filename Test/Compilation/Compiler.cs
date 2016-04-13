@@ -73,6 +73,8 @@ namespace Mint.Compilation
             Register(kLBRACE,         CompileHash);
             Register(tLABEL,          CompileLabel);
             Register(kNOTOP,          CompileNotOperator);
+            Register(kEQ,             CompileEqual);
+            Register(kNEQ,            CompileNotEqual);
         }
 
         public Scope CurrentScope { get; protected set; }
@@ -640,6 +642,16 @@ namespace Mint.Compilation
         protected virtual Expression CompileNotOperator(Ast<Token> ast)
         {
             return MakeCallSite(ast[0].Accept(this), new Symbol("!"));
+        }
+
+        protected virtual Expression CompileEqual(Ast<Token> ast)
+        {
+            return MakeCallSite(ast[0].Accept(this), new Symbol("=="), ast[1].Accept(this));
+        }
+
+        protected virtual Expression CompileNotEqual(Ast<Token> ast)
+        {
+            return MakeCallSite(ast[0].Accept(this), new Symbol("!="), ast[1].Accept(this));
         }
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) =>

@@ -6,6 +6,7 @@ using Mint.MethodBinding;
 namespace Mint
 {
     class ClassBuilder<T>
+        where T : iObject
     {
         protected ClassBuilder(Class klass)
         {
@@ -94,6 +95,78 @@ namespace Mint
         }
 
         public ClassBuilder<T> DefLambda(string name, Delegate lambda) => DefLambda(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrReader<TResult>(Symbol name, Expression<Func<TResult>> lambda)
+        {
+            if(name.Name.EndsWith("=") || name.Name.EndsWith("?") || name.Name.EndsWith("!"))
+            {
+                throw new NameError($"invalid attribute name `{name}'");
+            }
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector.Getter(lambda)));
+            return this;
+        }
+
+        public ClassBuilder<T> AttrReader<TResult>(string name, Expression<Func<TResult>> lambda) =>
+            AttrReader(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrReader<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
+        {
+            if(name.Name.EndsWith("=") || name.Name.EndsWith("?") || name.Name.EndsWith("!"))
+            {
+                throw new NameError($"invalid attribute name `{name}'");
+            }
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector<T>.Getter(lambda)));
+            return this;
+        }
+
+        public ClassBuilder<T> AttrReader<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
+            AttrReader(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrWriter<TResult>(Symbol name, Expression<Func<TResult>> lambda)
+        {
+            if(name.Name.EndsWith("=") || name.Name.EndsWith("?") || name.Name.EndsWith("!"))
+            {
+                throw new NameError($"invalid attribute name `{name}'");
+            }
+            name = new Symbol(name.Name + "=");
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector.Setter(lambda)));
+            return this;
+        }
+
+        public ClassBuilder<T> AttrWriter<TResult>(string name, Expression<Func<TResult>> lambda) =>
+            AttrWriter(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrWriter<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
+        {
+            if(name.Name.EndsWith("=") || name.Name.EndsWith("?") || name.Name.EndsWith("!"))
+            {
+                throw new NameError($"invalid attribute name `{name}'");
+            }
+            name = new Symbol(name.Name + "=");
+            Class.DefineMethod(new ClrMethodBinder(name, Class, Reflector<T>.Setter(lambda)));
+            return this;
+        }
+
+        public ClassBuilder<T> AttrWriter<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
+            AttrWriter(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrAccessor<TResult>(Symbol name, Expression<Func<TResult>> lambda)
+        {
+            AttrReader(name, lambda);
+            return AttrWriter(name, lambda);
+        }
+
+        public ClassBuilder<T> AttrAccessor<TResult>(string name, Expression<Func<TResult>> lambda) =>
+            AttrAccessor(new Symbol(name), lambda);
+
+        public ClassBuilder<T> AttrAccessor<TResult>(Symbol name, Expression<Func<T, TResult>> lambda)
+        {
+            AttrReader(name, lambda);
+            return AttrWriter(name, lambda);
+        }
+
+        public ClassBuilder<T> AttrAccessor<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
+            AttrAccessor(new Symbol(name), lambda);
 
         public static implicit operator Class(ClassBuilder<T> c) => c.Class;
     }

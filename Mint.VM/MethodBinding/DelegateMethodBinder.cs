@@ -26,6 +26,8 @@ namespace Mint.MethodBinding
 
         public override Expression Bind(Expression instance, IEnumerable<Expression> args)
         {
+            // TODO parameter check
+
             Expression expression = Invoke(Constant(function), new[] { instance }.Concat(args));
 
             if(!typeof(iObject).IsAssignableFrom(function.Method.ReturnType))

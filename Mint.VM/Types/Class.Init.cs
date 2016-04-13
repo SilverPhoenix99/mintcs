@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Mint
 {
-    public partial class Class : Module
+    public partial class Class
     {
         public static readonly Class BASIC_OBJECT;
         public static readonly Class OBJECT;
@@ -34,10 +31,13 @@ namespace Mint
             // eql?     |  (iObject i, iObject a) => i.hash == a.hash
 
             BASIC_OBJECT = ClassBuilder<Object>.Describe(null, "BasicObject")
-                .DefMethod("__id__", Reflector.Getter( () => ((iObject) null).Id ) )
-                //.DefMethod("==", () => ((iObject) null).Equals(default(iObject)) )
-                .DefLambda("!",  (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
-                //.DefLambda("!=", (Func<iObject, iObject, iObject>) ((l, r) => Object.Box(!l.Equals(r))) )
+                .AttrReader("__id__", () => ((iObject) null).Id )
+                .DefMethod("==",      () => ((iObject) null).Equals(default(iObject)) )
+                .DefLambda("!",       (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+
+                // TODO must be defined in ruby : l.==(r) ? true : false
+                .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !l.Equals(r)) )
+
                 //.DefMethod("__send__",      () => ??? );
                 //.DefMethod("instance_eval", () => ??? );
                 //.DefMethod("instance_exec", () => ??? );
@@ -45,7 +45,7 @@ namespace Mint
 
             // TODO define in Kernel module
             OBJECT = ClassBuilder<Object>.Describe(BASIC_OBJECT)
-                .DefMethod("class",   Reflector.Getter( () => ((iObject) null).Class ) )
+                .AttrReader("class",  () => ((iObject) null).Class )
                 .DefMethod("to_s",    () => ((FrozenObject) null).ToString())
                 .DefMethod("inspect", () => ((FrozenObject) null).Inspect())
             ;
