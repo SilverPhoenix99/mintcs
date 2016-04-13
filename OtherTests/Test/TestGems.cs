@@ -43,7 +43,7 @@ namespace Mint.Test
                 }
 
                 var ast = Parser.Parse("(test gems)", fileText);
-                var doc = AstXmlSerializer.ToXml(ast);
+                //var doc = AstXmlSerializer.ToXml(ast);
                 //Console.WriteLine(doc.ToString());
                 ++count;
                 Console.WriteLine($"Parsed {count} files: {relPath}");

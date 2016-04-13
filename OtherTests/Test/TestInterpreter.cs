@@ -13,8 +13,8 @@ namespace Mint.Test
             {
                 var ast = Parser.Parse("(test interpreter)", fragment);
 
-                var doc = AstXmlSerializer.ToXml(ast);
-                Console.WriteLine(doc.ToString());
+                //var doc = AstXmlSerializer.ToXml(ast);
+                //Console.WriteLine(doc.ToString());
                 Console.WriteLine();
 
                 var val = new Interpreter().Visit(ast);

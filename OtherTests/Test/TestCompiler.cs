@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Mint.Compilation;
+//using Mint.Compilation;
 using Mint.Parse;
 
 namespace Mint.Test
@@ -9,7 +9,7 @@ namespace Mint.Test
     {
         public static void Test(params string[] args)
         {
-            var fragment = string.Join("\n", args);
+            /*var fragment = string.Join("\n", args);
 
             try
             {
@@ -34,7 +34,7 @@ namespace Mint.Test
             finally
             {
                 Console.WriteLine();
-            }
+            }*/
         }
     }
 }
