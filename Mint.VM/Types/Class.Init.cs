@@ -38,9 +38,18 @@ namespace Mint
                 // TODO must be defined in ruby : l.==(r) ? true : false
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !l.Equals(r)) )
 
-                //.DefMethod("__send__",      () => ??? );
-                //.DefMethod("instance_eval", () => ??? );
-                //.DefMethod("instance_exec", () => ??? );
+                .DefMethod("equal?", () => ReferenceEquals(default(object), default(object)))
+
+                //.DefMethod("__send__",                   () => ??? );
+                //.DefMethod("instance_eval",              () => ??? );
+                //.DefMethod("instance_exec",              () => ??? );
+                //.DefMethod("__binding__",                () => ??? );
+                //.DefMethod("equal?",                     () => ??? );
+                //.DefMethod("initialize",                 () => ??? );
+                //.DefMethod("method_missing",             () => ??? );
+                //.DefMethod("singleton_method_added",     () => ??? );
+                //.DefMethod("singleton_method_removed",   () => ??? );
+                //.DefMethod("singleton_method_undefined", () => ??? );
             ;
 
             // TODO define in Kernel module

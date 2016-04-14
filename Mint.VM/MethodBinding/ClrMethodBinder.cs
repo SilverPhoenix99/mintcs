@@ -43,43 +43,45 @@ namespace Mint.MethodBinding
             if(method.IsStatic)
             {
                 args     = new[] { instance }.Concat(args);
-                parms    = new[] { method.DeclaringType }.Concat(parms);
                 instance = null;
             }
-
-            var argsArray  = args.ToArray();
-            var parmsArray = parms.ToArray();
 
             if(instance != null && method.DeclaringType != null)
             {
                 instance = Convert(instance, method.DeclaringType);
             }
 
-            Expression call;
+            var argsArray  = args.ToArray();
+            var parmsArray = parms.ToArray();
+            var argsLength = argsArray.Length;
+
+            if(method.IsStatic)
+            {
+                argsLength--;
+            }
 
             if(parmsArray.Length != argsArray.Length)
             {
-                call = Throw(
+                return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {argsArray.Length}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {argsLength}, expected {ArityString()})")
                     ),
                     typeof(iObject)
                 );
             }
-            else
-            {
-                args = argsArray.Zip(parmsArray, Convert);
-                call = Call(instance, method, args);
 
-                if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
-                {
-                    call = Call(
-                        OBJECT_BOX_METHOD,
-                        Convert(call, typeof(object))
-                    );
-                }
+            args = argsArray.Zip(parmsArray, Convert);
+            Expression call = Call(instance, method, args);
+
+            if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
+            {
+                call = Call(
+                    OBJECT_BOX_METHOD,
+                    Convert(call, typeof(object))
+                );
             }
+            
 
             return call;
         }
@@ -88,7 +90,7 @@ namespace Mint.MethodBinding
 
         private Range CalculateArity()
         {
-            var r1 = new Range(0, 0);
+            var r1 = new Range(long.MaxValue, 0);
             return infos.Select(CalculateArity).Aggregate(r1, Merge);
         }
 
@@ -110,6 +112,11 @@ namespace Mint.MethodBinding
                 select m
             ;
 
+            if(method.IsStatic && !method.IsDefined(typeof(ExtensionAttribute)))
+            {
+                methods = methods.Concat(new[] { method });
+            }
+
             return methods.Concat(GetExtensionMethods(method)).ToArray();
         }
 
@@ -118,17 +125,24 @@ namespace Mint.MethodBinding
             var infos = info.GetParameters();
             var min = infos.Count(_ => !_.IsOptional);
             var max = infos.Length;
+
+            if(info.IsStatic)
+            {
+                min--;
+                max--;
+            }
+
             return new Range(min, max);
         }
 
         private static Range Merge(Range r1, Range r2)
         {
-            var min = (int) (Fixnum) r1.Begin;
-            var val = (int) (Fixnum) r2.Begin;
+            long min = (Fixnum) r1.Begin;
+            long val = (Fixnum) r2.Begin;
             if(val < min) min = val;
 
-            var max = (int) (Fixnum) r1.End;
-            val = (int) (Fixnum) r2.End;
+            long max = (Fixnum) r1.End;
+            val = (Fixnum) r2.End;
             if(val > max) max = val;
 
             return new Range(min, max);
