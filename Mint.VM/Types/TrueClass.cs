@@ -28,7 +28,7 @@ namespace Mint
 
         public override int GetHashCode() => Id.GetHashCode();
 
-        public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static implicit operator bool(TrueClass t) => true;
 

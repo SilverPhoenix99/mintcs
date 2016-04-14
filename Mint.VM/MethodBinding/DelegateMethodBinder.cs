@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
@@ -21,10 +20,10 @@ namespace Mint.MethodBinding
         private DelegateMethodBinder(DelegateMethodBinder other, bool copyValidation)
             : base(other, copyValidation)
         {
-            this.function = other.function;
+            function = other.function;
         }
 
-        public override Expression Bind(Expression instance, IEnumerable<Expression> args)
+        public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
         {
             // TODO parameter check
 

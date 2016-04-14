@@ -72,21 +72,10 @@ namespace Mint.MethodBinding
                 // TODO assuming always ParameterKind.Req. change to accept Block, Rest, KeyReq, KeyRest
                 var unsplatArgs = Enumerable.Range(0, site.Parameters.Length).Select(i => ArrayIndex(args, Constant(i)));
 
-                var body   = binder.Bind(instance, unsplatArgs);
+                var body   = binder.Bind(site, instance, unsplatArgs);
                 var lambda = Lambda<Function>(body, instance, args);
                 return lambda.Compile();
             }
         }
-
-        #region Static
-
-        public static readonly Symbol METHOD_MISSING;
-
-        static MegamorphicSiteBinder()
-        {
-            METHOD_MISSING = new Symbol("method_missing");
-        }
-
-        #endregion
     }
 }

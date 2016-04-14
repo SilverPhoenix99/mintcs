@@ -39,7 +39,7 @@ namespace Mint.MethodBinding
             var retTarget = Label(typeof(iObject), "return");
             var classId = Variable(typeof(long), "classId");
 
-            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, instance, unsplatArgs, retTarget));
+            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, site, instance, unsplatArgs, retTarget));
 
             var body = Block(
                 typeof(iObject),
@@ -72,11 +72,11 @@ namespace Mint.MethodBinding
             return lambda.Compile();
         }
 
-        private static SwitchCase CreateCase(long classId, MethodBinder binder,
+        private static SwitchCase CreateCase(long classId, MethodBinder binder, CallSite site,
                                              Expression instance, IEnumerable<Expression> args,
                                              LabelTarget retTarget)
         {
-            var ret = Return(retTarget, binder.Bind(instance, args), typeof(iObject));
+            var ret = Return(retTarget, binder.Bind(site, instance, args), typeof(iObject));
 
             var block = Block(
                 IfThen(

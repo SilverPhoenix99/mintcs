@@ -40,7 +40,7 @@ namespace Mint
             return false;
         }
 
-        public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);
 

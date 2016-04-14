@@ -14,7 +14,7 @@ namespace Mint
 
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
-        public override bool Equal(object other) { System.Console.WriteLine("float equal?"); return (other as Float)?.Value == Value; }
+        public override bool Equal(object other) => (other as Float)?.Value == Value;
 
         public override bool Equals(object other)
         {

@@ -35,7 +35,7 @@ namespace Mint
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
-        public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
 
@@ -48,6 +48,7 @@ namespace Mint
         public static readonly Symbol SELF;
         public static readonly Symbol AREF;
         public static readonly Symbol ASET;
+        public static readonly Symbol METHOD_MISSING;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -69,6 +70,7 @@ namespace Mint
             SELF = new Symbol("self");
             AREF = new Symbol("[]");
             ASET = new Symbol("[]=");
+            METHOD_MISSING = new Symbol("method_missing");
         }
 
         #endregion

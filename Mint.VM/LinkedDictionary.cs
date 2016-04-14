@@ -84,6 +84,7 @@ namespace Mint
         public void Add(TKey key, TValue value)
         {
             var node = new Node(key, value);
+            Remove(key); // force remove to update list
             map[key] = node;
 
             if(head == null)

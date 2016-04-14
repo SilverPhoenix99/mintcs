@@ -8,14 +8,9 @@ namespace Mint
     {
         private readonly List<iObject> list;
 
-        public Array() : base(Class.ARRAY)
+        public Array(IEnumerable<iObject> objs = null) : base(Class.ARRAY)
         {
-            list = new List<iObject>();
-        }
-
-        public Array(IEnumerable<iObject> objs) : base(Class.ARRAY)
-        {
-            list = new List<iObject>(objs);
+            list = objs == null ? new List<iObject>() : new List<iObject>(objs);
         }
 
         public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)

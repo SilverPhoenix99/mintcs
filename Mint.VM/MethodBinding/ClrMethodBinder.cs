@@ -25,25 +25,37 @@ namespace Mint.MethodBinding
             infos = (MethodInfo[]) other.infos.Clone();
         }
 
-        public override Expression Bind(Expression instance, IEnumerable<Expression> args)
+        public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
         {
             //TODO parameters
 
             //if(infos.Length == 1)
             {
-                return SimpleBind(infos[0], instance, args);
+                return SimpleBind(site, infos[0], instance, args);
             }
 
             // TODO : multiple binding
         }
 
-        private Expression SimpleBind(MethodInfo method, Expression instance, IEnumerable<Expression> args)
+        private Expression SimpleBind(CallSite site, MethodInfo method, Expression instance, Expression[] args)
         {
-            var parms = method.GetParameters().Select(_ => _.ParameterType);
+            var parms = method.GetParameters().Select(_ => _.ParameterType).ToArray();
             if(method.IsStatic)
             {
-                args     = new[] { instance }.Concat(args);
+                args     = new[] { instance }.Concat(args).ToArray();
                 instance = null;
+            }
+
+            if(parms.Length != args.Length)
+            {
+                var numArgs = args.Length - (method.IsStatic ? 1 : 0);
+                return Throw(
+                    New(
+                        CTOR_ARGERROR,
+                        Constant($"wrong number of arguments (given {numArgs}, expected {ArityString()})")
+                    ),
+                    typeof(iObject)
+                );
             }
 
             if(instance != null && method.DeclaringType != null)
@@ -51,28 +63,7 @@ namespace Mint.MethodBinding
                 instance = Convert(instance, method.DeclaringType);
             }
 
-            var argsArray  = args.ToArray();
-            var parmsArray = parms.ToArray();
-            var argsLength = argsArray.Length;
-
-            if(method.IsStatic)
-            {
-                argsLength--;
-            }
-
-            if(parmsArray.Length != argsArray.Length)
-            {
-                return Throw(
-                    New(
-                        CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {argsLength}, expected {ArityString()})")
-                    ),
-                    typeof(iObject)
-                );
-            }
-
-            args = argsArray.Zip(parmsArray, Convert);
-            Expression call = Call(instance, method, args);
+            Expression call = Call(instance, method, args.Zip(parms, Convert));
 
             if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
             {
@@ -81,7 +72,6 @@ namespace Mint.MethodBinding
                     Convert(call, typeof(object))
                 );
             }
-            
 
             return call;
         }

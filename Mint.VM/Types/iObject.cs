@@ -1,8 +1,6 @@
-﻿using System.Dynamic;
-
-namespace Mint
+﻿namespace Mint
 {
-    public interface iObject : IDynamicMetaObjectProvider
+    public interface iObject
     {
         long  Id { get; }
 
@@ -15,7 +13,7 @@ namespace Mint
         // Returns SingletonClass if it exists, otherwise it returns Class
         Class CalculatedClass { get; }
 
-        bool  HasSingletonClass { get; }
+        bool HasSingletonClass { get; }
 
         bool Frozen { get; }
 
