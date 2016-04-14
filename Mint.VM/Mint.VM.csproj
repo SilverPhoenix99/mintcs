@@ -36,7 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentError.cs" />
-    <Compile Include="ClassBuilder.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
     <Compile Include="NameError.cs" />

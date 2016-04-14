@@ -26,8 +26,8 @@ namespace Mint
         public static readonly Class SYMBOL;
 
         public static readonly Module KERNEL;
-        
-        private static readonly CallSite Eq;
+
+        private static readonly CallSite EqOp;
 
         static Class()
         {
@@ -35,13 +35,13 @@ namespace Mint
             // equal?   |   object::ReferenceEquals(object, object)
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
-            BASIC_OBJECT = ClassBuilder<Object>.Describe(null, "BasicObject")
+            BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .AttrReader("__id__", () => ((iObject) null).Id )
                 .DefMethod( "==",     () => ((iObject) null).Equals(default(object)) )
                 .DefLambda( "!",      (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
 
-                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(Class.Eq.Call(l, r)) ) )
+                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(Class.EqOp.Call(l, r)) ) )
 
                 //.DefMethod("__send__",                   () => ??? );
                 //.DefMethod("instance_eval",              () => ??? );
@@ -56,20 +56,19 @@ namespace Mint
 
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
-            // TODO define in Kernel module
-            OBJECT = ClassBuilder<Object>.Describe(BASIC_OBJECT);
+            OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT);
 
-            MODULE = ClassBuilder<Module>.Describe()
+            MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            CLASS = ClassBuilder<Class>.Describe(MODULE);
+            CLASS = ModuleBuilder<Class>.DescribeClass(MODULE);
 
             // required hack
             CLASS.calculatedClass = CLASS;
 
-            KERNEL = ModuleBuilder<iObject>.Describe("Kernel")
+            KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class",   _ => _.Class )
                 .DefMethod( "to_s",    () => ((FrozenObject) null).ToString() )
                 .DefMethod( "inspect", () => ((FrozenObject) null).Inspect() )
@@ -80,60 +79,60 @@ namespace Mint
 
             NUMERIC = new Class(new Symbol("Numeric"));
 
-            FLOAT = ClassBuilder<Float>.Describe(NUMERIC)
+            FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            COMPLEX = ClassBuilder<Complex>.Describe(NUMERIC);
+            COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC);
 
-            RATIONAL = ClassBuilder<Rational>.Describe(NUMERIC);
+            RATIONAL = ModuleBuilder<Rational>.DescribeClass(NUMERIC);
 
             INTEGER = new Class(NUMERIC, new Symbol("Integer"));
 
-            FIXNUM = ClassBuilder<Fixnum>.Describe(INTEGER)
+            FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            NIL = ClassBuilder<NilClass>.Describe()
+            NIL = ModuleBuilder<NilClass>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            FALSE = ClassBuilder<FalseClass>.Describe()
+            FALSE = ModuleBuilder<FalseClass>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            TRUE = ClassBuilder<TrueClass>.Describe()
+            TRUE = ModuleBuilder<TrueClass>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            ARRAY = ClassBuilder<Array>.Describe()
+            ARRAY = ModuleBuilder<Array>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            HASH = ClassBuilder<Hash>.Describe()
+            HASH = ModuleBuilder<Hash>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            RANGE = ClassBuilder<Range>.Describe()
+            RANGE = ModuleBuilder<Range>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            REGEXP = ClassBuilder<Regexp>.Describe();
+            REGEXP = ModuleBuilder<Regexp>.DescribeClass();
 
-            STRING = ClassBuilder<String>.Describe()
+            STRING = ModuleBuilder<String>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
-            SYMBOL = ClassBuilder<Symbol>.Describe()
+            SYMBOL = ModuleBuilder<Symbol>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
@@ -157,10 +156,10 @@ namespace Mint
             Object.DefineModule(STRING);
             Object.DefineModule(SYMBOL);
             Object.DefineModule(TRUE);
-            
-            Eq = CreateCallSite("==", ParameterKind.Req);
+
+            EqOp = CreateCallSite("==", ParameterKind.Req);
         }
-        
+
         private static CallSite CreateCallSite(string methodName, params ParameterKind[] kinds) =>
             new CallSite(new Symbol(methodName), kinds);
     }

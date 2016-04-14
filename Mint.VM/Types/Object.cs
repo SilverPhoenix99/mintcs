@@ -113,16 +113,6 @@ namespace Mint
             throw new NotImplementedException();
         }*/
 
-        static Object()
-        {
-            //CLASS.Include( DefineModule(
-            //    ModuleBuilder.Describe("Kernel")
-            //        .DefProperty("class", _ => ((FrozenObject) null).Class)
-            //        .DefMethod("to_s",    _ => ((FrozenObject) null).ToString())
-            //        .DefMethod("inspect", _ => ((FrozenObject) null).Inspect())
-            //));
-        }
-
         // Convert from ExpressionType to operator name
         public static string Operator(ExpressionType type)
         {
