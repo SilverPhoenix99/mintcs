@@ -24,7 +24,13 @@ namespace Mint
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-        
+
         public override string ToString() => $"#<{Class.FullName}:0x{Id:x}>";
+
+        public virtual bool Equal(object other) => Equals(other);
+
+        public override bool Equals(object other) => ReferenceEquals(this, other);
+
+        public override int GetHashCode() => Id.GetHashCode();
     }
 }

@@ -26,31 +26,32 @@ namespace Mint
 
         static Class()
         {
-            // ==       |  iObject#Equals(iObject)
-            // equals?  |  object::ReferenceEquals(object, object)
-            // eql?     |  (iObject i, iObject a) => i.hash == a.hash
+            // ==       |   iObject#Equals(iObject) (by default equal?)
+            // equal?   |   object::ReferenceEquals(object, object)
+            // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
             BASIC_OBJECT = ClassBuilder<Object>.Describe(null, "BasicObject")
                 .AttrReader("__id__", () => ((iObject) null).Id )
-                .DefMethod("==",      () => ((iObject) null).Equals(default(iObject)) )
-                .DefLambda("!",       (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+                .DefMethod( "==",     () => ((iObject) null).Equals(default(object)) )
+                .DefLambda( "!",      (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+                .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
 
-                // TODO must be defined in ruby : l.==(r) ? true : false
+                // TODO define in ruby : l.==(r) ? true : false
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !l.Equals(r)) )
 
-                .DefMethod("equal?", () => ReferenceEquals(default(object), default(object)))
 
                 //.DefMethod("__send__",                   () => ??? );
                 //.DefMethod("instance_eval",              () => ??? );
                 //.DefMethod("instance_exec",              () => ??? );
                 //.DefMethod("__binding__",                () => ??? );
-                //.DefMethod("equal?",                     () => ??? );
                 //.DefMethod("initialize",                 () => ??? );
                 //.DefMethod("method_missing",             () => ??? );
                 //.DefMethod("singleton_method_added",     () => ??? );
                 //.DefMethod("singleton_method_removed",   () => ??? );
                 //.DefMethod("singleton_method_undefined", () => ??? );
             ;
+
+            BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
             // TODO define in Kernel module
             OBJECT = ClassBuilder<Object>.Describe(BASIC_OBJECT)
@@ -128,6 +129,26 @@ namespace Mint
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
+
+            Object.DefineModule(BASIC_OBJECT);
+            Object.DefineModule(OBJECT);
+            Object.DefineModule(MODULE);
+            Object.DefineModule(CLASS);
+            Object.DefineModule(ARRAY);
+            Object.DefineModule(COMPLEX);
+            Object.DefineModule(FALSE);
+            Object.DefineModule(NUMERIC);
+            Object.DefineModule(INTEGER);
+            Object.DefineModule(FIXNUM);
+            Object.DefineModule(FLOAT);
+            Object.DefineModule(HASH);
+            Object.DefineModule(NIL);
+            Object.DefineModule(RANGE);
+            Object.DefineModule(RATIONAL);
+            Object.DefineModule(REGEXP);
+            Object.DefineModule(STRING);
+            Object.DefineModule(SYMBOL);
+            Object.DefineModule(TRUE);
         }
     }
 }

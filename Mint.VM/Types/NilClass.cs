@@ -26,13 +26,15 @@ namespace Mint
 
         public override bool Equals(object other) => IsNil(other);
 
-        public override int GetHashCode() => typeof(NilClass).GetHashCode();
+        public bool Equal(object other) => Equals(other);
 
-        public static implicit operator bool (NilClass n) => false;
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public static bool operator ==(NilClass n, object other) => IsNil(other);
+        public static implicit operator bool (NilClass self) => false;
 
-        public static bool operator !=(NilClass n, object other) => !IsNil(other);
+        public static bool operator ==(NilClass self, object other) => self.Equals(other);
+
+        public static bool operator !=(NilClass self, object other) => !self.Equals(other);
 
         #region Static
 

@@ -115,26 +115,6 @@ namespace Mint
 
         static Object()
         {
-            DefineModule(Class.BASIC_OBJECT);
-            DefineModule(Class.OBJECT);
-            DefineModule(Class.MODULE);
-            DefineModule(Class.CLASS);
-            DefineModule(Class.ARRAY);
-            DefineModule(Class.COMPLEX);
-            DefineModule(Class.FALSE);
-            DefineModule(Class.NUMERIC);
-            DefineModule(Class.INTEGER);
-            DefineModule(Class.FIXNUM);
-            DefineModule(Class.FLOAT);
-            DefineModule(Class.HASH);
-            DefineModule(Class.NIL);
-            DefineModule(Class.RANGE);
-            DefineModule(Class.RATIONAL);
-            DefineModule(Class.REGEXP);
-            DefineModule(Class.STRING);
-            DefineModule(Class.SYMBOL);
-            DefineModule(Class.TRUE);
-
             //CLASS.Include( DefineModule(
             //    ModuleBuilder.Describe("Kernel")
             //        .DefProperty("class", _ => ((FrozenObject) null).Class)

@@ -41,6 +41,8 @@ namespace Mint
 
         public override int GetHashCode() => sym.id.GetHashCode();
 
+        public bool Equal(object other) => Equals(other);
+
         #region Static
 
         public static readonly Symbol SELF;
@@ -49,9 +51,9 @@ namespace Mint
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
-        public static bool operator == (Symbol s, object obj) => s.Equals(obj);
+        public static bool operator == (Symbol self, object obj) => self.Equals(obj);
 
-        public static bool operator != (Symbol s, object obj) => !s.Equals(obj);
+        public static bool operator != (Symbol self, object obj) => !self.Equals(obj);
 
         public static explicit operator Symbol(string s) => new Symbol(s);
 

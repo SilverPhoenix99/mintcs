@@ -28,5 +28,7 @@ namespace Mint
         //iObject MethodMissing(params iObject[] args);
 
         iObject Send(iObject name, params iObject[] args);
+
+        bool Equal(object other);
     }
 }

@@ -22,8 +22,18 @@ namespace Mint
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
+        public override bool Equals(object other) => other is FalseClass;
+
+        public bool Equal(object other) => Equals(other);
+
+        public override int GetHashCode() => Id.GetHashCode();
+
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
         public static implicit operator bool(FalseClass f) => false;
+
+        public static bool operator ==(FalseClass self, object other) => self.Equals(other);
+
+        public static bool operator !=(FalseClass self, object other) => !self.Equals(other);
     }
 }

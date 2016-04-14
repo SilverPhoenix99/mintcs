@@ -197,8 +197,9 @@ namespace Mint.MethodBinding
             public readonly bool KeyRest;
             public readonly bool Block;
 
-            public Info(int prefixReq, int optional, bool rest, int postfixReq, int keyReq, int keyOpt, bool keyRest, bool block)
+            public Info(MethodInfo method, int prefixReq, int optional, bool rest, int postfixReq, int keyReq, int keyOpt, bool keyRest, bool block)
             {
+                Method     = method;
                 PrefixReq  = prefixReq;
                 Optional   = optional;
                 Rest       = rest;

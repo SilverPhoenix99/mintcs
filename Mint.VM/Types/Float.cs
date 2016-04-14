@@ -14,6 +14,18 @@ namespace Mint
 
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
+        public override bool Equal(object other) { System.Console.WriteLine("float equal?"); return (other as Float)?.Value == Value; }
+
+        public override bool Equals(object other)
+        {
+            if(other is Float)  return Equal(other);
+            if(other is Fixnum) return (double) ((Fixnum) other).Value == Value;
+            // TODO Complex and Rational
+            return false;
+        }
+
+        public override int GetHashCode() => Value.GetHashCode();
+
         public static Float operator -(Float v) => new Float(-v.Value);
 
         public static explicit operator Float(double v) => new Float(v);

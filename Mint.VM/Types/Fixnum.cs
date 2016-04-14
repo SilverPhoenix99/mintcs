@@ -22,11 +22,23 @@ namespace Mint
 
         public override string ToString() => Value.ToString();
 
+        public override int GetHashCode() => Value.GetHashCode();
+
         public string Inspect() => ToString();
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
+
+        public bool Equal(object other) => other is Fixnum && ((Fixnum) other).Value == Value;
+
+        public override bool Equals(object other)
+        {
+            if(other is Fixnum) return Equal(other);
+            if(other is Float)  return ((Float) other).Equals(this);
+            // TODO Complex and Rational
+            return false;
+        }
 
         public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
 
