@@ -1,3 +1,4 @@
+using Mint.MethodBinding;
 using System;
 
 namespace Mint
@@ -24,6 +25,10 @@ namespace Mint
         public static readonly Class STRING;
         public static readonly Class SYMBOL;
 
+        public static readonly Module KERNEL;
+        
+        private static readonly CallSite Eq;
+
         static Class()
         {
             // ==       |   iObject#Equals(iObject) (by default equal?)
@@ -36,9 +41,7 @@ namespace Mint
                 .DefLambda( "!",      (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
 
-                // TODO define in ruby : l.==(r) ? true : false
-                .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !l.Equals(r)) )
-
+                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(Class.Eq.Call(l, r)) ) )
 
                 //.DefMethod("__send__",                   () => ??? );
                 //.DefMethod("instance_eval",              () => ??? );
@@ -54,11 +57,7 @@ namespace Mint
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
             // TODO define in Kernel module
-            OBJECT = ClassBuilder<Object>.Describe(BASIC_OBJECT)
-                .AttrReader("class",  () => ((iObject) null).Class )
-                .DefMethod("to_s",    () => ((FrozenObject) null).ToString())
-                .DefMethod("inspect", () => ((FrozenObject) null).Inspect())
-            ;
+            OBJECT = ClassBuilder<Object>.Describe(BASIC_OBJECT);
 
             MODULE = ClassBuilder<Module>.Describe()
                 .DefMethod("to_s",    _ => _.ToString())
@@ -69,6 +68,15 @@ namespace Mint
 
             // required hack
             CLASS.calculatedClass = CLASS;
+
+            KERNEL = ModuleBuilder<iObject>.Describe("Kernel")
+                .AttrReader("class",   _ => _.Class )
+                .DefMethod( "to_s",    () => ((FrozenObject) null).ToString() )
+                .DefMethod( "inspect", () => ((FrozenObject) null).Inspect() )
+            ;
+
+            OBJECT.Include(KERNEL);
+            Object.DefineModule(KERNEL);
 
             NUMERIC = new Class(new Symbol("Numeric"));
 
@@ -149,7 +157,12 @@ namespace Mint
             Object.DefineModule(STRING);
             Object.DefineModule(SYMBOL);
             Object.DefineModule(TRUE);
+            
+            Eq = CreateCallSite("==", ParameterKind.Req);
         }
+        
+        private static CallSite CreateCallSite(string methodName, params ParameterKind[] kinds) =>
+            new CallSite(new Symbol(methodName), kinds);
     }
 }
 

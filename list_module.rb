@@ -1,5 +1,3 @@
-require 'pry'
-
 class ListModule
 
   attr_reader :list
@@ -38,6 +36,7 @@ class ListModule
   end
 
   def to_s(with_constants = false)
+    require 'pry'
     text = ""
     if with_constants
       list = format_constants

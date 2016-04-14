@@ -49,6 +49,7 @@
     <Compile Include="MethodBinding\MethodBinder.cs" />
     <Compile Include="MethodBinding\ParameterKind.cs" />
     <Compile Include="MethodBinding\PolymorphicSiteBinder.cs" />
+    <Compile Include="ModuleBuilder.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflector.cs" />

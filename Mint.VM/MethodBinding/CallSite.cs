@@ -47,7 +47,7 @@ namespace Mint.MethodBinding
         public override string ToString()
         {
             var arity = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
-            return $"CallSite<{arity}>({string.Join(", ", Parameters)})";
+            return $"CallSite<{MethodName} : {arity}>({string.Join(", ", Parameters)})";
         }
     }
 }
