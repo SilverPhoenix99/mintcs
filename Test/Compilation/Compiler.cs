@@ -732,7 +732,7 @@ namespace Mint.Compilation
 
         private static Expression MakeCallSite(Expression instance, Symbol methodName, params Expression[] args)
         {
-            var parameters = args.Select(_ => ParameterKind.Req);
+            var parameters = args.Select(_ => ParameterKind.Required);
             var site       = new CallSite(methodName, parameters);
             var call       = Property(Constant(site), MEMBER_CALLSITE_CALL);
             var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args);

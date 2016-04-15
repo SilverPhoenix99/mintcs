@@ -34,7 +34,7 @@ namespace Mint.MethodBinding
         private Range CalculateArity()
         {
             long max;
-            var min = max = Parameters.Count(p => p == Req || p == Block || p == KeyReq);
+            var min = max = Parameters.Count(p => p == Required || p == Block || p == KeyRequired);
 
             if(Parameters.Contains(Rest) || Parameters.Contains(KeyRest))
             {

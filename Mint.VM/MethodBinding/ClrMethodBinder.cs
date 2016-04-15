@@ -10,37 +10,80 @@ namespace Mint.MethodBinding
 {
     public sealed class ClrMethodBinder : BaseMethodBinder
     {
-        private readonly MethodInfo[] infos;
+        private readonly Info[] Infos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method)
             : base(name, owner)
         {
-            infos = GetOverloads(method);
+            Infos = GetOverloads(method);
             Arity = CalculateArity();
         }
 
         private ClrMethodBinder(ClrMethodBinder other, bool copyValidation)
             : base(other, copyValidation)
         {
-            infos = (MethodInfo[]) other.infos.Clone();
+            Infos = (MethodInfo[]) other.Infos.Clone();
         }
 
         public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
         {
-            //TODO parameters
-
             //if(infos.Length == 1)
+            //{
+            //    return SimpleBind(site, Infos[0], instance, args);
+            //}
+
+            var infos = Infos.Where( _ => _.Arity.Include(args.Length) ).ToArray();
+
+            if(infos.Length == 0)
             {
-                return SimpleBind(site, infos[0], instance, args);
+                return Throw(
+                    New(
+                        CTOR_ARGERROR,
+                        Constant($"none of the method overloads accepts {args.Length} arguments")
+                    ),
+                    typeof(iObject)
+                );
             }
 
-            // TODO : multiple binding
+            var cases = infos.Select(_ => CreateSwitchCase(_, site, instance, args));
+
+            throw new NotImplementedException();
         }
 
-        private Expression SimpleBind(CallSite site, MethodInfo method, Expression instance, Expression[] args)
+        private SwitchCase CreateSwitchCase(CallSite site, Info info, Expression instance, Expression[] args)
         {
-            var parms = method.GetParameters().Select(_ => _.ParameterType).ToArray();
-            if(method.IsStatic)
+            var parms = info.Method.GetParameters().Select(_ => _.ParameterType).ToArray();
+
+            if(info.Method.IsStatic)
+            {
+                args     = new[] { instance }.Concat(args).ToArray();
+                instance = null;
+            }
+
+            Expression body;
+            if(parms.Length != args.Length)
+            {
+                var numArgs = args.Length - (info.Method.IsStatic ? 1 : 0);
+                body = Throw(
+                    New(
+                        CTOR_ARGERROR,
+                        Constant($"wrong number of arguments (given {numArgs}, expected {ArityString()})")
+                    ),
+                    typeof(iObject)
+                );
+            }
+            else
+            {
+
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private Expression SimpleBind(CallSite site, Info info, Expression instance, Expression[] args)
+        {
+            var parms = info.Method.GetParameters().Select(_ => _.ParameterType).ToArray();
+            if(info.Method.IsStatic)
             {
                 args     = new[] { instance }.Concat(args).ToArray();
                 instance = null;
@@ -48,7 +91,7 @@ namespace Mint.MethodBinding
 
             if(parms.Length != args.Length)
             {
-                var numArgs = args.Length - (method.IsStatic ? 1 : 0);
+                var numArgs = args.Length - (info.Method.IsStatic ? 1 : 0);
                 return Throw(
                     New(
                         CTOR_ARGERROR,
@@ -58,14 +101,14 @@ namespace Mint.MethodBinding
                 );
             }
 
-            if(instance != null && method.DeclaringType != null)
+            if(instance != null && info.Method.DeclaringType != null)
             {
-                instance = Convert(instance, method.DeclaringType);
+                instance = Convert(instance, info.Method.DeclaringType);
             }
 
-            Expression call = Call(instance, method, args.Zip(parms, Convert));
+            Expression call = Call(instance, info.Method, args.Zip(parms, Convert));
 
-            if(!typeof(iObject).IsAssignableFrom(method.ReturnType))
+            if(!typeof(iObject).IsAssignableFrom(info.Method.ReturnType))
             {
                 call = Call(
                     OBJECT_BOX_METHOD,
@@ -78,11 +121,7 @@ namespace Mint.MethodBinding
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
-        private Range CalculateArity()
-        {
-            var r1 = new Range(long.MaxValue, 0);
-            return infos.Select(CalculateArity).Aggregate(r1, Merge);
-        }
+        private Range CalculateArity() => Infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);
 
         private string ArityString()
         {
@@ -108,21 +147,6 @@ namespace Mint.MethodBinding
             }
 
             return methods.Concat(GetExtensionMethods(method)).ToArray();
-        }
-
-        private static Range CalculateArity(MethodInfo info)
-        {
-            var infos = info.GetParameters();
-            var min = infos.Count(_ => !_.IsOptional);
-            var max = infos.Length;
-
-            if(info.IsStatic)
-            {
-                min--;
-                max--;
-            }
-
-            return new Range(min, max);
         }
 
         private static Range Merge(Range r1, Range r2)
@@ -175,39 +199,30 @@ namespace Mint.MethodBinding
         private class Info
         {
             // parameters, if specified, will follow this order:
-            // Req, Opt, Rest, Req, KeyReq | KeyOpt, KeyRest, Block
+            // Required, Optional, Rest, Required, (KeyRequired | KeyOptional), KeyRest, Block
 
             public readonly MethodInfo Method;
-            public readonly int  PrefixReq;
-            public readonly int  Optional;
-            public readonly bool Rest;
-            public readonly int  PostfixReq;
-            public readonly int  KeyReq;
-            public readonly int  KeyOpt;
-            public readonly bool KeyRest;
-            public readonly bool Block;
+            public readonly Range Arity;
 
-            public Info(MethodInfo method, int prefixReq, int optional, bool rest, int postfixReq, int keyReq, int keyOpt, bool keyRest, bool block)
+            public Info(MethodInfo method)
             {
-                Method     = method;
-                PrefixReq  = prefixReq;
-                Optional   = optional;
-                Rest       = rest;
-                PostfixReq = postfixReq;
-                KeyReq     = keyReq;
-                KeyOpt     = keyOpt;
-                KeyRest    = keyRest;
-                Block      = block;
+                Method = method;
+                Arity = CalculateArity();
             }
 
-            public Range Arity
+            private static Range CalculateArity()
             {
-                get
+                var parameters = Method.GetParameters();
+                var min = parameters.Count(_ => !_.IsOptional);
+                var max = parameters.Length;
+
+                if(Method.IsStatic)
                 {
-                    long min = PrefixReq + PostfixReq + KeyReq;
-                    var max = Rest || KeyRest ? long.MaxValue : min + Optional + KeyOpt + (Block ? 1 : 0);
-                    return new Range(min, max);
+                    min--;
+                    max--;
                 }
+
+                return new Range(min, max);
             }
         }
     }

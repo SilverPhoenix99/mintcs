@@ -23,7 +23,7 @@ namespace Mint.MethodBinding
                 return (inst, parms) => DefaultCall(site, inst, parms);
             }
 
-            if(cache.Count >= MEGAMORPHIC_THREASHOLD)
+            if(cache.Count > MEGAMORPHIC_THREASHOLD)
             {
                 site.Binder = new MegamorphicSiteBinder(cache, site);
                 return site.Binder.Compile(site);
@@ -44,11 +44,11 @@ namespace Mint.MethodBinding
             var body = Block(
                 typeof(iObject),
                 new[] { classId },
-                // var $class = instance.CalculatedClass;
+                // var $class = instance.CalculatedClass.Id;
                 Assign(classId, Property(Property(instance, PROP_CALCULATEDCLASS), PROP_ID)),
-                // switch($class.Id) { ... }
+                // switch($classId) { ... }
                 Switch(classId, null, null, cases),
-                // @cache[$class.Id] = Object.FindMethod(instance, @method_name, args);
+                // @cache[$classId] = Object.FindMethod(instance, @method_name, args);
                 Call(
                     Constant(cache),
                     METHOD_CACHE_INDEXER,
@@ -76,25 +76,18 @@ namespace Mint.MethodBinding
                                              Expression instance, IEnumerable<Expression> args,
                                              LabelTarget retTarget)
         {
-            var ret = Return(retTarget, binder.Bind(site, instance, args), typeof(iObject));
-
-            var block = Block(
-                IfThen(
-                    Property(Constant(binder.Condition), PROP_VALID),
-                    ret
-                )
-            );
-
             // case @class_id:
             // {
-            //     if(!@condition.Valid)
+            //     if(@condition.Valid)
             //     {
             //         return @method(instance, args);
-            //     };
-            //     break;
+            //     }
             // }
             return SwitchCase(
-                block,
+                IfThen(
+                    Property(Constant(binder.Condition), PROP_VALID),
+                    Return(retTarget, binder.Bind(site, retTarget, instance, args), typeof(iObject))
+                ),
                 Constant(classId)
             );
         }
@@ -107,7 +100,7 @@ namespace Mint.MethodBinding
             return site.Call(instance, args);
         }
 
-        private const int MEGAMORPHIC_THREASHOLD = 30;
+        private const int MEGAMORPHIC_THREASHOLD = 32;
 
         private static readonly PropertyInfo PROP_CALCULATEDCLASS = Reflector<iObject>.Property(
             _ => _.CalculatedClass
