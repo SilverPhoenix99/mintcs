@@ -88,9 +88,33 @@ namespace Mint
 
         public static implicit operator long  (Fixnum s) => s.Value;
 
+        public static implicit operator Fixnum(int v) => new Fixnum(v);
+
+        public static explicit operator int(Fixnum s) => (int) s.Value;
+
+        public static implicit operator Fixnum(uint v) => new Fixnum(v);
+
+        public static explicit operator uint(Fixnum s) => (uint) s.Value;
+
+        public static implicit operator Fixnum(short v) => new Fixnum(v);
+
+        public static explicit operator short(Fixnum s) => (short) s.Value;
+
+        public static implicit operator Fixnum(ushort v) => new Fixnum(v);
+
+        public static explicit operator ushort(Fixnum s) => (ushort) s.Value;
+
+        public static implicit operator Fixnum(sbyte v) => new Fixnum(v);
+
+        public static explicit operator sbyte(Fixnum s) => (sbyte) s.Value;
+
+        public static implicit operator Fixnum(byte v) => new Fixnum(v);
+
+        public static explicit operator byte(Fixnum s) => (byte) s.Value;
+
         public static explicit operator Fixnum(double v) => new Fixnum((long) v);
 
-        public static explicit operator double(Fixnum v) => new Fixnum((long) v);
+        public static explicit operator double(Fixnum v) => v.Value;
 
         public static explicit operator Fixnum(Float v)  => new Fixnum((long) v.Value);
 

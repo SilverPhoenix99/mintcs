@@ -86,7 +86,7 @@ namespace Mint.MethodBinding
             return SwitchCase(
                 IfThen(
                     Property(Constant(binder.Condition), PROP_VALID),
-                    Return(retTarget, binder.Bind(site, retTarget, instance, args), typeof(iObject))
+                    Return(retTarget, binder.Bind(site, instance, args), typeof(iObject))
                 ),
                 Constant(classId)
             );

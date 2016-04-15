@@ -38,6 +38,7 @@
     <Compile Include="ArgumentError.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
+    <Compile Include="MethodBinding\ClrMethodBinder.Info.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="MethodBinding\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\CallSite.cs" />

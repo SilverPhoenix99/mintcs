@@ -7,17 +7,19 @@ namespace Mint
     {
         private StringBuilder value;
 
-        public String() : base(Class.STRING)
-        {
-            Value = "";
-        }
-
         public String(string value) : base(Class.STRING)
         {
             Value = value;
         }
 
-        public String(String other) : this(other.Value) { }
+        public String() : this("")
+        { }
+
+        public String(StringBuilder value) : this(value.ToString())
+        { }
+
+        public String(String other) : this(other.Value)
+        { }
 
         public string Value
         {

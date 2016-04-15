@@ -1,112 +1,111 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Text;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
-    public sealed class ClrMethodBinder : BaseMethodBinder
+    public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private readonly Info[] Infos;
+        private readonly Info[] infos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method)
             : base(name, owner)
         {
-            Infos = GetOverloads(method);
+            infos = GetOverloads(method);
+            Debug.Assert(infos.Length != 0);
             Arity = CalculateArity();
         }
 
         private ClrMethodBinder(ClrMethodBinder other, bool copyValidation)
             : base(other, copyValidation)
         {
-            Infos = (MethodInfo[]) other.Infos.Clone();
+            infos = (Info[]) other.infos.Clone();
         }
+
+        public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
         public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
         {
-            //if(infos.Length == 1)
-            //{
-            //    return SimpleBind(site, Infos[0], instance, args);
-            //}
+            var filteredInfos = infos.Where( _ => _.Arity.Include((Fixnum) args.Length) ).ToArray();
 
-            var infos = Infos.Where( _ => _.Arity.Include(args.Length) ).ToArray();
-
-            if(infos.Length == 0)
+            if(filteredInfos.Length == 0)
             {
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"none of the method overloads accepts {args.Length} arguments")
+                        Constant($"wrong number of arguments (given {args.Length}, expected {ArityString()})")
                     ),
                     typeof(iObject)
                 );
             }
 
-            var cases = infos.Select(_ => CreateSwitchCase(_, site, instance, args));
+            if(filteredInfos.Length == 1)
+            {
+                return CompileBody(site, filteredInfos[0], instance, args);
+            }
 
-            throw new NotImplementedException();
+            var cases = filteredInfos.Select(_ => CreateSwitchCase(site, _, instance, args));
+
+            return Switch(
+                typeof(iObject),
+                Constant(true),
+                Throw(New(
+                    CTOR_TYPEERROR,
+                    Call(INVALID_CONVERSION_METHOD, new Expression[] { Constant(filteredInfos) }.Concat(args))
+                ), typeof(iObject)),
+                null,
+                cases
+            );
         }
 
         private SwitchCase CreateSwitchCase(CallSite site, Info info, Expression instance, Expression[] args)
         {
-            var parms = info.Method.GetParameters().Select(_ => _.ParameterType).ToArray();
-
-            if(info.Method.IsStatic)
-            {
-                args     = new[] { instance }.Concat(args).ToArray();
-                instance = null;
-            }
-
-            Expression body;
-            if(parms.Length != args.Length)
-            {
-                var numArgs = args.Length - (info.Method.IsStatic ? 1 : 0);
-                body = Throw(
-                    New(
-                        CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {numArgs}, expected {ArityString()})")
-                    ),
-                    typeof(iObject)
-                );
-            }
-            else
-            {
-
-            }
-
-            throw new NotImplementedException();
+            var parameters = info.Method.GetParameters().Select(_ => _.ParameterType);
+            var condition  = args.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
+            var body       = CompileBody(site, info, instance, args);
+            return SwitchCase(body, condition);
         }
 
-        private Expression SimpleBind(CallSite site, Info info, Expression instance, Expression[] args)
+        private Expression CompileBody(CallSite site, Info info, Expression instance, Expression[] args)
         {
-            var parms = info.Method.GetParameters().Select(_ => _.ParameterType).ToArray();
-            if(info.Method.IsStatic)
-            {
-                args     = new[] { instance }.Concat(args).ToArray();
-                instance = null;
-            }
+            // site will be needed for non Required parameters
 
-            if(parms.Length != args.Length)
+            if(!info.Arity.Include((Fixnum) args.Length))
             {
-                var numArgs = args.Length - (info.Method.IsStatic ? 1 : 0);
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {numArgs}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {args.Length}, expected {ArityString()})")
                     ),
                     typeof(iObject)
                 );
             }
 
-            if(instance != null && info.Method.DeclaringType != null)
+            var parameters = info.Method.GetParameters();
+
+            if(info.Method.DeclaringType != null)
             {
                 instance = Convert(instance, info.Method.DeclaringType);
             }
 
-            Expression call = Call(instance, info.Method, args.Zip(parms, Convert));
+            if(info.Method.IsStatic)
+            {
+                var convertedArgs = args.Zip(parameters.Skip(1), ConvertArg);
+                args = new[] { instance }.Concat(convertedArgs).ToArray();
+                instance = null;
+            }
+            else
+            {
+                args = args.Zip(parameters, ConvertArg).ToArray();
+            }
+
+            Expression call = Call(instance, info.Method, args);
 
             if(!typeof(iObject).IsAssignableFrom(info.Method.ReturnType))
             {
@@ -119,9 +118,18 @@ namespace Mint.MethodBinding
             return call;
         }
 
-        public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
+        private Range CalculateArity() => infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);
 
-        private Range CalculateArity() => Infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);
+        private static Expression ConvertArg(Expression arg, ParameterInfo parameter)
+        {
+            Type type;
+            if(TYPES.TryGetValue(parameter.ParameterType, out type))
+            {
+                arg = Convert(arg, type);
+            }
+
+            return Convert(arg, parameter.ParameterType);
+        }
 
         private string ArityString()
         {
@@ -133,7 +141,24 @@ namespace Mint.MethodBinding
                  : Arity.ToString();
         }
 
-        private static MethodInfo[] GetOverloads(MethodInfo method)
+        #region Static
+
+        private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
+        {
+            { typeof(string),        typeof(String) },
+            { typeof(StringBuilder), typeof(String) },
+            { typeof(sbyte),         typeof(Fixnum) },
+            { typeof(byte),          typeof(Fixnum) },
+            { typeof(short),         typeof(Fixnum) },
+            { typeof(ushort),        typeof(Fixnum) },
+            { typeof(int),           typeof(Fixnum) },
+            { typeof(uint),          typeof(Fixnum) },
+            { typeof(long),          typeof(Fixnum) },
+            { typeof(float),         typeof(Float)  },
+            { typeof(double),        typeof(Float)  }
+        };
+
+        private static Info[] GetOverloads(MethodInfo method)
         {
             var methods =
                 from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
@@ -146,7 +171,7 @@ namespace Mint.MethodBinding
                 methods = methods.Concat(new[] { method });
             }
 
-            return methods.Concat(GetExtensionMethods(method)).ToArray();
+            return methods.Concat(GetExtensionMethods(method)).Select(_ => new Info(_)).ToArray();
         }
 
         private static Range Merge(Range r1, Range r2)
@@ -192,38 +217,28 @@ namespace Mint.MethodBinding
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
+        private static string InvalidConversionMessage(Info[] infos, params iObject[] args)
+        {
+            // TODO
+
+            //for(var i = 0; i < args.Length; i++)
+            //{
+            //    var arg = args[i];
+            //    var types = infos.Select(_ => _.Method.GetParameters()[i]).an;
+            //}
+
+            //msg = "argument {index}: no implicit conversion of {type} to {string.Join(" or ", types)}";
+            return "no implicit conversion exists";
+        }
+
         internal static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
 
-        internal static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
+        private static readonly MethodInfo INVALID_CONVERSION_METHOD =
+            typeof(ClrMethodBinder).GetMethod(nameof(InvalidConversionMessage), BindingFlags.NonPublic | BindingFlags.Static);
 
-        private class Info
-        {
-            // parameters, if specified, will follow this order:
-            // Required, Optional, Rest, Required, (KeyRequired | KeyOptional), KeyRest, Block
+        private static readonly ConstructorInfo CTOR_ARGERROR  = Reflector.Ctor<ArgumentError>(typeof(string));
+        private static readonly ConstructorInfo CTOR_TYPEERROR = Reflector.Ctor<TypeError>(typeof(string));
 
-            public readonly MethodInfo Method;
-            public readonly Range Arity;
-
-            public Info(MethodInfo method)
-            {
-                Method = method;
-                Arity = CalculateArity();
-            }
-
-            private static Range CalculateArity()
-            {
-                var parameters = Method.GetParameters();
-                var min = parameters.Count(_ => !_.IsOptional);
-                var max = parameters.Length;
-
-                if(Method.IsStatic)
-                {
-                    min--;
-                    max--;
-                }
-
-                return new Range(min, max);
-            }
-        }
+        #endregion
     }
 }
