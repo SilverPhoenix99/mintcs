@@ -1,5 +1,5 @@
-﻿using System.Dynamic;
-using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Mint
 {
@@ -20,7 +20,45 @@ namespace Mint
 
         public void Freeze() { }
 
-        public override string ToString() => Value.ToString();
+        public override string ToString() => ToString(10);
+
+        public string ToString(int radix)
+        {
+            if(radix < 2 || radix > 36)
+            {
+                throw new ArgumentError($"invalid radix {radix}");
+            }
+
+            if(Value == 0)
+            {
+                return "0";
+            }
+
+            if(radix == 10)
+            {
+                return Value.ToString();
+            }
+
+            var sign = Value < 0;
+            var value = Math.Abs(Value);
+            var chars = new List<char>();
+
+            while(value != 0)
+            {
+                var pos = (int) (value % radix);
+                chars.Add(RADIX[pos]);
+                value /= radix;
+            }
+
+            if(sign)
+            {
+                chars.Add('-');
+            }
+
+            chars.Reverse();
+
+            return new string(chars.ToArray());
+        }
 
         public override int GetHashCode() => Value.GetHashCode();
 
@@ -41,6 +79,8 @@ namespace Mint
         }
 
         //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
+
+        private const string RADIX = "0123456789abcdefghijklmnopqrstuvwxyz";
 
         public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);
 

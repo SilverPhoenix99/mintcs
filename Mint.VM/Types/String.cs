@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Text;
 
 namespace Mint
 {
     public class String : BaseObject
     {
-        private string value;
+        private StringBuilder value;
 
         public String() : base(Class.STRING)
         {
@@ -22,12 +23,12 @@ namespace Mint
         {
             get
             {
-                return value;
+                return value.ToString();
             }
             set
             {
                 if(value == null) throw new ArgumentNullException(nameof(value));
-                this.value = value;
+                this.value = new StringBuilder(value);
             }
         }
 
@@ -47,7 +48,7 @@ namespace Mint
                 throw new TypeError($"no implicit conversion of {type} into String");
             }
 
-            value += ((String) other).Value;
+            value.Append( ((String) other).Value );
             return this;
         }
 
