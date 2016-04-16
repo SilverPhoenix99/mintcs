@@ -39,6 +39,8 @@
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
     <Compile Include="MethodBinding\ClrMethodBinder.Info.cs" />
+    <Compile Include="MethodBinding\Megamorphic.CachedMethod.cs" />
+    <Compile Include="MethodBinding\Polymorphic.CachedMethod.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="MethodBinding\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\CallSite.cs" />

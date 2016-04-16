@@ -6,13 +6,15 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
-    public sealed class PolymorphicSiteBinder : CallSiteBinder
+    public sealed partial class PolymorphicSiteBinder : CallSiteBinder
     {
-        private readonly Dictionary<long, MethodBinder> cache = new Dictionary<long, MethodBinder>();
+        private readonly Dictionary<long, CachedMethod> cache = new Dictionary<long, CachedMethod>();
+        private readonly ParameterExpression instance = Parameter(typeof(iObject), "instance");
+        private readonly ParameterExpression args = Parameter(typeof(iObject[]), "args");
 
         public Function Compile(CallSite site)
         {
-            var invalidKeys = cache.Where(_ => !_.Value.Condition.Valid).Select(_ => _.Key).ToArray();
+            var invalidKeys = cache.Where(_ => !_.Value.Binder.Condition.Valid).Select(_ => _.Key).ToArray();
             foreach(var key in invalidKeys)
             {
                 cache.Remove(key);
@@ -29,17 +31,10 @@ namespace Mint.MethodBinding
                 return site.Binder.Compile(site);
             }
 
-            var instance = Parameter(typeof(iObject), "instance");
-
-            var args = Parameter(typeof(iObject[]), "args");
-
-            // TODO assuming always ParameterKind.Req. change to accept Block, Rest, KeyReq, KeyRest
-            var unsplatArgs = Enumerable.Range(0, site.Parameters.Length).Select(i => ArrayIndex(args, Constant(i)));
-
             var retTarget = Label(typeof(iObject), "return");
             var classId = Variable(typeof(long), "classId");
 
-            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, site, instance, unsplatArgs, retTarget));
+            var cases = cache.Select(_ => CreateCase(_.Key, _.Value, retTarget));
 
             var body = Block(
                 typeof(iObject),
@@ -48,12 +43,18 @@ namespace Mint.MethodBinding
                 Assign(classId, Property(Property(instance, PROP_CALCULATEDCLASS), PROP_ID)),
                 // switch($classId) { ... }
                 Switch(classId, null, null, cases),
-                // @cache[$classId] = Object.FindMethod(instance, @method_name, args);
+                // @cache[$classId] = new CachedMethod(Object.FindMethod(instance, @method_name, args), @site, @instance, @args);
                 Call(
                     Constant(cache),
                     METHOD_CACHE_INDEXER,
                     classId,
-                    Call(METHOD_FINDMETHOD, instance, Constant(site.MethodName), args)
+                    New(
+                        CTOR_CACHEDMETHOD,
+                        Call(METHOD_FINDMETHOD, instance, Constant(site.MethodName), args),
+                        Constant(site),
+                        Constant(instance),
+                        Constant(args)
+                    )
                 ),
                 // @site.Call = @binder.Compile(@site);
                 Assign(
@@ -72,9 +73,7 @@ namespace Mint.MethodBinding
             return lambda.Compile();
         }
 
-        private static SwitchCase CreateCase(long classId, MethodBinder binder, CallSite site,
-                                             Expression instance, IEnumerable<Expression> args,
-                                             LabelTarget retTarget)
+        private static SwitchCase CreateCase(long classId, CachedMethod method, LabelTarget retTarget)
         {
             // case @class_id:
             // {
@@ -85,19 +84,19 @@ namespace Mint.MethodBinding
             // }
             return SwitchCase(
                 IfThen(
-                    Property(Constant(binder.Condition), PROP_VALID),
-                    Return(retTarget, binder.Bind(site, instance, args), typeof(iObject))
+                    Property(Constant(method.Binder.Condition), PROP_VALID),
+                    Return(retTarget, method.Expression, typeof(iObject))
                 ),
                 Constant(classId)
             );
         }
 
-        private iObject DefaultCall(CallSite site, iObject instance, iObject[] args)
+        private iObject DefaultCall(CallSite site, iObject self, iObject[] arguments)
         {
-            var method = Object.FindMethod(instance, site.MethodName, args);
-            cache[instance.CalculatedClass.Id] = method;
+            var method = Object.FindMethod(self, site.MethodName, arguments);
+            cache[self.CalculatedClass.Id] = new CachedMethod(method, site, instance, args);
             site.Call = Compile(site);
-            return site.Call(instance, args);
+            return site.Call(self, arguments);
         }
 
         private const int MEGAMORPHIC_THREASHOLD = 32;
@@ -114,7 +113,7 @@ namespace Mint.MethodBinding
             () => Object.FindMethod(default(iObject), default(Symbol), default(iObject[]))
         );
 
-        private static readonly MethodInfo METHOD_CACHE_INDEXER = Reflector<Dictionary<long, MethodBinder>>.Setter(
+        private static readonly MethodInfo METHOD_CACHE_INDEXER = Reflector<Dictionary<long, CachedMethod>>.Setter(
             _ => _[default(long)]
         );
 
@@ -129,5 +128,8 @@ namespace Mint.MethodBinding
         private static readonly PropertyInfo PROP_VALID = Reflector<Condition>.Property(
             _ => _.Valid
         );
+
+        private static readonly ConstructorInfo CTOR_CACHEDMETHOD =
+            Reflector.Ctor<CachedMethod>(typeof(MethodBinder), typeof(CallSite), typeof(Expression), typeof(Expression));
     }
 }

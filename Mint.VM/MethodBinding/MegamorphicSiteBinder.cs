@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
-    public sealed class MegamorphicSiteBinder : CallSiteBinder
+    public sealed partial class MegamorphicSiteBinder : CallSiteBinder
     {
         private readonly Dictionary<long, CachedMethod> cache;
 
@@ -14,9 +13,9 @@ namespace Mint.MethodBinding
             cache = new Dictionary<long, CachedMethod>();
         }
 
-        internal MegamorphicSiteBinder(Dictionary<long, MethodBinder> cache, CallSite site)
+        internal MegamorphicSiteBinder(Dictionary<long, PolymorphicSiteBinder.CachedMethod> cache, CallSite site)
         {
-            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value, site));
+            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value.Binder, site));
         }
 
         public Function Compile(CallSite site)
@@ -51,30 +50,6 @@ namespace Mint.MethodBinding
             foreach(var key in invalidKeys)
             {
                 cache.Remove(key);
-            }
-        }
-
-        internal class CachedMethod
-        {
-            public CachedMethod(MethodBinder binder, CallSite site)
-            {
-                Call = CompileMethod(Binder = binder, site);
-            }
-
-            public MethodBinder Binder { get; }
-            public Function     Call   { get; }
-
-            private static Function CompileMethod(MethodBinder binder, CallSite site)
-            {
-                var instance = Parameter(typeof(iObject), "instance");
-                var args = Parameter(typeof(iObject[]), "args");
-
-                // TODO assuming always ParameterKind.Req. change to accept Block, Rest, KeyReq, KeyRest
-                var unsplatArgs = Enumerable.Range(0, site.Parameters.Length).Select(i => ArrayIndex(args, Constant(i)));
-
-                var body   = binder.Bind(site, instance, unsplatArgs);
-                var lambda = Lambda<Function>(body, instance, args);
-                return lambda.Compile();
             }
         }
     }

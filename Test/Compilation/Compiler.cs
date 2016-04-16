@@ -17,11 +17,11 @@ namespace Mint.Compilation
         private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
-        protected readonly string filename;
+        protected readonly string Filename;
 
         public Compiler(string filename, Closure binding)
         {
-            this.filename = filename;
+            Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
 
             Register(tINTEGER,        CompileInteger);
@@ -303,7 +303,7 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileFileName(Ast<Token> ast)
         {
-            return Constant(new String(filename), typeof(iObject));
+            return Constant(new String(Filename), typeof(iObject));
         }
 
         protected virtual Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileScopedWhile);
@@ -399,7 +399,7 @@ namespace Mint.Compilation
             if(CurrentScope.Type == ScopeType.While)
             {
                 // value is ignored, so there's no need to compile it
-                throw new SyntaxError(filename, ast.Value.Location.Item1, "Invalid retry");
+                throw new SyntaxError(Filename, ast.Value.Location.Item1, "Invalid retry");
             }
 
             throw new NotImplementedException();
@@ -418,10 +418,15 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileArray(Ast<Token> ast)
         {
-            return Convert(
-                ListInit(New(ARRAY_CTOR), ast.Select(_ => _.Accept(this))),
-                typeof(iObject)
-            );
+            return CreateArray(ast.Select(_ => _.Accept(this)).ToArray());
+        }
+
+        private static Expression CreateArray(Expression[] values)
+        {
+            var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
+            return values.Length == 0
+                ? (Expression) array
+                : Convert(ListInit(array, values), typeof(iObject));
         }
 
         protected virtual Expression CompileRange(Ast<Token> ast)
@@ -444,7 +449,7 @@ namespace Mint.Compilation
             switch(lval.Type)
             {
                 case kSELF:
-                    throw new SyntaxError(filename, ast[0].Value.Location.Item1, "Can't change the value of self");
+                    throw new SyntaxError(Filename, ast[0].Value.Location.Item1, "Can't change the value of self");
 
                 case tIDENTIFIER:
                 {
@@ -533,10 +538,7 @@ namespace Mint.Compilation
                         where list.Count != 0
                         select CompileString(New(STRING_CTOR1), list);
 
-            return Convert(
-                ListInit(New(ARRAY_CTOR), lists),
-                typeof(iObject)
-            );
+            return CreateArray(lists.ToArray());
         }
 
         protected virtual Expression CompileSymbolWords(Ast<Token> ast)
@@ -545,10 +547,7 @@ namespace Mint.Compilation
                         where list.Count != 0
                         select CompileSymbol(list);
 
-            return Convert(
-                ListInit(New(ARRAY_CTOR), lists),
-                typeof(iObject)
-            );
+            return CreateArray(lists.ToArray());
         }
 
         private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list)
@@ -674,7 +673,7 @@ namespace Mint.Compilation
         protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
         protected static readonly ConstructorInfo SYMBOL_CTOR  = Reflector.Ctor<Symbol>(typeof(string));
-        protected static readonly ConstructorInfo ARRAY_CTOR   = Reflector.Ctor<Array>();
+        protected static readonly ConstructorInfo ARRAY_CTOR   = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
         protected static readonly ConstructorInfo RANGE_CTOR   = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         protected static readonly ConstructorInfo HASH_CTOR    = Reflector.Ctor<Hash>();
 
