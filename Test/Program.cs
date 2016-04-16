@@ -1,7 +1,6 @@
 ﻿using Mint;
 using Mint.MethodBinding;
 using System;
-using System.Linq.Expressions;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -33,7 +32,12 @@ namespace Test
 
         static void TestCallSite()
         {
-            var site = new CallSite(new Symbol("test"), new[] { ParameterKind.Required }, new PolymorphicSiteBinder());
+            var site = new CallSite(
+                new Symbol("test"),
+                Visibility.Private,
+                new[] { ParameterKind.Required },
+                new PolymorphicSiteBinder()
+            );
             var result = site.Call(new Fixnum(1), new Fixnum(42));
             Console.WriteLine(result);
         }

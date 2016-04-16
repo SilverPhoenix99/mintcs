@@ -461,10 +461,17 @@ namespace Mint.Compilation
 
                 case kDOT:
                 {
-                    var lhs = ast[0][0].Accept(this);
-                    var name = new Symbol(ast[0][1].Value.Value + "=");
-                    var rhs = ast[1].Accept(this);
-                    return MakeCallSite(lhs, name, rhs);
+                    var lhs   = ast[0][0].Accept(this);
+                    var name  = new Symbol(ast[0][1].Value.Value + "=");
+                    var rhs   = ast[1].Accept(this);
+                    var value = Variable(typeof(iObject), "value");
+
+                    return Block(
+                        typeof(iObject),
+                        new[] { value },
+                        Assign(value, MakeCallSite(Visibility.Public, lhs, name, rhs)),
+                        value
+                    );
                 }
 
                 case kLBRACK2:
@@ -472,7 +479,14 @@ namespace Mint.Compilation
                     var lhs = ast[0][0].Accept(this);
                     var rhs = ast[0][1].Select(_ => _.Accept(this))
                         .Concat(new[] { ast[1].Accept(this) }).ToArray();
-                    return MakeCallSite(lhs, Symbol.ASET, rhs);
+                    var value = Variable(typeof(iObject), "value");
+
+                    return Block(
+                        typeof(iObject),
+                        new[] { value },
+                        Assign(value, MakeCallSite(Visibility.Public, lhs, Symbol.ASET, rhs)),
+                        value
+                    );
                 }
 
                 default:
@@ -484,18 +498,24 @@ namespace Mint.Compilation
         {
             var methodName = new Symbol(ast[1].Value.Value);
 
-            // TODO if empty => private method
-            if(ast[0].IsList && ast[0].List.Count == 0)
+            Expression instance;
+            var lhs = ast[0];
+            var visibility = lhs.Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
+            if(lhs.IsList && lhs.List.Count == 0)
             {
-                throw new NotImplementedException("private method");
+                instance = CompileSelf();
+                visibility = Visibility.Private;
+            }
+            else
+            {
+                instance = lhs.Accept(this);
             }
 
-            var instance = ast[0].Accept(this);
             var args = ast[2].Select(_ => _.Accept(this)).ToArray();
-            return MakeCallSite(instance, methodName, args);
+            return MakeCallSite(visibility, instance, methodName, args);
         }
 
-        protected virtual Expression CompileSelf(Ast<Token> ast)
+        protected virtual Expression CompileSelf(Ast<Token> ast = null)
         {
             return Constant(CurrentScope.Closure.Self);
         }
@@ -640,17 +660,26 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileNotOperator(Ast<Token> ast)
         {
-            return MakeCallSite(ast[0].Accept(this), new Symbol("!"));
+            // TODO if protected in instance_eval, and lhs != self but same class => public
+
+            var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
+            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("!"));
         }
 
         protected virtual Expression CompileEqual(Ast<Token> ast)
         {
-            return MakeCallSite(ast[0].Accept(this), new Symbol("=="), ast[1].Accept(this));
+            // TODO if protected in instance_eval, and lhs != self but same class => public
+
+            var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
+            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("=="), ast[1].Accept(this));
         }
 
         protected virtual Expression CompileNotEqual(Ast<Token> ast)
         {
-            return MakeCallSite(ast[0].Accept(this), new Symbol("!="), ast[1].Accept(this));
+            // TODO if protected in instance_eval, and lhs != self but same class => public
+
+            var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
+            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("!="), ast[1].Accept(this));
         }
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) =>
@@ -729,10 +758,10 @@ namespace Mint.Compilation
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
-        private static Expression MakeCallSite(Expression instance, Symbol methodName, params Expression[] args)
+        private static Expression MakeCallSite(Visibility visibility, Expression instance, Symbol methodName, params Expression[] args)
         {
             var parameters = args.Select(_ => ParameterKind.Required);
-            var site       = new CallSite(methodName, parameters);
+            var site       = new CallSite(methodName, visibility, parameters);
             var call       = Property(Constant(site), MEMBER_CALLSITE_CALL);
             var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args);
             return Invoke(call, instance, argList);

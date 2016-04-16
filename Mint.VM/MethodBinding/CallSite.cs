@@ -6,11 +6,20 @@ namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, params iObject[] args);
 
+    public enum Visibility
+    {
+        Private,
+        Protected,
+        Public
+    }
+
     public sealed class CallSite
     {
-        public CallSite(Symbol methodName, IEnumerable<ParameterKind> parameters, CallSiteBinder binder = null)
+        public CallSite(Symbol methodName, Visibility visibility,
+                        IEnumerable<ParameterKind> parameters, CallSiteBinder binder = null)
         {
             MethodName = methodName;
+            Visibility = visibility;
             Parameters = parameters.ToArray();
             Arity = CalculateArity();
             Binder = binder;
@@ -22,7 +31,7 @@ namespace Mint.MethodBinding
         public Range           Arity      { get; }
         public CallSiteBinder  Binder     { get; set; }
         public Function        Call       { get; set; }
-        //public Visibility Visibility { get; } // TODO (private: "f", protected: "self.f", public: "anything.f")
+        public Visibility      Visibility { get; } // Private: "f", Protected: "self.f", Public: "anything.f"
 
         private iObject DefaultCall(iObject instance, iObject[] args)
         {
