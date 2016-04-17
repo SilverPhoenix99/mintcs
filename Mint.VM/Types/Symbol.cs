@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq.Expressions;
 using System.Threading;
 
 namespace Mint
@@ -15,8 +13,8 @@ namespace Mint
             sym = Sym.New(name);
         }
 
-        public long   Id                => sym.id;
-        public string Name              => sym.name;
+        public long   Id                => sym.Id;
+        public string Name              => sym.Name;
         public Class  Class             => Class.SYMBOL;
         public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
         public Class  CalculatedClass   => Class.SYMBOL;
@@ -25,13 +23,13 @@ namespace Mint
 
         public void Freeze() { }
 
-        public override string ToString() => sym.name;
+        public override string ToString() => sym.Name;
 
-        public string Inspect() => ":" + sym.name; // TODO: use String#Inspect if there is whitespace or non-ascii
+        public string Inspect() => ":" + sym.Name; // TODO: use String#Inspect if there is whitespace or non-ascii
 
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
-        public bool Equals(Symbol obj) => sym.id == obj.sym.id;
+        public bool Equals(Symbol obj) => sym.Id == obj.sym.Id;
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
@@ -39,7 +37,7 @@ namespace Mint
 
         public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
 
-        public override int GetHashCode() => sym.id.GetHashCode();
+        public override int GetHashCode() => sym.Id.GetHashCode();
 
         public bool Equal(object other) => Equals(other);
 
@@ -49,6 +47,9 @@ namespace Mint
         public static readonly Symbol AREF;
         public static readonly Symbol ASET;
         public static readonly Symbol METHOD_MISSING;
+        public static readonly Symbol NOT_OP;
+        public static readonly Symbol EQ;
+        public static readonly Symbol NEQ;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -71,27 +72,30 @@ namespace Mint
             AREF = new Symbol("[]");
             ASET = new Symbol("[]=");
             METHOD_MISSING = new Symbol("method_missing");
+            NOT_OP = new Symbol("!");
+            EQ = new Symbol("==");
+            NEQ = new Symbol("!=");
         }
 
         #endregion
 
         private class Sym
         {
-            private static long nextId = 0;
+            private static long nextId;
 
-            public readonly long id = Interlocked.Increment(ref nextId) << 4 | 0xe;
-            public readonly string name;
+            public readonly long Id = Interlocked.Increment(ref nextId) << 4 | 0xe;
+            public readonly string Name;
 
-            public Sym(string name)
+            private Sym(string name)
             {
-                this.name = name;
+                Name = name;
             }
 
             ~Sym()
             {
                 lock(SYMBOLS)
                 {
-                    SYMBOLS.Remove(name);
+                    SYMBOLS.Remove(Name);
                 }
             }
 

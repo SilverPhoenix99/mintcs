@@ -23,11 +23,14 @@ namespace Mint.MethodBinding
             function = other.function;
         }
 
-        public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
+        public override Expression Bind(CallSite site, Expression instance, Expression args)
         {
             // TODO parameter check
 
-            Expression expression = Invoke(Constant(function), new[] { instance }.Concat(args));
+            var length = site.Parameters.Length;
+            var unsplatArgs = Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(args, Constant(i)));
+
+            Expression expression = Invoke(Constant(function), new[] { instance }.Concat(unsplatArgs));
 
             if(!typeof(iObject).IsAssignableFrom(function.Method.ReturnType))
             {

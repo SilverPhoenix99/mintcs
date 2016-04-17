@@ -421,7 +421,7 @@ namespace Mint.Compilation
             return CreateArray(ast.Select(_ => _.Accept(this)).ToArray());
         }
 
-        private static Expression CreateArray(Expression[] values)
+        private static Expression CreateArray(params Expression[] values)
         {
             var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
             return values.Length == 0
@@ -461,30 +461,36 @@ namespace Mint.Compilation
 
                 case kDOT:
                 {
+                    // <lhs>.<name>=(<rhs>)
                     var lhs   = ast[0][0].Accept(this);
                     var name  = new Symbol(ast[0][1].Value.Value + "=");
                     var rhs   = ast[1].Accept(this);
                     var value = Variable(typeof(iObject), "value");
+                    var arg   = new Argument(ParameterKind.Required, value);
 
                     return Block(
                         typeof(iObject),
                         new[] { value },
-                        Assign(value, MakeCallSite(Visibility.Public, lhs, name, rhs)),
+                        Assign(value, rhs),
+                        MakeCallSite(Visibility.Public, lhs, name, arg),
                         value
                     );
                 }
 
                 case kLBRACK2:
                 {
-                    var lhs = ast[0][0].Accept(this);
-                    var rhs = ast[0][1].Select(_ => _.Accept(this))
-                        .Concat(new[] { ast[1].Accept(this) }).ToArray();
+                    // <lhs>[<args>+] = <rhs>  =>  <lhs>.[]=(<args>+, <rhs>)
+                    var lhs   = ast[0][0].Accept(this);
+                    var rhs   = ast[1].Accept(this);
                     var value = Variable(typeof(iObject), "value");
+                    var arg   = new Argument(ParameterKind.Required, value);
+                    var args  = ast[0][1].Select(CompileParameter).Concat(new[] { arg }).ToArray();
 
                     return Block(
                         typeof(iObject),
                         new[] { value },
-                        Assign(value, MakeCallSite(Visibility.Public, lhs, Symbol.ASET, rhs)),
+                        Assign(value, rhs),
+                        MakeCallSite(Visibility.Public, lhs, Symbol.ASET, args),
                         value
                     );
                 }
@@ -511,8 +517,50 @@ namespace Mint.Compilation
                 instance = lhs.Accept(this);
             }
 
-            var args = ast[2].Select(_ => _.Accept(this)).ToArray();
+            var args = ast[2].Select(CompileParameter).ToArray();
             return MakeCallSite(visibility, instance, methodName, args);
+        }
+
+        private class Argument : Tuple<ParameterKind, Expression>
+        {
+            public Argument(ParameterKind kind, Expression arg) : base(kind, arg)
+            { }
+
+            public ParameterKind Kind => Item1;
+            public Expression Arg => Item2;
+        }
+
+        private Argument CompileParameter(Ast<Token> ast)
+        {
+            switch(ast.Value.Type)
+            {
+                case tLABEL:
+                {
+                    var label = ast.Accept(this);
+                    var value = ast[0].Accept(this);
+                    return new Argument(ParameterKind.KeyRequired, CreateArray(label, value));
+                }
+
+                case tLABEL_END: goto case kASSOC;
+                case kASSOC:
+                {
+                    var label = ast[0].Accept(this);
+                    var value = ast[1].Accept(this);
+                    return new Argument(ParameterKind.KeyRequired, CreateArray(label, value));
+                }
+
+                case kSTAR:
+                    return new Argument(ParameterKind.Rest, ast.Accept(this));
+
+                case kDSTAR: 
+                    return new Argument(ParameterKind.KeyRest, ast.Accept(this));
+
+                case kAMPER:
+                    return new Argument(ParameterKind.Block, ast.Accept(this));
+
+                default:
+                    return new Argument(ParameterKind.Required, ast.Accept(this));
+            }
         }
 
         protected virtual Expression CompileSelf(Ast<Token> ast = null)
@@ -663,7 +711,7 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("!"));
+            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.NOT_OP);
         }
 
         protected virtual Expression CompileEqual(Ast<Token> ast)
@@ -671,7 +719,8 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("=="), ast[1].Accept(this));
+            var arg = new Argument(ParameterKind.Required, ast[1].Accept(this));
+            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.EQ, arg);
         }
 
         protected virtual Expression CompileNotEqual(Ast<Token> ast)
@@ -679,7 +728,8 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            return MakeCallSite(visibility, ast[0].Accept(this), new Symbol("!="), ast[1].Accept(this));
+            var arg = new Argument(ParameterKind.Required, ast[1].Accept(this));
+            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.NEQ, arg);
         }
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) =>
@@ -758,12 +808,12 @@ namespace Mint.Compilation
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
-        private static Expression MakeCallSite(Visibility visibility, Expression instance, Symbol methodName, params Expression[] args)
+        private static Expression MakeCallSite(Visibility visibility, Expression instance, Symbol methodName, params Argument[] args)
         {
-            var parameters = args.Select(_ => ParameterKind.Required);
+            var parameters = args.Select(_ => _.Kind);
             var site       = new CallSite(methodName, visibility, parameters);
             var call       = Property(Constant(site), MEMBER_CALLSITE_CALL);
-            var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args);
+            var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args.Select(_ => _.Arg));
             return Invoke(call, instance, argList);
         }
     }

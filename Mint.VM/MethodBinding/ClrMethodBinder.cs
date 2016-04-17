@@ -30,49 +30,56 @@ namespace Mint.MethodBinding
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
-        public override Expression Bind(CallSite site, Expression instance, params Expression[] args)
+        public override Expression Bind(CallSite site, Expression instance, Expression args)
         {
-            var filteredInfos = infos.Where( _ => _.Arity.Include((Fixnum) args.Length) ).ToArray();
+            // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
+            var length = site.Parameters.Length;
+
+            var filteredInfos = infos.Where( _ => _.Arity.Include((Fixnum) length) ).ToArray();
 
             if(filteredInfos.Length == 0)
             {
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {args.Length}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {length}, expected {ArityString()})")
                     ),
                     typeof(iObject)
                 );
             }
 
-            if(filteredInfos.Length == 1)
-            {
-                return CompileBody(site, filteredInfos[0], instance, args);
-            }
+            var unsplatArgs = Enumerable.Range(0, length)
+                .Select(i => (Expression) ArrayIndex(args, Constant(i)))
+                .ToArray();
+            var cases = filteredInfos.Select(_ => CreateSwitchCase(_, instance, unsplatArgs));
 
-            var cases = filteredInfos.Select(_ => CreateSwitchCase(site, _, instance, args));
-
+            //switch()
+            //{
+            //    case ...: { ... }
+            //    default:
+            //        throw new TypeError(InvalidConversionMessage(@filteredInfos, args));
+            //}
             return Switch(
                 typeof(iObject),
                 Constant(true),
                 Throw(New(
                     CTOR_TYPEERROR,
-                    Call(INVALID_CONVERSION_METHOD, new Expression[] { Constant(filteredInfos) }.Concat(args))
+                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), args)
                 ), typeof(iObject)),
                 null,
                 cases
             );
         }
 
-        private SwitchCase CreateSwitchCase(CallSite site, Info info, Expression instance, Expression[] args)
+        private SwitchCase CreateSwitchCase(Info info, Expression instance, Expression[] args)
         {
             var parameters = info.Method.GetParameters().Select(_ => _.ParameterType);
             var condition  = args.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
-            var body       = CompileBody(site, info, instance, args);
+            var body       = CompileBody(info, instance, args);
             return SwitchCase(body, condition);
         }
 
-        private Expression CompileBody(CallSite site, Info info, Expression instance, Expression[] args)
+        private Expression CompileBody(Info info, Expression instance, Expression[] args)
         {
             // site will be needed for non Required parameters
 
@@ -217,7 +224,7 @@ namespace Mint.MethodBinding
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        private static string InvalidConversionMessage(Info[] infos, params iObject[] args)
+        private static string InvalidConversionMessage(Info[] infos, iObject[] args)
         {
             // TODO
 

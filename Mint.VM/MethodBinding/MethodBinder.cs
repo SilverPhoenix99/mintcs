@@ -10,8 +10,7 @@ namespace Mint.MethodBinding
         Condition Condition { get; }
         Range     Arity     { get; }
 
-        Expression Bind(CallSite site, Expression instance, IEnumerable<Expression> args);
-        Expression Bind(CallSite site, Expression instance, params Expression[] args);
+        Expression Bind(CallSite site, Expression instance, Expression args);
 
         MethodBinder Duplicate(bool copyValidation);
     }

@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace Mint.MethodBinding
@@ -31,10 +29,7 @@ namespace Mint.MethodBinding
         public Condition Condition { get; }
         public Range     Arity     { get; protected set; }
 
-        public Expression Bind(CallSite site, Expression instance, IEnumerable<Expression> args) =>
-            Bind(site, instance, args.ToArray());
-
-        public abstract Expression Bind(CallSite site, Expression instance, params Expression[] args);
+        public abstract Expression Bind(CallSite site, Expression instance, Expression args);
 
         public abstract MethodBinder Duplicate(bool copyValidation);
     }
