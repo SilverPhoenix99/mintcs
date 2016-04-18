@@ -550,13 +550,13 @@ namespace Mint.Compilation
                 }
 
                 case kSTAR:
-                    return new Argument(ParameterKind.Rest, ast.Accept(this));
+                    return new Argument(ParameterKind.Rest, ast[0].Accept(this));
 
-                case kDSTAR: 
-                    return new Argument(ParameterKind.KeyRest, ast.Accept(this));
+                case kDSTAR:
+                    return new Argument(ParameterKind.KeyRest, ast[0].Accept(this));
 
                 case kAMPER:
-                    return new Argument(ParameterKind.Block, ast.Accept(this));
+                    return new Argument(ParameterKind.Block, ast[0].Accept(this));
 
                 default:
                     return new Argument(ParameterKind.Required, ast.Accept(this));
@@ -815,6 +815,15 @@ namespace Mint.Compilation
             var call       = Property(Constant(site), MEMBER_CALLSITE_CALL);
             var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args.Select(_ => _.Arg));
             return Invoke(call, instance, argList);
+        }
+
+        internal static readonly MethodInfo DEBUGVIEW_INFO =
+            typeof(Expression).GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic).GetMethod;
+
+        internal static void DumpExpression(Expression expr)
+        {
+            Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, new object[0]));
+            Console.WriteLine();
         }
     }
 }

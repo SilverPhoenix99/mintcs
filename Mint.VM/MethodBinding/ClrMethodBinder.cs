@@ -48,6 +48,11 @@ namespace Mint.MethodBinding
                 );
             }
 
+            if(length == 0) // no parameters => only 1 info
+            {
+                return CompileBody(infos[0], instance);
+            }
+
             var unsplatArgs = Enumerable.Range(0, length)
                 .Select(i => (Expression) ArrayIndex(args, Constant(i)))
                 .ToArray();
@@ -73,13 +78,16 @@ namespace Mint.MethodBinding
 
         private SwitchCase CreateSwitchCase(Info info, Expression instance, Expression[] args)
         {
-            var parameters = info.Method.GetParameters().Select(_ => _.ParameterType);
+            var parameters = info.Method.GetParameters().Select(_ => _.ParameterType).Select(_ => {
+                Type type;
+                return TYPES.TryGetValue(_, out type) ? type : _;
+            });
             var condition  = args.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
             var body       = CompileBody(info, instance, args);
             return SwitchCase(body, condition);
         }
 
-        private Expression CompileBody(Info info, Expression instance, Expression[] args)
+        private Expression CompileBody(Info info, Expression instance, params Expression[] args)
         {
             // site will be needed for non Required parameters
 
