@@ -120,17 +120,7 @@ namespace Mint.MethodBinding
                 args = args.Zip(parameters, ConvertArg).ToArray();
             }
 
-            Expression call = Call(instance, info.Method, args);
-
-            if(!typeof(iObject).IsAssignableFrom(info.Method.ReturnType))
-            {
-                call = Call(
-                    OBJECT_BOX_METHOD,
-                    Convert(call, typeof(object))
-                );
-            }
-
-            return call;
+            return Call(instance, info.Method, args);
         }
 
         private Range CalculateArity() => infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);

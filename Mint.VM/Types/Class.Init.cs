@@ -37,11 +37,10 @@ namespace Mint
 
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .AttrReader("__id__", () => ((iObject) null).Id )
-                .DefMethod( "==",     () => ((iObject) null).Equals(default(object)) )
                 .DefLambda( "!",      (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+                .DefMethod( "==",     () => ((iObject) null).Equals(default(object)) )
+                .DefLambda( "!=",     (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
                 .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
-
-                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(Class.EqOp.Call(l, r)) ) )
 
                 //.DefMethod("__send__",                   () => ??? );
                 //.DefMethod("instance_eval",              () => ??? );
@@ -72,6 +71,7 @@ namespace Mint
                 .AttrReader("class",   _ => _.Class )
                 .DefMethod( "to_s",    () => ((FrozenObject) null).ToString() )
                 .DefMethod( "inspect", () => ((FrozenObject) null).Inspect() )
+                .DefLambda( "nil?",    (Func<iObject, iObject>) (_ => new FalseClass()))
             ;
 
             OBJECT.Include(KERNEL);
@@ -98,6 +98,11 @@ namespace Mint
             NIL = ModuleBuilder<NilClass>.DescribeClass()
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new TrueClass()))
+                .DefLambda("to_a", (Func<iObject, Array>)   (_ => new Array()))
+                .DefLambda("to_f", (Func<iObject, Float>)   (_ => new Float(0)))
+                .DefLambda("to_i", (Func<iObject, Fixnum>)  (_ => new Fixnum()))
+                .DefLambda("to_h", (Func<iObject, Hash>)    (_ => new Hash()))
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()

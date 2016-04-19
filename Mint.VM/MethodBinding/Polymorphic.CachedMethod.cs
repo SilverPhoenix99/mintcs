@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
@@ -10,6 +11,18 @@ namespace Mint.MethodBinding
             {
                 Binder = binder;
                 Expression = Binder.Bind(site, instance, args);
+
+                if(!typeof(iObject).IsAssignableFrom(Expression.Type))
+                {
+                    Expression = Call(
+                        ClrMethodBinder.OBJECT_BOX_METHOD,
+                        Convert(Expression, typeof(object))
+                    );
+                }
+                else if(Expression.Type != typeof(iObject))
+                {
+                    Expression = Convert(Expression, typeof(iObject));
+                }
             }
 
             public MethodBinder Binder { get; }

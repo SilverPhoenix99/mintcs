@@ -30,17 +30,7 @@ namespace Mint.MethodBinding
             var length = site.Parameters.Length;
             var unsplatArgs = Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(args, Constant(i)));
 
-            Expression expression = Invoke(Constant(function), new[] { instance }.Concat(unsplatArgs));
-
-            if(!typeof(iObject).IsAssignableFrom(function.Method.ReturnType))
-            {
-                expression = Call(
-                    ClrMethodBinder.OBJECT_BOX_METHOD,
-                    Convert(expression, typeof(object))
-                );
-            }
-
-            return expression;
+            return Invoke(Constant(function), new[] { instance }.Concat(unsplatArgs));
         }
 
         public override MethodBinder Duplicate(bool copyValidation) => new DelegateMethodBinder(this, copyValidation);

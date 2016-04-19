@@ -64,6 +64,8 @@ namespace Mint
 
         public string Inspect() => ToString();
 
+        public string Inspect(int radix) => ToString(radix);
+
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
