@@ -68,10 +68,15 @@ namespace Mint
             CLASS.calculatedClass = CLASS;
 
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
-                .AttrReader("class",   _ => _.Class )
-                .DefMethod( "to_s",    () => ((FrozenObject) null).ToString() )
-                .DefMethod( "inspect", () => ((FrozenObject) null).Inspect() )
-                .DefLambda( "nil?",    (Func<iObject, iObject>) (_ => new FalseClass()))
+                .AttrReader("class",     _ => _.Class )
+                .DefMethod( "to_s",      () => ((FrozenObject) null).ToString() )
+                .DefMethod( "inspect",   () => ((FrozenObject) null).Inspect() )
+                .DefLambda( "nil?",      (Func<iObject, iObject>) (_ => new FalseClass()) )
+                .DefLambda( "frozen?",   (Func<iObject, bool>) (_ => _.Frozen) )
+                .DefLambda( "freeze",    (Func<iObject, iObject>) (_ => { _.Freeze(); return new NilClass(); }) )
+                .DefLambda( "hash",      (Func<iObject, long>) (_ => _.GetHashCode()) )
+                .DefLambda( "itself",    (Func<iObject, iObject>) (_ => _) )
+                .AttrReader("object_id", () => ((iObject) null).Id )
             ;
 
             OBJECT.Include(KERNEL);

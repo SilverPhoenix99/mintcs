@@ -12,7 +12,7 @@ namespace Mint
         public override Class  Class => Class.FLOAT;
         public          double Value { get; }
 
-        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
+        public override string ToString() => Value.ToString("0.0###############", CultureInfo.InvariantCulture);
 
         public override bool Equal(object other) => (other as Float)?.Value == Value;
 
