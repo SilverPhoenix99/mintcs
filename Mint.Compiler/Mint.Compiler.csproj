@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{73B15842-E015-45FB-953B-8D7967A24B09}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{5B6E70B3-FF6E-420E-8429-83BDB322C789}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mint</RootNamespace>
-    <AssemblyName>Test</AssemblyName>
+    <AssemblyName>Mint.Compiler</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,27 +32,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AstXmlSerializer.cs" />
-    <Compile Include="Extensions\ArrayExtensions.cs" />
-    <Compile Include="Extensions\ExpressionExtension.cs" />
-    <Compile Include="Extensions\ListExtensions.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Compilation\Closure.cs" />
+    <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\Scope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repl.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Mint.Compiler\Mint.Compiler.csproj">
-      <Project>{5b6e70b3-ff6e-420e-8429-83bdb322c789}</Project>
-      <Name>Mint.Compiler</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Mint.Parser\Mint.Parser.csproj">
       <Project>{7e8eb224-55e0-408e-afda-0258e01211ce}</Project>
       <Name>Mint.Parser</Name>

@@ -6,24 +6,16 @@ namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, params iObject[] args);
 
-    public enum Visibility
-    {
-        Private,
-        Protected,
-        Public
-    }
-
     public sealed class CallSite
     {
-        public CallSite(Symbol methodName, Visibility visibility,
-                        IEnumerable<ParameterKind> parameters, CallSiteBinder binder = null)
+        public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ParameterKind> parameters, CallSiteBinder binder = null)
         {
             MethodName = methodName;
             Visibility = visibility;
             Parameters = parameters.ToArray();
-            Arity = CalculateArity();
-            Binder = binder;
-            Call = Binder != null ? Binder.Compile(this) : DefaultCall;
+            Arity      = CalculateArity();
+            Binder     = binder;
+            Call       = DefaultCall;
         }
 
         public Symbol          MethodName { get; }
@@ -35,7 +27,10 @@ namespace Mint.MethodBinding
 
         private iObject DefaultCall(iObject instance, iObject[] args)
         {
-            Binder = new PolymorphicSiteBinder();
+            if(Binder == null)
+            {
+                Binder = new PolymorphicSiteBinder();
+            }
             Call = Binder.Compile(this);
             return Call(instance, args);
         }
@@ -56,7 +51,7 @@ namespace Mint.MethodBinding
         public override string ToString()
         {
             var arity = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
-            return $"CallSite<{MethodName} : {arity}>({string.Join(", ", Parameters)})";
+            return $"CallSite<\"{MethodName}\" : {arity} : {string.Join(", ", Parameters)}>";
         }
     }
 }

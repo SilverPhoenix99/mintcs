@@ -82,7 +82,7 @@ namespace Mint
             ;
         }
 
-        private static MethodBinder FindClrMethod(iObject instance, Symbol methodName, iObject[] args)
+        /*private static MethodBinder FindClrMethod(iObject instance, Symbol methodName, iObject[] args)
         {
             var type = instance.GetType();
             var method = type.GetMethods(
@@ -93,7 +93,7 @@ namespace Mint
             return method != null
                 ? new ClrMethodBinder(methodName, instance.CalculatedClass, method)
                 : null;
-        }
+        }*/
 
         /*private static MethodBinder FindClrProperty(iObject instance, Symbol methodName, iObject[] args)
         {
