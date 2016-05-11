@@ -32,9 +32,7 @@ namespace Mint
         public bool Equals(Symbol obj) => sym.Id == obj.sym.Id;
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
-
-        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
+        
         public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
 
         public override int GetHashCode() => sym.Id.GetHashCode();

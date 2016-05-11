@@ -1,7 +1,4 @@
-﻿using System.Dynamic;
-using System.Linq.Expressions;
-
-namespace Mint
+﻿namespace Mint
 {
     public struct TrueClass : iObject
     {
@@ -27,9 +24,7 @@ namespace Mint
         public bool Equal(object other) => Equals(other);
 
         public override int GetHashCode() => Id.GetHashCode();
-
-        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
+        
         public static implicit operator bool(TrueClass t) => true;
 
         public static bool operator ==(TrueClass self, object other) => self.Equals(other);

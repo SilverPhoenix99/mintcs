@@ -1,5 +1,3 @@
-using System.Dynamic;
-using System.Linq.Expressions;
 using System.Threading;
 
 namespace Mint
@@ -22,9 +20,7 @@ namespace Mint
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
-
-        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
+        
         public override string ToString() => $"#<{Class.FullName}:0x{Id:x}>";
 
         public virtual bool Equal(object other) => Equals(other);

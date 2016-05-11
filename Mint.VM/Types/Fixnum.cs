@@ -79,9 +79,7 @@ namespace Mint
             // TODO Complex and Rational
             return false;
         }
-
-        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
+        
         private const string RADIX = "0123456789abcdefghijklmnopqrstuvwxyz";
 
         public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);

@@ -1,7 +1,4 @@
-﻿using System.Dynamic;
-using System.Linq.Expressions;
-
-namespace Mint
+﻿namespace Mint
 {
     public struct NilClass : iObject
     {
@@ -21,9 +18,7 @@ namespace Mint
         public bool IsA(Class klass) => Class.IsA(this, klass);
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
-
-        //public DynamicMetaObject GetMetaObject(Expression parameter) => new Object.Meta(parameter, this);
-
+        
         public override bool Equals(object other) => IsNil(other);
 
         public bool Equal(object other) => Equals(other);

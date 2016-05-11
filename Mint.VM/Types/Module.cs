@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Mint.MethodBinding;
 
 namespace Mint
@@ -33,18 +32,17 @@ namespace Mint
             // TODO : invalidate methods, including subclasses
         }
 
-        public         Symbol?             Name            { get; }
-        public         string              FullName        { get; }
-        public         Module              Container       { get; }
-        public virtual bool                IsModule        => true;
-        public virtual IEnumerable<Module> Ancestors       => Prepended.Concat(new[] { this }).Concat(Included);
-        public         IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
+        public  Symbol? Name { get; }
+        public  string FullName { get; }
+        public  Module Container { get; }
+        public virtual bool IsModule => true;
+        public virtual IEnumerable<Module> Ancestors => Prepended.Concat(new[] { this }).Concat(Included);
+        public IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
 
-        protected internal Dictionary<Symbol, MethodBinder> Methods   { get; } = new Dictionary<Symbol, MethodBinder>();
-        protected internal Dictionary<Symbol, iObject>      Constants { get; } = new Dictionary<Symbol, iObject>();
-        protected internal List<Module>                     Included  { get; protected set; } = new List<Module>();
-        protected internal List<Module>                     Prepended { get; protected set; } = new List<Module>();
-
+        protected internal Dictionary<Symbol, MethodBinder> Methods { get; } = new Dictionary<Symbol, MethodBinder>();
+        protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
+        protected internal List<Module> Included { get; protected set; } = new List<Module>();
+        protected internal List<Module> Prepended { get; protected set; } = new List<Module>();
         protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
 
         public override string ToString() => FullName;

@@ -117,6 +117,8 @@ namespace Mint
     {
         public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Method(lambda);
 
+        public static MethodInfo Method(Expression<Action<T>> lambda) => Reflector.Method(lambda);
+
         public static MethodInfo Operator<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Operator(lambda);
 
         public static MethodInfo Convert<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Convert(lambda);

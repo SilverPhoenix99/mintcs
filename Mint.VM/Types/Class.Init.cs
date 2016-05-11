@@ -171,6 +171,6 @@ namespace Mint
         }
 
         private static CallSite CreateCallSite(string methodName, params ParameterKind[] kinds) =>
-            new CallSite(new Symbol(methodName), Visibility.Private, kinds);
+            new CallSite(new CallInfo(new Symbol(methodName), Visibility.Private, kinds));
     }
 }

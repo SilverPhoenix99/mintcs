@@ -27,7 +27,7 @@ namespace Mint.MethodBinding
         {
             // TODO parameter check
 
-            var length = site.Parameters.Length;
+            var length = site.CallInfo.Parameters.Length;
             var unsplatArgs = Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(args, Constant(i)));
 
             return Invoke(Constant(function), new[] { instance }.Concat(unsplatArgs));

@@ -33,7 +33,7 @@ namespace Mint.MethodBinding
         public override Expression Bind(CallSite site, Expression instance, Expression args)
         {
             // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
-            var length = site.Parameters.Length;
+            var length = site.CallInfo.Parameters.Length;
 
             var filteredInfos = infos.Where( _ => _.Arity.Include((Fixnum) length) ).ToArray();
 
@@ -120,7 +120,21 @@ namespace Mint.MethodBinding
                 args = args.Zip(parameters, ConvertArg).ToArray();
             }
 
-            return Call(instance, info.Method, args);
+            Expression expression = Call(instance, info.Method, args);
+
+            if(!typeof(iObject).IsAssignableFrom(expression.Type))
+            {
+                expression = Call(
+                    ClrMethodBinder.OBJECT_BOX_METHOD,
+                    Convert(expression, typeof(object))
+                );
+            }
+            else if(expression.Type != typeof(iObject))
+            {
+                expression = Convert(expression, typeof(iObject));
+            }
+
+            return expression;
         }
 
         private Range CalculateArity() => infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);

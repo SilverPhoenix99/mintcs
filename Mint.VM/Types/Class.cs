@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint
 {
@@ -57,54 +54,7 @@ namespace Mint
         {
             Prepended = AppendModule(Prepended, module, Superclass);
         }
-
-        // Tries to call the dynamically defined (at runtime) instance method.
-        // If the method was created statically or doesn't exist, returns false.
-        /*public bool TryInvokeMethod(iObject value, string name, out iObject result, params object[] args)
-        {
-            var deleg = FindMethod(name);
-            if(deleg == null)
-            {
-                result = null;
-                return false;
-            }
-
-            var args2 = new[] { value }.Concat(args).ToArray();
-
-            result = Object.Box(deleg.DynamicInvoke(args2));
-
-            // make sure ref/out parameters get assigned
-            Array.Copy(args2, 1, args, 0, args.Length);
-            return true;
-        }
-
-
-        public bool TryInvokeMethod(iObject value, string name, params object[] args)
-        {
-            iObject result;
-            return TryInvokeMethod(value, name, out result, args);
-        }*/
-
-        private Delegate WrapInstanceMethod(MethodInfo info)
-        {
-            var parms = from p in info.GetParameters()
-                        select Parameter(p.ParameterType, p.Name);
-
-            var lambdaParm = Parameter(info.DeclaringType, "_");
-
-            var wrapper = Lambda(
-                Call(lambdaParm, info, parms),
-                new[] { lambdaParm }.Concat(parms)
-            );
-
-            return wrapper.Compile();
-        }
-
-        public bool IsDefined(Symbol name)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         #region Static
 
         public static bool IsA(iObject o, Class c)

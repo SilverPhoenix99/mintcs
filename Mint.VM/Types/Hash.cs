@@ -59,30 +59,7 @@ namespace Mint
         {
             TO_HASH = new Symbol("to_hash");
         }
-
-        // Double splat to hash: **other
-        internal static iObject Cast(iObject other)
-        {
-            if(!other.IsA(Class.HASH))
-            {
-                if(!other.CalculatedClass.IsDefined(TO_HASH))
-                {
-                    throw new TypeError($"no implicit conversion of {other.Class.FullName} into Hash");
-                }
-
-                var result = other.Send(TO_HASH);
-                if(!result.IsA(Class.HASH))
-                {
-                    throw new TypeError($"can't convert {other.Class.FullName} to Hash"
-                        + $" ({other.Class.FullName}#to_hash gives {result.Class.FullName})");
-                }
-
-                other = result;
-            }
-
-            return other;
-        }
-
+        
         #endregion
     }
 }

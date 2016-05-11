@@ -811,9 +811,10 @@ namespace Mint.Compilation
         private static Expression MakeCallSite(Visibility visibility, Expression instance, Symbol methodName, params Argument[] args)
         {
             var parameters = args.Select(_ => _.Kind);
-            var site       = new CallSite(methodName, visibility, parameters);
-            var call       = Property(Constant(site), MEMBER_CALLSITE_CALL);
-            var argList    = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args.Select(_ => _.Arg));
+            var callInfo = new CallInfo(methodName, visibility, parameters);
+            var site = new CallSite(callInfo);
+            var call = Property(Constant(site), MEMBER_CALLSITE_CALL);
+            var argList = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args.Select(_ => _.Arg));
             return Invoke(call, instance, argList);
         }
 

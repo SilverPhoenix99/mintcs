@@ -1,9 +1,7 @@
 namespace Mint.MethodBinding
 {
-    public interface CallSiteBinder
+    public interface CallCompiler
     {
-        CallSite CallSite { get; }
-
         Function Compile();
     }
 }

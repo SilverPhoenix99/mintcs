@@ -32,7 +32,8 @@ namespace Test
 
         static void TestCallSite()
         {
-            var site = new CallSite(new Symbol("test"), Visibility.Private, new[] { ParameterKind.Required });
+            var callInfo = new CallInfo(new Symbol("test"), Visibility.Private, new[] { ParameterKind.Required });
+            var site = new CallSite(callInfo);
             var result = site.Call(new Fixnum(1), new Fixnum(42));
             Console.WriteLine(result);
         }
