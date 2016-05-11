@@ -174,5 +174,3 @@ namespace Mint
             new CallSite(new Symbol(methodName), Visibility.Private, kinds);
     }
 }
-
-
