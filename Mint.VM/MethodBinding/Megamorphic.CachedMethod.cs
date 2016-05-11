@@ -2,7 +2,7 @@
 
 namespace Mint.MethodBinding
 {
-    public sealed partial class MegamorphicSiteBinder
+    public sealed partial class MegamorphicCallCompiler
     {
         private class CachedMethod
         {

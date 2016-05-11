@@ -48,12 +48,12 @@
     <Compile Include="MethodBinding\OptionalAttribute.cs" />
     <Compile Include="MethodBinding\BlockAttribute.cs" />
     <Compile Include="MethodBinding\Megamorphic.CachedMethod.cs" />
-    <Compile Include="MethodBinding\MegamorphicSiteBinder.cs" />
+    <Compile Include="MethodBinding\MegamorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\RestAttribute.cs" />
     <Compile Include="ParameterInfoExtensions.cs" />
     <Compile Include="MethodBinding\ParameterKind.cs" />
     <Compile Include="MethodBinding\Polymorphic.CachedMethod.cs" />
-    <Compile Include="MethodBinding\PolymorphicSiteBinder.cs" />
+    <Compile Include="MethodBinding\PolymorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\Visibility.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="MethodBinding\MethodBinder.cs" />

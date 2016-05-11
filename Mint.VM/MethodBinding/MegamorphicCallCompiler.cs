@@ -4,38 +4,39 @@ using System.Linq;
 
 namespace Mint.MethodBinding
 {
-    public sealed partial class MegamorphicSiteBinder : CallSiteBinder
+    public sealed partial class MegamorphicCallCompiler : CallSiteBinder
     {
         private readonly Dictionary<long, CachedMethod> cache;
+        
+        public CallSite CallSite { get; }
 
-        public MegamorphicSiteBinder()
+        public MegamorphicCallCompiler(CallSite callSite)
         {
+            CallSite = callSite;
             cache = new Dictionary<long, CachedMethod>();
         }
 
-        internal MegamorphicSiteBinder(Dictionary<long, PolymorphicSiteBinder.CachedMethod> cache, CallSite site)
+        internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<KeyValuePair<long, MethodBinder>> cache)
+            : this(callSite)
         {
-            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value.Binder, site));
+            this.cache = cache.ToDictionary(_ => _.Key, _ => new CachedMethod(_.Value, callSite));
         }
 
-        public Function Compile(CallSite site)
-        {
-            return (instance, args) => Invoke(site, instance, args);
-        }
+        public Function Compile() => Call;
 
-        private iObject Invoke(CallSite site, iObject instance, iObject[] args)
+        private iObject Call(iObject instance, iObject[] args)
         {
             var klass = instance.CalculatedClass;
             CachedMethod method;
             if(!cache.TryGetValue(klass.Id, out method) || !method.Binder.Condition.Valid)
             {
                 Cleanup();
-                var binder = Object.FindMethod(instance, site.MethodName, args);
+                var binder = Object.FindMethod(instance, CallSite.MethodName, args);
                 if(binder == null)
                 {
                     throw new InvalidOperationException($"No method found for {instance.CalculatedClass.FullName}");
                 }
-                cache[klass.Id] = method = new CachedMethod(binder, site);
+                cache[klass.Id] = method = new CachedMethod(binder, CallSite);
             }
 
             return method.Call(instance, args);

@@ -3,7 +3,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding
 {
-    public sealed partial class PolymorphicSiteBinder
+    public sealed partial class PolymorphicCallCompiler
     {
         internal class CachedMethod
         {
