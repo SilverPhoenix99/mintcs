@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding
+namespace Mint.MethodBinding.CallCompilation
 {
     public sealed class MegamorphicCallCompiler : CallCompiler
     {

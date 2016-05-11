@@ -6,9 +6,7 @@ namespace Mint.MethodBinding
 {
     public class CallInfo
     {
-        public Visibility Visibility { get; } // Private: "f", Protected: "self.f", Public: "anything.f"
-        public Symbol MethodName { get; }
-        public ParameterKind[] Parameters { get; }
+        private Range arity;
 
         public CallInfo(Symbol methodName, Visibility visibility, IEnumerable<ParameterKind> parameters)
         {
@@ -17,29 +15,28 @@ namespace Mint.MethodBinding
             Parameters = parameters.ToArray();
         }
 
-        public bool IsVarArgs => Parameters.Contains(Rest) || Parameters.Contains(KeyRest);
+        public Visibility Visibility { get; }
+        public Symbol MethodName { get; }
+        public ParameterKind[] Parameters { get; }
+        public Range Arity => arity ?? (arity = CalculateArity());
 
-        public Range Arity
+        private Range CalculateArity()
         {
-            get
-            {
-                long max;
-                var min = max = Parameters.Count(p => p == Required || p == Block || p == KeyRequired);
+            var numRequiredParameters = Parameters.Count(p => p == Required || p == KeyRequired || p == Block);
+            var numOptionalParameters = Parameters.Count(p => p == Optional || p == KeyOptional);
+            var isVarArgs = Parameters.Contains(Rest) || Parameters.Contains(KeyRest);
 
-                if(IsVarArgs)
-                {
-                    max = long.MaxValue;
-                }
+            var min = numRequiredParameters;
+            var max = isVarArgs ? long.MaxValue : numRequiredParameters + numOptionalParameters;
 
-                return new Range(min, max);
-            }
+            return new Range(min, max);
         }
 
         public override string ToString()
         {
-            var arity = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
+            var arityString = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
             var parameters = string.Join(", ", Parameters);
-            return $"\"{MethodName}\"<{arity}>({parameters})";
+            return $"\"{MethodName}\"<{arityString}>({parameters})";
         }
     }
 }

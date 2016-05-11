@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding
+namespace Mint.MethodBinding.CallCompilation
 {
     public sealed class PolymorphicCallCompiler : CallCompiler
     {
