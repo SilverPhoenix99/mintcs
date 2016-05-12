@@ -1,10 +1,32 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
+using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding
+namespace Mint.MethodBinding.Binders
 {
     public abstract class BaseMethodBinder : MethodBinder
     {
+        internal static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
+
+        protected static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
+        {
+            { typeof(string),        typeof(String) },
+            { typeof(StringBuilder), typeof(String) },
+            { typeof(sbyte),         typeof(Fixnum) },
+            { typeof(byte),          typeof(Fixnum) },
+            { typeof(short),         typeof(Fixnum) },
+            { typeof(ushort),        typeof(Fixnum) },
+            { typeof(int),           typeof(Fixnum) },
+            { typeof(uint),          typeof(Fixnum) },
+            { typeof(long),          typeof(Fixnum) },
+            { typeof(float),         typeof(Float)  },
+            { typeof(double),        typeof(Float)  }
+        };
+
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
         {
             Contract.Assert(name != null);
@@ -34,5 +56,31 @@ namespace Mint.MethodBinding
         public abstract Expression Bind(CallSite site, Expression instance, Expression args);
 
         public abstract MethodBinder Duplicate(bool copyValidation);
+
+        protected Expression Box(Expression expression)
+        {
+            if(!typeof(iObject).IsAssignableFrom(expression.Type))
+            {
+                return Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
+            }
+
+            if(expression.Type != typeof(iObject))
+            {
+                return Convert(expression, typeof(iObject));
+            }
+
+            return expression;
+        }
+
+        protected static Expression ConvertArgument(Expression arg, ParameterInfo parameter)
+        {
+            Type type;
+            if(TYPES.TryGetValue(parameter.ParameterType, out type))
+            {
+                arg = Convert(arg, type);
+            }
+
+            return Convert(arg, parameter.ParameterType);
+        }
     }
 }

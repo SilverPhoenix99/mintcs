@@ -8,14 +8,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding
+namespace Mint.MethodBinding.Binders
 {
-    public sealed partial class ClrMethodBinder : BaseMethodBinder
+    public sealed class ClrMethodBinder : BaseMethodBinder
     {
-        private readonly Info[] infos;
+        private readonly MethodInformation[] infos;
 
-        public ClrMethodBinder(Symbol name, Module owner, MethodInfo method)
-            : base(name, owner)
+        public ClrMethodBinder(Symbol name, Module owner, MethodInfo method, Visibility visibility = Visibility.Public)
+            : base(name, owner, visibility)
         {
             infos = GetOverloads(method);
             Debug.Assert(infos.Length != 0);
@@ -25,7 +25,7 @@ namespace Mint.MethodBinding
         private ClrMethodBinder(ClrMethodBinder other, bool copyValidation)
             : base(other, copyValidation)
         {
-            infos = (Info[]) other.infos.Clone();
+            infos = (MethodInformation[]) other.infos.Clone();
         }
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
@@ -76,9 +76,9 @@ namespace Mint.MethodBinding
             );
         }
 
-        private SwitchCase CreateSwitchCase(Info info, Expression instance, Expression[] args)
+        private SwitchCase CreateSwitchCase(MethodInformation info, Expression instance, Expression[] args)
         {
-            var parameters = info.Method.GetParameters().Select(_ => _.ParameterType).Select(_ => {
+            var parameters = info.MethodInfo.GetParameters().Select(_ => _.ParameterType).Select(_ => {
                 Type type;
                 return TYPES.TryGetValue(_, out type) ? type : _;
             });
@@ -87,7 +87,7 @@ namespace Mint.MethodBinding
             return SwitchCase(body, condition);
         }
 
-        private Expression CompileBody(Info info, Expression instance, params Expression[] args)
+        private Expression CompileBody(MethodInformation info, Expression instance, params Expression[] args)
         {
             // site will be needed for non Required parameters
 
@@ -102,50 +102,28 @@ namespace Mint.MethodBinding
                 );
             }
 
-            var parameters = info.Method.GetParameters();
+            var parameters = info.MethodInfo.GetParameters();
 
-            if(info.Method.DeclaringType != null)
+            if(info.MethodInfo.DeclaringType != null)
             {
-                instance = Convert(instance, info.Method.DeclaringType);
+                instance = Convert(instance, info.MethodInfo.DeclaringType);
             }
 
-            if(info.Method.IsStatic)
+            if(info.MethodInfo.IsStatic)
             {
-                var convertedArgs = args.Zip(parameters.Skip(1), ConvertArg);
+                var convertedArgs = args.Zip(parameters.Skip(1), ConvertArgument);
                 args = new[] { instance }.Concat(convertedArgs).ToArray();
                 instance = null;
             }
             else
             {
-                args = args.Zip(parameters, ConvertArg).ToArray();
+                args = args.Zip(parameters, ConvertArgument).ToArray();
             }
 
-            Expression expression = Call(instance, info.Method, args);
-
-            if(!typeof(iObject).IsAssignableFrom(expression.Type))
-            {
-                expression = Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
-            }
-            else if(expression.Type != typeof(iObject))
-            {
-                expression = Convert(expression, typeof(iObject));
-            }
-
-            return expression;
+            return Box(Call(instance, info.MethodInfo, args));
         }
 
         private Range CalculateArity() => infos.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);
-
-        private static Expression ConvertArg(Expression arg, ParameterInfo parameter)
-        {
-            Type type;
-            if(TYPES.TryGetValue(parameter.ParameterType, out type))
-            {
-                arg = Convert(arg, type);
-            }
-
-            return Convert(arg, parameter.ParameterType);
-        }
 
         private string ArityString()
         {
@@ -159,22 +137,7 @@ namespace Mint.MethodBinding
 
         #region Static
 
-        private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
-        {
-            { typeof(string),        typeof(String) },
-            { typeof(StringBuilder), typeof(String) },
-            { typeof(sbyte),         typeof(Fixnum) },
-            { typeof(byte),          typeof(Fixnum) },
-            { typeof(short),         typeof(Fixnum) },
-            { typeof(ushort),        typeof(Fixnum) },
-            { typeof(int),           typeof(Fixnum) },
-            { typeof(uint),          typeof(Fixnum) },
-            { typeof(long),          typeof(Fixnum) },
-            { typeof(float),         typeof(Float)  },
-            { typeof(double),        typeof(Float)  }
-        };
-
-        private static Info[] GetOverloads(MethodInfo method)
+        private static MethodInformation[] GetOverloads(MethodInfo method)
         {
             var methods =
                 from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
@@ -187,7 +150,7 @@ namespace Mint.MethodBinding
                 methods = methods.Concat(new[] { method });
             }
 
-            return methods.Concat(GetExtensionMethods(method)).Select(_ => new Info(_)).ToArray();
+            return methods.Concat(GetExtensionMethods(method)).Select(_ => new MethodInformation(_)).ToArray();
         }
 
         private static Range Merge(Range r1, Range r2)
@@ -233,22 +196,20 @@ namespace Mint.MethodBinding
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        private static string InvalidConversionMessage(Info[] infos, iObject[] args)
+        private static string InvalidConversionMessage(MethodInformation[] infos, iObject[] args)
         {
             // TODO
 
             //for(var i = 0; i < arguments.Length; i++)
             //{
             //    var arg = arguments[i];
-            //    var types = infos.Select(_ => _.Method.GetParameters()[i]).an;
+            //    var types = infos.Select(_ => _.MethodInfo.GetParameters()[i]).an;
             //}
 
             //msg = "argument {index}: no implicit conversion of {type} to {string.Join(" or ", types)}";
             return "no implicit conversion exists";
         }
-
-        internal static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
-
+        
         private static readonly MethodInfo INVALID_CONVERSION_METHOD =
             typeof(ClrMethodBinder).GetMethod(nameof(InvalidConversionMessage), BindingFlags.NonPublic | BindingFlags.Static);
 

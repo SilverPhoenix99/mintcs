@@ -98,6 +98,7 @@ namespace Mint
             FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
                 .DefMethod("to_s",    _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => new Fixnum(Math.Abs(_.Value))))
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()

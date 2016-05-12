@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Mint.MethodBinding
+namespace Mint.MethodBinding.Binders
 {
     public interface MethodBinder
     {

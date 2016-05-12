@@ -219,7 +219,28 @@ namespace Mint.Compilation
 
         protected virtual Expression CompileUMinusNum(Ast<Token> ast)
         {
-            return Negate(ast[0].Accept(this));
+            var number = (iObject) ((ConstantExpression) ast[0].Accept(this)).Value;
+
+            if(number is Fixnum)
+            {
+                number = new Fixnum(-(long) (Fixnum) number);
+            }
+            else if(number is Float)
+            {
+                number = new Float(-(float) (Float) number);
+            }
+            else if(number is Complex)
+            {
+                throw new NotImplementedException();
+                //number = ((Complex) number).Conjugate();
+            }
+            else
+            {
+                throw new NotImplementedException();
+                //number = -(Rational) number;
+            }
+
+            return Constant(number, typeof(iObject));
         }
 
         protected virtual Expression CompileIf(Ast<Token> ast)
