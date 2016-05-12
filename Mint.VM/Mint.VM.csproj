@@ -38,12 +38,12 @@
     <Compile Include="ArgumentError.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
-    <Compile Include="MethodBinding\BaseMethodBinder.cs" />
+    <Compile Include="MethodBinding\Binders\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\CallSite.cs" />
     <Compile Include="MethodBinding\CallCompilation\CallCompiler.cs" />
-    <Compile Include="MethodBinding\ClrMethodBinder.cs" />
-    <Compile Include="MethodBinding\ClrMethodBinder.Info.cs" />
-    <Compile Include="MethodBinding\DelegateMethodBinder.cs" />
+    <Compile Include="MethodBinding\Binders\ClrMethodBinder.cs" />
+    <Compile Include="MethodBinding\Binders\ClrMethodBinder.Info.cs" />
+    <Compile Include="MethodBinding\Binders\DelegateMethodBinder.cs" />
     <Compile Include="MethodBinding\KeyAttribute.cs" />
     <Compile Include="MethodBinding\CallInfo.cs" />
     <Compile Include="MethodBinding\OptionalAttribute.cs" />
@@ -56,7 +56,7 @@
     <Compile Include="MethodBinding\CallCompilation\PolymorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\Visibility.cs" />
     <Compile Include="NameError.cs" />
-    <Compile Include="MethodBinding\MethodBinder.cs" />
+    <Compile Include="MethodBinding\Binders\MethodBinder.cs" />
     <Compile Include="ModuleBuilder.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

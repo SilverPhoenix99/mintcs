@@ -20,23 +20,22 @@ namespace Mint.MethodBinding.CallCompilation
         private static readonly MethodInfo METHOD_DEFAULTCALL = Reflector<PolymorphicCallCompiler>.Method(
             _ => _.DefaultCall(default(iObject), default(iObject[]))
         );
-
-        private readonly Dictionary<long, CachedMethod<Expression>> cache =
-            new Dictionary<long, CachedMethod<Expression>>();
-
+        
+        private readonly CallCompilerCache<Expression> cache;
         private readonly ParameterExpression instanceExpression = Parameter(typeof(iObject), "instance");
         private readonly ParameterExpression argumentsExpression = Parameter(typeof(iObject[]), "args");
-        
+
         public CallSite CallSite { get; }
         
         public PolymorphicCallCompiler(CallSite callSite)
         {
             CallSite = callSite;
+            cache = new CallCompilerCache<Expression>();
         }
 
         public Function Compile()
         {
-            RemoveInvalidCachedMethods();
+            cache.RemoveInvalidCachedMethods();
 
             if(IsCacheEmpty())
             {
@@ -45,30 +44,22 @@ namespace Mint.MethodBinding.CallCompilation
 
             if(IsCacheFull())
             {
-                CallSite.CallCompiler = CreateUpgradedCallCompiler();
+                var binderCache = cache.Select(_ => new KeyValuePair<long, MethodBinder>(_.Key, _.Value.Binder));
+                CallSite.CallCompiler = new MegamorphicCallCompiler(CallSite, binderCache);
                 return CallSite.CallCompiler.Compile();
             }
 
             var lambda = Lambda<Function>(BuildBodyExpression(), instanceExpression, argumentsExpression);
             return lambda.Compile();
         }
-        
-        private void RemoveInvalidCachedMethods()
-        {
-            var invalidKeys = cache.Where(_ => !_.Value.Binder.Condition.Valid).Select(_ => _.Key).ToArray();
-            foreach(var key in invalidKeys)
-            {
-                cache.Remove(key);
-            }
-        }
-        
+
         private bool IsCacheEmpty() => cache.Count == 0;
 
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
             var classId = instance.CalculatedClass.Id;
             var methodBinder = instance.CalculatedClass.FindMethod(CallSite.CallInfo.MethodName);
-            cache[classId] = CreateCachedMethod(classId, methodBinder);
+            cache.Put(CreateCachedMethod(classId, methodBinder));
             CallSite.Call = Compile();
             return CallSite.Call(instance, arguments);
         }
@@ -80,12 +71,6 @@ namespace Mint.MethodBinding.CallCompilation
         }
         
         private bool IsCacheFull() => cache.Count > MEGAMORPHIC_THRESHOLD;
-
-        private CallCompiler CreateUpgradedCallCompiler()
-        {
-            var methodBinderCache = cache.Select(_ => new KeyValuePair<long, MethodBinder>(_.Key, _.Value.Binder));
-            return new MegamorphicCallCompiler(CallSite, methodBinderCache);
-        }
         
         private Expression BuildBodyExpression()
         {

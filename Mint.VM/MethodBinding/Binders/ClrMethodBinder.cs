@@ -30,7 +30,7 @@ namespace Mint.MethodBinding
 
         public override MethodBinder Duplicate(bool copyValidation) => new ClrMethodBinder(this, copyValidation);
 
-        public override Expression Bind(CallSite site, Expression instance, Expression args)
+        public override Expression Bind(CallSite site, Expression instance, Expression arguments)
         {
             // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
             var length = site.CallInfo.Parameters.Length;
@@ -54,7 +54,7 @@ namespace Mint.MethodBinding
             }
 
             var unsplatArgs = Enumerable.Range(0, length)
-                .Select(i => (Expression) ArrayIndex(args, Constant(i)))
+                .Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
                 .ToArray();
             var cases = filteredInfos.Select(_ => CreateSwitchCase(_, instance, unsplatArgs));
 
@@ -62,14 +62,14 @@ namespace Mint.MethodBinding
             //{
             //    case ...: { ... }
             //    default:
-            //        throw new TypeError(InvalidConversionMessage(@filteredInfos, args));
+            //        throw new TypeError(InvalidConversionMessage(@filteredInfos, arguments));
             //}
             return Switch(
                 typeof(iObject),
                 Constant(true),
                 Throw(New(
                     CTOR_TYPEERROR,
-                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), args)
+                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), arguments)
                 ), typeof(iObject)),
                 null,
                 cases
@@ -124,10 +124,7 @@ namespace Mint.MethodBinding
 
             if(!typeof(iObject).IsAssignableFrom(expression.Type))
             {
-                expression = Call(
-                    ClrMethodBinder.OBJECT_BOX_METHOD,
-                    Convert(expression, typeof(object))
-                );
+                expression = Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
             }
             else if(expression.Type != typeof(iObject))
             {
@@ -240,9 +237,9 @@ namespace Mint.MethodBinding
         {
             // TODO
 
-            //for(var i = 0; i < args.Length; i++)
+            //for(var i = 0; i < arguments.Length; i++)
             //{
-            //    var arg = args[i];
+            //    var arg = arguments[i];
             //    var types = infos.Select(_ => _.Method.GetParameters()[i]).an;
             //}
 

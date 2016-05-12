@@ -10,7 +10,7 @@ namespace Mint.MethodBinding
         Range      Arity      { get; }
         Visibility Visibility { get; }
 
-        Expression Bind(CallSite site, Expression instance, Expression args);
+        Expression Bind(CallSite site, Expression instance, Expression arguments);
 
         MethodBinder Duplicate(bool copyValidation);
     }

@@ -1,20 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.CallCompilation
 {
     public sealed class MegamorphicCallCompiler : CallCompiler
     {
-        private readonly Dictionary<long, CachedMethod<Function>> cache;
+        private readonly CallCompilerCache<Function> cache;
         
         public CallSite CallSite { get; }
 
         public MegamorphicCallCompiler(CallSite callSite)
         {
             CallSite = callSite;
-            cache = new Dictionary<long, CachedMethod<Function>>();
+            cache = new CallCompilerCache<Function>();
         }
 
         internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<KeyValuePair<long, MethodBinder>> cache)
@@ -22,7 +21,7 @@ namespace Mint.MethodBinding.CallCompilation
         {
             foreach(var pair in cache)
             {
-                this.cache.Add(pair.Key, CreateCachedMethod(pair.Key, pair.Value));
+                this.cache.Put(CreateCachedMethod(pair.Key, pair.Value));
             }
         }
 
@@ -46,12 +45,11 @@ namespace Mint.MethodBinding.CallCompilation
         private iObject Call(iObject instance, iObject[] arguments)
         {
             var classId = instance.CalculatedClass.Id;
-            CachedMethod<Function> method;
-            var foundAndIsValid = cache.TryGetValue(classId, out method) && method.Binder.Condition.Valid;
+            var method = cache[classId];
 
-            if(!foundAndIsValid)
+            if(method == null)
             {
-                cache[classId] = method = FindMethodInInstance(instance);
+                cache.Put(method = FindMethodInInstance(instance));
             }
 
             return method.CachedCall(instance, arguments);
@@ -59,22 +57,13 @@ namespace Mint.MethodBinding.CallCompilation
 
         private CachedMethod<Function> FindMethodInInstance(iObject instance)
         {
-            RemoveInvalidCachedMethods();
+            cache.RemoveInvalidCachedMethods();
             var binder = instance.CalculatedClass.FindMethod(CallSite.CallInfo.MethodName);
             if(binder == null)
             {
                 throw new InvalidOperationException($"No method found for {instance.CalculatedClass.FullName}");
             }
             return CreateCachedMethod(instance.CalculatedClass.Id, binder);
-        }
-
-        private void RemoveInvalidCachedMethods()
-        {
-            var invalidKeys = cache.Where(_ => !_.Value.Binder.Condition.Valid).Select(_ => _.Key).ToArray();
-            foreach(var key in invalidKeys)
-            {
-                cache.Remove(key);
-            }
         }
     }
 }
