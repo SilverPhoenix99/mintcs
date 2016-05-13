@@ -4,6 +4,7 @@ using NUnit.Framework;
 namespace Mint.UnitTests
 {
     [TestFixture]
+    [TestOf(typeof(Fixnum))]
     public class FixnumTests
     {
         private readonly Random rand = new Random();
@@ -14,8 +15,8 @@ namespace Mint.UnitTests
             const long integer = 15648L;
             var fixnum = new Fixnum(integer);
 
-            Assert.AreEqual(integer, fixnum.Value);
-            Assert.AreEqual(integer << 2 | 1, fixnum.Id);
+            Assert.That(fixnum.Value, Is.EqualTo(integer));
+            Assert.That(fixnum.Id, Is.EqualTo(integer << 2 | 1));
         }
 
         [Test]
@@ -23,11 +24,11 @@ namespace Mint.UnitTests
         {
             var fixnum = new Fixnum();
 
-            Assert.AreEqual(Class.FIXNUM, fixnum.Class);
-            Assert.AreEqual(Class.FIXNUM, fixnum.CalculatedClass);
+            Assert.That(fixnum.Class, Is.EqualTo(Class.FIXNUM));
+            Assert.That(fixnum.CalculatedClass, Is.EqualTo(Class.FIXNUM));
             Assert.Throws<TypeError>(() => { var singletonClass = fixnum.SingletonClass; });
             Assert.IsFalse(fixnum.HasSingletonClass);
-            Assert.AreEqual(fixnum.Value.GetHashCode(), fixnum.GetHashCode());
+            Assert.That(fixnum.GetHashCode(), Is.EqualTo(fixnum.Value.GetHashCode()));
         }
 
         [Test]
@@ -41,19 +42,32 @@ namespace Mint.UnitTests
         }
 
         [Test]
+        public void TestEquals()
+        {
+            var integer = rand.Next(10000);
+            var fixnum1 = new Fixnum(integer);
+            var fixnum2 = new Fixnum(integer);
+            var floatObject = new Float(integer);
+
+            Assert.IsTrue(fixnum1.Equals(fixnum2));
+            Assert.IsTrue(fixnum1.Equals(floatObject));
+            Assert.IsFalse(fixnum1.Equals(new String(integer.ToString())));
+        }
+
+        [Test]
         public void TestToString()
         {
-            Assert.AreEqual("0", new Fixnum().ToString());
-            Assert.AreEqual("-64", new Fixnum(-100).ToString(16));
+            Assert.That(new Fixnum().ToString(), Is.EqualTo("0"));
+            Assert.That(new Fixnum(-100).ToString(16), Is.EqualTo("-64"));
 
             var fixnum = new Fixnum(257);
 
-            Assert.AreEqual("257", fixnum.ToString());
-            Assert.AreEqual("100000001", fixnum.ToString(2));
-            Assert.AreEqual("401", fixnum.ToString(8));
-            Assert.AreEqual("101", fixnum.ToString(16));
-            Assert.AreEqual("16a", fixnum.ToString(13));
-            Assert.AreEqual("75", fixnum.ToString(36));
+            Assert.That(fixnum.ToString(), Is.EqualTo("257"));
+            Assert.That(fixnum.ToString(2), Is.EqualTo("100000001"));
+            Assert.That(fixnum.ToString(8), Is.EqualTo("401"));
+            Assert.That(fixnum.ToString(16), Is.EqualTo("101"));
+            Assert.That(fixnum.ToString(13), Is.EqualTo("16a"));
+            Assert.That(fixnum.ToString(36), Is.EqualTo("75"));
         }
 
         [Test]
@@ -75,8 +89,8 @@ namespace Mint.UnitTests
         {
             var fixnum = new Fixnum(rand.Next(int.MinValue, int.MaxValue));
 
-            Assert.AreEqual(fixnum.Inspect(), fixnum.ToString());
-            Assert.AreEqual(fixnum.Inspect(16), fixnum.ToString(16));
+            Assert.That(fixnum.Inspect(), Is.EqualTo(fixnum.ToString()));
+            Assert.That(fixnum.Inspect(16), Is.EqualTo(fixnum.ToString(16)));
         }
 
         [Test]
@@ -91,10 +105,124 @@ namespace Mint.UnitTests
         [Test]
         public void TestSend()
         {
-            var fixnum = new Fixnum(10000);
-            var sendResult = fixnum.Send(new Symbol("abs"));
+            var positiveFixnum = new Fixnum(10000);
+            var negativeFixnum = new Fixnum(-positiveFixnum.Value);
+            var sendResult = negativeFixnum.Send(new Symbol("abs"));
 
-            Assert.AreEqual(sendResult, fixnum);
+            Assert.That(sendResult, Is.EqualTo(positiveFixnum));
+        }
+
+        [Test]
+        public void TestBitLength()
+        {
+            Assert.That(new Fixnum(-(1L<<37)).BitLength(),  Is.EqualTo(new Fixnum(37)));
+            Assert.That(new Fixnum(-(1<<27)).BitLength(),   Is.EqualTo(new Fixnum(27)));
+            Assert.That(new Fixnum(-(1<<12)-1).BitLength(), Is.EqualTo(new Fixnum(13)));
+            Assert.That(new Fixnum(-(1<<12)).BitLength(),   Is.EqualTo(new Fixnum(12)));
+            Assert.That(new Fixnum(-(1<<12)+1).BitLength(), Is.EqualTo(new Fixnum(12)));
+            Assert.That(new Fixnum(-0x101).BitLength(),     Is.EqualTo(new Fixnum( 9)));
+            Assert.That(new Fixnum(-0x100).BitLength(),     Is.EqualTo(new Fixnum( 8)));
+            Assert.That(new Fixnum(-0xff).BitLength(),      Is.EqualTo(new Fixnum( 8)));
+            Assert.That(new Fixnum(-2).BitLength(),         Is.EqualTo(new Fixnum( 1)));
+            Assert.That(new Fixnum(-1).BitLength(),         Is.EqualTo(new Fixnum( 0)));
+            Assert.That(new Fixnum(0).BitLength(),          Is.EqualTo(new Fixnum( 0)));
+            Assert.That(new Fixnum(1).BitLength(),          Is.EqualTo(new Fixnum( 1)));
+            Assert.That(new Fixnum(0xff).BitLength(),       Is.EqualTo(new Fixnum( 8)));
+            Assert.That(new Fixnum(0x100).BitLength(),      Is.EqualTo(new Fixnum( 9)));
+            Assert.That(new Fixnum((1<<12)-1).BitLength(),  Is.EqualTo(new Fixnum(12)));
+            Assert.That(new Fixnum((1<<12)).BitLength(),    Is.EqualTo(new Fixnum(13)));
+            Assert.That(new Fixnum((1<<12)+1).BitLength(),  Is.EqualTo(new Fixnum(13)));
+            Assert.That(new Fixnum(1<<27).BitLength(),      Is.EqualTo(new Fixnum(28)));
+            Assert.That(new Fixnum(1L<<37).BitLength(),     Is.EqualTo(new Fixnum(38)));
+        }
+
+        [Test]
+        public void TestUnaryNegation()
+        {
+            var integer = rand.Next(int.MinValue, int.MaxValue);
+            Assert.That(-new Fixnum(0), Is.EqualTo(new Fixnum(0)));
+            Assert.That(-new Fixnum(integer), Is.EqualTo(new Fixnum(-integer)));
+        }
+
+        [Test]
+        public void TestLongCast()
+        {
+            const long value = 100L;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((long) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestIntCast()
+        {
+            const int value = 100;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((int) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestUIntCast()
+        {
+            const uint value = 100u;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((uint) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestShortCast()
+        {
+            const short value = 100;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((short) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestUShortCast()
+        {
+            const ushort value = 100;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((ushort) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestSByteCast()
+        {
+            const sbyte value = 100;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((sbyte) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestByteCast()
+        {
+            const byte value = 100;
+            Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
+            Assert.That((byte) new Fixnum(value), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void TestDoubleCast()
+        {
+            const long longValue = 100;
+            const double doubleValue = 100;
+            Assert.That((Fixnum) doubleValue, Is.EqualTo(new Fixnum(longValue)));
+            Assert.That((double) new Fixnum(longValue), Is.EqualTo(doubleValue));
+        }
+
+        [Test]
+        public void TestFloatCast()
+        {
+            const long longValue = 100;
+            Assert.That((Fixnum) new Float(100), Is.EqualTo(new Fixnum(longValue)));
+        }
+
+        [Test]
+        public void TestSum()
+        {
+            long left = rand.Next(int.MinValue, int.MaxValue);
+            long right = rand.Next(int.MinValue, int.MaxValue);
+
+            Assert.That(new Fixnum(left) + new Fixnum(right), Is.EqualTo(new Fixnum(left + right)));
         }
     }
 }

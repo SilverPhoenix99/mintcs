@@ -93,7 +93,11 @@ namespace Mint
 
         private Fixnum LeadingZeros()
         {
-            var x = Math.Abs(Value);
+            var x = Value;
+            if(x < 0)
+            {
+                x = ~x;
+            }
             long n = SIZE * BYTE_BITS;
 
             long y;
