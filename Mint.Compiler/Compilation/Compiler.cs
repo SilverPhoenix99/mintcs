@@ -227,7 +227,7 @@ namespace Mint.Compilation
             }
             else if(number is Float)
             {
-                number = new Float(-(float) (Float) number);
+                number = new Float(-(double) (Float) number);
             }
             else if(number is Complex)
             {

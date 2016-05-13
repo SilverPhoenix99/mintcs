@@ -1,4 +1,8 @@
-﻿namespace Mint
+﻿using System.Linq;
+using System.Linq.Expressions;
+using Mint.MethodBinding;
+
+namespace Mint
 {
     public class Object : BaseObject
     {
@@ -40,24 +44,27 @@
 
         internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.FullName}";
 
-        internal static iObject Send(iObject obj, iObject name, params iObject[] args)
+        internal static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
         {
-            Symbol methodName;
-            if(name is Symbol)
+            var methodNameAsSymbol = MethodNameAsSymbol(methodName);
+            var parameterKinds = Enumerable.Range(0, arguments.Length).Select(_ => ParameterKind.Required);
+            var callInfo = new CallInfo(methodNameAsSymbol, Visibility.Private, parameterKinds);
+            return new CallSite(callInfo).Call(instance, arguments);
+        }
+
+        private static Symbol MethodNameAsSymbol(iObject methodName)
+        {
+            if(methodName is Symbol)
             {
-                methodName = (Symbol) name;
+                return (Symbol) methodName;
             }
-            else if(name is String)
+
+            if(methodName is String)
             {
-                methodName = new Symbol(((String) name).Value);
+                return new Symbol(((String) methodName).Value);
             }
-            else
-            {
-                throw new TypeError($"{obj.Inspect()} is not a symbol nor a string");
-            }
-            
-            var info = obj.GetType().GetMethod(methodName.Name);
-            return (iObject) info.Invoke(obj, args);
+
+            throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
         }
 
         #endregion

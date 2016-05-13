@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherTests", "OtherTests\Ot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Compiler", "Mint.Compiler\Mint.Compiler.csproj", "{5B6E70B3-FF6E-420E-8429-83BDB322C789}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{5B6E70B3-FF6E-420E-8429-83BDB322C789}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B6E70B3-FF6E-420E-8429-83BDB322C789}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B6E70B3-FF6E-420E-8429-83BDB322C789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

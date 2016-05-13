@@ -96,10 +96,10 @@ namespace Mint.MethodBinding.Binders
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
 
-        public override Expression Bind(CallSite site, Expression instance, Expression arguments)
+        public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
         {
             // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
-            var length = site.CallInfo.Parameters.Length;
+            var length = callInfo.Parameters.Length;
 
             var filteredInfos = methodInformations.Where( _ => _.Arity.Include((Fixnum) length) ).ToArray();
 
@@ -114,7 +114,7 @@ namespace Mint.MethodBinding.Binders
                 );
             }
 
-            if(length == 0) // no parameters => only 1 info
+            if(length == 0) // no parameters implies only 1 info
             {
                 return CompileBody(methodInformations[0], instance);
             }

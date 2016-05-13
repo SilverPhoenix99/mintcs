@@ -49,7 +49,7 @@ namespace Mint.MethodBinding.Binders
         public Range     Arity       { get; protected set; }
         public Visibility Visibility { get; }
 
-        public abstract Expression Bind(CallSite site, Expression instance, Expression args);
+        public abstract Expression Bind(CallInfo callInfo, Expression instance, Expression args);
 
         public abstract MethodBinder Alias(Symbol newName);
 

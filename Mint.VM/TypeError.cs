@@ -2,7 +2,7 @@
 
 namespace Mint
 {
-    internal class TypeError : Exception
+    public class TypeError : Exception
     {
         public TypeError()
         { }

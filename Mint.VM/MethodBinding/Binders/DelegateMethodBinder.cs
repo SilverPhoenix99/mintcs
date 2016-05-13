@@ -29,11 +29,11 @@ namespace Mint.MethodBinding.Binders
 
         public override MethodBinder Alias(Symbol newName) => new DelegateMethodBinder(newName, this);
 
-        public override Expression Bind(CallSite site, Expression instance, Expression arguments)
+        public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
         {
             // TODO parameter check
 
-            var length = site.CallInfo.Parameters.Length;
+            var length = callInfo.Parameters.Length;
             var unsplatArgs = new[] { instance }.Concat(
                 Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
             ).Zip(function.Method.GetParameters(), ConvertArgument);

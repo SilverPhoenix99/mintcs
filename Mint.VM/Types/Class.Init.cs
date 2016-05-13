@@ -85,7 +85,7 @@ namespace Mint
             NUMERIC = new Class(new Symbol("Numeric"));
 
             FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
-                .DefMethod("to_s",    _ => _.ToString() )
+                .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
             ;
 
@@ -99,12 +99,13 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => new Fixnum(Math.Abs(_.Value))) )
-                .DefLambda("even?", (Func<Fixnum, bool>) (_ => (_.Value & 1) == 0) )
-                .DefLambda("odd?", (Func<Fixnum, bool>) (_ => (_.Value & 1) == 1) )
+                .DefLambda("even?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 0L) )
+                .DefLambda("odd?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 1L) )
                 .Alias("magnitude", "abs")
                 .DefLambda("to_f", (Func<Fixnum, Float>) (_ => (Float) _) )
                 .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
                 .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
+                .DefMethod("bit_length", _ => _.BitLength() )
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()
@@ -118,39 +119,39 @@ namespace Mint
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString() )
+                .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             TRUE = ModuleBuilder<TrueClass>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
             ARRAY = ModuleBuilder<Array>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
             RANGE = ModuleBuilder<Range>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
             REGEXP = ModuleBuilder<Regexp>.DescribeClass();
 
             STRING = ModuleBuilder<String>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
             SYMBOL = ModuleBuilder<Symbol>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
