@@ -41,6 +41,7 @@
     <Compile Include="MethodBinding\Binders\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\Binders\MethodInformation.cs" />
     <Compile Include="MethodBinding\CallCompilation\CallCompilerCache.cs" />
+    <Compile Include="MethodBinding\CallCompilation\MonomorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\CallSite.cs" />
     <Compile Include="MethodBinding\CallCompilation\CallCompiler.cs" />
     <Compile Include="MethodBinding\Binders\ClrMethodBinder.cs" />

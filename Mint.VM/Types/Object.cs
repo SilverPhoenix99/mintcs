@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Linq.Expressions;
 using Mint.MethodBinding;
+using Mint.MethodBinding.CallCompilation;
 
 namespace Mint
 {
@@ -49,6 +50,8 @@ namespace Mint
             var methodNameAsSymbol = MethodNameAsSymbol(methodName);
             var parameterKinds = Enumerable.Range(0, arguments.Length).Select(_ => ParameterKind.Required);
             var callInfo = new CallInfo(methodNameAsSymbol, Visibility.Private, parameterKinds);
+            var callSite = new CallSite(callInfo);
+            callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return new CallSite(callInfo).Call(instance, arguments);
         }
 
