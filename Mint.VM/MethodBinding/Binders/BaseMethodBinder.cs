@@ -37,14 +37,10 @@ namespace Mint.MethodBinding.Binders
             Visibility = visibility;
         }
 
-        protected BaseMethodBinder(MethodBinder other, bool copyValidation = false)
-            : this(other.Name, other.Owner, other.Visibility)
+        protected BaseMethodBinder(Symbol newName, MethodBinder other)
+            : this(newName, other.Owner, other.Visibility)
         {
             Arity = other.Arity;
-            if(copyValidation && !other.Condition.Valid)
-            {
-                Condition.Invalidate();
-            }
         }
 
         public Symbol    Name        { get; }
@@ -55,7 +51,9 @@ namespace Mint.MethodBinding.Binders
 
         public abstract Expression Bind(CallSite site, Expression instance, Expression args);
 
-        public abstract MethodBinder Duplicate(bool copyValidation);
+        public abstract MethodBinder Alias(Symbol newName);
+
+        public MethodBinder Duplicate() => Alias(Name);
 
         protected Expression Box(Expression expression)
         {

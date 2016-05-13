@@ -20,12 +20,14 @@ namespace Mint.MethodBinding.Binders
             Arity = new Range(numParameters, numParameters); // TODO - 1, due to instance?
         }
 
-        private DelegateMethodBinder(DelegateMethodBinder other, bool copyValidation)
-            : base(other, copyValidation)
+        private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)
+            : base(newName, other)
         {
             function = other.function;
             parameterAttributes = other.parameterAttributes;
         }
+
+        public override MethodBinder Alias(Symbol newName) => new DelegateMethodBinder(newName, this);
 
         public override Expression Bind(CallSite site, Expression instance, Expression arguments)
         {
@@ -38,7 +40,5 @@ namespace Mint.MethodBinding.Binders
 
             return Box(Invoke(Constant(function), unsplatArgs));
         }
-
-        public override MethodBinder Duplicate(bool copyValidation) => new DelegateMethodBinder(this, copyValidation);
     }
 }

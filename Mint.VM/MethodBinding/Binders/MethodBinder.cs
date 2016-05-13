@@ -12,6 +12,8 @@ namespace Mint.MethodBinding.Binders
 
         Expression Bind(CallSite site, Expression instance, Expression arguments);
 
-        MethodBinder Duplicate(bool copyValidation);
+        MethodBinder Alias(Symbol newName);
+
+        MethodBinder Duplicate();
     }
 }

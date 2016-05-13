@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mint.MethodBinding;
 using Mint.MethodBinding.Binders;
 
 namespace Mint
@@ -69,6 +68,20 @@ namespace Mint
 
         public ModuleBuilder<T> DefMethod(string name, MethodInfo method) =>
             DefMethod(new Symbol(name), method);
+
+        public ModuleBuilder<T> Alias(string newName, string oldName)
+        {
+            var name = new Symbol(oldName);
+            MethodBinder binder;
+            if(!Module.Methods.TryGetValue(name, out binder))
+            {
+                throw new NameError($"undefined method `{oldName}' for class `{Module.FullName}'");
+            }
+
+            name = new Symbol(newName);
+            Module.DefineMethod(binder.Alias(name));
+            return this;
+        }
 
         #endregion
 

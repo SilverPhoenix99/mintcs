@@ -5,18 +5,20 @@ namespace Mint
 {
     public struct Fixnum : iObject
     {
+        public const int SIZE = sizeof(long);
+
+        public long  Id => (Value << 2) | 1;
+        public Class Class => Class.FIXNUM;
+        public Class SingletonClass { get { throw new TypeError("can't define singleton"); } }
+        public Class CalculatedClass => Class.FIXNUM;
+        public bool  HasSingletonClass => false;
+        public bool  Frozen => true;
+        public long  Value { get; }
+
         public Fixnum(long value)
         {
             Value = value;
         }
-
-        public long  Id                => (Value << 2) | 1;
-        public Class Class             => Class.FIXNUM;
-        public Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class CalculatedClass   => Class.FIXNUM;
-        public bool  HasSingletonClass => false;
-        public bool  Frozen            => true;
-        public long  Value             { get; }
 
         public void Freeze() { }
 

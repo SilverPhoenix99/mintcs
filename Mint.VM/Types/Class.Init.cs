@@ -68,14 +68,14 @@ namespace Mint
             CLASS.calculatedClass = CLASS;
 
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
-                .AttrReader("class",     _ => _.Class )
-                .DefMethod( "to_s",      () => ((FrozenObject) null).ToString() )
-                .DefMethod( "inspect",   () => ((FrozenObject) null).Inspect() )
-                .DefLambda( "nil?",      (Func<iObject, iObject>) (_ => new FalseClass()) )
-                .DefLambda( "frozen?",   (Func<iObject, bool>) (_ => _.Frozen) )
-                .DefLambda( "freeze",    (Func<iObject, iObject>) (_ => { _.Freeze(); return new NilClass(); }) )
-                .DefLambda( "hash",      (Func<iObject, long>) (_ => _.GetHashCode()) )
-                .DefLambda( "itself",    (Func<iObject, iObject>) (_ => _) )
+                .AttrReader("class", _ => _.Class )
+                .DefMethod("to_s", () => ((FrozenObject) null).ToString() )
+                .DefMethod("inspect", () => ((FrozenObject) null).Inspect() )
+                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new FalseClass()) )
+                .DefLambda("frozen?", (Func<iObject, bool>) (_ => _.Frozen) )
+                .DefLambda("freeze", (Func<iObject, iObject>) (_ => { _.Freeze(); return new NilClass(); }) )
+                .DefLambda("hash", (Func<iObject, long>) (_ => _.GetHashCode()) )
+                .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", () => ((iObject) null).Id )
             ;
 
@@ -85,8 +85,8 @@ namespace Mint
             NUMERIC = new Class(new Symbol("Numeric"));
 
             FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s",    _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC);
@@ -96,24 +96,30 @@ namespace Mint
             INTEGER = new Class(NUMERIC, new Symbol("Integer"));
 
             FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => new Fixnum(Math.Abs(_.Value))))
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => new Fixnum(Math.Abs(_.Value))) )
+                .DefLambda("even?", (Func<Fixnum, bool>) (_ => (_.Value & 1) == 0) )
+                .DefLambda("odd?", (Func<Fixnum, bool>) (_ => (_.Value & 1) == 1) )
+                .Alias("magnitude", "abs")
+                .DefLambda("to_f", (Func<Fixnum, Float>) (_ => (Float) _) )
+                .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
+                .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new TrueClass()))
-                .DefLambda("to_a", (Func<iObject, Array>)   (_ => new Array()))
-                .DefLambda("to_f", (Func<iObject, Float>)   (_ => new Float(0)))
-                .DefLambda("to_i", (Func<iObject, Fixnum>)  (_ => new Fixnum()))
-                .DefLambda("to_h", (Func<iObject, Hash>)    (_ => new Hash()))
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new TrueClass()) )
+                .DefLambda("to_a", (Func<iObject, Array>)   (_ => new Array()) )
+                .DefLambda("to_f", (Func<iObject, Float>)   (_ => new Float(0.0)) )
+                .DefLambda("to_i", (Func<iObject, Fixnum>)  (_ => new Fixnum()) )
+                .DefLambda("to_h", (Func<iObject, Hash>)    (_ => new Hash()) )
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s",    _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             TRUE = ModuleBuilder<TrueClass>.DescribeClass()

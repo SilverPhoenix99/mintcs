@@ -119,7 +119,7 @@ namespace Mint
 
                 if(mod != this)
                 {
-                    DefineMethod(method.Duplicate(false));
+                    DefineMethod(method.Duplicate());
                 }
 
                 return method;
