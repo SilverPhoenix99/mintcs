@@ -38,9 +38,12 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CallSiteTests.cs" />
     <Compile Include="ConditionTests.cs" />
+    <Compile Include="FalseClassTests.cs" />
     <Compile Include="FixnumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TrueClassTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mint.VM\Mint.VM.csproj">

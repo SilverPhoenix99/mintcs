@@ -52,7 +52,7 @@ namespace Mint
             var callInfo = new CallInfo(methodNameAsSymbol, Visibility.Private, parameterKinds);
             var callSite = new CallSite(callInfo);
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
-            return new CallSite(callInfo).Call(instance, arguments);
+            return callSite.Call(instance, arguments);
         }
 
         private static Symbol MethodNameAsSymbol(iObject methodName)

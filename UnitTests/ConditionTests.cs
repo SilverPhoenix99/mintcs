@@ -3,6 +3,7 @@
 namespace Mint.UnitTests
 {
     [TestFixture]
+    [TestOf(typeof(Condition))]
     public class ConditionTests
     {
         [Test]

@@ -59,6 +59,12 @@ namespace Mint
 
         public override string ToString() => Value;
 
+        public bool Equals(String other) => other != null && other.value.Equals(value);
+
+        public override bool Equals(object other) => Equals(other as String);
+
+        public override int GetHashCode() => Value.GetHashCode();
+
         public static explicit operator String(string s) => new String(s);
 
         public static explicit operator string(String s) => s.Value;

@@ -19,7 +19,7 @@
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
-        public override bool Equals(object other) => other is FalseClass;
+        public override bool Equals(object other) => other is FalseClass || other as bool? == false;
 
         public bool Equal(object other) => Equals(other);
 

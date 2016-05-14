@@ -9,7 +9,7 @@ namespace Mint.MethodBinding.CallCompilation
 {
     public sealed class PolymorphicCallCompiler : CallCompiler
     {
-        private const int MEGAMORPHIC_THRESHOLD = 32;
+        private const int CACHE_FULL_THRESHOLD = 32;
         
         private static readonly PropertyInfo PROPERTY_CALCULATEDCLASS =
             Reflector<iObject>.Property(_ => _.CalculatedClass);
@@ -71,7 +71,7 @@ namespace Mint.MethodBinding.CallCompilation
             return new CachedMethod<Expression>(classId, binder, siteExpression);
         }
         
-        private bool IsCacheFull() => cache.Count > MEGAMORPHIC_THRESHOLD;
+        private bool IsCacheFull() => cache.Count > CACHE_FULL_THRESHOLD;
         
         private Expression BuildBodyExpression()
         {

@@ -8,11 +8,11 @@ namespace Mint.MethodBinding
     {
         private Range arity;
 
-        public CallInfo(Symbol methodName, Visibility visibility, IEnumerable<ParameterKind> parameters)
+        public CallInfo(Symbol methodName, Visibility visibility = Visibility.Public, IEnumerable<ParameterKind> parameters = null)
         {
             MethodName = methodName;
             Visibility = visibility;
-            Parameters = parameters.ToArray();
+            Parameters = parameters?.ToArray() ?? new ParameterKind[0];
         }
 
         public Visibility Visibility { get; }
