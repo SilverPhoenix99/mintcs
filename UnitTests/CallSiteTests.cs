@@ -20,7 +20,7 @@ namespace Mint.UnitTests
             Assert.That(callSite.CallInfo.ToString(), Is.Not.Null);
         }
 
-        public static CallSite GetClassCallSite()
+        private static CallSite GetClassCallSite()
         {
             var methodName = new Symbol("class");
             var callInfo = new CallInfo(methodName);

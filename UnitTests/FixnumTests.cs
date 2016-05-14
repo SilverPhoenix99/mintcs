@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Mint.UnitTests
 {
@@ -7,8 +6,6 @@ namespace Mint.UnitTests
     [TestOf(typeof(Fixnum))]
     public class FixnumTests
     {
-        private readonly Random rand = new Random();
-
         [Test]
         public void TestCreate()
         {
@@ -42,16 +39,15 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestEquals()
+        public void TestEquals([Random(0L, 10000L, 3)] long value)
         {
-            var integer = rand.Next(10000);
-            var fixnum1 = new Fixnum(integer);
-            var fixnum2 = new Fixnum(integer);
-            var floatObject = new Float(integer);
+            var fixnum1 = new Fixnum(value);
+            var fixnum2 = new Fixnum(value);
+            var floatObject = new Float(value);
 
             Assert.IsTrue(fixnum1.Equals(fixnum2));
             Assert.IsTrue(fixnum1.Equals(floatObject));
-            Assert.IsFalse(fixnum1.Equals(new String(integer.ToString())));
+            Assert.IsFalse(fixnum1.Equals(new String(value.ToString())));
         }
 
         [Test]
@@ -85,9 +81,9 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestInspect()
+        public void TestInspect([Random(long.MinValue, long.MaxValue, 3)] long value)
         {
-            var fixnum = new Fixnum(rand.Next(int.MinValue, int.MaxValue));
+            var fixnum = new Fixnum(value);
 
             Assert.That(fixnum.Inspect(), Is.EqualTo(fixnum.ToString()));
             Assert.That(fixnum.Inspect(16), Is.EqualTo(fixnum.ToString(16)));
@@ -103,9 +99,9 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestSend()
+        public void TestSend([Random(1L, long.MaxValue, 3)] long value)
         {
-            var positiveFixnum = new Fixnum(10000);
+            var positiveFixnum = new Fixnum(value);
             var negativeFixnum = new Fixnum(-positiveFixnum.Value);
             var sendResult = negativeFixnum.Send(new Symbol("abs"));
 
@@ -137,65 +133,57 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestUnaryNegation()
+        public void TestUnaryNegation([Random(long.MinValue, long.MaxValue, 1)] long value)
         {
-            var integer = rand.Next(int.MinValue, int.MaxValue);
             Assert.That(-new Fixnum(0), Is.EqualTo(new Fixnum(0)));
-            Assert.That(-new Fixnum(integer), Is.EqualTo(new Fixnum(-integer)));
+            Assert.That(-new Fixnum(value), Is.EqualTo(new Fixnum(-value)));
         }
 
         [Test]
-        public void TestLongCast()
+        public void TestLongCast([Random(long.MinValue, long.MaxValue, 1)] long value)
         {
-            const long value = 100L;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((long) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestIntCast()
+        public void TestIntCast([Random(int.MinValue, int.MaxValue, 1)] int value)
         {
-            const int value = 100;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((int) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestUIntCast()
+        public void TestUIntCast([Random(uint.MinValue, uint.MaxValue, 1)] uint value)
         {
-            const uint value = 100u;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((uint) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestShortCast()
+        public void TestShortCast([Random(short.MinValue, short.MaxValue, 1)] short value)
         {
-            const short value = 100;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((short) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestUShortCast()
+        public void TestUShortCast([Random(ushort.MinValue, ushort.MaxValue, 1)] ushort value)
         {
-            const ushort value = 100;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((ushort) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestSByteCast()
+        public void TestSByteCast([Random(sbyte.MinValue, sbyte.MaxValue, 1)] sbyte value)
         {
-            const sbyte value = 100;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((sbyte) new Fixnum(value), Is.EqualTo(value));
         }
 
         [Test]
-        public void TestByteCast()
+        public void TestByteCast([Random(byte.MinValue, byte.MaxValue, 1)] byte value)
         {
-            const byte value = 100;
             Assert.That((Fixnum) value, Is.EqualTo(new Fixnum(value)));
             Assert.That((byte) new Fixnum(value), Is.EqualTo(value));
         }
@@ -217,11 +205,11 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestSum()
+        public void TestSum(
+            [Random(long.MinValue, long.MaxValue, 1)] long left,
+            [Random(long.MinValue, long.MaxValue, 1)] long right
+        )
         {
-            long left = rand.Next(int.MinValue, int.MaxValue);
-            long right = rand.Next(int.MinValue, int.MaxValue);
-
             Assert.That(new Fixnum(left) + new Fixnum(right), Is.EqualTo(new Fixnum(left + right)));
         }
     }

@@ -10,24 +10,18 @@ namespace Mint.MethodBinding.Parameters
 
             public override ParameterState Parse(ParameterInfo info)
             {
-                return Match(info.IsBlock(),
-                                typeof(BlockState))
+                switch(info.GetParameterKind())
+                {
+                    case ParameterKind.Required:    ParameterInformation.PrefixRequired++; return this;
+                    case ParameterKind.Optional:    return ParseInfoWith<OptionalState>(info);
+                    case ParameterKind.Rest:        return ParseInfoWith<RestState>(info);
+                    case ParameterKind.KeyRequired: goto case ParameterKind.KeyOptional;
+                    case ParameterKind.KeyOptional: return ParseInfoWith<KeyState>(info);
+                    case ParameterKind.KeyRest:     return ParseInfoWith<KeyRestState>(info);
+                    case ParameterKind.Block:       return ParseInfoWith<BlockState>(info);
 
-                    ?? Match(info.IsKeyRest(),
-                                typeof(KeyRestState))
-
-                    ?? Match(info.IsKey(),
-                                typeof(KeyState))
-
-                    ?? Match(info.IsRest(),
-                                typeof(RestState))
-
-                    ?? Match(info.IsOptional(),
-                                typeof(OptionalState))
-
-                    ?? Match(true,
-                                () => { ParameterInformation.RequiredPrefix++; })
-                ;
+                    default: return InvalidParameterError(info);
+                }
             }
         }
     }

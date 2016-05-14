@@ -14,21 +14,15 @@ namespace Mint.MethodBinding.Parameters
 
         public abstract ParameterState Parse(ParameterInfo info);
 
-        protected ParameterState Match(bool condition, Type type) =>
-            condition ? (ParameterState) Activator.CreateInstance(type, ParameterInformation) : null;
+        protected ParameterState ParseInfoWith<T>(ParameterInfo info) where T : ParameterState =>
+            ((ParameterState) Activator.CreateInstance(typeof(T), ParameterInformation)).Parse(info);
 
-        protected static ParameterState Match(bool condition, Func<ParameterState> parseFunction) =>
-            condition ? parseFunction() : null;
-
-        protected ParameterState Match(bool condition, Action parseFunction) =>
-            Match(condition, () => { parseFunction(); return this; });
-
-        protected static ParameterState InvalidParameter(ParameterInfo info)
+        protected static ParameterState InvalidParameterError(ParameterInfo info)
         {
             throw new InvalidParameterError($"Parameter `{info.Name}' has an invalid parameter kind.");
         }
 
-        protected static ParameterState DuplicateParameter(string type, ParameterInfo info)
+        protected static ParameterState DuplicateParameterError(string type, ParameterInfo info)
         {
             throw new InvalidParameterError($"Duplicate {type} parameter: `{info.Name}'");
         }

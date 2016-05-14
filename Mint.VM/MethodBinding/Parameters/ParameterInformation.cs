@@ -8,7 +8,7 @@ namespace Mint.MethodBinding.Parameters
         // parameters, if specified, will follow this order:
         // Required, Optional, Rest, Required, (KeyRequired | KeyOptional), KeyRest, Block
 
-        public int RequiredPrefix { get; private set; }
+        public int PrefixRequired { get; private set; }
         public int Optional { get; private set; }
         public bool HasRest { get; private set; }
         public int SuffixRequired { get; private set; }

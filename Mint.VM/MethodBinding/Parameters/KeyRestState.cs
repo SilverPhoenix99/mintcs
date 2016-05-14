@@ -10,18 +10,23 @@ namespace Mint.MethodBinding.Parameters
 
             public override ParameterState Parse(ParameterInfo info)
             {
-                return Match(info.IsBlock(),
-                                typeof(BlockState))
+                switch(info.GetParameterKind())
+                {
+                    case ParameterKind.KeyRest: UpdateWith(info); return this;
+                    case ParameterKind.Block:   return ParseInfoWith<BlockState>(info);
 
-                    ?? Match(!info.IsKeyRest(),
-                                () => InvalidParameter(info))
+                    default: return InvalidParameterError(info);
+                }
+            }
 
-                    ?? Match(ParameterInformation.HasKeyRest,
-                                () => DuplicateParameter("keywords", info))
+            private void UpdateWith(ParameterInfo info)
+            {
+                if(ParameterInformation.HasKeyRest)
+                {
+                    DuplicateParameterError("keywords", info);
+                }
 
-                    ?? Match(true,
-                                () => { ParameterInformation.HasKeyRest = true; })
-                ;
+                ParameterInformation.HasKeyRest = true;
             }
         }
     }

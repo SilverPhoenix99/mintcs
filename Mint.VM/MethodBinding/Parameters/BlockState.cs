@@ -10,15 +10,22 @@ namespace Mint.MethodBinding.Parameters
 
             public override ParameterState Parse(ParameterInfo info)
             {
-                return Match(!info.IsBlock(),
-                                () => InvalidParameter(info))
+                switch(info.GetParameterKind())
+                {
+                    case ParameterKind.Block: UpdateWith(info); return this;
 
-                    ?? Match(ParameterInformation.HasBlock,
-                                () => DuplicateParameter("block", info))
+                    default: return InvalidParameterError(info);
+                }
+            }
 
-                    ?? Match(true,
-                                () => { ParameterInformation.HasBlock = true; })
-                ;
+            private void UpdateWith(ParameterInfo info)
+            {
+                if(ParameterInformation.HasBlock)
+                {
+                    DuplicateParameterError("block", info);
+                }
+
+                ParameterInformation.HasBlock = true;
             }
         }
     }
