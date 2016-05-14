@@ -87,6 +87,7 @@ namespace Mint
             FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
+                .DefLambda("abs", (Func<Float, Float>) (_ => Math.Abs(_.Value)) )
             ;
 
             COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC);
@@ -98,7 +99,7 @@ namespace Mint
             FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
-                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => new Fixnum(Math.Abs(_.Value))) )
+                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => Math.Abs(_.Value)) )
                 .DefLambda("even?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 0L) )
                 .DefLambda("odd?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 1L) )
                 .Alias("magnitude", "abs")

@@ -17,7 +17,8 @@ namespace Mint.UnitTests
             
             Assert.That(callSite.Call(new Fixnum()), Is.EqualTo(Class.FIXNUM));
 
-            Assert.That(callSite.CallInfo.ToString(), Is.Not.Null);
+            Assert.That(callSite.CallInfo.Visibility, Is.EqualTo(Visibility.Public));
+            Assert.That(callSite.ToString(), Is.Not.Null);
         }
 
         private static CallSite GetClassCallSite()

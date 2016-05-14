@@ -7,24 +7,29 @@ namespace Mint.UnitTests
     public class FixnumTests
     {
         [Test]
-        public void TestCreate()
+        public void TestCreate([Random(long.MinValue, long.MaxValue, 1)] long value)
         {
-            const long integer = 15648L;
-            var fixnum = new Fixnum(integer);
+            var fixnum = new Fixnum(value);
 
-            Assert.That(fixnum.Value, Is.EqualTo(integer));
-            Assert.That(fixnum.Id, Is.EqualTo(integer << 2 | 1));
+            Assert.That(fixnum.Value, Is.EqualTo(value));
+            Assert.That(fixnum.Id, Is.EqualTo(value << 2 | 1));
         }
 
         [Test]
-        public void TestSimpleMethods()
+        public void TestClass([Random(long.MinValue, long.MaxValue, 1)] long value)
         {
-            var fixnum = new Fixnum();
+            var fixnum = new Fixnum(value);
 
             Assert.That(fixnum.Class, Is.EqualTo(Class.FIXNUM));
             Assert.That(fixnum.CalculatedClass, Is.EqualTo(Class.FIXNUM));
             Assert.Throws<TypeError>(() => { var singletonClass = fixnum.SingletonClass; });
             Assert.IsFalse(fixnum.HasSingletonClass);
+        }
+
+        [Test]
+        public void TestGetHashCode([Random(long.MinValue, long.MaxValue, 1)] long value)
+        {
+            var fixnum = new Fixnum(value);
             Assert.That(fixnum.GetHashCode(), Is.EqualTo(fixnum.Value.GetHashCode()));
         }
 
@@ -41,13 +46,14 @@ namespace Mint.UnitTests
         [Test]
         public void TestEquals([Random(0L, 10000L, 3)] long value)
         {
-            var fixnum1 = new Fixnum(value);
-            var fixnum2 = new Fixnum(value);
+            var fixnum = new Fixnum(value);
             var floatObject = new Float(value);
 
-            Assert.IsTrue(fixnum1.Equals(fixnum2));
-            Assert.IsTrue(fixnum1.Equals(floatObject));
-            Assert.IsFalse(fixnum1.Equals(new String(value.ToString())));
+            Assert.IsTrue(fixnum.Equals(new Fixnum(value)));
+            Assert.IsTrue(fixnum.Equals(floatObject));
+            Assert.IsFalse(fixnum.Equals(new Fixnum(value+1)));
+            Assert.IsFalse(fixnum.Equals(null));
+            Assert.IsFalse(fixnum.Equals(new String(value.ToString())));
         }
 
         [Test]
@@ -67,6 +73,15 @@ namespace Mint.UnitTests
         }
 
         [Test]
+        public void TestInspect([Random(long.MinValue, long.MaxValue, 3)] long value)
+        {
+            var fixnum = new Fixnum(value);
+
+            Assert.That(fixnum.Inspect(), Is.EqualTo(fixnum.ToString()));
+            Assert.That(fixnum.Inspect(16), Is.EqualTo(fixnum.ToString(16)));
+        }
+
+        [Test]
         public void TestIsA()
         {
             var fixnum = new Fixnum();
@@ -81,15 +96,6 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestInspect([Random(long.MinValue, long.MaxValue, 3)] long value)
-        {
-            var fixnum = new Fixnum(value);
-
-            Assert.That(fixnum.Inspect(), Is.EqualTo(fixnum.ToString()));
-            Assert.That(fixnum.Inspect(16), Is.EqualTo(fixnum.ToString(16)));
-        }
-
-        [Test]
         public void TestToStringError()
         {
             var fixnum = new Fixnum(10000);
@@ -101,11 +107,11 @@ namespace Mint.UnitTests
         [Test]
         public void TestSend([Random(1L, long.MaxValue, 3)] long value)
         {
-            var positiveFixnum = new Fixnum(value);
-            var negativeFixnum = new Fixnum(-positiveFixnum.Value);
-            var sendResult = negativeFixnum.Send(new Symbol("abs"));
+            var positive = new Fixnum(value);
+            var negative = new Fixnum(-value);
+            var result = negative.Send(new Symbol("abs"));
 
-            Assert.That(sendResult, Is.EqualTo(positiveFixnum));
+            Assert.That(result, Is.EqualTo(positive));
         }
 
         [Test]

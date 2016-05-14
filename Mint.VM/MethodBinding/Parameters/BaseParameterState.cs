@@ -22,7 +22,7 @@ namespace Mint.MethodBinding.Parameters
             throw new InvalidParameterError($"Parameter `{info.Name}' has an invalid parameter kind.");
         }
 
-        protected static ParameterState DuplicateParameterError(string type, ParameterInfo info)
+        protected static void DuplicateParameterError(string type, ParameterInfo info)
         {
             throw new InvalidParameterError($"Duplicate {type} parameter: `{info.Name}'");
         }

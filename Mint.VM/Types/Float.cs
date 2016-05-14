@@ -28,9 +28,9 @@ namespace Mint
 
         public static Float operator -(Float v) => new Float(-v.Value);
 
-        public static explicit operator Float(double v) => new Float(v);
+        public static implicit operator Float(double v) => new Float(v);
 
-        public static explicit operator double(Float v) => v.Value;
+        public static implicit operator double(Float v) => v.Value;
 
         public static explicit operator Float(float v) => new Float(v);
 
