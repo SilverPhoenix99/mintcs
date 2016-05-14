@@ -21,7 +21,7 @@ namespace Mint.UnitTests
             var value = new Float(rawValue);
 
             Assert.That(value.Class, Is.EqualTo(Class.FLOAT));
-            Assert.That(value.CalculatedClass, Is.EqualTo(Class.FLOAT));
+            Assert.That(value.EffectiveClass, Is.EqualTo(Class.FLOAT));
             Assert.Throws<TypeError>(() => { var singletonClass = value.SingletonClass; });
             Assert.IsFalse(value.HasSingletonClass);
         }

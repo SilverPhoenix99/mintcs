@@ -12,7 +12,7 @@ namespace Mint.MethodBinding.CallCompilation
         private const int CACHE_FULL_THRESHOLD = 32;
         
         private static readonly PropertyInfo PROPERTY_CALCULATEDCLASS =
-            Reflector<iObject>.Property(_ => _.CalculatedClass);
+            Reflector<iObject>.Property(_ => _.EffectiveClass);
 
         private static readonly PropertyInfo PROPERTY_ID = Reflector<iObject>.Property(_ => _.Id);
         
@@ -58,8 +58,8 @@ namespace Mint.MethodBinding.CallCompilation
 
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
-            var classId = instance.CalculatedClass.Id;
-            var methodBinder = instance.CalculatedClass.FindMethod(CallSite.CallInfo.MethodName);
+            var classId = instance.EffectiveClass.Id;
+            var methodBinder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
             cache.Put(CreateCachedMethod(classId, methodBinder));
             CallSite.Call = Compile();
             return CallSite.Call(instance, arguments);

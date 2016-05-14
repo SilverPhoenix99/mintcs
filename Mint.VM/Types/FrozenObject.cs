@@ -9,7 +9,7 @@ namespace Mint
         public virtual  long  Id                { get; } = Interlocked.Increment(ref nextId) << 2;
         public abstract Class Class             { get; }
         public virtual  Class SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public virtual  Class CalculatedClass   => HasSingletonClass ? SingletonClass : Class;
+        public virtual  Class EffectiveClass   => HasSingletonClass ? SingletonClass : Class;
         public virtual  bool  HasSingletonClass => false;
         public virtual  bool  Frozen            { get { return true; } protected set { /* noop */ } }
 

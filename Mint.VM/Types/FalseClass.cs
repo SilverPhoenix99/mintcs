@@ -5,7 +5,7 @@
         public long  Id                => 0x0;
         public Class Class             => Class.FALSE;
         public Class SingletonClass    => Class.FALSE;
-        public Class CalculatedClass   => Class.FALSE;
+        public Class EffectiveClass   => Class.FALSE;
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 

@@ -11,7 +11,7 @@
         Class SingletonClass { get; }
 
         // Returns SingletonClass if it exists, otherwise it returns Class
-        Class CalculatedClass { get; }
+        Class EffectiveClass { get; }
 
         bool HasSingletonClass { get; }
 

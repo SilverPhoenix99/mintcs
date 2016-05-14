@@ -45,7 +45,7 @@ namespace Mint.MethodBinding.CallCompilation
 
         private iObject Call(iObject instance, iObject[] arguments)
         {
-            var classId = instance.CalculatedClass.Id;
+            var classId = instance.EffectiveClass.Id;
             var method = cache[classId];
 
             if(method == null)
@@ -59,12 +59,12 @@ namespace Mint.MethodBinding.CallCompilation
         private CachedMethod<Function> FindMethodInInstance(iObject instance)
         {
             cache.RemoveInvalidCachedMethods();
-            var binder = instance.CalculatedClass.FindMethod(CallSite.CallInfo.MethodName);
+            var binder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
             if(binder == null)
             {
-                throw new InvalidOperationException($"No method found for {instance.CalculatedClass.FullName}");
+                throw new InvalidOperationException($"No method found for {instance.EffectiveClass.FullName}");
             }
-            return CreateCachedMethod(instance.CalculatedClass.Id, binder);
+            return CreateCachedMethod(instance.EffectiveClass.Id, binder);
         }
     }
 }

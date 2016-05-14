@@ -21,7 +21,7 @@ namespace Mint.UnitTests
             var fixnum = new Fixnum(value);
 
             Assert.That(fixnum.Class, Is.EqualTo(Class.FIXNUM));
-            Assert.That(fixnum.CalculatedClass, Is.EqualTo(Class.FIXNUM));
+            Assert.That(fixnum.EffectiveClass, Is.EqualTo(Class.FIXNUM));
             Assert.Throws<TypeError>(() => { var singletonClass = fixnum.SingletonClass; });
             Assert.IsFalse(fixnum.HasSingletonClass);
         }

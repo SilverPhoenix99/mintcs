@@ -17,7 +17,7 @@ namespace Mint
         public string Name              => sym.Name;
         public Class  Class             => Class.SYMBOL;
         public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class  CalculatedClass   => Class.SYMBOL;
+        public Class  EffectiveClass   => Class.SYMBOL;
         public bool   HasSingletonClass => false;
         public bool   Frozen            => true;
 

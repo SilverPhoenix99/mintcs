@@ -16,7 +16,7 @@ namespace Mint.MethodBinding.CallCompilation
 
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
-            var methodBinder = instance.CalculatedClass.FindMethod(CallSite.CallInfo.MethodName);
+            var methodBinder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
             var instanceExpression = Expression.Constant(instance);
             var argumentsExpression = Expression.Constant(arguments);
             var body = methodBinder.Bind(CallSite.CallInfo, instanceExpression, argumentsExpression);

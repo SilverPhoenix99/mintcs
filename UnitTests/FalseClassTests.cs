@@ -18,7 +18,7 @@ namespace Mint.UnitTests
             var value = new FalseClass();
             Assert.That(value.Class, Is.EqualTo(Class.FALSE));
             Assert.That(value.SingletonClass, Is.EqualTo(Class.FALSE));
-            Assert.That(value.CalculatedClass, Is.EqualTo(Class.FALSE));
+            Assert.That(value.EffectiveClass, Is.EqualTo(Class.FALSE));
             Assert.IsFalse(value.HasSingletonClass);
 
             Assert.IsTrue(value.IsA(Class.FALSE));

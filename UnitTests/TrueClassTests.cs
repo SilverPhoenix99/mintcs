@@ -18,7 +18,7 @@ namespace Mint.UnitTests
             var value = new TrueClass();
             Assert.That(value.Class, Is.EqualTo(Class.TRUE));
             Assert.That(value.SingletonClass, Is.EqualTo(Class.TRUE));
-            Assert.That(value.CalculatedClass, Is.EqualTo(Class.TRUE));
+            Assert.That(value.EffectiveClass, Is.EqualTo(Class.TRUE));
             Assert.IsFalse(value.HasSingletonClass);
 
             Assert.IsTrue(value.IsA(Class.TRUE));

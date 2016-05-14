@@ -65,7 +65,7 @@ namespace Mint
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE);
 
             // required hack
-            CLASS.calculatedClass = CLASS;
+            CLASS.effectiveClass = CLASS;
 
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
