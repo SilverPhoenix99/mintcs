@@ -20,7 +20,12 @@ namespace Mint.UnitTests
             Assert.That(value.SingletonClass, Is.EqualTo(Class.FALSE));
             Assert.That(value.EffectiveClass, Is.EqualTo(Class.FALSE));
             Assert.IsFalse(value.HasSingletonClass);
+        }
 
+        [Test]
+        public void TestIsA()
+        {
+            var value = new FalseClass();
             Assert.IsTrue(value.IsA(Class.FALSE));
             Assert.IsTrue(value.IsA(Class.OBJECT));
             Assert.IsTrue(value.IsA(Class.BASIC_OBJECT));
@@ -67,6 +72,7 @@ namespace Mint.UnitTests
         {
             Assert.IsTrue(new FalseClass().Equal(new FalseClass()));
             Assert.IsTrue(new FalseClass().Equal(false));
+            Assert.IsFalse(new FalseClass().Equal(null));
             Assert.IsFalse(new FalseClass().Equal(new NilClass()));
             Assert.IsFalse(new FalseClass().Equal(new Fixnum()));
             Assert.IsFalse(new FalseClass().Equal(new TrueClass()));

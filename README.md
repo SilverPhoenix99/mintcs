@@ -31,3 +31,16 @@ msbuild /property:CscToolPath=<path_to_csc>
 
 # Instructions (Linux)
 TODO
+
+# Tests
+
+To run the tests you need:
+
+- NUnit 3.x [download](https://github.com/nunit/nunit/releases) | [website](http://www.nunit.org/)
+ - The solution already has a copy of `nunit.framework.dll`, so there is no need to copy it.
+- OpenCover [download](https://github.com/OpenCover/opencover/releases) | [website](https://github.com/OpenCover/opencover)
+- ReportGenerator [download](https://github.com/danielpalme/ReportGenerator/releases) | [website](https://github.com/danielpalme/ReportGenerator)
+
+Add them to the path and run `run_tests.bat`.
+
+The code coverage report will be inside the solution directory at `.vs\mint\OpenCover\Report\index.htm`.

@@ -15,6 +15,7 @@ namespace Mint
         public static readonly Class RATIONAL;
         public static readonly Class INTEGER;
         public static readonly Class FIXNUM;
+        public static readonly Class BIGNUM;
         public static readonly Class NIL;
         public static readonly Class FALSE;
         public static readonly Class TRUE;
@@ -107,6 +108,9 @@ namespace Mint
                 .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
                 .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
                 .DefMethod("bit_length", _ => _.BitLength() )
+            ;
+
+            BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()

@@ -78,6 +78,7 @@
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\Array.cs" />
     <Compile Include="Types\BaseObject.cs" />
+    <Compile Include="Types\Bignum.cs" />
     <Compile Include="Types\Class.cs" />
     <Compile Include="Types\Class.Init.cs" />
     <Compile Include="Types\Complex.cs" />

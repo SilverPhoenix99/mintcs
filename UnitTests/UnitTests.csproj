@@ -38,11 +38,13 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BignumTests.cs" />
     <Compile Include="CallSiteTests.cs" />
     <Compile Include="ConditionTests.cs" />
     <Compile Include="FalseClassTests.cs" />
     <Compile Include="FixnumTests.cs" />
     <Compile Include="FloatTests.cs" />
+    <Compile Include="NilClassTests.cs" />
     <Compile Include="ParameterKindTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TrueClassTests.cs" />
