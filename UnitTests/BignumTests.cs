@@ -16,6 +16,24 @@ namespace Mint.UnitTests
         }
 
         [Test]
+        public void TestToArray()
+        {
+            const string value = "18446744073709551616";
+            var bignum = Bignum.Parse(value);
+
+            Assert.That(bignum.ToArray(), Is.EqualTo(new[] { 0UL, 1UL }));
+        }
+
+        [Test]
+        public void TestHexParse()
+        {
+            const string value = "693ea77ad11a5bbb1b44f185443956 red balloons";
+            var bignum = Bignum.Parse(value, 16);
+
+            Assert.That(bignum.ToArray(), Is.EqualTo(new[] { 0xbb1b44f185443956UL, 0x693ea77ad11a5bUL }));
+        }
+
+        [Test]
         public void TestClass()
         {
             const string value = "18446744073709551616";
