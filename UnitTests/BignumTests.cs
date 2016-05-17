@@ -15,14 +15,14 @@ namespace Mint.UnitTests
             Assert.That(bignum, Is.Not.Null);
         }
 
-        [Test]
-        public void TestToArray()
-        {
-            const string value = "18446744073709551616";
-            var bignum = Bignum.Parse(value);
-
-            Assert.That(bignum.ToArray(), Is.EqualTo(new[] { 0UL, 1UL }));
-        }
+        //[Test]
+        //public void TestToArray()
+        //{
+        //    const string value = "18446744073709551616";
+        //    var bignum = Bignum.Parse(value);
+        //
+        //    Assert.That(bignum.ToArray(), Is.EqualTo(new[] { 0UL, 1UL }));
+        //}
 
         [Test]
         public void TestHexParse()
@@ -30,7 +30,8 @@ namespace Mint.UnitTests
             const string value = "693ea77ad11a5bbb1b44f185443956 red balloons";
             var bignum = Bignum.Parse(value, 16);
 
-            Assert.That(bignum.ToArray(), Is.EqualTo(new[] { 0xbb1b44f185443956UL, 0x693ea77ad11a5bUL }));
+            Assert.That(bignum.ToString(), Is.EqualTo("546461948654684354874631879846541654"));
+            Assert.That(bignum.ToString(16), Is.EqualTo("693ea77ad11a5bbb1b44f185443956"));
         }
 
         [Test]
@@ -52,6 +53,11 @@ namespace Mint.UnitTests
             var bignum = Bignum.Parse(value);
 
             Assert.That(bignum.ToString(), Is.EqualTo(value));
+            Assert.That(bignum.ToString(10), Is.EqualTo(bignum.ToString()));
+            Assert.Throws<ArgumentError>(() => { bignum.ToString(1); });
+            Assert.Throws<ArgumentError>(() => { bignum.ToString(37); });
+
+            Assert.That(Bignum.Parse("").ToString(), Is.EqualTo("0"));
         }
     }
 }

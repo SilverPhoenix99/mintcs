@@ -1,30 +1,29 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 
 namespace Mint
 {
     public partial class Bignum
     {
-		private class Parser
-		{
-            private const ulong INVALID_DIGIT = ulong.MaxValue;
+        private class Parser
+        {
+            private const uint INVALID_DIGIT = uint.MaxValue;
 
             private readonly string value;
-			private readonly uint radix;
-		    private readonly List<ulong> digits = new List<ulong>();
-			private readonly Sign sign;
-			private int beginIndex;
-			private ulong accumulated;
+            private readonly uint radix;
+            private int beginIndex;
+            private int sign;
 
             public Parser(string value, uint radix)
-			{
-			    this.value = value;
-				this.radix = radix;
+            {
+                this.value = value;
+                this.radix = radix;
                 beginIndex = CalculateBeginIndex(value);
                 sign = CalculateSign(beginIndex);
             }
 
-		    private static int CalculateBeginIndex(string value)
-		    {
+            private static int CalculateBeginIndex(string value)
+            {
                 for(var i = 0; i < value.Length; i++)
                 {
                     if(!char.IsWhiteSpace(value[i]))
@@ -33,45 +32,45 @@ namespace Mint
                     }
                 }
 
-				return value.Length;
+                return value.Length;
             }
 
-			private Sign CalculateSign(int index)
-			{
-			    if(index >= value.Length || value[index] != '-')
-			    {
-			        return Sign.Positive;
-			    }
+            private int CalculateSign(int index)
+            {
+                if(index >= value.Length || value[index] != '-')
+                {
+                    return 1;
+                }
 
-			    beginIndex++;
-			    return Sign.Negative;
-			}
+                beginIndex++;
+                return -1;
+            }
 
-			public Bignum Parse()
-			{
-                accumulated = 0UL;
+            public Bignum Parse()
+            {
+                var accumulator = new BigInteger();
 
                 for(var i = beginIndex; i < value.Length; i++)
-				{
-				    var digit = ConvertLetterToDigit(value[i], radix);
+                {
+                    var digit = ConvertLetterToDigit(value[i], radix);
 
-					if(digit == INVALID_DIGIT)
-					{
-					    break;
-					}
+                    if(digit == INVALID_DIGIT)
+                    {
+                        break;
+                    }
 
-					Accumulate(digit);
-				}
+                    accumulator = accumulator * radix + digit;
+                }
 
-				if(accumulated != 0)
-				{
-				    digits.Add(accumulated);
-				}
+                if(sign < 0)
+                {
+                    accumulator = -accumulator;
+                }
 
-                return new Bignum(sign, digits.ToArray());
-			}
+                return new Bignum(accumulator);
+            }
 
-            private static ulong ConvertLetterToDigit(ulong letter, uint radix)
+            private static uint ConvertLetterToDigit(uint letter, uint radix)
             {
                 if('0' <= letter && letter <= '9')
                 {
@@ -91,20 +90,6 @@ namespace Mint
                 }
 
                 return letter < radix ? letter : INVALID_DIGIT;
-            }
-
-			private void Accumulate(ulong digit)
-			{
-                var tempAccumulator = unchecked(accumulated * radix + digit);
-
-                if(tempAccumulator < accumulated)
-                {
-					digits.Add(tempAccumulator);
-					accumulated = 1;
-					return;
-                }
-
-                accumulated = tempAccumulator;
             }
         }
     }

@@ -1,27 +1,73 @@
-﻿namespace Mint
-{
-    public enum Sign
-    {
-        Positive = 1,
-        Negative = -1
-    }
+﻿using System.Collections.Generic;
+using System.Numerics;
 
+namespace Mint
+{
     public partial class Bignum : FrozenObject
     {
+        private const string CHAR_CONVERSION = "0123456789abcdefghijklmnopqrstuvwxyz";
+
         public override Class Class => Class.BIGNUM;
 
-        private readonly ulong[] digits;
+        public BigInteger Value { get; }
 
-        public Sign Sign { get; }
+        public int Sign => Value.Sign;
 
-        private Bignum(Sign sign, ulong[] digits)
+        private Bignum(BigInteger value)
         {
-            Sign = sign;
-            this.digits = digits;
+            Value = value;
         }
 
         public static Bignum Parse(string value, int radix = 10) =>  new Parser(value, (uint) radix).Parse();
 
-        public ulong[] ToArray() => (ulong[]) digits.Clone();
+        public override string ToString() => Value.ToString();
+
+        public string ToString(int radix)
+        {
+            if(radix < 2 || radix > 36)
+            {
+                throw new ArgumentError("invalid radix " + radix);
+            }
+            
+            if(radix == 10)
+            {
+                return ToString();
+            }
+
+            var bigRadix = new BigInteger(radix);
+            var value = Value;
+            var digits = new List<char>();
+
+            while(!value.IsZero)
+            {
+                var convertedChar = CHAR_CONVERSION[(int) (value % bigRadix)];
+                digits.Add(convertedChar);
+                value /= bigRadix;
+            }
+
+            if(digits.Count == 0)
+            {
+                return "0";
+            }
+
+            ReverseDigits(digits);
+            return new string(digits.ToArray());
+        }
+
+        private static void ReverseDigits(IList<char> digits)
+        {
+            var halfList = digits.Count / 2;
+            for(int i = 0; i < halfList; i++)
+            {
+                SwapValues(digits, i, digits.Count - i - 1);
+            }
+        }
+
+        private static void SwapValues(IList<char> list, int index1, int index2)
+        {
+            list[index1] ^= list[index2];
+            list[index2] ^= list[index1];
+            list[index1] ^= list[index2];
+        }
     }
 }
