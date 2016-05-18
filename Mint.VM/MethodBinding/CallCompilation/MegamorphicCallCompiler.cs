@@ -1,19 +1,17 @@
+using Mint.MethodBinding.Binders;
 using System;
 using System.Collections.Generic;
-using Mint.MethodBinding.Binders;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.CallCompilation
 {
-    public sealed class MegamorphicCallCompiler : CallCompiler
+    public sealed class MegamorphicCallCompiler : BaseCallCompiler
     {
         private readonly CallCompilerCache<Function> cache;
-        
-        public CallSite CallSite { get; }
 
         public MegamorphicCallCompiler(CallSite callSite)
+            : base(callSite)
         {
-            CallSite = callSite;
             cache = new CallCompilerCache<Function>();
         }
 
@@ -22,7 +20,10 @@ namespace Mint.MethodBinding.CallCompilation
         {
             foreach(var pair in cache)
             {
-                this.cache.Put(CreateCachedMethod(pair.Key, pair.Value));
+                if(pair.Value.Condition.Valid)
+                {
+                    this.cache.Put(CreateCachedMethod(pair.Key, pair.Value));
+                }
             }
         }
 
@@ -41,30 +42,22 @@ namespace Mint.MethodBinding.CallCompilation
             return lambda.Compile();
         }
 
-        public Function Compile() => Call;
+        public override Function Compile() => Call;
 
         private iObject Call(iObject instance, iObject[] arguments)
         {
             var classId = instance.EffectiveClass.Id;
-            var method = cache[classId];
+            var cachedMethod = cache[classId];
 
-            if(method == null)
+            if(cachedMethod == null || !cachedMethod.Binder.Condition.Valid)
             {
-                cache.Put(method = FindMethodInInstance(instance));
+                cache.RemoveInvalidCachedMethods();
+                var binder = TryFindMethodBinder(instance);
+                cachedMethod = CreateCachedMethod(instance.EffectiveClass.Id, binder);
+                cache.Put(cachedMethod);
             }
 
-            return method.CachedCall(instance, arguments);
-        }
-
-        private CachedMethod<Function> FindMethodInInstance(iObject instance)
-        {
-            cache.RemoveInvalidCachedMethods();
-            var binder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
-            if(binder == null)
-            {
-                throw new InvalidOperationException($"No method found for {instance.EffectiveClass.FullName}");
-            }
-            return CreateCachedMethod(instance.EffectiveClass.Id, binder);
+            return cachedMethod.CachedCall(instance, arguments);
         }
     }
 }

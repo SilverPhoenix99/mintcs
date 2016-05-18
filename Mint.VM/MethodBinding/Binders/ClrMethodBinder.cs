@@ -142,50 +142,45 @@ namespace Mint.MethodBinding.Binders
             );
         }
 
-        private Expression CompileBody(MethodInformation info, Expression instance, params Expression[] args)
+        private Expression CompileBody(MethodInformation info, Expression instance, params Expression[] arguments)
         {
-            // site will be needed for non Required parameters
-
-            if(!info.Arity.Include((Fixnum) args.Length))
+            if(!info.Arity.Include((Fixnum) arguments.Length))
             {
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {args.Length}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {arguments.Length}, expected {ArityString()})")
                     ),
                     typeof(iObject)
                 );
             }
-
-            var parameters = info.MethodInfo.GetParameters();
 
             if(info.MethodInfo.DeclaringType != null)
             {
                 instance = Convert(instance, info.MethodInfo.DeclaringType);
             }
 
+            var parameters = info.MethodInfo.GetParameters();
+
             if(info.MethodInfo.IsStatic)
             {
-                var convertedArgs = args.Zip(parameters.Skip(1), ConvertArgument);
-                args = new[] { instance }.Concat(convertedArgs).ToArray();
+                var convertedArgs = arguments.Zip(parameters.Skip(1), ConvertArgument);
+                arguments = new[] { instance }.Concat(convertedArgs).ToArray();
                 instance = null;
             }
             else
             {
-                args = args.Zip(parameters, ConvertArgument).ToArray();
+                arguments = arguments.Zip(parameters, ConvertArgument).ToArray();
             }
 
-            return Box(Call(instance, info.MethodInfo, args));
+            return Box(Call(instance, info.MethodInfo, arguments));
         }
 
-        private SwitchCase CreateSwitchCase(MethodInformation info, Expression instance, Expression[] args)
+        private SwitchCase CreateSwitchCase(MethodInformation info, Expression instance, Expression[] arguments)
         {
-            var parameters = info.MethodInfo.GetParameters().Select(_ => _.ParameterType).Select(_ => {
-                Type type;
-                return TYPES.TryGetValue(_, out type) ? type : _;
-            });
-            var condition  = args.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
-            var body       = CompileBody(info, instance, args);
+            var parameters = info.MethodInfo.GetParameters().Select(_ => _.ParameterType).Select(_ => TYPES[_] ?? _);
+            var condition = arguments.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
+            var body = CompileBody(info, instance, arguments);
             return SwitchCase(body, condition);
         }
 

@@ -1,40 +1,39 @@
+using Mint.MethodBinding.Binders;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mint.MethodBinding.Binders;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.CallCompilation
 {
-    public sealed class PolymorphicCallCompiler : CallCompiler
+    public sealed class PolymorphicCallCompiler : BaseCallCompiler
     {
         private const int CACHE_FULL_THRESHOLD = 32;
-        
+
         private static readonly PropertyInfo PROPERTY_CALCULATEDCLASS =
             Reflector<iObject>.Property(_ => _.EffectiveClass);
 
         private static readonly PropertyInfo PROPERTY_ID = Reflector<iObject>.Property(_ => _.Id);
-        
+
         private static readonly PropertyInfo PROPERTY_VALID = Reflector<Condition>.Property(_ => _.Valid);
-        
+
         private static readonly MethodInfo METHOD_DEFAULTCALL = Reflector<PolymorphicCallCompiler>.Method(
             _ => _.DefaultCall(default(iObject), default(iObject[]))
         );
-        
+
         private readonly CallCompilerCache<Expression> cache;
         private readonly ParameterExpression instanceExpression = Parameter(typeof(iObject), "instance");
         private readonly ParameterExpression argumentsExpression = Parameter(typeof(iObject[]), "args");
 
-        public CallSite CallSite { get; }
-        
         public PolymorphicCallCompiler(CallSite callSite)
+            : base(callSite)
         {
-            CallSite = callSite;
             cache = new CallCompilerCache<Expression>();
         }
 
-        public Function Compile()
+        public override Function Compile()
         {
             cache.RemoveInvalidCachedMethods();
 
@@ -59,20 +58,21 @@ namespace Mint.MethodBinding.CallCompilation
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
             var classId = instance.EffectiveClass.Id;
-            var methodBinder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
-            cache.Put(CreateCachedMethod(classId, methodBinder));
+            var binder = TryFindMethodBinder(instance);
+            var cachedMethod = CreateCachedMethod(classId, binder);
+            cache.Put(cachedMethod);
             CallSite.Call = Compile();
             return CallSite.Call(instance, arguments);
         }
-        
+
         private CachedMethod<Expression> CreateCachedMethod(long classId, MethodBinder binder)
         {
             var siteExpression = binder.Bind(CallSite.CallInfo, instanceExpression, argumentsExpression);
             return new CachedMethod<Expression>(classId, binder, siteExpression);
         }
-        
+
         private bool IsCacheFull() => cache.Count > CACHE_FULL_THRESHOLD;
-        
+
         private Expression BuildBodyExpression()
         {
             var returnTarget = Label(typeof(iObject), "return");
@@ -101,7 +101,7 @@ namespace Mint.MethodBinding.CallCompilation
                 )
             );
         }
-        
+
         private static SwitchCase CreateSwitchCase(CachedMethod<Expression> method, LabelTarget returnTarget)
         {
             var validPropertyExpression = Property(Constant(method.Binder.Condition), PROPERTY_VALID);

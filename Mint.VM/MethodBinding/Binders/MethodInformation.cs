@@ -7,9 +7,7 @@ namespace Mint.MethodBinding.Binders
     {
         public readonly MethodInfo MethodInfo;
         public readonly ParameterInformation ParameterInformation;
-
-        private Range arity;
-        public Range Arity => arity ?? (arity = MethodInfo.CalculateArity());
+        public Range Arity => ParameterInformation.Arity;
 
         public MethodInformation(MethodInfo methodInfo)
         {

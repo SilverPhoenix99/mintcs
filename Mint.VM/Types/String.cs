@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mint.MethodBinding;
+using System;
 using System.Text;
 
 namespace Mint
@@ -68,5 +69,15 @@ namespace Mint
         public static explicit operator String(string s) => new String(s);
 
         public static explicit operator string(String s) => s.Value;
+        
+        public String LeftJustify(int length, [Optional] string padstr = " ")
+        {
+            if(padstr == null)
+            {
+                padstr = " ";
+            }
+        
+            throw new System.NotImplementedException();
+        }
     }
 }

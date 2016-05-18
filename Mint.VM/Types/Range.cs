@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Mint
 {
@@ -6,6 +7,9 @@ namespace Mint
     {
         public Range(iObject begin, iObject end, bool excludeEnd = false) : base(Class.RANGE)
         {
+            Debug.Assert(begin != null);
+            Debug.Assert(end != null);
+
             Begin = begin;
             End = end;
             ExcludeEnd = excludeEnd;
@@ -41,5 +45,12 @@ namespace Mint
             var s = ExcludeEnd ? "." : "";
             return $"{Begin.Inspect()}..{s}{End.Inspect()}";
         }
+
+        public override bool Equals(object other) => Equals(other as Range);
+
+        public bool Equals(Range other) =>
+            ExcludeEnd.Equals(other?.ExcludeEnd)
+            && Begin.Equals(other?.Begin)
+            && End.Equals(other?.End);
     }
 }

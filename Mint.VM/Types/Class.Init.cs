@@ -153,6 +153,7 @@ namespace Mint
             STRING = ModuleBuilder<String>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)))
             ;
 
             SYMBOL = ModuleBuilder<Symbol>.DescribeClass()

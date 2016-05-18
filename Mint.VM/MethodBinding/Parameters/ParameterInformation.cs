@@ -17,6 +17,19 @@ namespace Mint.MethodBinding.Parameters
         public bool HasKeyRest { get; private set; }
         public bool HasBlock { get; private set; }
 
+        public Range Arity
+        {
+            get
+            {
+                long min = PrefixRequired + SuffixRequired + KeyRequired;
+                long max = HasRest || HasKeyRest
+                         ? long.MaxValue
+                         : min + Optional + KeyOptional + (HasBlock ? 1 : 0);
+
+                return new Range(new Fixnum(min), new Fixnum(max));
+            }
+        }
+
         public ParameterInformation(IEnumerable<ParameterInfo> parameterInfos)
         {
             ParameterState state = new RequiredPrefixState(this);
