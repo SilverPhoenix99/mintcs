@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-using Mint.MethodBinding;
-using Mint.MethodBinding.Parameters;
+using Mint.Reflection.Parameters;
+using Mint.Reflection.Parameters.Attributes;
 using NUnit.Framework;
 
 namespace Mint.UnitTests

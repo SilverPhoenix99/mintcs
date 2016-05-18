@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Compiler", "Mint.Compi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Reflection", "Mint.Reflection\Mint.Reflection.csproj", "{F3821DE2-7EA0-4537-9D1A-876BBD3BA51C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE76F5A8-B0E2-49D5-9E8B-BA9C6FB7BFAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3821DE2-7EA0-4537-9D1A-876BBD3BA51C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3821DE2-7EA0-4537-9D1A-876BBD3BA51C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3821DE2-7EA0-4537-9D1A-876BBD3BA51C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3821DE2-7EA0-4537-9D1A-876BBD3BA51C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

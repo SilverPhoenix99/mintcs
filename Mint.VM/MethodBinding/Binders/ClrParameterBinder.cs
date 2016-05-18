@@ -1,51 +1,74 @@
 using System.Linq.Expressions;
+using Mint.Reflection;
 
 namespace Mint.MethodBinding.Binders
 {
-    public interface ClrParameterBinder
+    internal interface ClrParameterBinder
     {
-        int Index { get; }
-        MethodInformation Info;
-        Expression[] Arguments;
+        int ArgumentIndex { get; }
+        CallInfo CallInfo { get; }
+        MethodInformation MethodInformation { get; }
+        Expression[] Arguments { get; }
 
         Expression Bind();
     }
 
-    public abstract class BaseParameterBinder : ClrParameterBinder
+    internal abstract class BaseParameterBinder : ClrParameterBinder
     {
-        public int Index { get; }
+        public int ArgumentIndex { get; }
+        public CallInfo CallInfo { get; }
+        public MethodInformation MethodInformation { get; }
+        public Expression[] Arguments { get; }
 
-        public BaseParameterBinder(int index, MethodInformation info, Expression[] arguments)
+        public BaseParameterBinder(
+            int argumentIndex,
+            CallInfo callInfo,
+            MethodInformation methodInformation,
+            Expression[] arguments
+        )
         {
-            Index = index;
-            Info = info;
+            ArgumentIndex = argumentIndex;
+            CallInfo = callInfo;
+            MethodInformation = methodInformation;
             Arguments = arguments;
         }
+
+        public abstract Expression Bind();
     }
 
-    public class PrefixRequiredParameterBinder : BaseParameterBinder
+    internal class PrefixRequiredParameterBinder : BaseParameterBinder
     {
-        public RequiredParameterBinder(int index, MethodInformation info, Expression[] arguments)
-            : base(index, info, arguments)
+        public PrefixRequiredParameterBinder(
+            int argumentIndex,
+            CallInfo callInfo,
+            MethodInformation methodInformation,
+            Expression[] arguments
+        )
+            : base(argumentIndex, callInfo, methodInformation, arguments)
         { }
 
-        public Expression Bind() => arguments[Index];
+        public override Expression Bind() => Arguments[ArgumentIndex];
     }
 
-    public class OptionalParameterBinder : BaseParameterBinder
+    internal class OptionalParameterBinder : BaseParameterBinder
     {
-        public OptionalParameterBinder(int index, MethodInformation info, Expression[] arguments)
-            : base(index, info, arguments)
+        public OptionalParameterBinder(
+            int argumentIndex,
+            CallInfo callInfo,
+            MethodInformation methodInformation,
+            Expression[] arguments
+        )
+            : base(argumentIndex, callInfo, methodInformation, arguments)
         { }
 
-        public Expression Bind()
+        public override Expression Bind()
         {
-            if(Index < arguments.Length)
+            if(ArgumentIndex < Arguments.Length)
             {
-                return arguments[Index];
+                return Arguments[ArgumentIndex];
             }
 
-            var parameter = info.MethodInfo.GetParameters()[Index];
+            var parameter = MethodInformation.MethodInfo.GetParameters()[ArgumentIndex];
             var defaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null;
             return Expression.Constant(defaultValue);
         }

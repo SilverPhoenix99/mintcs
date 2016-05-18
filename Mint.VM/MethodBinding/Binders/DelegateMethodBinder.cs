@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Binders
@@ -17,7 +18,7 @@ namespace Mint.MethodBinding.Binders
             this.function = function;
             //this.parameterAttributes = parameterAttributes;
             var numParameters = function.Method.GetParameters().Length;
-            Arity = new Range(numParameters, numParameters); // TODO - 1, due to instance?
+            Arity = new Arity(numParameters, numParameters); // TODO - 1, due to instance?
         }
 
         private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)

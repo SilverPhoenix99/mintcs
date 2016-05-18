@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mint.UnitTests</RootNamespace>
     <AssemblyName>Mint.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +52,10 @@
     <Compile Include="TrueClassTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Mint.Reflection\Mint.Reflection.csproj">
+      <Project>{f3821de2-7ea0-4537-9d1a-876bbd3ba51c}</Project>
+      <Name>Mint.Reflection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mint.VM\Mint.VM.csproj">
       <Project>{b446f5d9-5bcc-4b36-945d-ff50036c85d4}</Project>
       <Name>Mint.VM</Name>

@@ -1,3 +1,4 @@
+using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -79,19 +80,18 @@ namespace Mint.MethodBinding.Binders
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        private Range CalculateArity() => methodInformations.Select(_ => _.Arity).Aggregate(new Range(long.MaxValue, 0), Merge);
+        private Arity CalculateArity() =>
+            methodInformations.Select(_ => _.ParameterInformation.Arity).Aggregate(new Arity(int.MaxValue, 0), Merge);
 
-        private static Range Merge(Range r1, Range r2)
+        private static Arity Merge(Arity r1, Arity r2)
         {
-            long min = (Fixnum) r1.Begin;
-            long val = (Fixnum) r2.Begin;
-            if(val < min) min = val;
+            var min = r1.Minimum;
+            if(r2.Minimum < min) min = r2.Minimum;
 
-            long max = (Fixnum) r1.End;
-            val = (Fixnum) r2.End;
-            if(val > max) max = val;
+            var max = r1.Maximum;
+            if(r2.Maximum > max) max = r2.Maximum;
 
-            return new Range(min, max);
+            return new Arity(min, max);
         }
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
@@ -101,14 +101,15 @@ namespace Mint.MethodBinding.Binders
             // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
             var length = callInfo.Parameters.Length;
 
-            var filteredInfos = methodInformations.Where( _ => _.Arity.Include((Fixnum) length) ).ToArray();
+            var filteredInfos = 
+                methodInformations.Where( _ => _.ParameterInformation.Arity.Include(length) ).ToArray();
 
             if(filteredInfos.Length == 0)
             {
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {length}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {length}, expected {Arity})")
                     ),
                     typeof(iObject)
                 );
@@ -144,12 +145,12 @@ namespace Mint.MethodBinding.Binders
 
         private Expression CompileBody(MethodInformation info, Expression instance, params Expression[] arguments)
         {
-            if(!info.Arity.Include((Fixnum) arguments.Length))
+            if(!info.ParameterInformation.Arity.Include(arguments.Length))
             {
                 return Throw(
                     New(
                         CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {arguments.Length}, expected {ArityString()})")
+                        Constant($"wrong number of arguments (given {arguments.Length}, expected {Arity})")
                     ),
                     typeof(iObject)
                 );
@@ -182,16 +183,6 @@ namespace Mint.MethodBinding.Binders
             var condition = arguments.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
             var body = CompileBody(info, instance, arguments);
             return SwitchCase(body, condition);
-        }
-
-        private string ArityString()
-        {
-            long min = (Fixnum) Arity.Begin;
-            long max = (Fixnum) Arity.End;
-
-            return min == max ? min.ToString()
-                 : max == long.MaxValue ? $"{min}+"
-                 : Arity.ToString();
         }
 
         private static string InvalidConversionMessage(MethodInformation[] infos, iObject[] args)

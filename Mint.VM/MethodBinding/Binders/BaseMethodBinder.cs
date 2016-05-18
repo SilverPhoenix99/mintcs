@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Binders
@@ -27,6 +28,12 @@ namespace Mint.MethodBinding.Binders
             { typeof(double),        typeof(Float)  }
         };
 
+        public Symbol Name { get; }
+        public Module Owner { get; }
+        public Condition Condition { get; }
+        public Arity Arity { get; protected set; }
+        public Visibility Visibility { get; }
+
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
         {
             Contract.Assert(name != null);
@@ -42,12 +49,6 @@ namespace Mint.MethodBinding.Binders
         {
             Arity = other.Arity;
         }
-
-        public Symbol    Name        { get; }
-        public Module    Owner       { get; }
-        public Condition Condition   { get; }
-        public Range     Arity       { get; protected set; }
-        public Visibility Visibility { get; }
 
         public abstract Expression Bind(CallInfo callInfo, Expression instance, Expression args);
 

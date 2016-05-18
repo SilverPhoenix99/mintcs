@@ -19,23 +19,6 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
 
             Repl.Run();
-
-            //try
-            //{
-            //    TestCallSite();
-            //}
-            //catch(Exception e)
-            //{
-            //    Console.WriteLine(e);
-            //}
-        }
-
-        static void TestCallSite()
-        {
-            var callInfo = new CallInfo(new Symbol("test"), Visibility.Private, new[] { ParameterKind.Required });
-            var site = new CallSite(callInfo);
-            var result = site.Call(new Fixnum(1), new Fixnum(42));
-            Console.WriteLine(result);
         }
 
         /*

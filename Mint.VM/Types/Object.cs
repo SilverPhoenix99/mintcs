@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Mint.MethodBinding;
 using Mint.MethodBinding.CallCompilation;
+using Mint.Reflection.Parameters;
 
 namespace Mint
 {

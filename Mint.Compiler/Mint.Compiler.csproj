@@ -45,6 +45,10 @@
       <Project>{7e8eb224-55e0-408e-afda-0258e01211ce}</Project>
       <Name>Mint.Parser</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Mint.Reflection\Mint.Reflection.csproj">
+      <Project>{f3821de2-7ea0-4537-9d1a-876bbd3ba51c}</Project>
+      <Name>Mint.Reflection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mint.VM\Mint.VM.csproj">
       <Project>{b446f5d9-5bcc-4b36-945d-ff50036c85d4}</Project>
       <Name>Mint.VM</Name>

@@ -1,4 +1,4 @@
-namespace Mint.MethodBinding
+﻿namespace Mint.Reflection.Parameters
 {
     public enum ParameterKind
     {

@@ -1,12 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static Mint.MethodBinding.ParameterKind;
+using Mint.Reflection;
+using Mint.Reflection.Parameters;
+using static Mint.Reflection.Parameters.ParameterKind;
 
 namespace Mint.MethodBinding
 {
     public class CallInfo
     {
-        private Range arity;
+        private Arity arity;
+
+        public Visibility Visibility { get; }
+        public Symbol MethodName { get; }
+        public ParameterKind[] Parameters { get; }
+        public Arity Arity => arity ?? (arity = CalculateArity());
 
         public CallInfo(Symbol methodName, Visibility visibility = Visibility.Public, IEnumerable<ParameterKind> parameters = null)
         {
@@ -15,28 +22,22 @@ namespace Mint.MethodBinding
             Parameters = parameters?.ToArray() ?? new ParameterKind[0];
         }
 
-        public Visibility Visibility { get; }
-        public Symbol MethodName { get; }
-        public ParameterKind[] Parameters { get; }
-        public Range Arity => arity ?? (arity = CalculateArity());
-
-        private Range CalculateArity()
+        private Arity CalculateArity()
         {
             var numRequiredParameters = Parameters.Count(p => p == Required || p == KeyRequired || p == Block);
             var numOptionalParameters = Parameters.Count(p => p == Optional || p == KeyOptional);
             var isVarArgs = Parameters.Contains(Rest) || Parameters.Contains(KeyRest);
 
             var min = numRequiredParameters;
-            var max = isVarArgs ? long.MaxValue : numRequiredParameters + numOptionalParameters;
+            var max = isVarArgs ? int.MaxValue : numRequiredParameters + numOptionalParameters;
 
-            return new Range(min, max);
+            return new Arity(min, max);
         }
 
         public override string ToString()
         {
-            var arityString = (Fixnum) Arity.End == long.MaxValue ? $"{Arity.Begin}+" : Arity.ToString();
             var parameters = string.Join(", ", Parameters);
-            return $"\"{MethodName}\"<{arityString}>({parameters})";
+            return $"\"{MethodName}\"<{Arity}>({parameters})";
         }
     }
 }
