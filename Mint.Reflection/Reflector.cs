@@ -21,7 +21,7 @@ namespace Mint.Reflection
 
         public static MethodInfo Setter<TResult>(Expression<Func<TResult>> lambda) => Setter((LambdaExpression) lambda);
 
-        internal static MethodInfo Method(LambdaExpression lambda)
+        public static MethodInfo Method(LambdaExpression lambda)
         {
             var body = (MethodCallExpression) Body(lambda);
             var type = body.Object?.Type;
@@ -29,7 +29,7 @@ namespace Mint.Reflection
             return type == null ? method : (DeclaringMethod(method, type) ?? method);
         }
 
-        internal static MethodInfo Operator(LambdaExpression lambda)
+        public static MethodInfo Operator(LambdaExpression lambda)
         {
             var body = Body(lambda);
 
@@ -51,7 +51,7 @@ namespace Mint.Reflection
             return DeclaringMethod(method, type);
         }
 
-        internal static MethodInfo Convert(LambdaExpression lambda)
+        public static MethodInfo Convert(LambdaExpression lambda)
         {
             var body = (UnaryExpression) lambda.Body;
             var type = body.Type;
@@ -59,7 +59,7 @@ namespace Mint.Reflection
             return DeclaringMethod(method, type);
         }
 
-        internal static PropertyInfo Property(LambdaExpression lambda)
+        public static PropertyInfo Property(LambdaExpression lambda)
         {
             var body = Body(lambda);
 
@@ -80,9 +80,9 @@ namespace Mint.Reflection
             return properties.Single(p => p.GetMethod == method || p.SetMethod == method);
         }
 
-        internal static MethodInfo Getter(LambdaExpression lambda) => Property(lambda).GetMethod;
+        public static MethodInfo Getter(LambdaExpression lambda) => Property(lambda).GetMethod;
 
-        internal static MethodInfo Setter(LambdaExpression lambda) => Property(lambda).SetMethod;
+        public static MethodInfo Setter(LambdaExpression lambda) => Property(lambda).SetMethod;
 
         private static Expression Body(LambdaExpression lambda)
         {
@@ -93,7 +93,7 @@ namespace Mint.Reflection
                 : body;
         }
 
-        private static MethodInfo DeclaringMethod(MethodInfo method, Type declaringType)
+        private static MethodInfo DeclaringMethod(MethodBase method, IReflect declaringType)
         {
             var flags = BindingFlags.Default;
             flags |= method.IsStatic ? BindingFlags.Static : BindingFlags.Instance;
@@ -102,7 +102,7 @@ namespace Mint.Reflection
             return declaringType.GetMethod(method.Name, flags, null, parameters, null);
         }
 
-        private static PropertyInfo DeclaringProperty(PropertyInfo property, Type declaringType)
+        private static PropertyInfo DeclaringProperty(PropertyInfo property, IReflect declaringType)
         {
             var method = property.GetMethod ?? property.SetMethod;
             var flags = BindingFlags.Default;

@@ -57,6 +57,7 @@
     <Compile Include="Parameters\States\RequiredSuffixState.cs" />
     <Compile Include="Parameters\States\RestState.cs" />
     <Compile Include="Parameters\Attributes\RestAttribute.cs" />
+    <Compile Include="Reflector.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
