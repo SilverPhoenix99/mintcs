@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Mint
 {
@@ -12,7 +11,7 @@ namespace Mint
             private readonly string value;
             private readonly uint radix;
             private int beginIndex;
-            private int sign;
+            private readonly int sign;
 
             public Parser(string value, uint radix)
             {

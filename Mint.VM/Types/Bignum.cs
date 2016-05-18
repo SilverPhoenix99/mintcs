@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Mint
@@ -18,22 +19,44 @@ namespace Mint
             Value = value;
         }
 
-        public static Bignum Parse(string value, int radix = 10) =>  new Parser(value, (uint) radix).Parse();
+        public static Bignum Parse(string value, int radix = 10)
+        {
+            ValidateRadixBoundary(radix);
+            return new Parser(value, (uint) radix).Parse();
+        }
 
-        public override string ToString() => Value.ToString();
-
-        public string ToString(int radix)
+        private static void ValidateRadixBoundary(int radix)
         {
             if(radix < 2 || radix > 36)
             {
                 throw new ArgumentError("invalid radix " + radix);
             }
+        }
+
+        public override string ToString() => Value.ToString();
+
+        public string ToString(int radix)
+        {
+            ValidateRadixBoundary(radix);
             
             if(radix == 10)
             {
                 return ToString();
             }
 
+            var digits = BuildDigitsList(radix);
+
+            if(digits.Count == 0)
+            {
+                return "0";
+            }
+
+            ReverseDigits(digits);
+            return new string(digits.ToArray());
+        }
+
+        private IList<char> BuildDigitsList(int radix)
+        {
             var bigRadix = new BigInteger(radix);
             var value = Value;
             var digits = new List<char>();
@@ -45,19 +68,13 @@ namespace Mint
                 value /= bigRadix;
             }
 
-            if(digits.Count == 0)
-            {
-                return "0";
-            }
-
-            ReverseDigits(digits);
-            return new string(digits.ToArray());
+            return digits;
         }
 
         private static void ReverseDigits(IList<char> digits)
         {
             var halfList = digits.Count / 2;
-            for(int i = 0; i < halfList; i++)
+            for(var i = 0; i < halfList; i++)
             {
                 SwapValues(digits, i, digits.Count - i - 1);
             }
