@@ -50,11 +50,13 @@ namespace Mint.MethodBinding.Binders
             Arity = other.Arity;
         }
 
-        public abstract Expression Bind(CallInfo callInfo, Expression instance, Expression args);
+        public abstract Expression Bind(CallInfo callInfo, Expression instance, Expression arguments);
 
         public abstract MethodBinder Alias(Symbol newName);
 
         public MethodBinder Duplicate() => Alias(Name);
+
+        public abstract IList<ParameterBinder> CreateParameterBinders();
 
         protected Expression Box(Expression expression)
         {

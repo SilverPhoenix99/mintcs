@@ -80,28 +80,17 @@ namespace Mint.MethodBinding.Binders
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        private Arity CalculateArity() =>
-            methodInformations.Select(_ => _.ParameterInformation.Arity).Aggregate(new Arity(int.MaxValue, 0), Merge);
-
-        private static Arity Merge(Arity r1, Arity r2)
-        {
-            var min = r1.Minimum;
-            if(r2.Minimum < min) min = r2.Minimum;
-
-            var max = r1.Maximum;
-            if(r2.Maximum > max) max = r2.Maximum;
-
-            return new Arity(min, max);
-        }
+        private Arity CalculateArity() => methodInformations
+            .Select(_ => _.ParameterInformation.Arity)
+            .Aggregate((left, right) => left.Merge(right));
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
         {
-            // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
             var length = callInfo.Arity;
 
-            var filteredInfos = 
+            var filteredInfos =
                 methodInformations.Where( _ => _.ParameterInformation.Arity.Include(length) ).ToArray();
 
             if(filteredInfos.Length == 0)
@@ -197,6 +186,11 @@ namespace Mint.MethodBinding.Binders
 
             //msg = "argument {index}: no implicit conversion of {type} to {string.Join(" or ", types)}";
             return "no implicit conversion exists";
+        }
+
+        public override IList<ParameterBinder> CreateParameterBinders()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

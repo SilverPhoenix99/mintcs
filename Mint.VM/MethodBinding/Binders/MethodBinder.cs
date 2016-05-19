@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Mint.Reflection;
 
@@ -16,5 +17,7 @@ namespace Mint.MethodBinding.Binders
         MethodBinder Alias(Symbol newName);
 
         MethodBinder Duplicate();
+
+        IList<ParameterBinder> CreateParameterBinders();
     }
 }

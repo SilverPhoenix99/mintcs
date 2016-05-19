@@ -41,5 +41,10 @@ namespace Mint.MethodBinding.Binders
 
             return Box(Invoke(Constant(function), unsplatArgs));
         }
+
+        public override IList<ParameterBinder> CreateParameterBinders()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Mint.MethodBinding
@@ -19,8 +20,22 @@ namespace Mint.MethodBinding
 
         public override string ToString()
         {
-            var parameters = string.Join(", ", Arguments);
+            var parameters = string.Join(", ", Arguments.Select(_ => _.Description));
             return $"\"{MethodName}\"<{Arity}>({parameters})";
+        }
+
+        public ArgumentBundle Bundle(iObject instance, params iObject[] arguments)
+        {
+            Contract.Requires(Arguments.Length == arguments.Length);
+
+            var bundle = new ArgumentBundle { Instance = instance };
+
+            for(var i = 0; i < arguments.Length; i++)
+            {
+                Arguments[i].Bundle(arguments[i], bundle);
+            }
+
+            return bundle;
         }
     }
 }
