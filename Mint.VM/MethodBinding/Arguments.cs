@@ -2,11 +2,11 @@ namespace Mint.MethodBinding
 {
     public class Arguments
     {
-        public Array Splat { get; }
-        public Hash KeySplat { get; }
+        public iObject[] Splat { get; }
+        public LinkedDictionary<iObject, iObject> KeySplat { get; }
         public iObject Block { get; }
 
-        public Arguments(Array splat, Hash keySplat, iObject block)
+        public Arguments(iObject[] splat, LinkedDictionary<iObject, iObject> keySplat, iObject block)
         {
             Splat = splat;
             KeySplat = keySplat;

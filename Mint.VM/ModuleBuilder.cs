@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Mint
 {
-    class ModuleBuilder<T>
+    internal class ModuleBuilder<T>
         where T : iObject
     {
         public ModuleBuilder(Module mod)
@@ -43,13 +43,7 @@ namespace Mint
             DescribeClass(typeof(T).Name, container, isSingleton);
 
         #endregion
-
-        public ModuleBuilder<T> Set(Action<ModuleBuilder<T>> action)
-        {
-            action(this);
-            return this;
-        }
-
+        
         #region DefMethod
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)

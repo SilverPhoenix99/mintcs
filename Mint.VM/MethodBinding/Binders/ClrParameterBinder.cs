@@ -63,7 +63,7 @@ namespace Mint.MethodBinding.Binders
 
         public override Expression Bind()
         {
-            if(ArgumentIndex < Arguments.Splat.Count)
+            if(ArgumentIndex < Arguments.Splat.Length)
             {
                 return Expression.Constant(Arguments.Splat[(Fixnum) ArgumentIndex]);
             }
