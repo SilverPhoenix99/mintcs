@@ -25,21 +25,21 @@ namespace Mint.UnitTests
             var length = new Fixnum(10);
             var padding = new String("1234");
 
-            var callSite = CreateCallSite("ljust", ParameterKind.Required);
+            var callSite = CreateCallSite("ljust", ArgumentKind.Simple);
             Assert.That(callSite.Call(instance, new Fixnum(4)).ToString(), Is.EqualTo("hello"));
             //Assert.That(callSite.Call(instance, new Fixnum(10)).ToString(), Is.EqualTo("hello     "));
 
-            callSite = CreateCallSite("ljust", ParameterKind.Required, ParameterKind.Required);
+            callSite = CreateCallSite("ljust", ArgumentKind.Simple, ArgumentKind.Simple);
             Assert.That(
                 callSite.Call(instance, length, padding).ToString(),
                 Is.EqualTo("hello12341")
             );
         }
 
-        private static CallSite CreateCallSite(string methodName, params ParameterKind[] parameters)
+        private static CallSite CreateCallSite(string methodName, params ArgumentKind[] arguments)
         {
             var name = new Symbol(methodName);
-            var callInfo = new CallInfo(name, parameters: parameters);
+            var callInfo = new CallInfo(name, arguments: arguments);
             var callSite = new CallSite(callInfo);
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return callSite;

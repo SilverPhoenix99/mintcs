@@ -39,6 +39,8 @@
     <Compile Include="ArgumentError.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="LinkedDictionary.cs" />
+    <Compile Include="MethodBinding\ArgumentKind.cs" />
+    <Compile Include="MethodBinding\Arguments.cs" />
     <Compile Include="MethodBinding\Binders\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\Binders\ClrParameterBinder.cs" />
     <Compile Include="MethodBinding\CallCompilation\CallCompilerCache.cs" />

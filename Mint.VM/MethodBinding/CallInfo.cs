@@ -1,42 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Mint.Reflection;
-using Mint.Reflection.Parameters;
-using static Mint.Reflection.Parameters.ParameterKind;
 
 namespace Mint.MethodBinding
 {
     public class CallInfo
     {
-        private Arity arity;
-
         public Visibility Visibility { get; }
         public Symbol MethodName { get; }
-        public ParameterKind[] Parameters { get; }
-        public Arity Arity => arity ?? (arity = CalculateArity());
+        public ArgumentKind[] Arguments { get; }
+        public int Arity => Arguments.Length;
 
-        public CallInfo(Symbol methodName, Visibility visibility = Visibility.Public, IEnumerable<ParameterKind> parameters = null)
+        public CallInfo(Symbol methodName, Visibility visibility = Visibility.Public, IEnumerable<ArgumentKind> arguments = null)
         {
             MethodName = methodName;
             Visibility = visibility;
-            Parameters = parameters?.ToArray() ?? new ParameterKind[0];
-        }
-
-        private Arity CalculateArity()
-        {
-            var numRequiredParameters = Parameters.Count(p => p == Required || p == KeyRequired || p == Block);
-            var numOptionalParameters = Parameters.Count(p => p == Optional || p == KeyOptional);
-            var isVarArgs = Parameters.Contains(Rest) || Parameters.Contains(KeyRest);
-
-            var min = numRequiredParameters;
-            var max = isVarArgs ? int.MaxValue : numRequiredParameters + numOptionalParameters;
-
-            return new Arity(min, max);
+            Arguments = arguments?.ToArray() ?? new ArgumentKind[0];
         }
 
         public override string ToString()
         {
-            var parameters = string.Join(", ", Parameters);
+            var parameters = string.Join(", ", Arguments);
             return $"\"{MethodName}\"<{Arity}>({parameters})";
         }
     }

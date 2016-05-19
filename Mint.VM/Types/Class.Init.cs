@@ -182,10 +182,10 @@ namespace Mint
             Object.DefineModule(SYMBOL);
             Object.DefineModule(TRUE);
 
-            EqOp = CreateCallSite("==", ParameterKind.Required);
+            EqOp = CreateCallSite("==", ArgumentKind.Simple);
         }
 
-        private static CallSite CreateCallSite(string methodName, params ParameterKind[] kinds) =>
+        private static CallSite CreateCallSite(string methodName, params ArgumentKind[] kinds) =>
             new CallSite(new CallInfo(new Symbol(methodName), Visibility.Private, kinds));
     }
 }

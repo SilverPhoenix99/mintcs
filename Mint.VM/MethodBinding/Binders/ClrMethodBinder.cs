@@ -99,7 +99,7 @@ namespace Mint.MethodBinding.Binders
         public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
         {
             // TODO assuming always ParameterKind.Required. change to accept Block, Rest, KeyRequired, KeyRest
-            var length = callInfo.Parameters.Length;
+            var length = callInfo.Arity;
 
             var filteredInfos = 
                 methodInformations.Where( _ => _.ParameterInformation.Arity.Include(length) ).ToArray();

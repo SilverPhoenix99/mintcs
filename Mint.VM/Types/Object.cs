@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Linq.Expressions;
 using Mint.MethodBinding;
 using Mint.MethodBinding.CallCompilation;
 using Mint.Reflection.Parameters;
@@ -49,8 +48,8 @@ namespace Mint
         internal static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
         {
             var methodNameAsSymbol = MethodNameAsSymbol(methodName);
-            var parameterKinds = Enumerable.Range(0, arguments.Length).Select(_ => ParameterKind.Required);
-            var callInfo = new CallInfo(methodNameAsSymbol, Visibility.Private, parameterKinds);
+            var argumentKinds = Enumerable.Range(0, arguments.Length).Select(_ => ArgumentKind.Simple);
+            var callInfo = new CallInfo(methodNameAsSymbol, Visibility.Private, argumentKinds);
             var callSite = new CallSite(callInfo);
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return callSite.Call(instance, arguments);

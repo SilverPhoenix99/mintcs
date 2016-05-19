@@ -8,7 +8,7 @@ namespace Mint.MethodBinding.Binders
         int ArgumentIndex { get; }
         CallInfo CallInfo { get; }
         MethodInformation MethodInformation { get; }
-        Expression[] Arguments { get; }
+        Arguments Arguments { get; }
 
         Expression Bind();
     }
@@ -18,13 +18,13 @@ namespace Mint.MethodBinding.Binders
         public int ArgumentIndex { get; }
         public CallInfo CallInfo { get; }
         public MethodInformation MethodInformation { get; }
-        public Expression[] Arguments { get; }
+        public Arguments Arguments { get; }
 
         public BaseParameterBinder(
             int argumentIndex,
             CallInfo callInfo,
             MethodInformation methodInformation,
-            Expression[] arguments
+            Arguments arguments
         )
         {
             ArgumentIndex = argumentIndex;
@@ -42,12 +42,12 @@ namespace Mint.MethodBinding.Binders
             int argumentIndex,
             CallInfo callInfo,
             MethodInformation methodInformation,
-            Expression[] arguments
+            Arguments arguments
         )
             : base(argumentIndex, callInfo, methodInformation, arguments)
         { }
 
-        public override Expression Bind() => Arguments[ArgumentIndex];
+        public override Expression Bind() => Expression.Constant(Arguments.Splat[(Fixnum) ArgumentIndex]);
     }
 
     internal class OptionalParameterBinder : BaseParameterBinder
@@ -56,16 +56,16 @@ namespace Mint.MethodBinding.Binders
             int argumentIndex,
             CallInfo callInfo,
             MethodInformation methodInformation,
-            Expression[] arguments
+            Arguments arguments
         )
             : base(argumentIndex, callInfo, methodInformation, arguments)
         { }
 
         public override Expression Bind()
         {
-            if(ArgumentIndex < Arguments.Length)
+            if(ArgumentIndex < Arguments.Splat.Count)
             {
-                return Arguments[ArgumentIndex];
+                return Expression.Constant(Arguments.Splat[(Fixnum) ArgumentIndex]);
             }
 
             var parameter = MethodInformation.MethodInfo.GetParameters()[ArgumentIndex];

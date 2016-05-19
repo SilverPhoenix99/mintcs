@@ -34,7 +34,7 @@ namespace Mint.MethodBinding.Binders
         {
             // TODO parameter check
 
-            var length = callInfo.Parameters.Length;
+            var length = callInfo.Arguments.Length;
             var unsplatArgs = new[] { instance }.Concat(
                 Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
             ).Zip(function.Method.GetParameters(), ConvertArgument);

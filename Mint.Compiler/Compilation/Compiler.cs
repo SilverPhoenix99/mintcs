@@ -8,7 +8,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
 
@@ -16,6 +15,31 @@ namespace Mint.Compilation
 {
     public class Compiler : AstVisitor<Token, Expression>
     {
+        private class Argument : Tuple<ArgumentKind, Expression>
+        {
+            public Argument(ArgumentKind kind, Expression arg) : base(kind, arg)
+            { }
+
+            public ArgumentKind Kind => Item1;
+            public Expression Arg => Item2;
+        }
+        
+        protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
+        protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
+        protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
+        protected static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
+        protected static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
+        protected static readonly ConstructorInfo RANGE_CTOR = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+        protected static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
+
+        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
+        protected static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
+        protected static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
+        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
+
+        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
+        protected static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
+
         private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
@@ -489,7 +513,7 @@ namespace Mint.Compilation
                     var name  = new Symbol(ast[0][1].Value.Value + "=");
                     var rhs   = ast[1].Accept(this);
                     var value = Variable(typeof(iObject), "value");
-                    var arg   = new Argument(ParameterKind.Required, value);
+                    var arg   = new Argument(ArgumentKind.Simple, value);
 
                     return Block(
                         typeof(iObject),
@@ -506,7 +530,7 @@ namespace Mint.Compilation
                     var lhs   = ast[0][0].Accept(this);
                     var rhs   = ast[1].Accept(this);
                     var value = Variable(typeof(iObject), "value");
-                    var arg   = new Argument(ParameterKind.Required, value);
+                    var arg   = new Argument(ArgumentKind.Simple, value);
                     var args  = ast[0][1].Select(CompileParameter).Concat(new[] { arg }).ToArray();
 
                     return Block(
@@ -544,15 +568,6 @@ namespace Mint.Compilation
             return MakeCallSite(visibility, instance, methodName, args);
         }
 
-        private class Argument : Tuple<ParameterKind, Expression>
-        {
-            public Argument(ParameterKind kind, Expression arg) : base(kind, arg)
-            { }
-
-            public ParameterKind Kind => Item1;
-            public Expression Arg => Item2;
-        }
-
         private Argument CompileParameter(Ast<Token> ast)
         {
             switch(ast.Value.Type)
@@ -561,7 +576,7 @@ namespace Mint.Compilation
                 {
                     var label = ast.Accept(this);
                     var value = ast[0].Accept(this);
-                    return new Argument(ParameterKind.KeyRequired, CreateArray(label, value));
+                    return new Argument(ArgumentKind.Key, CreateArray(label, value));
                 }
 
                 case tLABEL_END: goto case kASSOC;
@@ -569,20 +584,20 @@ namespace Mint.Compilation
                 {
                     var label = ast[0].Accept(this);
                     var value = ast[1].Accept(this);
-                    return new Argument(ParameterKind.KeyRequired, CreateArray(label, value));
+                    return new Argument(ArgumentKind.Key, CreateArray(label, value));
                 }
 
                 case kSTAR:
-                    return new Argument(ParameterKind.Rest, ast[0].Accept(this));
+                    return new Argument(ArgumentKind.Rest, ast[0].Accept(this));
 
                 case kDSTAR:
-                    return new Argument(ParameterKind.KeyRest, ast[0].Accept(this));
+                    return new Argument(ArgumentKind.KeyRest, ast[0].Accept(this));
 
                 case kAMPER:
-                    return new Argument(ParameterKind.Block, ast[0].Accept(this));
+                    return new Argument(ArgumentKind.Block, ast[0].Accept(this));
 
                 default:
-                    return new Argument(ParameterKind.Required, ast.Accept(this));
+                    return new Argument(ArgumentKind.Simple, ast.Accept(this));
             }
         }
 
@@ -742,7 +757,7 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            var arg = new Argument(ParameterKind.Required, ast[1].Accept(this));
+            var arg = new Argument(ArgumentKind.Simple, ast[1].Accept(this));
             return MakeCallSite(visibility, ast[0].Accept(this), Symbol.EQ, arg);
         }
 
@@ -751,7 +766,7 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            var arg = new Argument(ParameterKind.Required, ast[1].Accept(this));
+            var arg = new Argument(ArgumentKind.Simple, ast[1].Accept(this));
             return MakeCallSite(visibility, ast[0].Accept(this), Symbol.NEQ, arg);
         }
 
@@ -770,22 +785,6 @@ namespace Mint.Compilation
                 CurrentScope = CurrentScope.Previous;
             }
         }
-
-        protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
-        protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
-        protected static readonly ConstructorInfo SYMBOL_CTOR  = Reflector.Ctor<Symbol>(typeof(string));
-        protected static readonly ConstructorInfo ARRAY_CTOR   = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
-        protected static readonly ConstructorInfo RANGE_CTOR   = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
-        protected static readonly ConstructorInfo HASH_CTOR    = Reflector.Ctor<Hash>();
-
-        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
-        protected static readonly MethodInfo METHOD_STRING_CONCAT   = Reflector<String>.Method(_ => _.Concat(null));
-        protected static readonly PropertyInfo MEMBER_HASH_ITEM     = Reflector<Hash>.Property(_ => _[default(iObject)]);
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
-
-        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-        protected static readonly Expression EMPTY_ARRAY  = Constant(new iObject[0]);
 
         private static Expression ToBool(Expression expr)
         {
