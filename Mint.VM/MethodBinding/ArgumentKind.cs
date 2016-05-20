@@ -50,7 +50,7 @@ namespace Mint.MethodBinding
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {
                 var labeledArg = (Array) argument;
-                bundle.Keys[labeledArg[(Fixnum) 0]] = labeledArg[(Fixnum) 1];
+                bundle.Keys[labeledArg[0]] = labeledArg[1];
             }
         }
 
@@ -64,7 +64,7 @@ namespace Mint.MethodBinding
                 foreach(var pair in (Hash) argument)
                 {
                     var array = (Array) pair;
-                    bundle.Keys[array[(Fixnum) 0]] = array[(Fixnum) 1];
+                    bundle.Keys[array[0]] = array[1];
                 }
             }
         }

@@ -18,6 +18,34 @@ namespace Mint
 
         public int Count => list.Count;
 
+        public iObject this[int index]
+        {
+            get
+            {
+                if(index < 0)
+                {
+                    index += list.Count;
+                }
+                return 0 <= index && index < list.Count ? list[index] : new NilClass();
+            }
+            set
+            {
+                if(index < -list.Count)
+                {
+                    throw new IndexError($"index {index} too small for array; minimum: -{list.Count}");
+                }
+                if(index < 0)
+                {
+                    index += list.Count;
+                }
+                if(index >= list.Count)
+                {
+                    list.AddRange(Enumerable.Repeat<iObject>(new NilClass(), index - list.Count + 1));
+                }
+                list[index] = value;
+            }
+        }
+
         public iObject this[iObject index]
         {
             get
@@ -25,34 +53,18 @@ namespace Mint
                 int i;
                 //if(index is Fixnum) // TODO !(index is Integer)
                 {
-                    i = (int) ((Fixnum) index).Value;
+                    i = (int) (Fixnum) index;
                 }
-                if(i < 0)
-                {
-                    i += list.Count;
-                }
-                return 0 <= i && i < list.Count ? list[i] : new NilClass();
+                return this[i];
             }
             set
             {
                 int i;
                 //if(index is Fixnum) // TODO !(index is Integer)
                 {
-                    i = (int) ((Fixnum) index).Value;
+                    i = (int) (Fixnum) index;
                 }
-                if(i < -list.Count)
-                {
-                    throw new IndexError($"index {i} too small for array; minimum: -{list.Count}");
-                }
-                if(i < 0)
-                {
-                    i += list.Count;
-                }
-                if(i >= list.Count)
-                {
-                    list.AddRange(Enumerable.Repeat<iObject>(new NilClass(), i - list.Count + 1));
-                }
-                list[i] = value;
+                this[i] = value;
             }
         }
 

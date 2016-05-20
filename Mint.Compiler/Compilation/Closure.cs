@@ -5,7 +5,7 @@ namespace Mint
     public class Closure
     {
         private readonly Dictionary<Symbol, int> indexes = new Dictionary<Symbol, int>();
-        private iObject[] values = new iObject[0];
+        private Array values = new Array();
 
         public Closure(iObject self)
         {
@@ -13,7 +13,7 @@ namespace Mint
         }
 
         public iObject Self { get; }
-        
+
         public iObject this[Symbol sym]
         {
             get { return values[IndexOf(sym)]; }
@@ -31,8 +31,7 @@ namespace Mint
             int index;
             if(!indexes.TryGetValue(name, out index))
             {
-                index = indexes[name] = values.Length;
-                System.Array.Resize(ref values, values.Length + 1);
+                indexes[name] = index = values.Count;
                 values[index] = new NilClass();
             }
             return index;
