@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Mint.MethodBinding
@@ -26,7 +26,7 @@ namespace Mint.MethodBinding
 
         public ArgumentBundle Bundle(iObject instance, params iObject[] arguments)
         {
-            Contract.Requires(Arguments.Length == arguments.Length);
+            if(arguments.Length != Arguments.Length) throw new ArgumentException();
 
             var bundle = new ArgumentBundle { Instance = instance };
 

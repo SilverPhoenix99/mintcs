@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -36,8 +35,9 @@ namespace Mint.MethodBinding.Binders
 
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
         {
-            Contract.Assert(name != null);
-            Contract.Assert(owner != null);
+            if(name == null) throw new ArgumentNullException(nameof(name));
+            if(owner == null) throw new ArgumentNullException(nameof(owner));
+
             Name       = name;
             Owner      = owner;
             Condition  = new Condition();
