@@ -16,11 +16,10 @@ namespace Mint.MethodBinding.CallCompilation
         {
             var binder = TryFindMethodBinder(instance);
 
-            var bundledArguments = CallSite.CallInfo.Bundle(instance, arguments);
-            arguments = bundledArguments.Unbundle(binder.CreateParameterBinders());
+            var bundledArguments = CallSite.CallInfo.Bundle(arguments);
 
             var instanceExpression = Expression.Constant(instance);
-            var argumentsExpression = Expression.Constant(arguments);
+            var argumentsExpression = Expression.Constant(bundledArguments);
 
             var body = binder.Bind(CallSite.CallInfo, instanceExpression, argumentsExpression);
             var lambda = Expression.Lambda<Func<iObject>>(body).Compile();

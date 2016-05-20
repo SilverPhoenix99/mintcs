@@ -1,9 +1,9 @@
+using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Binders
@@ -55,8 +55,6 @@ namespace Mint.MethodBinding.Binders
         public abstract MethodBinder Alias(Symbol newName);
 
         public MethodBinder Duplicate() => Alias(Name);
-
-        public abstract IList<ParameterBinder> CreateParameterBinders();
 
         protected Expression Box(Expression expression)
         {

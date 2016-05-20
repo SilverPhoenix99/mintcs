@@ -24,11 +24,11 @@ namespace Mint.MethodBinding
             return $"\"{MethodName}\"<{Arity}>({parameters})";
         }
 
-        public ArgumentBundle Bundle(iObject instance, params iObject[] arguments)
+        public ArgumentBundle Bundle(params iObject[] arguments)
         {
             if(arguments.Length != Arguments.Length) throw new ArgumentException();
 
-            var bundle = new ArgumentBundle { Instance = instance };
+            var bundle = new ArgumentBundle();
 
             for(var i = 0; i < arguments.Length; i++)
             {

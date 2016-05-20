@@ -1,8 +1,8 @@
+using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Binders
@@ -40,11 +40,6 @@ namespace Mint.MethodBinding.Binders
             ).Zip(function.Method.GetParameters(), ConvertArgument);
 
             return Box(Invoke(Constant(function), unsplatArgs));
-        }
-
-        public override IList<ParameterBinder> CreateParameterBinders()
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

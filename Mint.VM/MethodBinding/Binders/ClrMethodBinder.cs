@@ -80,9 +80,8 @@ namespace Mint.MethodBinding.Binders
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
-        private Arity CalculateArity() => methodInformations
-            .Select(_ => _.ParameterInformation.Arity)
-            .Aggregate((left, right) => left.Merge(right));
+        private Arity CalculateArity() =>
+            methodInformations.Select(_ => _.ParameterInformation.Arity).Aggregate((left, right) => left.Merge(right));
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
 
@@ -109,10 +108,7 @@ namespace Mint.MethodBinding.Binders
                 return CompileBody(methodInformations[0], instance);
             }
 
-            var unsplatArgs = Enumerable.Range(0, length)
-                .Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
-                .ToArray();
-            var cases = filteredInfos.Select(_ => CreateSwitchCase(_, instance, unsplatArgs));
+            var cases = filteredInfos.Select(_ => CreateSwitchCase(_, callInfo, instance, arguments));
 
             //switch()
             //{
@@ -166,11 +162,15 @@ namespace Mint.MethodBinding.Binders
             return Box(Call(instance, info.MethodInfo, arguments));
         }
 
-        private SwitchCase CreateSwitchCase(MethodInformation info, Expression instance, Expression[] arguments)
+        private SwitchCase CreateSwitchCase(MethodInformation info, CallInfo callInfo, Expression instance, Expression arguments)
         {
+            var unsplatArgs = Enumerable.Range(0, callInfo.Arity)
+                .Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
+                .ToArray();
+
             var parameters = info.MethodInfo.GetParameters().Select(_ => _.ParameterType).Select(_ => TYPES[_] ?? _);
-            var condition = arguments.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
-            var body = CompileBody(info, instance, arguments);
+            var condition = unsplatArgs.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
+            var body = CompileBody(info, instance, unsplatArgs);
             return SwitchCase(body, condition);
         }
 
@@ -188,9 +188,30 @@ namespace Mint.MethodBinding.Binders
             return "no implicit conversion exists";
         }
 
-        public override IList<ParameterBinder> CreateParameterBinders()
+        private class SwitchCaseEmitter
         {
-            throw new System.NotImplementedException();
+            private MethodInformation Method { get; }
+            private CallInfo CallInfo { get; }
+            private Expression Instance { get; }
+            private Expression ArgumentBundle { get; }
+
+            public SwitchCaseEmitter(
+                MethodInformation method,
+                CallInfo callInfo,
+                Expression instance,
+                Expression argumentBundle
+            )
+            {
+                Method = method;
+                CallInfo = callInfo;
+                Instance = instance;
+                ArgumentBundle = argumentBundle;
+            }
+
+            public SwitchCase Bind()
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

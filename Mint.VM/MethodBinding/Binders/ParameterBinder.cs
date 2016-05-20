@@ -1,49 +1,116 @@
-using Mint.Reflection;
+using Mint.Reflection.Parameters;
+using System.Reflection;
 
 namespace Mint.MethodBinding.Binders
 {
     public abstract class ParameterBinder
     {
-        public int ParameterIndex { get; }
-        public CallInfo CallInfo { get; }
-        public MethodInformation MethodInformation { get; }
-        public ArgumentBundle Arguments { get; }
+        public ParameterInfo Parameter { get; }
+        public ParameterInformation ParameterCounter { get; }
 
-        public ParameterBinder(int parameterIndex, CallInfo callInfo, MethodInformation methodInformation)
+        public ParameterBinder(ParameterInfo parameter, ParameterInformation counter)
         {
-            ParameterIndex = parameterIndex;
-            CallInfo = callInfo;
-            MethodInformation = methodInformation;
+            Parameter = parameter;
+            ParameterCounter = counter;
         }
 
-        public abstract iObject Bind(ArgumentBundle arguments);
+        public abstract iObject Bind(ArgumentBundle bundle);
     }
 
     internal class PrefixRequiredParameterBinder : ParameterBinder
     {
-        public PrefixRequiredParameterBinder(int parameterIndex, CallInfo callInfo, MethodInformation methodInformation)
-            : base(parameterIndex, callInfo, methodInformation)
+        public PrefixRequiredParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
         { }
 
-        public override iObject Bind(ArgumentBundle arguments) => arguments.Splat[ParameterIndex];
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            if(Parameter.Position >= bundle.Splat.Count)
+            {
+                throw new ArgumentError(
+                    "required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
+            }
+
+            return bundle.Splat[Parameter.Position];
+        }
     }
 
     internal class OptionalParameterBinder : ParameterBinder
     {
-        public OptionalParameterBinder(int parameterIndex, CallInfo callInfo, MethodInformation methodInformation)
-            : base(parameterIndex, callInfo, methodInformation)
+        public OptionalParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
         { }
 
-        public override iObject Bind(ArgumentBundle arguments)
+        public override iObject Bind(ArgumentBundle bundle)
         {
-            if(ParameterIndex < arguments.Splat.Count)
+            if(Parameter.Position < bundle.Splat.Count)
             {
-                return arguments.Splat[ParameterIndex];
+                return bundle.Splat[Parameter.Position];
             }
 
-            var parameter = MethodInformation.MethodInfo.GetParameters()[ParameterIndex];
-            var defaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null;
+            var defaultValue = Parameter.HasDefaultValue ? Parameter.DefaultValue : null;
             return Object.Box(defaultValue);
         }
+    }
+
+    internal class SuffixRequiredParameterBinder : ParameterBinder
+    {
+        public SuffixRequiredParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            var numParameters = CountParameters();
+            var splatPositionFromEnd = Parameter.Position + 1 - numParameters;
+            var splatPositionFromStart = bundle.Splat.Count - splatPositionFromEnd;
+
+            if(splatPositionFromStart >= bundle.Splat.Count)
+            {
+                throw new ArgumentError(
+                    "required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
+            }
+
+            return bundle.Splat[splatPositionFromStart];
+        }
+
+        private int CountParameters() =>
+            ParameterCounter.PrefixRequired
+            + ParameterCounter.Optional
+            + (ParameterCounter.HasRest ? 1 : 0)
+            + ParameterCounter.SuffixRequired;
+    }
+
+    internal class RestParameterBinder : ParameterBinder
+    {
+        public RestParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            var beginPosition = ParameterCounter.PrefixRequired + ParameterCounter.Optional;
+            var endPosition = bundle.Splat.Count - ParameterCounter.SuffixRequired;
+
+            var result = new Array();
+
+            for(var i = beginPosition; i < endPosition; i++)
+            {
+                result.Add(bundle.Splat[i]);
+            }
+
+            // TODO: add KeySplat argument if !Counter.KeyRest
+
+            return result;
+        }
+    }
+
+    internal class BlockParameterBinder : ParameterBinder
+    {
+        public BlockParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle) => bundle.Block ?? new NilClass();
     }
 }

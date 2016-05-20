@@ -84,5 +84,7 @@ namespace Mint
         IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
         public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
+
+        public static explicit operator Array(iObject[] objects) => new Array(objects);
     }
 }
