@@ -67,7 +67,8 @@ namespace Mint.MethodBinding.CallCompilation
 
         private CachedMethod<Expression> CreateCachedMethod(long classId, MethodBinder binder)
         {
-            var siteExpression = binder.Bind(CallSite.CallInfo, instanceExpression, argumentsExpression);
+            var invocationInfo = new InvocationInfo(CallSite.CallInfo, instanceExpression, argumentsExpression);
+            var siteExpression = binder.Bind(invocationInfo);
             return new CachedMethod<Expression>(classId, binder, siteExpression);
         }
 

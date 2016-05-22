@@ -10,9 +10,11 @@ namespace Mint.MethodBinding.Binders
 {
     public abstract class BaseMethodBinder : MethodBinder
     {
-        internal static readonly MethodInfo OBJECT_BOX_METHOD = new Func<object, iObject>(Object.Box).Method;
+        private static readonly MethodInfo OBJECT_BOX_METHOD = Reflector.Method(
+            () => Object.Box(default(object))
+        );
 
-        protected static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
+        private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
         {
             { typeof(string),        typeof(String) },
             { typeof(StringBuilder), typeof(String) },
@@ -50,36 +52,42 @@ namespace Mint.MethodBinding.Binders
             Arity = other.Arity;
         }
 
-        public abstract Expression Bind(CallInfo callInfo, Expression instance, Expression arguments);
+        public abstract Expression Bind(InvocationInfo invocationInfo);
 
         public abstract MethodBinder Alias(Symbol newName);
 
         public MethodBinder Duplicate() => Alias(Name);
 
-        protected Expression Box(Expression expression)
+        protected internal static Expression Box(Expression expression)
         {
             if(!typeof(iObject).IsAssignableFrom(expression.Type))
             {
                 return Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
             }
 
-            if(expression.Type != typeof(iObject))
-            {
-                return Convert(expression, typeof(iObject));
-            }
-
-            return expression;
+            return expression.Type == typeof(iObject) ? expression : Convert(expression, typeof(iObject));
         }
 
-        protected static Expression ConvertArgument(Expression arg, ParameterInfo parameter)
+        protected internal static Expression TypeIs(Expression expression, Type type)
         {
-            Type type;
-            if(TYPES.TryGetValue(parameter.ParameterType, out type))
+            Type convertedType;
+            if(TYPES.TryGetValue(type, out convertedType))
             {
-                arg = Convert(arg, type);
+                type = convertedType;
             }
 
-            return Convert(arg, parameter.ParameterType);
+            return Expression.TypeIs(expression, type);
+        }
+
+        protected internal static Expression TryConvert(Expression expression, Type type)
+        {
+            Type convertedType;
+            if(TYPES.TryGetValue(type, out convertedType))
+            {
+                expression = Convert(expression, convertedType);
+            }
+
+            return Convert(expression, type);
         }
     }
 }

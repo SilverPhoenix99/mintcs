@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq.Expressions;
 
 namespace Mint.MethodBinding.CallCompilation
@@ -15,13 +14,11 @@ namespace Mint.MethodBinding.CallCompilation
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
             var binder = TryFindMethodBinder(instance);
-
-            var bundledArguments = CallSite.CallInfo.Bundle(arguments);
-
             var instanceExpression = Expression.Constant(instance);
-            var argumentsExpression = Expression.Constant(bundledArguments);
+            var argumentsExpression = Expression.Constant(arguments);
 
-            var body = binder.Bind(CallSite.CallInfo, instanceExpression, argumentsExpression);
+            var invocationInfo = new InvocationInfo(CallSite.CallInfo, instanceExpression, argumentsExpression);
+            var body = binder.Bind(invocationInfo);
             var lambda = Expression.Lambda<Func<iObject>>(body).Compile();
             return lambda();
         }

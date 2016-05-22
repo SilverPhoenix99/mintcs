@@ -1,6 +1,4 @@
 using Mint.Reflection;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -12,8 +10,13 @@ namespace Mint.MethodBinding.Binders
 {
     public sealed class ClrMethodBinder : BaseMethodBinder
     {
-        private static readonly MethodInfo INVALID_CONVERSION_METHOD =
-            typeof(ClrMethodBinder).GetMethod(nameof(InvalidConversionMessage), BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo INVALID_CONVERSION_METHOD = Reflector.Method(
+            () => InvalidConversionMessage(default(MethodInformation[]), default(iObject[]))
+        );
+
+        private static readonly MethodInfo METHOD_BUNDLE = Reflector<CallInfo>.Method(
+        _ => _.Bundle(default(iObject[]))
+        );
 
         private static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
         private static readonly ConstructorInfo CTOR_TYPEERROR = Reflector.Ctor<TypeError>(typeof(string));
@@ -47,37 +50,7 @@ namespace Mint.MethodBinding.Binders
                 methods = methods.Concat(new[] { method });
             }
 
-            return methods.Concat(GetExtensionMethods(method)).Select(_ => new MethodInformation(_)).ToArray();
-        }
-
-        public static IEnumerable<MethodInfo> GetExtensionMethods(MethodInfo method)
-        {
-            return
-                from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                from type in assembly.GetTypes()
-                where type.IsSealed
-                   && !type.IsGenericType
-                   && !type.IsNested
-                   && type.IsDefined(typeof(ExtensionAttribute), false)
-                from m in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                where m.IsDefined(typeof(ExtensionAttribute), false)
-                   && m.Name == method.Name
-                   && Matches(m.GetParameters()[0], method.DeclaringType)
-                select m
-            ;
-        }
-
-        private static bool Matches(ParameterInfo info, Type declaringType)
-        {
-            if(!info.ParameterType.IsGenericParameter)
-            {
-                // return : info.ParameterType is == or superclass of declaringType?
-                var matches = info.ParameterType.IsAssignableFrom(declaringType);
-                return matches;
-            }
-
-            var constraints = info.ParameterType.GetGenericParameterConstraints();
-            return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
+            return methods.Concat(method.GetExtensionOverloads()).Select(_ => new MethodInformation(_)).ToArray();
         }
 
         private Arity CalculateArity() =>
@@ -85,93 +58,61 @@ namespace Mint.MethodBinding.Binders
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
 
-        public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
+        public override Expression Bind(InvocationInfo invocationInfo)
         {
-            var length = callInfo.Arity;
-
-            var filteredInfos =
-                methodInformations.Where( _ => _.ParameterInformation.Arity.Include(length) ).ToArray();
+            var length = invocationInfo.CallInfo.Arity;
+            var filteredInfos = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
 
             if(filteredInfos.Length == 0)
             {
-                return Throw(
-                    New(
-                        CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {length}, expected {Arity})")
-                    ),
-                    typeof(iObject)
-                );
+                return ThrowArgumentErrorExpression(length);
             }
+            
+            var bundle = Variable(typeof(ArgumentBundle), "bundle");
+            var returnTarget = Label(typeof(iObject), "return");
 
-            if(length == 0) // no parameters implies only 1 info
-            {
-                return CompileBody(methodInformations[0], instance);
-            }
+            var bundleInfo = new InvocationInfo(invocationInfo.CallInfo, invocationInfo.Instance, bundle);
 
-            var cases = filteredInfos.Select(_ => CreateSwitchCase(_, callInfo, instance, arguments));
+            var body = filteredInfos.Select(info =>
+                new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind()
+            );
 
-            //switch()
-            //{
-            //    case ...: { ... }
-            //    default:
-            //        throw new TypeError(InvalidConversionMessage(@filteredInfos, arguments));
-            //}
-            return Switch(
-                typeof(iObject),
-                Constant(true),
-                Throw(New(
-                    CTOR_TYPEERROR,
-                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), arguments)
-                ), typeof(iObject)),
-                null,
-                cases
+            var createBundleExpression = Call(
+                Constant(invocationInfo.CallInfo),
+                METHOD_BUNDLE,
+                invocationInfo.Arguments
+            );
+
+            var bundleAssignExpression = Assign(bundle, createBundleExpression);
+            var throwExpression = ThrowTypeExpression(invocationInfo.Arguments, filteredInfos);
+            var returnExpression = Label(returnTarget, throwExpression);
+
+            return Block(typeof(iObject), new[] { bundle },
+                new[] { bundleAssignExpression }
+                .Concat(body)
+                .Concat(new[] { returnExpression })
             );
         }
 
-        private Expression CompileBody(MethodInformation info, Expression instance, params Expression[] arguments)
+        private UnaryExpression ThrowArgumentErrorExpression(int length)
         {
-            if(!info.ParameterInformation.Arity.Include(arguments.Length))
-            {
-                return Throw(
-                    New(
-                        CTOR_ARGERROR,
-                        Constant($"wrong number of arguments (given {arguments.Length}, expected {Arity})")
+            return Throw(
+                New(
+                    CTOR_ARGERROR,
+                    Constant($"wrong number of arguments (given {length}, expected {Arity})")
                     ),
-                    typeof(iObject)
+                typeof(iObject)
                 );
-            }
-
-            if(info.MethodInfo.DeclaringType != null)
-            {
-                instance = Convert(instance, info.MethodInfo.DeclaringType);
-            }
-
-            var parameters = info.MethodInfo.GetParameters();
-
-            if(info.MethodInfo.IsStatic)
-            {
-                var convertedArgs = arguments.Zip(parameters.Skip(1), ConvertArgument);
-                arguments = new[] { instance }.Concat(convertedArgs).ToArray();
-                instance = null;
-            }
-            else
-            {
-                arguments = arguments.Zip(parameters, ConvertArgument).ToArray();
-            }
-
-            return Box(Call(instance, info.MethodInfo, arguments));
         }
 
-        private SwitchCase CreateSwitchCase(MethodInformation info, CallInfo callInfo, Expression instance, Expression arguments)
+        private static Expression ThrowTypeExpression(Expression arguments, MethodInformation[] filteredInfos)
         {
-            var unsplatArgs = Enumerable.Range(0, callInfo.Arity)
-                .Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
-                .ToArray();
-
-            var parameters = info.MethodInfo.GetParameters().Select(_ => _.ParameterType).Select(_ => TYPES[_] ?? _);
-            var condition = unsplatArgs.Zip(parameters, TypeIs).Cast<Expression>().Aggregate(AndAlso);
-            var body = CompileBody(info, instance, unsplatArgs);
-            return SwitchCase(body, condition);
+            return Throw(
+                New(
+                    CTOR_TYPEERROR,
+                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), arguments)
+                    ), typeof(iObject)
+                );
         }
 
         private static string InvalidConversionMessage(MethodInformation[] infos, iObject[] args)
@@ -186,32 +127,6 @@ namespace Mint.MethodBinding.Binders
 
             //msg = "argument {index}: no implicit conversion of {type} to {string.Join(" or ", types)}";
             return "no implicit conversion exists";
-        }
-
-        private class SwitchCaseEmitter
-        {
-            private MethodInformation Method { get; }
-            private CallInfo CallInfo { get; }
-            private Expression Instance { get; }
-            private Expression ArgumentBundle { get; }
-
-            public SwitchCaseEmitter(
-                MethodInformation method,
-                CallInfo callInfo,
-                Expression instance,
-                Expression argumentBundle
-            )
-            {
-                Method = method;
-                CallInfo = callInfo;
-                Instance = instance;
-                ArgumentBundle = argumentBundle;
-            }
-
-            public SwitchCase Bind()
-            {
-                throw new System.NotImplementedException();
-            }
         }
     }
 }

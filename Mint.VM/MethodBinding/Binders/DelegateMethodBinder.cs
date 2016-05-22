@@ -30,14 +30,16 @@ namespace Mint.MethodBinding.Binders
 
         public override MethodBinder Alias(Symbol newName) => new DelegateMethodBinder(newName, this);
 
-        public override Expression Bind(CallInfo callInfo, Expression instance, Expression arguments)
+        public override Expression Bind(InvocationInfo invocationInfo)
         {
             // TODO parameter check
 
-            var length = callInfo.Arguments.Length;
-            var unsplatArgs = new[] { instance }.Concat(
-                Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(arguments, Constant(i)))
-            ).Zip(function.Method.GetParameters(), ConvertArgument);
+            var length = invocationInfo.CallInfo.Arguments.Length;
+            var parameterTypes = function.Method.GetParameters().Select(_ => _.ParameterType);
+
+            var unsplatArgs = new[] { invocationInfo.Instance }.Concat(
+                Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(invocationInfo.Arguments, Constant(i)))
+            ).Zip(parameterTypes, TryConvert);
 
             return Box(Invoke(Constant(function), unsplatArgs));
         }

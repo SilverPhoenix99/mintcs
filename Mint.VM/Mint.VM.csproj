@@ -42,6 +42,7 @@
     <Compile Include="MethodBinding\ArgumentKind.cs" />
     <Compile Include="MethodBinding\ArgumentBundle.cs" />
     <Compile Include="MethodBinding\Binders\BaseMethodBinder.cs" />
+    <Compile Include="MethodBinding\Binders\ClrMethodInvocationEmitter.cs" />
     <Compile Include="MethodBinding\Binders\ParameterBinder.cs" />
     <Compile Include="MethodBinding\CallCompilation\CallCompilerCache.cs" />
     <Compile Include="MethodBinding\CallCompilation\MonomorphicCallCompiler.cs" />
@@ -54,7 +55,9 @@
     <Compile Include="MethodBinding\CallCompilation\CachedMethod.cs" />
     <Compile Include="MethodBinding\CallCompilation\MegamorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\CallCompilation\PolymorphicCallCompiler.cs" />
+    <Compile Include="MethodBinding\InvocationInfo.cs" />
     <Compile Include="MethodBinding\Visibility.cs" />
+    <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="MethodBinding\Binders\MethodBinder.cs" />
     <Compile Include="ModuleBuilder.cs" />

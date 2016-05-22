@@ -1,5 +1,4 @@
 using Mint.Reflection;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Mint.MethodBinding.Binders
@@ -12,7 +11,7 @@ namespace Mint.MethodBinding.Binders
         Arity Arity { get; }
         Visibility Visibility { get; }
 
-        Expression Bind(CallInfo callInfo, Expression instance, Expression arguments);
+        Expression Bind(InvocationInfo invocationInfo);
 
         MethodBinder Alias(Symbol newName);
 
