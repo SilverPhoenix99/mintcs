@@ -3,6 +3,7 @@
 namespace Mint.UnitTests
 {
     [TestFixture]
+    [TestOf(typeof(Float))]
     public class FloatTests
     {
         [Test]

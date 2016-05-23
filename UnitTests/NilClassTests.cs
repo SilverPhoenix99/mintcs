@@ -3,6 +3,7 @@
 namespace Mint.UnitTests
 {
     [TestFixture]
+    [TestOf(typeof(NilClass))]
     public class NilClassTests
     {
         [Test]

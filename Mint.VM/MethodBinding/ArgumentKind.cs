@@ -17,6 +17,8 @@ namespace Mint.MethodBinding
 
         public abstract void Bundle(iObject argument, ArgumentBundle bundle);
 
+        public override string ToString() => Description;
+
         private class SimpleArgumentKind : ArgumentKind
         {
             public SimpleArgumentKind() : base("Simple")

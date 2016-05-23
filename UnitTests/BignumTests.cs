@@ -3,6 +3,7 @@
 namespace Mint.UnitTests
 {
     [TestFixture]
+    [TestOf(typeof(Bignum))]
     public class BignumTests
     {
         [Test]
