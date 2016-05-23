@@ -22,17 +22,24 @@ namespace Mint.UnitTests
         {
             var instance = new String("hello");
 
-            var length = new Fixnum(10);
-            var padding = new String("1234");
-
             var callSite = CreateCallSite("ljust", ArgumentKind.Simple);
             Assert.That(callSite.Call(instance, new Fixnum(4)).ToString(), Is.EqualTo("hello"));
-            //Assert.That(callSite.Call(instance, new Fixnum(10)).ToString(), Is.EqualTo("hello     "));
+            Assert.That(callSite.Call(instance, new Fixnum(5)).ToString(), Is.EqualTo("hello"));
+            Assert.That(callSite.Call(instance, new Fixnum(10)).ToString(), Is.EqualTo("hello     "));
+
+            var length = new Fixnum(9);
+            var padding = new String("1234");
 
             callSite = CreateCallSite("ljust", ArgumentKind.Simple, ArgumentKind.Simple);
             Assert.That(
                 callSite.Call(instance, length, padding).ToString(),
-                Is.EqualTo("hello12341")
+                Is.EqualTo("hello1234")
+            );
+
+            length = new Fixnum(11);
+            Assert.That(
+                callSite.Call(instance, length, padding).ToString(),
+                Is.EqualTo("hello123412")
             );
         }
 

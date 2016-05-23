@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Mint.Reflection.Parameters.Attributes;
 
@@ -69,15 +70,36 @@ namespace Mint
         public static explicit operator String(string s) => new String(s);
 
         public static explicit operator string(String s) => s.Value;
-        
-        public String LeftJustify(int length, [Optional] string padstr = " ")
+
+        private const string DFT_PADSTR = " ";
+        public String LeftJustify(int length, [Optional] string padstr = DFT_PADSTR)
         {
             if(padstr == null)
             {
-                padstr = " ";
+                padstr = DFT_PADSTR;
             }
-        
-            throw new System.NotImplementedException();
+
+            length -= value.Length;
+            if(length <= 0)
+            {
+                return new String(Value);
+            }
+
+            var result = new StringBuilder(Value);
+
+            var count = length / padstr.Length;
+            if(count > 0)
+            {
+                result.Append(string.Concat(Enumerable.Repeat(padstr, count)));
+            }
+
+            count = length % padstr.Length;
+            if(count > 0)
+            {
+                result.Append(padstr, 0, count);
+            }
+
+            return new String(result.ToString());
         }
     }
 }
