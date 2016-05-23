@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{73B15842-E015-45FB-953B-8D7967A24B09}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repl", "Repl\Repl.csproj", "{73B15842-E015-45FB-953B-8D7967A24B09}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Parser", "Mint.Parser\Mint.Parser.csproj", "{7E8EB224-55E0-408E-AFDA-0258E01211CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.VM", "Mint.VM\Mint.VM.csproj", "{B446F5D9-5BCC-4B36-945D-FF50036C85D4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherTests", "OtherTests\OtherTests.csproj", "{DA870D3D-491D-4875-81C9-A2CD722CEB06}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mint.Compiler", "Mint.Compiler\Mint.Compiler.csproj", "{5B6E70B3-FF6E-420E-8429-83BDB322C789}"
 EndProject
