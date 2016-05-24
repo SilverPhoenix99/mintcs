@@ -74,7 +74,7 @@ namespace Mint
             }
 
             name = new Symbol(newName);
-            Module.DefineMethod(binder.Alias(name));
+            Module.DefineMethod(binder.Duplicate(name));
             return this;
         }
 

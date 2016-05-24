@@ -13,8 +13,8 @@ namespace Mint.Binding.Methods
 
         Expression Bind(Invocation invocation);
 
-        MethodBinder Alias(Symbol newName);
-
         MethodBinder Duplicate();
+
+        MethodBinder Duplicate(Symbol newName);
     }
 }
