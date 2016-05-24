@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mint.MethodBinding.CallCompilation
+namespace Mint.Binding.Compilation
 {
     internal class CallCompilerCache<T> : IEnumerable<KeyValuePair<long, CachedMethod<T>>>
     {

@@ -1,8 +1,9 @@
+using Mint.Binding.Arguments;
 using Mint.Reflection.Parameters;
 using System.Linq;
 using System.Reflection;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Parameters
 {
     public abstract class ParameterBinder
     {

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-using Mint.MethodBinding;
-using Mint.MethodBinding.CallCompilation;
+using Mint.Binding;
+using Mint.Binding.Compilation;
 using NUnit.Framework;
 
 namespace Mint.UnitTests
@@ -14,7 +14,7 @@ namespace Mint.UnitTests
         {
             var callSite = GetClassCallSite();
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
-            
+
             Assert.That(callSite.Call(new Fixnum()), Is.EqualTo(Class.FIXNUM));
 
             Assert.That(callSite.CallInfo.Visibility, Is.EqualTo(Visibility.Public));

@@ -1,3 +1,4 @@
+using Mint.Binding.Arguments;
 using Mint.Reflection;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Methods
 {
     public sealed class ClrMethodBinder : BaseMethodBinder
     {
@@ -67,7 +68,7 @@ namespace Mint.MethodBinding.Binders
             {
                 return ThrowArgumentErrorExpression(length);
             }
-            
+
             var bundle = Variable(typeof(ArgumentBundle), "bundle");
             var returnTarget = Label(typeof(iObject), "return");
 

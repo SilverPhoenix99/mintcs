@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Mint.Binding.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mint.MethodBinding;
-using Mint.MethodBinding.Binders;
 
 namespace Mint
 {

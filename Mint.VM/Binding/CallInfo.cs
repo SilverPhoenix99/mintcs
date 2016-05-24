@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Mint.Binding.Arguments;
+using Mint.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Mint.Reflection;
 
-namespace Mint.MethodBinding
+namespace Mint.Binding
 {
     public class CallInfo
     {

@@ -1,4 +1,4 @@
-﻿namespace Mint.MethodBinding
+﻿namespace Mint.Binding
 {
     public enum Visibility
     {

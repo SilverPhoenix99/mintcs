@@ -1,5 +1,7 @@
-﻿using Mint.MethodBinding;
+﻿using Mint.Binding;
+using Mint.Binding.Arguments;
 using Mint.Parse;
+using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,7 +9,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Mint.Reflection;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
 
@@ -23,7 +24,7 @@ namespace Mint.Compilation
             public ArgumentKind Kind => Item1;
             public Expression Arg => Item2;
         }
-        
+
         protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
         protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
         protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));

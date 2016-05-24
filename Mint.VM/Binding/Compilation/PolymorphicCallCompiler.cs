@@ -1,4 +1,4 @@
-using Mint.MethodBinding.Binders;
+using Mint.Binding.Methods;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,7 +6,7 @@ using System.Reflection;
 using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding.CallCompilation
+namespace Mint.Binding.Compilation
 {
     public sealed class PolymorphicCallCompiler : BaseCallCompiler
     {

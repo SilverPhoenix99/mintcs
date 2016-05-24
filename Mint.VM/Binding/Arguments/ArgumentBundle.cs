@@ -1,11 +1,12 @@
-using Mint.MethodBinding.Binders;
+using Mint.Binding.Methods;
+using Mint.Binding.Parameters;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Reflection;
 
-namespace Mint.MethodBinding
+namespace Mint.Binding.Arguments
 {
     public class ArgumentBundle
     {

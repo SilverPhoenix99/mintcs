@@ -1,7 +1,7 @@
 using Mint.Reflection;
 using System.Linq.Expressions;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Methods
 {
     public interface MethodBinder
     {

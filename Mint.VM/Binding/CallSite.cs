@@ -1,6 +1,6 @@
-using Mint.MethodBinding.CallCompilation;
+using Mint.Binding.Compilation;
 
-namespace Mint.MethodBinding
+namespace Mint.Binding
 {
     public delegate iObject Function(iObject instance, params iObject[] arguments);
 

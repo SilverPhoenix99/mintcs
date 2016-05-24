@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Methods
 {
     public abstract class BaseMethodBinder : MethodBinder
     {

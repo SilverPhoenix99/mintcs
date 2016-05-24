@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Methods
 {
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {

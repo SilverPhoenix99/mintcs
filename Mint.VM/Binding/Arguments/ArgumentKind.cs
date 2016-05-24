@@ -1,4 +1,4 @@
-namespace Mint.MethodBinding
+namespace Mint.Binding.Arguments
 {
     public abstract class ArgumentKind
     {

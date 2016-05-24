@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Mint.MethodBinding.CallCompilation
+namespace Mint.Binding.Compilation
 {
     public class MonomorphicCallCompiler : BaseCallCompiler
     {

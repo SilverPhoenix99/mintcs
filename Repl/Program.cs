@@ -1,5 +1,5 @@
 ﻿using Mint;
-using Mint.MethodBinding;
+using Mint.Binding;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;

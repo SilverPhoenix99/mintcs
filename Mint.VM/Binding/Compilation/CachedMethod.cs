@@ -1,6 +1,6 @@
-﻿using Mint.MethodBinding.Binders;
+﻿using Mint.Binding.Methods;
 
-namespace Mint.MethodBinding.CallCompilation
+namespace Mint.Binding.Compilation
 {
     internal class CachedMethod<T>
     {

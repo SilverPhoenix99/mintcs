@@ -1,5 +1,6 @@
-﻿using Mint.MethodBinding;
-using Mint.MethodBinding.CallCompilation;
+﻿using Mint.Binding;
+using Mint.Binding.Arguments;
+using Mint.Binding.Compilation;
 using Mint.Reflection;
 using Mint.Reflection.Parameters;
 using NUnit.Framework;

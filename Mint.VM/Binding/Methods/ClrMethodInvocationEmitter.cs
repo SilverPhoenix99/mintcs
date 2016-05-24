@@ -1,10 +1,11 @@
+using Mint.Binding.Arguments;
+using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mint.Reflection;
 
-namespace Mint.MethodBinding.Binders
+namespace Mint.Binding.Methods
 {
     internal class ClrMethodInvocationEmitter
     {

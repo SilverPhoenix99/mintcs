@@ -1,4 +1,4 @@
-namespace Mint.MethodBinding.CallCompilation
+namespace Mint.Binding.Compilation
 {
     public interface CallCompiler
     {

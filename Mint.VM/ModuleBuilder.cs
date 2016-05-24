@@ -1,4 +1,4 @@
-﻿using Mint.MethodBinding.Binders;
+﻿using Mint.Binding.Methods;
 using Mint.Reflection;
 using System;
 using System.Linq.Expressions;
@@ -43,7 +43,7 @@ namespace Mint
             DescribeClass(typeof(T).Name, container, isSingleton);
 
         #endregion
-        
+
         #region DefMethod
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)
