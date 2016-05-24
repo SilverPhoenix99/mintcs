@@ -37,45 +37,46 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentError.cs" />
+    <Compile Include="Binding\Arguments\ArgumentBundle.cs" />
+    <Compile Include="Binding\Arguments\ArgumentKind.cs" />
+    <Compile Include="Binding\CallInfo.cs" />
+    <Compile Include="Binding\CallSite.cs" />
+    <Compile Include="Binding\Compilation\BaseCallCompiler.cs" />
+    <Compile Include="Binding\Compilation\CachedMethod.cs" />
+    <Compile Include="Binding\Compilation\CallCompiler.cs" />
+    <Compile Include="Binding\Compilation\CallCompilerCache.cs" />
+    <Compile Include="Binding\Compilation\MegamorphicCallCompiler.cs" />
+    <Compile Include="Binding\Compilation\MonomorphicCallCompiler.cs" />
+    <Compile Include="Binding\Compilation\PolymorphicCallCompiler.cs" />
+    <Compile Include="Binding\Invocation.cs" />
+    <Compile Include="Binding\Methods\BaseMethodBinder.cs" />
+    <Compile Include="Binding\Methods\ClrMethodBinder.cs" />
+    <Compile Include="Binding\Methods\ClrMethodInvocationEmitter.cs" />
+    <Compile Include="Binding\Methods\DelegateMethodBinder.cs" />
+    <Compile Include="Binding\Methods\MethodBinder.cs" />
+    <Compile Include="Binding\Parameters\ParameterBinder.cs" />
+    <Compile Include="Binding\Visibility.cs" />
     <Compile Include="Condition.cs" />
+    <Compile Include="IndexError.cs" />
     <Compile Include="LinkedDictionary.cs" />
-    <Compile Include="MethodBinding\ArgumentKind.cs" />
-    <Compile Include="MethodBinding\ArgumentBundle.cs" />
-    <Compile Include="MethodBinding\Binders\BaseMethodBinder.cs" />
-    <Compile Include="MethodBinding\Binders\ClrMethodInvocationEmitter.cs" />
-    <Compile Include="MethodBinding\Binders\ParameterBinder.cs" />
-    <Compile Include="MethodBinding\CallCompilation\CallCompilerCache.cs" />
-    <Compile Include="MethodBinding\CallCompilation\MonomorphicCallCompiler.cs" />
-    <Compile Include="MethodBinding\CallSite.cs" />
-    <Compile Include="MethodBinding\CallCompilation\BaseCallCompiler.cs" />
-    <Compile Include="MethodBinding\CallCompilation\CallCompiler.cs" />
-    <Compile Include="MethodBinding\Binders\ClrMethodBinder.cs" />
-    <Compile Include="MethodBinding\Binders\DelegateMethodBinder.cs" />
-    <Compile Include="MethodBinding\CallInfo.cs" />
-    <Compile Include="MethodBinding\CallCompilation\CachedMethod.cs" />
-    <Compile Include="MethodBinding\CallCompilation\MegamorphicCallCompiler.cs" />
-    <Compile Include="MethodBinding\CallCompilation\PolymorphicCallCompiler.cs" />
-    <Compile Include="MethodBinding\InvocationInfo.cs" />
-    <Compile Include="MethodBinding\Visibility.cs" />
     <Compile Include="MethodInfoExtensions.cs" />
-    <Compile Include="NameError.cs" />
-    <Compile Include="MethodBinding\Binders\MethodBinder.cs" />
     <Compile Include="ModuleBuilder.cs" />
+    <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\Array.cs" />
     <Compile Include="Types\BaseObject.cs" />
+    <Compile Include="Types\Bignum.Parser.cs" />
     <Compile Include="Types\Bignum.cs" />
-    <Compile Include="Types\Class.cs" />
     <Compile Include="Types\Class.Init.cs" />
+    <Compile Include="Types\Class.cs" />
     <Compile Include="Types\Complex.cs" />
     <Compile Include="Types\FalseClass.cs" />
     <Compile Include="Types\Fixnum.cs" />
     <Compile Include="Types\Float.cs" />
     <Compile Include="Types\FrozenObject.cs" />
     <Compile Include="Types\Hash.cs" />
-    <Compile Include="IndexError.cs" />
     <Compile Include="Types\iObject.cs" />
     <Compile Include="Types\Module.cs" />
     <Compile Include="Types\NilClass.cs" />
@@ -86,9 +87,6 @@
     <Compile Include="Types\String.cs" />
     <Compile Include="Types\Symbol.cs" />
     <Compile Include="Types\TrueClass.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Types\Bignum.Parser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mint.Reflection\Mint.Reflection.csproj">
