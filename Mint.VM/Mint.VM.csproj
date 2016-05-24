@@ -39,6 +39,11 @@
     <Compile Include="ArgumentError.cs" />
     <Compile Include="Binding\Arguments\ArgumentBundle.cs" />
     <Compile Include="Binding\Arguments\ArgumentKind.cs" />
+    <Compile Include="Binding\Arguments\BlockArgumentKind.cs" />
+    <Compile Include="Binding\Arguments\KeyArgumentKind.cs" />
+    <Compile Include="Binding\Arguments\KeyRestArgumentKind.cs" />
+    <Compile Include="Binding\Arguments\RestArgumentKind.cs" />
+    <Compile Include="Binding\Arguments\SimpleArgumentKind.cs" />
     <Compile Include="Binding\CallInfo.cs" />
     <Compile Include="Binding\CallSite.cs" />
     <Compile Include="Binding\Compilation\BaseCallCompiler.cs" />
@@ -54,7 +59,15 @@
     <Compile Include="Binding\Methods\ClrMethodInvocationEmitter.cs" />
     <Compile Include="Binding\Methods\DelegateMethodBinder.cs" />
     <Compile Include="Binding\Methods\MethodBinder.cs" />
+    <Compile Include="Binding\Parameters\BlockParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\KeyOptionalParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\KeyRequiredParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\KeyRestParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\OptionalParameterBinder.cs" />
     <Compile Include="Binding\Parameters\ParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\PrefixRequiredParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\RestParameterBinder.cs" />
+    <Compile Include="Binding\Parameters\SuffixRequiredParameterBinder.cs" />
     <Compile Include="Binding\Visibility.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="IndexError.cs" />
