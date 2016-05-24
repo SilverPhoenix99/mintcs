@@ -17,8 +17,8 @@ namespace Mint.Binding.Compilation
             var instanceExpression = Expression.Constant(instance);
             var argumentsExpression = Expression.Constant(arguments);
 
-            var invocationInfo = new InvocationInfo(CallSite.CallInfo, instanceExpression, argumentsExpression);
-            var body = binder.Bind(invocationInfo);
+            var invocation = new Invocation(CallSite.CallInfo, instanceExpression, argumentsExpression);
+            var body = binder.Bind(invocation);
             var lambda = Expression.Lambda<Func<iObject>>(body).Compile();
             return lambda();
         }

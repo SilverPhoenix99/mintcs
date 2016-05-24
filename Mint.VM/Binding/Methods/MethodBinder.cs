@@ -11,7 +11,7 @@ namespace Mint.Binding.Methods
         Arity Arity { get; }
         Visibility Visibility { get; }
 
-        Expression Bind(InvocationInfo invocationInfo);
+        Expression Bind(Invocation invocation);
 
         MethodBinder Alias(Symbol newName);
 

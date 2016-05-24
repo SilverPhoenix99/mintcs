@@ -52,7 +52,7 @@ namespace Mint.Binding.Methods
             Arity = other.Arity;
         }
 
-        public abstract Expression Bind(InvocationInfo invocationInfo);
+        public abstract Expression Bind(Invocation invocation);
 
         public abstract MethodBinder Alias(Symbol newName);
 

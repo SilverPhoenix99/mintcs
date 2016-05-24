@@ -15,16 +15,12 @@ namespace Mint.Binding.Methods
 
         private MethodInformation Method { get; }
         private MethodInfo MethodInfo => Method.MethodInfo;
-        private InvocationInfo BundleInfo { get; }
+        private Invocation BundleInfo { get; }
         private LabelTarget Return { get; }
         private ParameterExpression ArgumentArray { get; }
         private ParameterInfo[] ParameterInfos { get; }
 
-        public ClrMethodInvocationEmitter(
-            MethodInformation method,
-            InvocationInfo bundleInfo,
-            LabelTarget returnTarget
-            )
+        public ClrMethodInvocationEmitter(MethodInformation method, Invocation bundleInfo, LabelTarget returnTarget)
         {
             Method = method;
             BundleInfo = bundleInfo;

@@ -59,12 +59,12 @@ namespace Mint.Binding.Methods
 
         public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
 
-        public override Expression Bind(InvocationInfo invocationInfo)
+        public override Expression Bind(Invocation invocation)
         {
-            var length = invocationInfo.CallInfo.Arity;
-            var filteredInfos = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
+            var length = invocation.CallInfo.Arity;
+            var methods = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
 
-            if(filteredInfos.Length == 0)
+            if(methods.Length == 0)
             {
                 return ThrowArgumentErrorExpression(length);
             }
@@ -72,20 +72,14 @@ namespace Mint.Binding.Methods
             var bundle = Variable(typeof(ArgumentBundle), "bundle");
             var returnTarget = Label(typeof(iObject), "return");
 
-            var bundleInfo = new InvocationInfo(invocationInfo.CallInfo, invocationInfo.Instance, bundle);
+            var bundleInfo = new Invocation(invocation.CallInfo, invocation.Instance, bundle);
 
-            var body = filteredInfos.Select(info =>
-                new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind()
-            );
+            var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind());
 
-            var createBundleExpression = Call(
-                Constant(invocationInfo.CallInfo),
-                METHOD_BUNDLE,
-                invocationInfo.Arguments
-            );
+            var createBundleExpression = Call(Constant(invocation.CallInfo), METHOD_BUNDLE, invocation.Arguments);
 
             var bundleAssignExpression = Assign(bundle, createBundleExpression);
-            var throwExpression = ThrowTypeExpression(invocationInfo.Arguments, filteredInfos);
+            var throwExpression = ThrowTypeExpression(invocation.Arguments, methods);
             var returnExpression = Label(returnTarget, throwExpression);
 
             return Block(typeof(iObject), new[] { bundle },
@@ -106,17 +100,17 @@ namespace Mint.Binding.Methods
                 );
         }
 
-        private static Expression ThrowTypeExpression(Expression arguments, MethodInformation[] filteredInfos)
+        private static Expression ThrowTypeExpression(Expression arguments, MethodInformation[] methods)
         {
             return Throw(
                 New(
                     CTOR_TYPEERROR,
-                    Call(INVALID_CONVERSION_METHOD, Constant(filteredInfos), arguments)
+                    Call(INVALID_CONVERSION_METHOD, Constant(methods), arguments)
                     ), typeof(iObject)
                 );
         }
 
-        private static string InvalidConversionMessage(MethodInformation[] infos, iObject[] args)
+        private static string InvalidConversionMessage(MethodInformation[] methods, iObject[] arguments)
         {
             // TODO
 
