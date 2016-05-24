@@ -17,19 +17,21 @@ namespace Mint.MethodBinding
             _ => _.Unbundle(default(IEnumerable<ParameterBinder>))
         );
 
+        public CallInfo CallInfo { get; }
         public IList<iObject> Splat { get; set; }
         public IDictionary<iObject, iObject> Keys { get; set; }
         public iObject Block { get; set; }
 
-        public ArgumentBundle(IList<iObject> splat, IDictionary<iObject, iObject> keys, iObject block)
+        public ArgumentBundle(CallInfo callInfo, IList<iObject> splat, IDictionary<iObject, iObject> keys, iObject block)
         {
+            CallInfo = callInfo;
             Splat = splat;
             Keys = keys;
             Block = block;
         }
 
-        public ArgumentBundle()
-            : this(new List<iObject>(), new LinkedDictionary<iObject, iObject>(), null)
+        public ArgumentBundle(CallInfo callInfo)
+            : this(callInfo, new List<iObject>(), new LinkedDictionary<iObject, iObject>(), null)
         { }
 
         public iObject[] Unbundle(IEnumerable<ParameterBinder> binders) =>

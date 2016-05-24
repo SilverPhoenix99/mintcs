@@ -18,6 +18,14 @@ namespace Mint
             map = new LinkedDictionary<iObject, iObject>(capacity);
         }
 
+        internal Hash(IDictionary<iObject, iObject> map) : this(map.Count)
+        {
+            foreach(var pair in map)
+            {
+                this[pair.Key] = pair.Value;
+            }
+        }
+
         public iObject this[iObject key]
         {
             get
@@ -59,7 +67,7 @@ namespace Mint
         {
             TO_HASH = new Symbol("to_hash");
         }
-        
+
         #endregion
     }
 }

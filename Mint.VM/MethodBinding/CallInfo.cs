@@ -30,7 +30,7 @@ namespace Mint.MethodBinding
         {
             if(arguments.Length != Arguments.Length) throw new ArgumentException();
 
-            var bundle = new ArgumentBundle();
+            var bundle = new ArgumentBundle(this);
 
             for(var i = 0; i < arguments.Length; i++)
             {

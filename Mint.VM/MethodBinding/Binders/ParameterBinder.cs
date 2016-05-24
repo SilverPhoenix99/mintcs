@@ -1,4 +1,5 @@
 using Mint.Reflection.Parameters;
+using System.Linq;
 using System.Reflection;
 
 namespace Mint.MethodBinding.Binders
@@ -99,9 +100,52 @@ namespace Mint.MethodBinding.Binders
                 result.Add(bundle.Splat[i]);
             }
 
-            // TODO: add KeySplat argument if !Counter.KeyRest
+            var hasKeyArguments = bundle.CallInfo.Arguments.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest);
+            var hasKeyRestParameter = ParameterCounter.HasKeyRest;
+            var restIncludesKeyRest = hasKeyArguments != hasKeyRestParameter;
+
+            if(restIncludesKeyRest)
+            {
+                result.Add(new Hash(bundle.Keys));
+            }
 
             return result;
+        }
+    }
+
+    internal class KeyRequiredParameterBinder : ParameterBinder
+    {
+        public KeyRequiredParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    internal class KeyOptionalParameterBinder : ParameterBinder
+    {
+        public KeyOptionalParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    internal class KeyRestParameterBinder : ParameterBinder
+    {
+        public KeyRestParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+            : base(parameter, counter)
+        { }
+
+        public override iObject Bind(ArgumentBundle bundle)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
