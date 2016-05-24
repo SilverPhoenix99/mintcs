@@ -23,9 +23,7 @@ namespace Mint.UnitTests
 
         private static CallSite GetClassCallSite()
         {
-            var methodName = new Symbol("class");
-            var callInfo = new CallInfo(methodName);
-            return new CallSite(callInfo);
+            return CallSite.Create(new Symbol("class"));
         }
 
         [Test]
@@ -94,7 +92,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestResultBoxing()
         {
-            var callSite = new CallSite(new CallInfo(new Symbol("to_s")));
+            var callSite = CallSite.Create(new Symbol("to_s"));
 
             const int integer = 100;
             var fixnum = new Fixnum(integer);

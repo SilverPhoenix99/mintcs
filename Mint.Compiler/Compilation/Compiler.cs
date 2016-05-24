@@ -520,7 +520,7 @@ namespace Mint.Compilation
                         typeof(iObject),
                         new[] { value },
                         Assign(value, rhs),
-                        MakeCallSite(Visibility.Public, lhs, name, arg),
+                        CreateInvoke(Visibility.Public, lhs, name, arg),
                         value
                     );
                 }
@@ -538,7 +538,7 @@ namespace Mint.Compilation
                         typeof(iObject),
                         new[] { value },
                         Assign(value, rhs),
-                        MakeCallSite(Visibility.Public, lhs, Symbol.ASET, args),
+                        CreateInvoke(Visibility.Public, lhs, Symbol.ASET, args),
                         value
                     );
                 }
@@ -566,7 +566,7 @@ namespace Mint.Compilation
             }
 
             var args = ast[2].Select(CompileParameter).ToArray();
-            return MakeCallSite(visibility, instance, methodName, args);
+            return CreateInvoke(visibility, instance, methodName, args);
         }
 
         private Argument CompileParameter(Ast<Token> ast)
@@ -750,7 +750,7 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
-            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.NOT_OP);
+            return CreateInvoke(visibility, ast[0].Accept(this), Symbol.NOT_OP);
         }
 
         protected virtual Expression CompileEqual(Ast<Token> ast)
@@ -759,7 +759,7 @@ namespace Mint.Compilation
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
             var arg = new Argument(ArgumentKind.Simple, ast[1].Accept(this));
-            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.EQ, arg);
+            return CreateInvoke(visibility, ast[0].Accept(this), Symbol.EQ, arg);
         }
 
         protected virtual Expression CompileNotEqual(Ast<Token> ast)
@@ -768,7 +768,7 @@ namespace Mint.Compilation
 
             var visibility = ast[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
             var arg = new Argument(ArgumentKind.Simple, ast[1].Accept(this));
-            return MakeCallSite(visibility, ast[0].Accept(this), Symbol.NEQ, arg);
+            return CreateInvoke(visibility, ast[0].Accept(this), Symbol.NEQ, arg);
         }
 
         private static Expression HashAppend(Expression hash, Expression key, Expression value) =>
@@ -831,13 +831,18 @@ namespace Mint.Compilation
         protected static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
-        private static Expression MakeCallSite(Visibility visibility, Expression instance, Symbol methodName, params Argument[] args)
+        private static Expression CreateInvoke(
+            Visibility visibility,
+            Expression instance,
+            Symbol methodName,
+            params Argument[] arguments
+        )
         {
-            var parameters = args.Select(_ => _.Kind);
-            var callInfo = new CallInfo(methodName, visibility, parameters);
-            var site = new CallSite(callInfo);
+            var site = CallSite.Create(methodName, visibility, arguments.Select(_ => _.Kind));
             var call = Property(Constant(site), MEMBER_CALLSITE_CALL);
-            var argList = args.Length == 0 ? EMPTY_ARRAY : NewArrayInit(typeof(iObject), args.Select(_ => _.Arg));
+            var argList = arguments.Length == 0
+                        ? EMPTY_ARRAY
+                        : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Arg));
             return Invoke(call, instance, argList);
         }
 

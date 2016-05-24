@@ -47,8 +47,7 @@ namespace Mint.UnitTests
         private static CallSite CreateCallSite(string methodName, params ArgumentKind[] arguments)
         {
             var name = new Symbol(methodName);
-            var callInfo = new CallInfo(name, arguments: arguments);
-            var callSite = new CallSite(callInfo);
+            var callSite = CallSite.Create(name, arguments);
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return callSite;
         }
