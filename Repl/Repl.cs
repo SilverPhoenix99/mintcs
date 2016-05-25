@@ -9,15 +9,20 @@ namespace Mint
 {
     internal static class Repl
     {
-        public static readonly MethodInfo DEBUGVIEW_INFO =
+        private static readonly MethodInfo DEBUGVIEW_INFO =
             typeof(Expression).GetProperty("DebugView", Instance | NonPublic).GetMethod;
 
         public static void Run()
         {
             var binding = new Closure(new Object());
-            for(var i = 1; ; i++)
+            for(var i = 1L; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");
+
+                if(fragment.Trim() == "quit")
+                {
+                    break;
+                }
 
                 try
                 {
@@ -42,24 +47,24 @@ namespace Mint
             }
         }
 
-        static string Prompt(string prompt = "imt> ")
+        private static string Prompt(string prompt = "imt> ")
         {
             Console.Write(prompt);
             return Console.ReadLine();
         }
 
-        static void DumpAst(Ast<Token> ast)
+        private static void DumpAst(Ast<Token> ast)
         {
             var doc = AstXmlSerializer.ToXml(ast);
             Console.WriteLine(doc.ToString());
             Console.WriteLine();
         }
 
-        static LambdaExpression CompileAst(Ast<Token> ast, Closure binding)
+        private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, Closure binding)
         {
             var compiler = new Compiler("(imt)", binding);
             var body = ast.Accept(compiler);
-            return Expression.Lambda(body);
+            return Expression.Lambda<Func<iObject>>(body);
         }
 
         internal static void DumpExpression(Expression expr)
@@ -68,10 +73,10 @@ namespace Mint
             Console.WriteLine();
         }
 
-        static void RunExpression(LambdaExpression expr)
+        private static void RunExpression(Expression<Func<iObject>> expr)
         {
             var lambda = expr.Compile();
-            var result = (iObject) lambda.DynamicInvoke();
+            var result = lambda();
             Console.WriteLine(result.Inspect());
             Console.WriteLine();
         }
