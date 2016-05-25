@@ -57,7 +57,7 @@ namespace Mint.Binding.Methods
         private Arity CalculateArity() =>
             methodInformations.Select(_ => _.ParameterInformation.Arity).Aggregate((left, right) => left.Merge(right));
 
-        public override MethodBinder Alias(Symbol newName) => new ClrMethodBinder(newName, this);
+        public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(Invocation invocation)
         {

@@ -28,7 +28,7 @@ namespace Mint.Binding.Methods
             parameterAttributes = other.parameterAttributes;
         }
 
-        public override MethodBinder Alias(Symbol newName) => new DelegateMethodBinder(newName, this);
+        public override MethodBinder Duplicate(Symbol newName) => new DelegateMethodBinder(newName, this);
 
         public override Expression Bind(Invocation invocation)
         {

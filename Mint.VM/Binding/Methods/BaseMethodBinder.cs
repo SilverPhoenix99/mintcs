@@ -54,9 +54,9 @@ namespace Mint.Binding.Methods
 
         public abstract Expression Bind(Invocation invocation);
 
-        public abstract MethodBinder Alias(Symbol newName);
+        public abstract MethodBinder Duplicate(Symbol newName);
 
-        public MethodBinder Duplicate() => Alias(Name);
+        public MethodBinder Duplicate() => Duplicate(Name);
 
         protected internal static Expression Box(Expression expression)
         {
