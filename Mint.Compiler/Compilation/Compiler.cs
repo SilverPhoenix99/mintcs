@@ -1,5 +1,6 @@
 ﻿using Mint.Binding;
 using Mint.Binding.Arguments;
+using Mint.Compilation.Components;
 using Mint.Parse;
 using Mint.Reflection;
 using System;
@@ -14,7 +15,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation
 {
-    public class Compiler : AstVisitor<Token, Expression>
+    public sealed class Compiler : AstVisitor<Token, Expression>
     {
         private class Argument : Tuple<ArgumentKind, Expression>
         {
@@ -25,47 +26,55 @@ namespace Mint.Compilation
             public Expression Arg => Item2;
         }
 
-        protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
-        protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
-        protected static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
-        protected static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
-        protected static readonly ConstructorInfo RANGE_CTOR = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
-        protected static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
+        private static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
+        private static readonly ConstructorInfo RANGE_CTOR = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+        private static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
 
-        protected static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
-        protected static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
-        protected static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
-        protected static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
+        private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
+        private static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
 
-        protected static readonly Expression CONSTANT_NIL = Constant(new NilClass(), typeof(iObject));
-        protected static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
+        private static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
+
+        internal static readonly Expression FALSE = Constant(new FalseClass(), typeof(iObject));
+        internal static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
+        internal static readonly Expression TRUE = Constant(new TrueClass(), typeof(iObject));
 
         private readonly Dictionary<TokenType, Func<Ast<Token>, Expression>> actions =
             new Dictionary<TokenType, Func<Ast<Token>, Expression>>();
 
-        protected readonly string Filename;
+        private readonly IDictionary<TokenType, CompilerComponent> components =
+            new Dictionary<TokenType, CompilerComponent>();
+
+        private readonly string Filename;
+
+        public Scope CurrentScope { get; private set; }
+
+        public CompilerComponent ListAction { get; set; }
 
         public Compiler(string filename, Closure binding)
         {
             Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
+            ListAction = new ListCompiler(this);
 
-            Register(tINTEGER,        CompileInteger);
-            Register(tFLOAT,          CompileFloat);
-            Register(kTRUE,           CompileTrue);
-            Register(kFALSE,          CompileFalse);
-            Register(kNIL,            CompileNil);
-            Register(tSYMBEG,         CompileSymbol);
-            Register(tSTRING_BEG,     CompileString);
-            Register(tCHAR,           CompileChar);
-            Register(tSTRING_CONTENT, CompileStringContent);
-            Register(tSTRING_DBEG,    CompileList);
+            Register(ListAction, kBEGIN, kELSE, tSTRING_DBEG);
+            Register(new IntegerCompiler(this), tINTEGER);
+            Register(new FloatCompiler(this), tFLOAT);
+            Register(new ConstantCompiler(this), kFALSE, kNIL, kTRUE);
+            Register(new SymbolCompiler(this), tSYMBEG);
+            Register(new StringCompiler(this), tSTRING_BEG);
+            Register(new CharCompiler(this), tCHAR);
+            Register(new StringContentCompiler(this), tSTRING_CONTENT);
+
+            //Register(tWORDS_BEG,      CompileWords);
+            //Register(tQWORDS_BEG,     CompileWords);
+            //Register(tSYMBOLS_BEG,    CompileSymbolWords);
+            //Register(tQSYMBOLS_BEG,   CompileSymbolWords);
+
             Register(kUMINUS_NUM,     CompileUMinusNum);
             Register(kIF,             CompileIf);
             Register(kIF_MOD,         CompileIf);
             Register(kELSIF,          CompileIf);
-            Register(kELSE,           CompileList);
             Register(kUNLESS,         CompileIf);
             Register(kUNLESS_MOD,     CompileIf);
             Register(kQMARK,          CompileQMark);
@@ -84,7 +93,6 @@ namespace Mint.Compilation
             Register(kNEXT,           CompileNext);
             Register(kRETRY,          CompileRetry);
             Register(kREDO,           CompileRedo);
-            Register(kBEGIN,          CompileList);
             Register(kLBRACK,         CompileArray);
             Register(kDOT2,           CompileRange);
             Register(kDOT3,           CompileRange);
@@ -93,10 +101,6 @@ namespace Mint.Compilation
             Register(kSELF,           CompileSelf);
             Register(tIDENTIFIER,     CompileIdentifier);
             Register(tOP_ASGN,        CompileOpAssign);
-            Register(tWORDS_BEG,      CompileWords);
-            Register(tQWORDS_BEG,     CompileWords);
-            Register(tSYMBOLS_BEG,    CompileSymbolWords);
-            Register(tQSYMBOLS_BEG,   CompileSymbolWords);
             Register(kLBRACE,         CompileHash);
             Register(tLABEL,          CompileLabel);
             Register(kNOTOP,          CompileNotOperator);
@@ -104,18 +108,29 @@ namespace Mint.Compilation
             Register(kNEQ,            CompileNotEqual);
         }
 
-        public Scope CurrentScope { get; protected set; }
-
         public void Register(TokenType type, Func<Ast<Token>, Expression> action)
         {
             actions[type] = action;
+        }
+
+        public void Register(CompilerComponent action, TokenType token)
+        {
+            components[token] = action;
+        }
+
+        public void Register(CompilerComponent action, params TokenType[] tokens)
+        {
+            foreach(var token in tokens)
+            {
+                Register(action, token);
+            }
         }
 
         public Expression Visit(Ast<Token> ast)
         {
             if(ast.IsList)
             {
-                return CompileList(ast);
+                return ListAction.Compile(ast);
             }
 
             Func<Ast<Token>, Expression> action;
@@ -124,127 +139,16 @@ namespace Mint.Compilation
                 return action(ast);
             }
 
+            CompilerComponent component;
+            if(components.TryGetValue(ast.Value.Type, out component))
+            {
+                return component.Compile(ast);
+            }
+
             throw new ArgumentException($"Token type {ast.Value.Type} not registered.", nameof(ast));
         }
 
-        protected virtual Expression CompileList(Ast<Token> ast)
-        {
-            return ast.List.Count == 1
-                ? ast[0].Accept(this)
-                : Block(typeof(iObject), ast.Select(_ => _.Accept(this)));
-        }
-
-        private static readonly Regex CLEAN_INTEGER = new Regex(@"[_BODX]", RegexOptions.Compiled);
-
-        protected virtual Expression CompileInteger(Ast<Token> ast)
-        {
-            var tok = ast.Value;
-            var str = CLEAN_INTEGER.Replace(tok.Value.ToUpper(), "");
-            var numBase = (int) tok.Properties["num_base"];
-            var val = System.Convert.ToInt64(str, numBase);
-            return Constant(new Fixnum(val), typeof(iObject));
-        }
-
-        protected virtual Expression CompileFloat(Ast<Token> ast)
-        {
-            var tok = ast.Value;
-            var str = tok.Value.Replace("_", "");
-            var val = System.Convert.ToDouble(str, CultureInfo.InvariantCulture);
-            return Constant(new Float(val), typeof(iObject));
-        }
-
-        protected virtual Expression CompileTrue(Ast<Token> ast = null)
-        {
-            return Constant(new TrueClass(), typeof(iObject));
-        }
-
-        protected virtual Expression CompileFalse(Ast<Token> ast = null)
-        {
-            return Constant(new FalseClass(), typeof(iObject));
-        }
-
-        protected virtual Expression CompileNil(Ast<Token> ast)
-        {
-            return CONSTANT_NIL;
-        }
-
-        protected virtual Expression CompileSymbol(Ast<Token> ast)
-        {
-            var content = ast.List[0];
-
-            return content.IsList
-                ? CompileSymbol(content.List)
-                : Constant(new Symbol(content.Value.Value), typeof(iObject));
-        }
-
-        private Expression CompileSymbol(IEnumerable<Ast<Token>> content)
-        {
-            return Convert(
-                New(
-                    SYMBOL_CTOR,
-                    Call(
-                        Convert(
-                            CompileString(New(STRING_CTOR1), content),
-                            typeof(object)
-                         ),
-                        METHOD_OBJECT_TOSTRING,
-                        null
-                    )
-                ),
-                typeof(iObject)
-            );
-        }
-
-        protected virtual Expression CompileString(Ast<Token> ast)
-        {
-            if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
-            {
-                return Convert(
-                    New(
-                        STRING_CTOR3,
-                        CompileStringContent(ast[0])
-                    ),
-                    typeof(iObject)
-                );
-            }
-
-            return CompileString(New(STRING_CTOR1), ast);
-        }
-
-        protected virtual Expression CompileChar(Ast<Token> ast)
-        {
-            var first = New(STRING_CTOR3, CompileStringContent(ast));
-
-            return ast.List.Count == 0
-                ? Convert(first, typeof(iObject))
-                : CompileString(first, ast);
-        }
-
-        private Expression CompileString(Expression first, IEnumerable<Ast<Token>> ast)
-        {
-            var list = ast.Select(_ => _.Accept(this))
-                .Select(_ => _.Type == typeof(String)
-                    ? _
-                    : New(
-                        STRING_CTOR2,
-                        Call(
-                            Convert(_, typeof(object)),
-                            METHOD_OBJECT_TOSTRING,
-                            null))
-                    );
-
-            list = new[] { first }.Concat(list);
-            first = list.Aggregate((l, r) => Call(l, METHOD_STRING_CONCAT, r));
-
-            return Convert(first, typeof(iObject));
-        }
-
-        protected virtual Expression CompileStringContent(Ast<Token> ast)
-        {
-            return Constant(new String(ast.Value.Value));
-        }
-
-        protected virtual Expression CompileUMinusNum(Ast<Token> ast)
+        private Expression CompileUMinusNum(Ast<Token> ast)
         {
             var number = (iObject) ((ConstantExpression) ast[0].Accept(this)).Value;
 
@@ -270,7 +174,7 @@ namespace Mint.Compilation
             return Constant(number, typeof(iObject));
         }
 
-        protected virtual Expression CompileIf(Ast<Token> ast)
+        private Expression CompileIf(Ast<Token> ast)
         {
             var condition = ToBool(ast[0].Accept(this));
 
@@ -280,15 +184,12 @@ namespace Mint.Compilation
             }
 
             var ifTrue = ast[1].Accept(this);
-
-            var ifFalse = ast.List.Count < 3 || ast[2].List.Count == 0
-                        ? CONSTANT_NIL
-                        : ast[2].Accept(this);
+            var ifFalse = ast.List.Count < 3 || ast[2].List.Count == 0 ? NIL : ast[2].Accept(this);
 
             return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
-        protected virtual Expression CompileQMark(Ast<Token> ast)
+        private Expression CompileQMark(Ast<Token> ast)
         {
             var condition = ToBool(ast[0].Accept(this));
             var ifTrue    = ast[1].Accept(this);
@@ -296,19 +197,14 @@ namespace Mint.Compilation
             return Condition(condition, ifTrue, ifFalse, typeof(iObject));
         }
 
-        protected virtual Expression CompileNot(Ast<Token> ast)
+        private Expression CompileNot(Ast<Token> ast)
         {
-            return Condition(
-                ToBool(ast[0].Accept(this)),
-                CompileFalse(),
-                CompileTrue(),
-                typeof(iObject)
-            );
+            return Condition(ToBool(ast[0].Accept(this)), FALSE, TRUE, typeof(iObject));
         }
 
-        protected virtual Expression CompileAnd(Ast<Token> ast) => AndOperation(ast[0].Accept(this), ast[1].Accept(this));
+        private Expression CompileAnd(Ast<Token> ast) => AndOperation(ast[0].Accept(this), ast[1].Accept(this));
 
-        protected static Expression AndOperation(Expression left, Expression right)
+        private static Expression AndOperation(Expression left, Expression right)
         {
             if(left is ConstantExpression || left is ParameterExpression)
             {
@@ -325,9 +221,9 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileOr(Ast<Token> ast) => OrOperation(ast[0].Accept(this), ast[1].Accept(this));
+        private Expression CompileOr(Ast<Token> ast) => OrOperation(ast[0].Accept(this), ast[1].Accept(this));
 
-        protected static Expression OrOperation(Expression left, Expression right)
+        private static Expression OrOperation(Expression left, Expression right)
         {
             if(left is ConstantExpression || left is ParameterExpression)
             {
@@ -344,19 +240,19 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileLineNumber(Ast<Token> ast)
+        private Expression CompileLineNumber(Ast<Token> ast)
         {
             return Constant(new Fixnum(ast.Value.Location.Item1), typeof(iObject));
         }
 
-        protected virtual Expression CompileFileName(Ast<Token> ast)
+        private Expression CompileFileName(Ast<Token> ast)
         {
             return Constant(new String(Filename), typeof(iObject));
         }
 
-        protected virtual Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileScopedWhile);
+        private Expression CompileWhile(Ast<Token> ast) => WithScope(ast, ScopeType.While, CompileScopedWhile);
 
-        protected virtual Expression CompileScopedWhile(Ast<Token> ast)
+        private Expression CompileScopedWhile(Ast<Token> ast)
         {
             var breakLabel = CurrentScope.Label("break", typeof(iObject));
             var nextLabel = CurrentScope.Label("next");
@@ -380,7 +276,7 @@ namespace Mint.Compilation
                         typeof(iObject),
                         ast[1].Accept(this),
                         IfThen(condition, Continue(nextLabel)),
-                        Break(breakLabel, CONSTANT_NIL, typeof(iObject))
+                        Break(breakLabel, NIL, typeof(iObject))
                     ),
                     breakLabel,
                     nextLabel
@@ -397,7 +293,7 @@ namespace Mint.Compilation
                         Label(redoLabel),
                         ast[1].Accept(this)
                     ),
-                    Break(breakLabel, CONSTANT_NIL, typeof(iObject)),
+                    Break(breakLabel, NIL, typeof(iObject)),
                     typeof(iObject)
                 ),
                 breakLabel,
@@ -405,13 +301,13 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileBreak(Ast<Token> ast)
+        private Expression CompileBreak(Ast<Token> ast)
         {
             Expression value;
             switch(ast.List.Count)
             {
                 case 0:
-                    value = CONSTANT_NIL;
+                    value = NIL;
                     break;
 
                 case 1:
@@ -431,7 +327,7 @@ namespace Mint.Compilation
             return Break(CurrentScope.Label("break"), value, typeof(iObject));
         }
 
-        protected virtual Expression CompileNext(Ast<Token> ast)
+        private Expression CompileNext(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -442,7 +338,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected virtual Expression CompileRetry(Ast<Token> ast)
+        private Expression CompileRetry(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -453,7 +349,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected virtual Expression CompileRedo(Ast<Token> ast)
+        private Expression CompileRedo(Ast<Token> ast)
         {
             if(CurrentScope.Type == ScopeType.While)
             {
@@ -464,7 +360,7 @@ namespace Mint.Compilation
             throw new NotImplementedException();
         }
 
-        protected virtual Expression CompileArray(Ast<Token> ast)
+        private Expression CompileArray(Ast<Token> ast)
         {
             return CreateArray(ast.Select(_ => _.Accept(this)).ToArray());
         }
@@ -477,7 +373,7 @@ namespace Mint.Compilation
                 : Convert(ListInit(array, values), typeof(iObject));
         }
 
-        protected virtual Expression CompileRange(Ast<Token> ast)
+        private Expression CompileRange(Ast<Token> ast)
         {
             return Convert(
                 New(
@@ -490,7 +386,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileAssign(Ast<Token> ast)
+        private Expression CompileAssign(Ast<Token> ast)
         {
             var lval = ast[0].Value;
 
@@ -548,7 +444,7 @@ namespace Mint.Compilation
             }
         }
 
-        protected virtual Expression CompileMethodInvoke(Ast<Token> ast)
+        private Expression CompileMethodInvoke(Ast<Token> ast)
         {
             var methodName = new Symbol(ast[1].Value.Value);
 
@@ -602,12 +498,12 @@ namespace Mint.Compilation
             }
         }
 
-        protected virtual Expression CompileSelf(Ast<Token> ast = null)
+        private Expression CompileSelf(Ast<Token> ast = null)
         {
             return Constant(CurrentScope.Closure.Self);
         }
 
-        protected virtual Expression CompileIdentifier(Ast<Token> ast)
+        private Expression CompileIdentifier(Ast<Token> ast)
         {
             var name = new Symbol(ast.Value.Value);
             if(!CurrentScope.Closure.IsDefined(name))
@@ -618,7 +514,7 @@ namespace Mint.Compilation
             return CurrentScope.Variable(name);
         }
 
-        protected virtual Expression CompileOpAssign(Ast<Token> ast)
+        private Expression CompileOpAssign(Ast<Token> ast)
         {
             var left = ast[0].Value.Type == tIDENTIFIER
                 ? CurrentScope.Variable(new Symbol(ast[0].Value.Value))
@@ -639,7 +535,7 @@ namespace Mint.Compilation
             }
         }
 
-        protected virtual Expression CompileWords(Ast<Token> ast)
+        /*private Expression CompileWords(Ast<Token> ast)
         {
             var lists = from list in GroupWords(ast)
                         where list.Count != 0
@@ -648,14 +544,14 @@ namespace Mint.Compilation
             return CreateArray(lists.ToArray());
         }
 
-        protected virtual Expression CompileSymbolWords(Ast<Token> ast)
+        private Expression CompileSymbolWords(Ast<Token> ast)
         {
             var lists = from list in GroupWords(ast)
                         where list.Count != 0
                         select CompileSymbol(list);
 
             return CreateArray(lists.ToArray());
-        }
+        }*/
 
         private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list)
         {
@@ -675,7 +571,7 @@ namespace Mint.Compilation
                 });
         }
 
-        protected virtual Expression CompileHash(Ast<Token> ast)
+        private Expression CompileHash(Ast<Token> ast)
         {
             if(ast.List.Count == 0)
             {
@@ -706,13 +602,13 @@ namespace Mint.Compilation
                         break;
                     }
 
-                    case tLABEL_END:
+                    /*case tLABEL_END:
                     {
                         var key   = CompileSymbol(node[0].List);
                         var value = node[1].Accept(this);
                         list.Add(HashAppend(hash, key, value));
                         break;
-                    }
+                    }*/
 
                     case kDSTAR:
                     {
@@ -736,7 +632,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileLabel(Ast<Token> ast)
+        private Expression CompileLabel(Ast<Token> ast)
         {
             var value = ast.Value.Value;
             return Constant(
@@ -745,7 +641,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected virtual Expression CompileNotOperator(Ast<Token> ast)
+        private Expression CompileNotOperator(Ast<Token> ast)
         {
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
@@ -753,7 +649,7 @@ namespace Mint.Compilation
             return CreateInvoke(visibility, ast[0].Accept(this), Symbol.NOT_OP);
         }
 
-        protected virtual Expression CompileEqual(Ast<Token> ast)
+        private Expression CompileEqual(Ast<Token> ast)
         {
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
@@ -762,7 +658,7 @@ namespace Mint.Compilation
             return CreateInvoke(visibility, ast[0].Accept(this), Symbol.EQ, arg);
         }
 
-        protected virtual Expression CompileNotEqual(Ast<Token> ast)
+        private Expression CompileNotEqual(Ast<Token> ast)
         {
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
@@ -828,7 +724,7 @@ namespace Mint.Compilation
             );
         }
 
-        protected static Expression Negate(Expression expr) =>
+        private static Expression Negate(Expression expr) =>
             expr.NodeType == ExpressionType.Not ? ((UnaryExpression) expr).Operand : Not(expr);
 
         private static Expression CreateInvoke(

@@ -38,6 +38,16 @@
     <Compile Include="Compilation\Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Scope.cs" />
+    <Compile Include="Compilation\Components\BaseCompilerComponent.cs" />
+    <Compile Include="Compilation\Components\CharCompiler.cs" />
+    <Compile Include="Compilation\Components\CompilerComponent.cs" />
+    <Compile Include="Compilation\Components\ConstantCompiler.cs" />
+    <Compile Include="Compilation\Components\FloatCompiler.cs" />
+    <Compile Include="Compilation\Components\IntegerCompiler.cs" />
+    <Compile Include="Compilation\Components\ListCompiler.cs" />
+    <Compile Include="Compilation\Components\StringCompiler.cs" />
+    <Compile Include="Compilation\Components\StringContentCompiler.cs" />
+    <Compile Include="Compilation\Components\SymbolCompiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,7 +65,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
