@@ -1,20 +1,27 @@
-using Mint.Parse;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class ListCompiler : BaseCompilerComponent
+    internal class ListCompiler : CompilerComponentBase
     {
         public ListCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Compile(Ast<Token> ast)
+        public override void Shift() => ShiftChildren();
+
+        public override Expression Reduce()
         {
-            return ast.List.Count == 1
-                 ? ast[0].Accept(Compiler)
-                 : Block(typeof(iObject), ast.Select(_ => _.Accept(Compiler)));
+            var count = Node.List.Count;
+
+            if(count == 1)
+            {
+                return Pop();
+            }
+
+            var body = Enumerable.Range(0, count).Select(_ => Pop());
+            return Block(typeof(iObject), body);
         }
     }
 }

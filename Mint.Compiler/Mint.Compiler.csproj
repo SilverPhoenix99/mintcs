@@ -35,12 +35,17 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilation\Closure.cs" />
-    <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Closure.cs" />
+    <Compile Include="Compilation\CompilerException.cs" />
+    <Compile Include="Compilation\CompilerUtils.cs" />
+    <Compile Include="Compilation\Components\IfCompiler.cs" />
     <Compile Include="Compilation\Components\SymbolWordsCompiler.cs" />
     <Compile Include="Compilation\Components\WordsCompiler.cs" />
+    <Compile Include="Compilation\Components\FileNameCompiler.cs" />
+    <Compile Include="Compilation\IncompleteCompilationError.cs" />
+    <Compile Include="Compilation\Components\LineNumberCompiler.cs" />
     <Compile Include="Compilation\Scope.cs" />
-    <Compile Include="Compilation\Components\BaseCompilerComponent.cs" />
+    <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\CharCompiler.cs" />
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\ConstantCompiler.cs" />
@@ -50,6 +55,8 @@
     <Compile Include="Compilation\Components\StringCompiler.cs" />
     <Compile Include="Compilation\Components\StringContentCompiler.cs" />
     <Compile Include="Compilation\Components\SymbolCompiler.cs" />
+    <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
-using Mint.Parse;
-using static System.Linq.Expressions.Expression;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
@@ -10,13 +10,50 @@ namespace Mint.Compilation.Components
         public WordsCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Compile(Ast<Token> ast)
+        public override void Shift()
         {
-            var lists = from list in GroupWords(ast)
-                        where list.Count != 0
-                        select Compile(New(STRING_CTOR1), list);
+            var list = Node.List;
+            if(list.Count == 0)
+            {
+                return;
+            }
 
-            return Compiler.CreateArray(lists.ToArray());
+            foreach(var child in Node.Where(_ => _.Value?.Type != tSPACE))
+            {
+                Push(child);
+            }
         }
+
+        public override Expression Reduce()
+        {
+            var list = Node.List;
+            if(list.Count == 0)
+            {
+                return CompilerUtils.NewArray();
+            }
+
+            var words = new List<Expression>();
+            var contents = new List<Expression>();
+            foreach(var child in list)
+            {
+                if(child.Value?.Type != tSPACE)
+                {
+                    contents.Add(Pop());
+                    continue;
+                }
+
+                var word = CompilerUtils.NewString();
+                word = Reduce(word, contents);
+                word = CompilerUtils.StripConversions(word);
+                word = Wrap(word);
+                word = Expression.Convert(word, typeof(iObject));
+                words.Add(word);
+                contents = new List<Expression>();
+            }
+
+            return CompilerUtils.NewArray(words.ToArray());
+        }
+
+        protected virtual Expression Wrap(Expression word) => word;
     }
 }
