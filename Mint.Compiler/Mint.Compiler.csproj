@@ -37,6 +37,8 @@
   <ItemGroup>
     <Compile Include="Compilation\Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\Components\SymbolWordsCompiler.cs" />
+    <Compile Include="Compilation\Components\WordsCompiler.cs" />
     <Compile Include="Compilation\Scope.cs" />
     <Compile Include="Compilation\Components\BaseCompilerComponent.cs" />
     <Compile Include="Compilation\Components\CharCompiler.cs" />

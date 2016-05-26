@@ -11,7 +11,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile(Ast<Token> ast)
         {
-            var first = New(STRING_CTOR3, CompileContent(ast));
+            var first = New(STRING_CTOR2, CompileContent(ast));
 
             return ast.List.Count == 0
                 ? Convert(first, typeof(iObject))

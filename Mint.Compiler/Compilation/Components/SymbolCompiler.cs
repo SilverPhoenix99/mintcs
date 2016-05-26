@@ -23,18 +23,13 @@ namespace Mint.Compilation.Components
                 : Constant(new Symbol(content.Value.Value), typeof(iObject));
         }
 
-        private Expression Compile(IEnumerable<Ast<Token>> content)
+        protected Expression Compile(IEnumerable<Ast<Token>> content)
         {
-            return Convert(
-                New(
-                    SYMBOL_CTOR,
-                    Convert(
-                        Compile(New(STRING_CTOR1), content),
-                        typeof(string)
-                    )
-                ),
-                typeof(iObject)
-            );
+            var compiledContent = Compile(New(STRING_CTOR1), content);
+            compiledContent = ((UnaryExpression) compiledContent).Operand;
+            compiledContent = Convert(compiledContent, typeof(string));
+            var symbol = New(SYMBOL_CTOR, compiledContent);
+            return Convert(symbol, typeof(iObject));
         }
     }
 }

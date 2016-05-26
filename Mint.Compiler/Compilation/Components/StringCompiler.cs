@@ -5,15 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
     internal class StringCompiler : StringContentCompiler
     {
         protected static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
-        private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(string));
-        protected static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(String));
-        private static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
+        protected static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
         private static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
 
         public StringCompiler(Compiler compiler) : base(compiler)
@@ -21,11 +20,11 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile(Ast<Token> ast)
         {
-            if(ast.List.Count == 1 && ast[0].Value.Type == TokenType.tSTRING_CONTENT)
+            if(ast.List.Count == 1 && ast[0].Value.Type == tSTRING_CONTENT)
             {
                 return Convert(
                     New(
-                        STRING_CTOR3,
+                        STRING_CTOR2,
                         CompileContent(ast[0])
                     ),
                     typeof(iObject)
@@ -39,7 +38,9 @@ namespace Mint.Compilation.Components
 
         protected Expression Compile(Expression first, IEnumerable<Ast<Token>> ast)
         {
-            var list = ast.Select(_ => _.Accept(Compiler)).Select(_ => _.Type == typeof(String) ? _ : NewString(_));
+            var list = ast.Select(_ => _.Accept(Compiler)).Select(
+                expr => expr.Type == typeof(String) ? expr : Compiler.NewString(expr)
+            );
 
             list = new[] { first }.Concat(list);
             first = list.Aggregate((l, r) => Call(l, METHOD_STRING_CONCAT, r));
@@ -47,10 +48,23 @@ namespace Mint.Compilation.Components
             return Convert(first, typeof(iObject));
         }
 
-        private Expression NewString(Expression argument)
+        protected static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list)
         {
-            var call = Call(Convert(argument, typeof(object)), METHOD_OBJECT_TOSTRING, null);
-            return New(STRING_CTOR2, call);
+            var accumulator = new List<List<Ast<Token>>> { new List<Ast<Token>>() };
+            return list.Aggregate(accumulator, AggregateNodes);
+        }
+
+        private static List<List<Ast<Token>>> AggregateNodes(List<List<Ast<Token>>> accumulator, Ast<Token> node)
+        {
+            if(node.Value.Type == tSPACE)
+            {
+                accumulator.Add(new List<Ast<Token>>());
+            }
+            else
+            {
+                accumulator.Last().Add(node);
+            }
+            return accumulator;
         }
     }
 }

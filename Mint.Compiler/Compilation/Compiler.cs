@@ -5,11 +5,9 @@ using Mint.Parse;
 using Mint.Reflection;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
 
@@ -26,10 +24,11 @@ namespace Mint.Compilation
             public Expression Arg => Item2;
         }
 
+        private static readonly ConstructorInfo STRING_CTOR = Reflector.Ctor<String>(typeof(string));
         private static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
         private static readonly ConstructorInfo RANGE_CTOR = Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         private static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
-
+        private static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
         private static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
 
@@ -45,7 +44,7 @@ namespace Mint.Compilation
         private readonly IDictionary<TokenType, CompilerComponent> components =
             new Dictionary<TokenType, CompilerComponent>();
 
-        private readonly string Filename;
+        private string Filename { get; }
 
         public Scope CurrentScope { get; private set; }
 
@@ -65,11 +64,8 @@ namespace Mint.Compilation
             Register(new StringCompiler(this), tSTRING_BEG);
             Register(new CharCompiler(this), tCHAR);
             Register(new StringContentCompiler(this), tSTRING_CONTENT);
-
-            //Register(tWORDS_BEG,      CompileWords);
-            //Register(tQWORDS_BEG,     CompileWords);
-            //Register(tSYMBOLS_BEG,    CompileSymbolWords);
-            //Register(tQSYMBOLS_BEG,   CompileSymbolWords);
+            Register(new WordsCompiler(this), tWORDS_BEG, tQWORDS_BEG);
+            Register(new SymbolWordsCompiler(this), tSYMBOLS_BEG, tQSYMBOLS_BEG);
 
             Register(kUMINUS_NUM,     CompileUMinusNum);
             Register(kIF,             CompileIf);
@@ -148,6 +144,12 @@ namespace Mint.Compilation
             throw new ArgumentException($"Token type {ast.Value.Type} not registered.", nameof(ast));
         }
 
+        internal static Expression NewString(Expression argument)
+        {
+            var call = Call(Convert(argument, typeof(object)), METHOD_OBJECT_TOSTRING, null);
+            return New(STRING_CTOR, call);
+        }
+        
         private Expression CompileUMinusNum(Ast<Token> ast)
         {
             var number = (iObject) ((ConstantExpression) ast[0].Accept(this)).Value;
@@ -365,7 +367,7 @@ namespace Mint.Compilation
             return CreateArray(ast.Select(_ => _.Accept(this)).ToArray());
         }
 
-        private static Expression CreateArray(params Expression[] values)
+        internal static Expression CreateArray(params Expression[] values)
         {
             var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
             return values.Length == 0
@@ -533,42 +535,6 @@ namespace Mint.Compilation
                 default:
                     throw new NotImplementedException($"unknown operation `{ast.Value.Value}='");
             }
-        }
-
-        /*private Expression CompileWords(Ast<Token> ast)
-        {
-            var lists = from list in GroupWords(ast)
-                        where list.Count != 0
-                        select CompileString(New(STRING_CTOR1), list);
-
-            return CreateArray(lists.ToArray());
-        }
-
-        private Expression CompileSymbolWords(Ast<Token> ast)
-        {
-            var lists = from list in GroupWords(ast)
-                        where list.Count != 0
-                        select CompileSymbol(list);
-
-            return CreateArray(lists.ToArray());
-        }*/
-
-        private static IEnumerable<List<Ast<Token>>> GroupWords(IEnumerable<Ast<Token>> list)
-        {
-            return list.Aggregate(
-                new List<List<Ast<Token>>> {new List<Ast<Token>>()},
-                (l, node) =>
-                {
-                    if(node.Value.Type == tSPACE)
-                    {
-                        l.Add(new List<Ast<Token>>());
-                    }
-                    else
-                    {
-                        l.Last().Add(node);
-                    }
-                    return l;
-                });
         }
 
         private Expression CompileHash(Ast<Token> ast)
