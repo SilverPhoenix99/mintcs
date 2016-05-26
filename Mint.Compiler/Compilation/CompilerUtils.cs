@@ -16,7 +16,7 @@ namespace Mint.Compilation
         internal static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
         private static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         private static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
-        private static readonly ConstructorInfo RANGE_CTOR =
+        internal static readonly ConstructorInfo RANGE_CTOR =
             Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         private static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
         private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);

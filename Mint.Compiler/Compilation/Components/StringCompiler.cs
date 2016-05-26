@@ -32,10 +32,6 @@ namespace Mint.Compilation.Components
         protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)
         {
             contents = contents.Select(CompilerUtils.StripConversions);
-            contents = contents.Select(
-                content => content.Type == typeof(String) ? content : CompilerUtils.NewString(content)
-            );
-
             contents = new[] { first }.Concat(contents);
             first = contents.Aggregate(StringConcat);
 

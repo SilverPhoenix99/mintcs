@@ -140,5 +140,55 @@ namespace Mint.UnitTests
             expected = new Fixnum(10);
             Assert.That(actual, Is.EqualTo(expected));
         }
+
+        [Test]
+        public void TestRange()
+        {
+            var actual = Eval(nameof(TestRange), "1..2");
+            iObject expected = new Range(1, 2);
+            Assert.That(actual, Is.EqualTo(expected));
+            Assert.That(((Range) actual).ExcludeEnd, Is.False);
+
+            actual = Eval(nameof(TestRange), "3...4");
+            expected = new Range(3, 4, true);
+            Assert.That(actual, Is.EqualTo(expected));
+            Assert.That(((Range) actual).ExcludeEnd, Is.True);
+        }
+
+        [Test]
+        public void TestArray()
+        {
+            var actual = Eval(nameof(TestArray), "[]");
+            iObject expected = new Array();
+            Assert.That(actual, Is.EqualTo(expected));
+
+            actual = Eval(nameof(TestArray), "[1, :a, 'b']");
+            expected = new Array(new Fixnum(1), new Symbol("a"), new String("b"));
+            Assert.That(actual, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void TestUMinusNum()
+        {
+            var actual = Eval(nameof(TestUMinusNum), "-1");
+            iObject expected = new Fixnum(-1);
+            Assert.That(actual, Is.EqualTo(expected));
+
+            actual = Eval(nameof(TestUMinusNum), "-1.0");
+            expected = new Float(-1.0);
+            Assert.That(actual, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void TestNot()
+        {
+            var actual = Eval(nameof(TestUMinusNum), "not 1");
+            iObject expected = new FalseClass();
+            Assert.That(actual, Is.EqualTo(expected));
+
+            actual = Eval(nameof(TestUMinusNum), "not nil");
+            expected = new TrueClass();
+            Assert.That(actual, Is.EqualTo(expected));
+        }
     }
 }

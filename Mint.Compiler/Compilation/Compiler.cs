@@ -62,6 +62,10 @@ namespace Mint.Compilation
             Register(new IfCompiler(this), kIF, kIF_MOD, kELSIF, kUNLESS, kUNLESS_MOD, kQMARK);
             Register(new LineNumberCompiler(this), k__LINE__);
             Register(new FileNameCompiler(this), k__FILE__);
+            Register(new RangeCompiler(this), kDOT2, kDOT3);
+            Register(new ArrayCompiler(this), kLBRACK);
+            Register(new UMinusNumCompiler(this), kUMINUS_NUM);
+            Register(new NotCompiler(this), kNOT);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)

@@ -18,7 +18,7 @@ namespace Mint.Compilation.Components
                 return;
             }
 
-            foreach(var child in Node.Where(_ => _.Value?.Type != tSPACE))
+            foreach(var child in Node.Where(_ => _.Value.Type != tSPACE))
             {
                 Push(child);
             }
@@ -36,7 +36,7 @@ namespace Mint.Compilation.Components
             var contents = new List<Expression>();
             foreach(var child in list)
             {
-                if(child.Value?.Type != tSPACE)
+                if(child.Value.Type != tSPACE)
                 {
                     contents.Add(Pop());
                     continue;
