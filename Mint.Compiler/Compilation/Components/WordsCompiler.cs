@@ -12,12 +12,6 @@ namespace Mint.Compilation.Components
 
         public override void Shift()
         {
-            var list = Node.List;
-            if(list.Count == 0)
-            {
-                return;
-            }
-
             foreach(var child in Node.Where(_ => _.Value.Type != tSPACE))
             {
                 Push(child);

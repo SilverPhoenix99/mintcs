@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Binding;
@@ -21,6 +22,8 @@ namespace Mint.Compilation
         private static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
         private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
         private static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
+
+        private static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
 
         public static Expression ToBool(Expression expr)
         {
@@ -105,6 +108,21 @@ namespace Mint.Compilation
             return values.Length == 0
                 ? (Expression) array
                 : Convert(ListInit(array, values), typeof(iObject));
+        }
+
+        public static Expression Invoke(
+            Visibility visibility,
+            Expression instance,
+            Symbol methodName,
+            params InvocationArgument[] arguments
+        )
+        {
+            var site = CallSite.Create(methodName, visibility, arguments.Select(_ => _.Kind));
+            var call = Property(Constant(site), MEMBER_CALLSITE_CALL);
+            var argList = arguments.Length == 0
+                        ? EMPTY_ARRAY
+                        : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
+            return Expression.Invoke(call, instance, argList);
         }
     }
 }

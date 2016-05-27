@@ -12,11 +12,10 @@ namespace Mint.Compilation.Components
         public StringCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift() => ShiftChildren();
-
         public override Expression Reduce()
         {
-            if(IsSimpleContent(Node))
+            var isSimpleContent = Node.List.Count == 1 && Node[0].Value.Type == tSTRING_CONTENT;
+            if(isSimpleContent)
             {
                 return Pop();
             }
@@ -25,9 +24,6 @@ namespace Mint.Compilation.Components
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
             return Reduce(CompilerUtils.NewString(), contents);
         }
-
-        private static bool IsSimpleContent(Ast<Token> node) =>
-            node.List.Count == 1 && node[0].Value.Type == tSTRING_CONTENT;
 
         protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)
         {

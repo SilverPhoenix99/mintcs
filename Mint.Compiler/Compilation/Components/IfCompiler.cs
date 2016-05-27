@@ -9,22 +9,13 @@ namespace Mint.Compilation.Components
         public IfCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-            Push(Node[0]);
-            Push(Node[1]);
-
-            if(HasElse())
-            {
-                Push(Node[2]);
-            }
-        }
-
         public override Expression Reduce()
         {
-            var condition = Compiler.Pop();
-            var trueBody = Compiler.Pop();
-            var elseBody = HasElse() ? Pop() : Compiler.NIL;
+            var condition = Pop();
+            var trueBody = Pop();
+
+            var hasElse = Node.List.Count == 3;
+            var elseBody = hasElse ? Pop() : Compiler.NIL;
 
             condition = CompilerUtils.ToBool(condition);
 
@@ -35,7 +26,5 @@ namespace Mint.Compilation.Components
 
             return Condition(condition, trueBody, elseBody, typeof(iObject));
         }
-
-        private bool HasElse() => Node.List.Count >= 3 && Node[2].List.Count != 0;
     }
 }

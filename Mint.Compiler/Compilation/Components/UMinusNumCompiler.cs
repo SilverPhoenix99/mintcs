@@ -9,8 +9,6 @@ namespace Mint.Compilation.Components
         public UMinusNumCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift() => Push(Node[0]);
-
         public override Expression Reduce()
         {
             var number = (iObject) ((ConstantExpression) Pop()).Value;

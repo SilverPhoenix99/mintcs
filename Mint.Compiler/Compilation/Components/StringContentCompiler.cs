@@ -9,8 +9,8 @@ namespace Mint.Compilation.Components
         public StringContentCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => Constant(ReduceContent(Node), typeof(iObject));
- 
-        protected static String ReduceContent(Ast<Token> node) => new String(node.Value.Value);
+        public override Expression Reduce() => Constant(ReduceContent(), typeof(iObject));
+
+        protected String ReduceContent() => new String(Node.Value.Value);
     }
 }

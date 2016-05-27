@@ -9,11 +9,14 @@ namespace Mint.Compilation.Components
         public ListCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift() => ShiftChildren();
-
         public override Expression Reduce()
         {
             var count = Node.List.Count;
+
+            if(count == 0)
+            {
+                return Compiler.NIL;
+            }
 
             if(count == 1)
             {

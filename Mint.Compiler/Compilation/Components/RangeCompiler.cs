@@ -8,8 +8,6 @@ namespace Mint.Compilation.Components
         public RangeCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift() => ShiftChildren();
-
         public override Expression Reduce()
         {
             var left = Pop();

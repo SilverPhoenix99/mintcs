@@ -9,8 +9,6 @@ namespace Mint.Compilation.Components
         public ArrayCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift() => ShiftChildren();
-
         public override Expression Reduce()
         {
             var count = Node.List.Count;

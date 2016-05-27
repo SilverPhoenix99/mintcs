@@ -9,11 +9,37 @@ using static Mint.Parse.TokenType;
 namespace Mint.Compilation
 {
     using Ast = Ast<Token>;
-    using InputState = Tuple<Ast<Token>, Stack<Ast<Token>>>;
-    using ReduceState = Tuple<Ast<Token>, int, CompilerComponent, Queue<Expression>>;
 
     public class Compiler
     {
+        private class InputState
+        {
+            public readonly Ast Node;
+            public readonly Stack<Ast> Children = new Stack<Ast>();
+
+            public InputState(Ast node)
+            {
+                Node = node;
+            }
+        }
+
+        private class ReduceState
+        {
+            public readonly Ast Node;
+            public readonly CompilerComponent Component;
+            public readonly int ChildCount;
+            public readonly Queue<Expression> Children = new Queue<Expression>();
+
+            public ReduceState(Ast node, CompilerComponent component, int childCount)
+            {
+                Node = node;
+                Component = component;
+                ChildCount = childCount;
+            }
+
+            public bool CanReduce => ChildCount == Children.Count;
+        }
+
         internal static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
         internal static readonly Expression FALSE = Constant(new FalseClass(), typeof(iObject));
         internal static readonly Expression TRUE = Constant(new TrueClass(), typeof(iObject));
@@ -40,7 +66,7 @@ namespace Mint.Compilation
             Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
 
-            inputs.Push(new InputState(root, new Stack<Ast>()));
+            inputs.Push(new InputState(root));
 
             RegisterDefaultComponents();
         }
@@ -66,6 +92,12 @@ namespace Mint.Compilation
             Register(new ArrayCompiler(this), kLBRACK);
             Register(new UMinusNumCompiler(this), kUMINUS_NUM);
             Register(new NotCompiler(this), kNOT);
+            Register(new NotOperatorCompiler(this), kNOTOP);
+            Register(new OrCompiler(this), kOR, kOROP);
+            Register(new AndCompiler(this), kAND, kANDOP);
+            Register(new EqualCompiler(this), kEQ);
+            Register(new NotEqualCompiler(this), kNEQ);
+            Register(new SelfCompiler(this), kSELF);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)
@@ -87,7 +119,7 @@ namespace Mint.Compilation
             {
                 throw new UnregisteredTokenError("ListComponent is null");
             }
-            
+
             for(;;)
             {
                 if(Reduce())
@@ -115,7 +147,7 @@ namespace Mint.Compilation
 
         private bool Reduce()
         {
-            var canReduce = reducing.Count != 0 && reducing.Peek().Item4.Count == reducing.Peek().Item2;
+            var canReduce = reducing.Count != 0 && reducing.Peek().CanReduce;
             if(!canReduce)
             {
                 return false;
@@ -124,12 +156,11 @@ namespace Mint.Compilation
             try
             {
                 currentReducing = reducing.Pop();
-                CurrentNode = currentReducing.Item1;
+                CurrentNode = currentReducing.Node;
 
-                var component = currentReducing.Item3;
-                var expression = component.Reduce();
+                var expression = currentReducing.Component.Reduce();
 
-                if(currentReducing.Item4.Count != 0)
+                if(currentReducing.Children.Count != 0)
                 {
                     throw new IncompleteCompilationError("More nodes were shifted than needed.");
                 }
@@ -140,7 +171,7 @@ namespace Mint.Compilation
                 }
                 else
                 {
-                    reducing.Peek().Item4.Enqueue(expression);
+                    reducing.Peek().Children.Enqueue(expression);
                 }
 
                 return true;
@@ -157,15 +188,16 @@ namespace Mint.Compilation
             try
             {
                 currentShifting = inputs.Pop();
-                CurrentNode = currentShifting.Item1;
+                CurrentNode = currentShifting.Node;
 
                 var component = GetComponentOrThrow();
                 component.Shift();
 
-                PushChildInputs(currentShifting.Item2);
-                
-                var buildingState = CreateBuildingState(currentShifting, component);
-                reducing.Push(buildingState);
+                PushChildInputs(currentShifting.Children);
+
+                var childCount = currentShifting.Children.Count;
+                var reducingState = new ReduceState(CurrentNode, component, childCount);
+                reducing.Push(reducingState);
             }
             finally
             {
@@ -195,19 +227,12 @@ namespace Mint.Compilation
         {
             foreach(var child in items)
             {
-                inputs.Push(new InputState(child, new Stack<Ast>()));
+                inputs.Push(new InputState(child));
             }
         }
 
-        private static ReduceState CreateBuildingState(InputState input, CompilerComponent component)
-        {
-            var node = input.Item1;
-            var count = input.Item2.Count;
-            return new ReduceState(node, count, component, new Queue<Expression>());
-        }
+        public void Push(Ast node) => currentShifting.Children.Push(node);
 
-        public void Push(Ast node) => currentShifting.Item2.Push(node);
-
-        public Expression Pop() => currentReducing.Item4.Dequeue();
+        public Expression Pop() => currentReducing.Children.Dequeue();
     }
 }

@@ -14,9 +14,6 @@ namespace Mint.Compilation.Components
         }
 
         public virtual void Shift()
-        { }
-
-        protected void ShiftChildren()
         {
             foreach(var child in Node)
             {

@@ -11,7 +11,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var first = Constant(ReduceContent(Node));
+            var first = Constant(ReduceContent());
             var count = Node.List.Count;
 
             if(count == 0)
