@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     internal abstract class CompilerComponentBase : CompilerComponent
     {
-        protected Compiler Compiler { get; }
+        public Compiler Compiler { get; }
         protected Ast<Token> Node => Compiler.CurrentNode;
 
         protected CompilerComponentBase(Compiler compiler)

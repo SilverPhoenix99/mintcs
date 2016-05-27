@@ -8,7 +8,7 @@ namespace Mint.Compilation.Components
 {
     internal class AssignIndexerCompiler : CompilerComponentBase
     {
-        // <left>.[<args>+] = <right>   =>   <left>.[]=(*<args+>, <right>)
+        // <left>.[*<args>] = <right>   =>   <left>.[]=(*<args>, <right>)
 
         public AssignIndexerCompiler(Compiler compiler) : base(compiler)
         { }
@@ -72,55 +72,55 @@ namespace Mint.Compilation.Components
         private InvocationArgument PopArgument(TokenType type)
         {
             switch(type)
+            {
+                case tLABEL: goto case tLABEL;
+                case kASSOC:
                 {
-                    case tLABEL: goto case tLABEL;
-                    case kASSOC:
-                    {
-                        var label = Pop();
-                        var value = Pop();
-                        var argument = CompilerUtils.NewArray(label, value);
-                        return new InvocationArgument(ArgumentKind.Key, argument);
-                    }
-
-                    case tLABEL_END:
-                    {
-                        var label = Pop();
-                        var value = Pop();
-
-                        if(value is BlockExpression)
-                        {
-                            // TODO String.Concat(Block.Expressions)
-                            throw new System.NotImplementedException();
-                        }
-
-                        var argument = CompilerUtils.NewArray(label, value);
-                        return new InvocationArgument(ArgumentKind.Key, argument);
-                    }
-
-                    case kSTAR:
-                    {
-                        var argument = Pop();
-                        return new InvocationArgument(ArgumentKind.Rest, argument);
-                    }
-
-                    case kDSTAR:
-                    {
-                        var argument = Pop();
-                        return new InvocationArgument(ArgumentKind.KeyRest, argument);
-                    }
-
-                    case kAMPER:
-                    {
-                        var argument = Pop();
-                        return new InvocationArgument(ArgumentKind.Block, argument);
-                    }
-
-                    default:
-                    {
-                        var argument = Pop();
-                        return new InvocationArgument(ArgumentKind.Simple, argument);
-                    }
+                    var label = Pop();
+                    var value = Pop();
+                    var argument = CompilerUtils.NewArray(label, value);
+                    return new InvocationArgument(ArgumentKind.Key, argument);
                 }
+
+                case tLABEL_END:
+                {
+                    var label = Pop();
+                    var value = Pop();
+
+                    if(value is BlockExpression)
+                    {
+                        // TODO String.Concat(Block.Expressions)
+                        throw new System.NotImplementedException();
+                    }
+
+                    var argument = CompilerUtils.NewArray(label, value);
+                    return new InvocationArgument(ArgumentKind.Key, argument);
+                }
+
+                case kSTAR:
+                {
+                    var argument = Pop();
+                    return new InvocationArgument(ArgumentKind.Rest, argument);
+                }
+
+                case kDSTAR:
+                {
+                    var argument = Pop();
+                    return new InvocationArgument(ArgumentKind.KeyRest, argument);
+                }
+
+                case kAMPER:
+                {
+                    var argument = Pop();
+                    return new InvocationArgument(ArgumentKind.Block, argument);
+                }
+
+                default:
+                {
+                    var argument = Pop();
+                    return new InvocationArgument(ArgumentKind.Simple, argument);
+                }
+            }
         }
     }
 }

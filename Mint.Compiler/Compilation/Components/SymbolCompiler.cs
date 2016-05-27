@@ -1,6 +1,4 @@
-using Mint.Parse;
 using Mint.Reflection;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,22 +16,22 @@ namespace Mint.Compilation.Components
 
         public override void Shift()
         {
-            if(Node.List[0].IsList)
+            if(IsIdentifierSymbol())
             {
-                base.Shift();
+                return;
             }
+
+            base.Shift();
         }
         
         public override Expression Reduce()
         {
-            var node = Node.List[0];
-
-            if(!node.IsList)
+            if(IsIdentifierSymbol())
             {
-                return Constant(new Symbol(node.Value.Value), typeof(iObject));
+                return Constant(new Symbol(Node[0].Value.Value), typeof(iObject));
             }
 
-            var count = node.List.Count;
+            var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
 
             var first = CompilerUtils.NewString();
@@ -43,5 +41,7 @@ namespace Mint.Compilation.Components
             var symbol = New(SYMBOL_CTOR, body);
             return Convert(symbol, typeof(iObject));
         }
+
+        private bool IsIdentifierSymbol() => Node.List.Count == 1 && Node[0].Value.Type == tIDENTIFIER;
     }
 }

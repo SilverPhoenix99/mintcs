@@ -37,11 +37,11 @@
   <ItemGroup>
     <Compile Include="Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\Compiler.ReduceState.cs" />
     <Compile Include="Compilation\CompilerException.cs" />
     <Compile Include="Compilation\CompilerUtils.cs" />
     <Compile Include="Compilation\Components\AndCompiler.cs" />
     <Compile Include="Compilation\Components\ArrayCompiler.cs" />
-    <Compile Include="Compilation\Components\AssignCompiler.cs" />
     <Compile Include="Compilation\Components\AssignIndexerCompiler.cs" />
     <Compile Include="Compilation\Components\AssignPropertyCompiler.cs" />
     <Compile Include="Compilation\Components\AssignVariableCompiler.cs" />
@@ -56,6 +56,7 @@
     <Compile Include="Compilation\Components\IdentifierCompiler.cs" />
     <Compile Include="Compilation\Components\IfCompiler.cs" />
     <Compile Include="Compilation\Components\IntegerCompiler.cs" />
+    <Compile Include="Compilation\Components\LabelCompiler.cs" />
     <Compile Include="Compilation\Components\LineNumberCompiler.cs" />
     <Compile Include="Compilation\Components\ListCompiler.cs" />
     <Compile Include="Compilation\Components\NotCompiler.cs" />
@@ -73,6 +74,9 @@
     <Compile Include="Compilation\IncompleteCompilationError.cs" />
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scope.cs" />
+    <Compile Include="Compilation\Selectors\AssignSelector.cs" />
+    <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
+    <Compile Include="Compilation\Selectors\UnconditionalSelector.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -89,6 +93,9 @@
       <Project>{b446f5d9-5bcc-4b36-945d-ff50036c85d4}</Project>
       <Name>Mint.VM</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compilation\Compiler.ShiftState.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

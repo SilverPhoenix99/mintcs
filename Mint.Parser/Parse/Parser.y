@@ -1166,7 +1166,7 @@ sym :
 ;
 
 dsym :
-  tSYMBEG xstring_contents tSTRING_END { $$ = $1 + $2; }
+  tSYMBEG xstring_contents tSTRING_END { $$ = $1.Append($2.List); }
 ;
 
 numeric :
