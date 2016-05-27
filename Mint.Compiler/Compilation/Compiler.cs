@@ -98,6 +98,8 @@ namespace Mint.Compilation
             Register(new EqualCompiler(this), kEQ);
             Register(new NotEqualCompiler(this), kNEQ);
             Register(new SelfCompiler(this), kSELF);
+            Register(new IdentifierCompiler(this), tIDENTIFIER);
+            Register(new AssignCompiler(this), kASSIGN);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)

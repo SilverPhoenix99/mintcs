@@ -231,5 +231,11 @@ namespace Mint.UnitTests
             Assert.That(self, Is.TypeOf(typeof(Object)));
             Assert.That(self.Class.FullName, Is.EqualTo("Object"));
         }
+
+        [Test]
+        public void TestIdentifierAndAssign()
+        {
+            Assert.That(Eval("a = 1; a"), Is.EqualTo(new Fixnum(1)));
+        }
     }
 }

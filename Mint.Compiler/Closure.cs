@@ -1,9 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint
 {
     public class Closure
     {
+        private static readonly PropertyInfo INDEXER =
+            typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) });
+
         private readonly Dictionary<Symbol, int> indexes = new Dictionary<Symbol, int>();
         private Array values = new Array();
 
@@ -38,5 +44,8 @@ namespace Mint
         }
 
         public bool IsDefined(Symbol name) => indexes.ContainsKey(name);
+
+        public Expression Variable(Symbol name) => Property(Constant(this), INDEXER, Constant(IndexOf(name)));
+
     }
 }

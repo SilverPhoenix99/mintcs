@@ -7,9 +7,6 @@ namespace Mint.Compilation.Components
         public SelfCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        { }
-
         public override Expression Reduce() => Expression.Constant(Compiler.CurrentScope.Closure.Self);
     }
 }
