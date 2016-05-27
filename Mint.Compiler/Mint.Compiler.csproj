@@ -49,6 +49,7 @@
     <Compile Include="Compilation\Components\CharCompiler.cs" />
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
+    <Compile Include="Compilation\Components\ComplexSymbolCompiler.cs" />
     <Compile Include="Compilation\Components\ConstantCompiler.cs" />
     <Compile Include="Compilation\Components\EqualCompiler.cs" />
     <Compile Include="Compilation\Components\FileNameCompiler.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="Compilation\Components\SelfCompiler.cs" />
     <Compile Include="Compilation\Components\StringCompiler.cs" />
     <Compile Include="Compilation\Components\StringContentCompiler.cs" />
-    <Compile Include="Compilation\Components\SymbolCompiler.cs" />
+    <Compile Include="Compilation\Components\SimpleSymbolCompiler.cs" />
     <Compile Include="Compilation\Components\SymbolWordsCompiler.cs" />
     <Compile Include="Compilation\Components\UMinusNumCompiler.cs" />
     <Compile Include="Compilation\Components\WordsCompiler.cs" />
@@ -75,7 +76,9 @@
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scope.cs" />
     <Compile Include="Compilation\Selectors\AssignSelector.cs" />
+    <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
+    <Compile Include="Compilation\Selectors\SymbolSelector.cs" />
     <Compile Include="Compilation\Selectors\UnconditionalSelector.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

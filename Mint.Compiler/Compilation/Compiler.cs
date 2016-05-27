@@ -52,7 +52,6 @@ namespace Mint.Compilation
             Register(new StringContentCompiler(this), tSTRING_CONTENT);
             Register(new StringCompiler(this), tSTRING_BEG);
             Register(new CharCompiler(this), tCHAR);
-            Register(new SymbolCompiler(this), tSYMBEG);
             Register(new WordsCompiler(this), tWORDS_BEG, tQWORDS_BEG);
             Register(new SymbolWordsCompiler(this), tSYMBOLS_BEG, tQSYMBOLS_BEG);
             Register(new IfCompiler(this), kIF, kIF_MOD, kELSIF, kUNLESS, kUNLESS_MOD, kQMARK);
@@ -70,8 +69,9 @@ namespace Mint.Compilation
             Register(new SelfCompiler(this), kSELF);
             Register(new IdentifierCompiler(this), tIDENTIFIER);
             Register(new LabelCompiler(this), tLABEL);
-            
+
             Register(new AssignSelector(this), kASSIGN);
+            Register(new SymbolSelector(this), tSYMBEG);
         }
 
         public void Register(CompilerComponent component, TokenType type)

@@ -3,7 +3,7 @@ using Mint.Parse;
 
 namespace Mint.Compilation.Components
 {
-    internal abstract class CompilerComponentBase : CompilerComponent
+    public abstract class CompilerComponentBase : CompilerComponent
     {
         public Compiler Compiler { get; }
         protected Ast<Token> Node => Compiler.CurrentNode;

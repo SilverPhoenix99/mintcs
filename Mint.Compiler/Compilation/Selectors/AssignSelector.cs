@@ -4,30 +4,27 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Selectors
 {
-    public class AssignSelector : ComponentSelector
+    internal class AssignSelector : ComponentSelectorBase
     {
-        private readonly Compiler compiler;
         private CompilerComponent assignVariable;
         private CompilerComponent assignProperty;
         private CompilerComponent assignIndexer;
 
         private CompilerComponent AssignVariable =>
-            assignVariable ?? (assignVariable = new AssignVariableCompiler(compiler));
+            assignVariable ?? (assignVariable = new AssignVariableCompiler(Compiler));
 
         private CompilerComponent AssignProperty =>
-            assignProperty ?? (assignProperty = new AssignPropertyCompiler(compiler));
+            assignProperty ?? (assignProperty = new AssignPropertyCompiler(Compiler));
 
         private CompilerComponent AssignIndexer =>
-            assignIndexer ?? (assignIndexer = new AssignIndexerCompiler(compiler));
+            assignIndexer ?? (assignIndexer = new AssignIndexerCompiler(Compiler));
 
-        public AssignSelector(Compiler compiler)
-        {
-            this.compiler = compiler;
-        }
+        public AssignSelector(Compiler compiler) : base(compiler)
+        { }
 
-        public CompilerComponent Select()
+        public override CompilerComponent Select()
         {
-            switch(compiler.CurrentNode[0].Value.Type)
+            switch(Node[0].Value.Type)
             {
                 case tIDENTIFIER:
                     return AssignVariable;
@@ -40,8 +37,8 @@ namespace Mint.Compilation.Selectors
 
                 case kSELF:
                 {
-                    var line = compiler.CurrentNode[0].Value.Location.Item1;
-                    throw new SyntaxError(compiler.Filename, line, "Can't change the value of self");
+                    var line = Node[0].Value.Location.Item1;
+                    throw new SyntaxError(Compiler.Filename, line, "Can't change the value of self");
                 }
 
                 default:
