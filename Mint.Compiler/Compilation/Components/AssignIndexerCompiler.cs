@@ -32,7 +32,11 @@ namespace Mint.Compilation.Components
                         Push(argument[0]);
                         break;
 
-                    case tLABEL: goto case kASSOC;
+                    case tLABEL:
+                        Push(argument);
+                        Push(argument[0]);
+                        break;
+
                     case tLABEL_END: goto case kASSOC;
                     case kASSOC:
                         Push(argument[0]);
@@ -73,7 +77,7 @@ namespace Mint.Compilation.Components
         {
             switch(type)
             {
-                case tLABEL: goto case tLABEL;
+                case tLABEL: goto case kASSOC;
                 case kASSOC:
                 {
                     var label = Pop();
@@ -89,6 +93,8 @@ namespace Mint.Compilation.Components
 
                     if(value is BlockExpression)
                     {
+                        //value = CompilerUtils.StringConcat(((BlockExpression) value).Expressions);
+                        //return CompilerUtils.NewSymbol(value);
                         // TODO String.Concat(Block.Expressions)
                         throw new System.NotImplementedException();
                     }

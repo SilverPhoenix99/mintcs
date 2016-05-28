@@ -62,10 +62,10 @@ namespace Mint.Binding.Methods
         {
             if(!typeof(iObject).IsAssignableFrom(expression.Type))
             {
-                return Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
+                return Call(OBJECT_BOX_METHOD, expression.Cast<object>());
             }
 
-            return expression.Type == typeof(iObject) ? expression : Convert(expression, typeof(iObject));
+            return expression.Type == typeof(iObject) ? expression : expression.Cast<iObject>();
         }
 
         protected internal static Expression TypeIs(Expression expression, Type type)
@@ -84,10 +84,10 @@ namespace Mint.Binding.Methods
             Type convertedType;
             if(TYPES.TryGetValue(type, out convertedType))
             {
-                expression = Convert(expression, convertedType);
+                expression = expression.Cast(convertedType);
             }
 
-            return Convert(expression, type);
+            return expression.Cast(type);
         }
     }
 }

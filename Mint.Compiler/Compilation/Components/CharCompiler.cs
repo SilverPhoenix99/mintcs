@@ -16,7 +16,7 @@ namespace Mint.Compilation.Components
 
             if(count == 0)
             {
-                return Convert(first, typeof(iObject));
+                return first.Cast<iObject>();
             }
 
             var contents = Enumerable.Range(0, Node.List.Count).Select(_ => Pop());

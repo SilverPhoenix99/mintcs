@@ -37,7 +37,7 @@ namespace Mint.Compilation
 
             if(expr.Type != typeof(iObject))
             {
-                expr = Convert(expr, typeof(iObject));
+                expr = expr.Cast<iObject>();
             }
 
             if(expr is ParameterExpression)
@@ -76,7 +76,7 @@ namespace Mint.Compilation
                 return New(STRING_CTOR1);
             }
 
-            argument = StripConversions(argument);
+            argument = argument.StripConversions();
 
             if(argument.Type == typeof(String))
             {
@@ -85,29 +85,19 @@ namespace Mint.Compilation
 
             if(argument.Type != typeof(string))
             {
-                argument = Convert(argument, typeof(object));
+                argument = argument.Cast<object>();
                 argument = Call(argument, METHOD_OBJECT_TOSTRING, null);
             }
 
             return New(STRING_CTOR3, argument);
         }
-
-        public static Expression StripConversions(Expression expression)
-        {
-            while(expression.NodeType == ExpressionType.Convert)
-            {
-                expression = ((UnaryExpression) expression).Operand;
-            }
-
-            return expression;
-        }
-
+        
         public static Expression NewArray(params Expression[] values)
         {
             var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
             return values.Length == 0
-                ? (Expression) array
-                : Convert(ListInit(array, values), typeof(iObject));
+                ? array
+                : ListInit(array, values).Cast<iObject>();
         }
 
         public static Expression Invoke(

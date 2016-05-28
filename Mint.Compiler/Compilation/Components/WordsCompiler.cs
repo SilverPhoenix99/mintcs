@@ -38,9 +38,9 @@ namespace Mint.Compilation.Components
 
                 var word = CompilerUtils.NewString();
                 word = Reduce(word, contents);
-                word = CompilerUtils.StripConversions(word);
+                word = word.StripConversions();
                 word = Wrap(word);
-                word = Expression.Convert(word, typeof(iObject));
+                word = word.Cast<iObject>();
                 words.Add(word);
                 contents = new List<Expression>();
             }

@@ -70,6 +70,7 @@
     <Compile Include="Binding\Parameters\SuffixRequiredParameterBinder.cs" />
     <Compile Include="Binding\Visibility.cs" />
     <Compile Include="Condition.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="IndexError.cs" />
     <Compile Include="LinkedDictionary.cs" />
     <Compile Include="MethodInfoExtensions.cs" />

@@ -9,6 +9,6 @@ namespace Mint.Compilation.Components
         { }
 
         protected override Expression Wrap(Expression word) =>
-            New(CompilerUtils.SYMBOL_CTOR, Convert(word, typeof(string)));
+            New(CompilerUtils.SYMBOL_CTOR, word.Cast<string>());
     }
 }

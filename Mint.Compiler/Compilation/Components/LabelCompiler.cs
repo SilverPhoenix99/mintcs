@@ -8,6 +8,9 @@ namespace Mint.Compilation.Components
         public LabelCompiler(Compiler compiler) : base(compiler)
         { }
 
+        public override void Shift()
+        { }
+
         public override Expression Reduce()
         {
             var label = Node.Value.Value;

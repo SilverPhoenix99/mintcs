@@ -26,11 +26,11 @@ namespace Mint.Compilation.Components
 
         protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)
         {
-            contents = contents.Select(CompilerUtils.StripConversions);
+            contents = contents.Select(ExpressionExtensions.StripConversions);
             contents = new[] { first }.Concat(contents);
             first = contents.Aggregate(StringConcat);
 
-            return Convert(first, typeof(iObject));
+            return first.Cast<iObject>();
         }
 
         private static Expression StringConcat(Expression left, Expression right) =>

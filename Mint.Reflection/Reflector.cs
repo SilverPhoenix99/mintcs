@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using static System.Reflection.BindingFlags;
 
 namespace Mint.Reflection
 {
@@ -9,17 +10,25 @@ namespace Mint.Reflection
     {
         public static ConstructorInfo Ctor<T>(params Type[] argTypes) => typeof(T).GetConstructor(argTypes);
 
-        public static MethodInfo Method<TResult>(Expression<Func<TResult>> lambda) => Method((LambdaExpression) lambda);
+        public static MethodInfo Method<TResult>(Expression<Func<TResult>> lambda) =>
+            Method((LambdaExpression) lambda);
 
-        public static MethodInfo Operator<TResult>(Expression<Func<TResult>> lambda) => Operator((LambdaExpression) lambda);
+        public static MethodInfo Method(Expression<Action> lambda) => Method((LambdaExpression) lambda);
 
-        public static MethodInfo Convert<TResult>(Expression<Func<TResult>> lambda) => Convert((LambdaExpression) lambda);
+        public static MethodInfo Operator<TResult>(Expression<Func<TResult>> lambda) =>
+            Operator((LambdaExpression) lambda);
 
-        public static PropertyInfo Property<TResult>(Expression<Func<TResult>> lambda) => Property((LambdaExpression) lambda);
+        public static MethodInfo Convert<TResult>(Expression<Func<TResult>> lambda) =>
+            Convert((LambdaExpression) lambda);
 
-        public static MethodInfo Getter<TResult>(Expression<Func<TResult>> lambda) => Getter((LambdaExpression) lambda);
+        public static PropertyInfo Property<TResult>(Expression<Func<TResult>> lambda) =>
+            Property((LambdaExpression) lambda);
 
-        public static MethodInfo Setter<TResult>(Expression<Func<TResult>> lambda) => Setter((LambdaExpression) lambda);
+        public static MethodInfo Getter<TResult>(Expression<Func<TResult>> lambda) =>
+            Getter((LambdaExpression) lambda);
+
+        public static MethodInfo Setter<TResult>(Expression<Func<TResult>> lambda) =>
+            Setter((LambdaExpression) lambda);
 
         public static MethodInfo Method(LambdaExpression lambda)
         {
@@ -75,7 +84,7 @@ namespace Mint.Reflection
             var call = (MethodCallExpression) body;
             var method = DeclaringMethod(call.Method, call.Object.Type);
             var properties = method.DeclaringType.GetProperties(
-                BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                Static | Instance | Public | NonPublic);
 
             return properties.Single(p => p.GetMethod == method || p.SetMethod == method);
         }
@@ -93,23 +102,24 @@ namespace Mint.Reflection
                 : body;
         }
 
-        private static MethodInfo DeclaringMethod(MethodBase method, IReflect declaringType)
+        private static MethodInfo DeclaringMethod(MethodInfo method, IReflect declaringType)
         {
-            var flags = BindingFlags.Default;
-            flags |= method.IsStatic ? BindingFlags.Static : BindingFlags.Instance;
-            flags |= method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic;
+            var flags = Default;
+            flags |= method.IsStatic ? Static : Instance;
+            flags |= method.IsPublic ? Public : NonPublic;
             var parameters = method.GetParameters().Select(_ => _.ParameterType).ToArray();
-            return declaringType.GetMethod(method.Name, flags, null, parameters, null);
+            return declaringType.GetMethod(method.Name, flags, null, parameters, null) ?? method;
+
         }
 
         private static PropertyInfo DeclaringProperty(PropertyInfo property, IReflect declaringType)
         {
             var method = property.GetMethod ?? property.SetMethod;
-            var flags = BindingFlags.Default;
-            flags |= method.IsStatic ? BindingFlags.Static : BindingFlags.Instance;
-            flags |= method.IsPublic ? BindingFlags.Public : BindingFlags.NonPublic;
+            var flags = Default;
+            flags |= method.IsStatic ? Static : Instance;
+            flags |= method.IsPublic ? Public : NonPublic;
             var parameters = property.GetIndexParameters().Select(_ => _.ParameterType).ToArray();
-            return declaringType.GetProperty(property.Name, flags, null, property.PropertyType, parameters, null);
+            return declaringType.GetProperty(property.Name, flags, null, property.PropertyType, parameters, null) ?? property;
         }
     }
 

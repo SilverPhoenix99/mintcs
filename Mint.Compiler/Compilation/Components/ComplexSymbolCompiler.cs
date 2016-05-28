@@ -21,9 +21,9 @@ namespace Mint.Compilation.Components
             var first = CompilerUtils.NewString();
             var body = Reduce(first, contents);
             body = ((UnaryExpression) body).Operand;
-            body = Convert(body, typeof(string));
+            body = body.Cast<string>();
             var symbol = New(SYMBOL_CTOR, body);
-            return Convert(symbol, typeof(iObject));
+            return symbol.Cast<iObject>();
         }
     }
 }
