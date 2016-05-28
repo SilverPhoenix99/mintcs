@@ -105,6 +105,7 @@
     <ProjectReference Include="..\Mint.Reflection\Mint.Reflection.csproj">
       <Project>{f3821de2-7ea0-4537-9d1a-876bbd3ba51c}</Project>
       <Name>Mint.Reflection</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

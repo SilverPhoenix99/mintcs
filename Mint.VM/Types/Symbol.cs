@@ -91,7 +91,7 @@ namespace Mint
 
             ~Sym()
             {
-                lock(SYMBOLS)
+                lock(typeof(Symbol))
                 {
                     SYMBOLS.Remove(Name);
                 }
@@ -99,7 +99,7 @@ namespace Mint
 
             public static Sym New(string name)
             {
-                lock(SYMBOLS)
+                lock(typeof(Symbol))
                 {
                     WeakReference<Sym> weakSym;
                     Sym sym;
