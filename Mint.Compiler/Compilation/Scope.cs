@@ -20,11 +20,11 @@ namespace Mint.Compilation
             Type = type;
             Closure = closure;
         }
-        
+
         public ScopeType Type { get; }
 
         public Closure Closure { get; }
-        
+
         public Dictionary<string, LabelTarget> Labels { get; } = new Dictionary<string, LabelTarget>();
 
         public Scope Previous { get; private set; }
@@ -42,15 +42,6 @@ namespace Mint.Compilation
             return target;
         }
 
-        public Expression Variable(Symbol name) =>
-            Expression.Property(
-                Expression.Constant(Closure),
-                CLOSURE_INDEXER,
-                Expression.Constant(Closure.IndexOf(name))
-            );
-
         public Scope Enter(ScopeType type, Closure closure = null) => new Scope(type, closure ?? new Closure(Closure.Self)) { Previous = this };
-
-        private static readonly PropertyInfo CLOSURE_INDEXER = typeof(Closure).GetProperty("Item", typeof(iObject), new[] { typeof(int) });
     }
 }

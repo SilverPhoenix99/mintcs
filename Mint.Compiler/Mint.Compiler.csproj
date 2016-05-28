@@ -35,19 +35,45 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilation\Closure.cs" />
+    <Compile Include="Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
-    <Compile Include="Compilation\Scope.cs" />
-    <Compile Include="Compilation\Components\BaseCompilerComponent.cs" />
+    <Compile Include="Compilation\CompilerException.cs" />
+    <Compile Include="Compilation\CompilerUtils.cs" />
+    <Compile Include="Compilation\Components\AndCompiler.cs" />
+    <Compile Include="Compilation\Components\ArrayCompiler.cs" />
+    <Compile Include="Compilation\Components\AssignCompiler.cs" />
+    <Compile Include="Compilation\Components\AssignIndexerCompiler.cs" />
+    <Compile Include="Compilation\Components\AssignPropertyCompiler.cs" />
+    <Compile Include="Compilation\Components\AssignVariableCompiler.cs" />
+    <Compile Include="Compilation\Components\BinaryOperatorCompiler.cs" />
     <Compile Include="Compilation\Components\CharCompiler.cs" />
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
+    <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\ConstantCompiler.cs" />
+    <Compile Include="Compilation\Components\EqualCompiler.cs" />
+    <Compile Include="Compilation\Components\FileNameCompiler.cs" />
     <Compile Include="Compilation\Components\FloatCompiler.cs" />
+    <Compile Include="Compilation\Components\IdentifierCompiler.cs" />
+    <Compile Include="Compilation\Components\IfCompiler.cs" />
     <Compile Include="Compilation\Components\IntegerCompiler.cs" />
+    <Compile Include="Compilation\Components\LineNumberCompiler.cs" />
     <Compile Include="Compilation\Components\ListCompiler.cs" />
+    <Compile Include="Compilation\Components\NotCompiler.cs" />
+    <Compile Include="Compilation\Components\NotEqualCompiler.cs" />
+    <Compile Include="Compilation\Components\NotOperatorCompiler.cs" />
+    <Compile Include="Compilation\Components\OrCompiler.cs" />
+    <Compile Include="Compilation\Components\RangeCompiler.cs" />
+    <Compile Include="Compilation\Components\SelfCompiler.cs" />
     <Compile Include="Compilation\Components\StringCompiler.cs" />
     <Compile Include="Compilation\Components\StringContentCompiler.cs" />
     <Compile Include="Compilation\Components\SymbolCompiler.cs" />
+    <Compile Include="Compilation\Components\SymbolWordsCompiler.cs" />
+    <Compile Include="Compilation\Components\UMinusNumCompiler.cs" />
+    <Compile Include="Compilation\Components\WordsCompiler.cs" />
+    <Compile Include="Compilation\IncompleteCompilationError.cs" />
+    <Compile Include="Compilation\InvocationArgument.cs" />
+    <Compile Include="Compilation\Scope.cs" />
+    <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-using Mint.Parse;
+using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
@@ -9,13 +9,18 @@ namespace Mint.Compilation.Components
         public CharCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Compile(Ast<Token> ast)
+        public override Expression Reduce()
         {
-            var first = New(STRING_CTOR3, CompileContent(ast));
+            var first = Constant(ReduceContent());
+            var count = Node.List.Count;
 
-            return ast.List.Count == 0
-                ? Convert(first, typeof(iObject))
-                : Compile(first, ast);
+            if(count == 0)
+            {
+                return Convert(first, typeof(iObject));
+            }
+
+            var contents = Enumerable.Range(0, Node.List.Count).Select(_ => Pop());
+            return Reduce(first, contents);
         }
     }
 }

@@ -30,9 +30,16 @@
 
         public override int GetHashCode()
         {
-            return Minimum.GetHashCode() << 9 ^ Maximum.GetHashCode();
+            var hash = 23;
+            hash = hash * 31 + Minimum.GetHashCode();
+            return hash * 31 + Maximum.GetHashCode();
         }
         
-        public override string ToString() => Maximum == int.MaxValue ? $"{Minimum}+" : $"{Minimum}..{Maximum}";
+        public override string ToString()
+        {
+            return Minimum == Maximum ? Minimum.ToString()
+                 : Maximum == int.MaxValue ? $"{Minimum}+"
+                 : $"{Minimum}..{Maximum}";
+        }
     }
 }

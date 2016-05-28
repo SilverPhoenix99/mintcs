@@ -62,8 +62,8 @@ namespace Mint
 
         private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, Closure binding)
         {
-            var compiler = new Compiler("(imt)", binding);
-            var body = ast.Accept(compiler);
+            var compiler = new Compiler("(imt)", binding, ast);
+            var body = compiler.Compile();
             return Expression.Lambda<Func<iObject>>(body);
         }
 

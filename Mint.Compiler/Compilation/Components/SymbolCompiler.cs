@@ -1,9 +1,11 @@
 using Mint.Parse;
 using Mint.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
@@ -14,27 +16,32 @@ namespace Mint.Compilation.Components
         public SymbolCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Compile(Ast<Token> ast)
+        public override void Shift()
         {
-            var content = ast.List[0];
-
-            return content.IsList
-                ? Compile(content.List)
-                : Constant(new Symbol(content.Value.Value), typeof(iObject));
+            if(Node.List[0].IsList)
+            {
+                base.Shift();
+            }
         }
-
-        private Expression Compile(IEnumerable<Ast<Token>> content)
+        
+        public override Expression Reduce()
         {
-            return Convert(
-                New(
-                    SYMBOL_CTOR,
-                    Convert(
-                        Compile(New(STRING_CTOR1), content),
-                        typeof(string)
-                    )
-                ),
-                typeof(iObject)
-            );
+            var node = Node.List[0];
+
+            if(!node.IsList)
+            {
+                return Constant(new Symbol(node.Value.Value), typeof(iObject));
+            }
+
+            var count = node.List.Count;
+            var contents = Enumerable.Range(0, count).Select(_ => Pop());
+
+            var first = CompilerUtils.NewString();
+            var body = Reduce(first, contents);
+            body = ((UnaryExpression) body).Operand;
+            body = Convert(body, typeof(string));
+            var symbol = New(SYMBOL_CTOR, body);
+            return Convert(symbol, typeof(iObject));
         }
     }
 }
