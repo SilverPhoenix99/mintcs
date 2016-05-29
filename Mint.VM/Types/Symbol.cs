@@ -50,6 +50,12 @@ namespace Mint
         public static readonly Symbol NEQ;
         public static readonly Symbol TO_HASH;
         public static readonly Symbol TO_ARY;
+        public static readonly Symbol DIV;
+        public static readonly Symbol MUL;
+        public static readonly Symbol GREATER;
+        public static readonly Symbol GEQ;
+        public static readonly Symbol LESS;
+        public static readonly Symbol LEQ;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -77,6 +83,12 @@ namespace Mint
             NEQ = new Symbol("!=");
             TO_HASH = new Symbol("to_hash");
             TO_ARY = new Symbol("to_ary");
+            DIV = new Symbol("/");
+            MUL = new Symbol("*");
+            GREATER = new Symbol(">");
+            GEQ = new Symbol(">=");
+            LESS = new Symbol("<");
+            LEQ = new Symbol("<=");
         }
 
         #endregion

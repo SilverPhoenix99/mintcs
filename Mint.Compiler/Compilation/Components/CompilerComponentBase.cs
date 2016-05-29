@@ -30,11 +30,11 @@ namespace Mint.Compilation.Components
 
         protected Expression Pop() => Compiler.Pop();
 
-        protected static Visibility GetVisibility(Ast<Token> node)
+        protected static Visibility GetVisibility(Ast<Token> left)
         {
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
-            return node.Value?.Type == kSELF ? Protected : Public;
+            return left.Value?.Type == kSELF ? Protected : Public;
         }
     }
 }

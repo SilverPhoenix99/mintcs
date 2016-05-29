@@ -75,9 +75,16 @@ namespace Mint.Compilation
             Register(new HashCompiler(this), kLBRACE);
             Register(new SplatCompiler(this), kSTAR);
             Register(new KeySplatCompiler(this), kDSTAR);
+            Register(new DivisionCompiler(this), kDIV);
+            Register(new MultiplationCompiler(this), kMUL);
+            Register(new GreaterThanCompiler(this), kGREATER);
+            Register(new GreaterOrEqualCompiler(this), kGEQ);
+            Register(new LessThanCompiler(this), kLESS);
+            Register(new LessOrEqualCompiler(this), kLEQ);
 
             Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);
+            Register(new MethodCallSelector(this), kDOT);
         }
 
         public void Register(CompilerComponent component, TokenType type)
