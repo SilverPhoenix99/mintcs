@@ -80,8 +80,8 @@ namespace Mint.Binding.Compilation
             var classIdVariableExpression = Variable(typeof(long), "classId");
             var switchCases = cache.Select(_ => CreateSwitchCase(_.Value, returnTarget));
 
-            var calculatedClassPropertyExpression = Property(instanceExpression, PROPERTY_CALCULATEDCLASS);
-            var idPropertyExpression = Property(calculatedClassPropertyExpression, PROPERTY_ID);
+            var calculatedClassPropertyExpression = instanceExpression.Property(PROPERTY_CALCULATEDCLASS);
+            var idPropertyExpression = calculatedClassPropertyExpression.Property(PROPERTY_ID);
 
             return Block(
                 typeof(iObject),
@@ -105,7 +105,7 @@ namespace Mint.Binding.Compilation
 
         private static SwitchCase CreateSwitchCase(CachedMethod<Expression> method, LabelTarget returnTarget)
         {
-            var validPropertyExpression = Property(Constant(method.Binder.Condition), PROPERTY_VALID);
+            var validPropertyExpression = Constant(method.Binder.Condition).Property(PROPERTY_VALID);
             var returnExpression = Return(returnTarget, method.CachedCall, typeof(iObject));
 
             return SwitchCase(

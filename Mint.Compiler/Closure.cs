@@ -45,7 +45,7 @@ namespace Mint
 
         public bool IsDefined(Symbol name) => indexes.ContainsKey(name);
 
-        public Expression Variable(Symbol name) => Property(Constant(this), INDEXER, Constant(IndexOf(name)));
+        public Expression Variable(Symbol name) => Constant(this).Indexer(INDEXER, Constant(IndexOf(name)));
 
     }
 }

@@ -108,7 +108,7 @@ namespace Mint.Compilation
         )
         {
             var site = CallSite.Create(methodName, visibility, arguments.Select(_ => _.Kind));
-            var call = Property(Constant(site), MEMBER_CALLSITE_CALL);
+            var call = Constant(site).Property(MEMBER_CALLSITE_CALL);
             var argList = arguments.Length == 0
                         ? EMPTY_ARRAY
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));

@@ -1,4 +1,3 @@
-using Mint.Binding.Methods;
 using Mint.Binding.Parameters;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,13 +38,13 @@ namespace Mint.Binding.Arguments
             binders.Select(binder => binder.Bind(this)).ToArray();
 
         public static Expression SplatExpression(Expression argumentBundle) =>
-            Expression.Property(argumentBundle, PROPERTY_SPLAT);
+            argumentBundle.Property(PROPERTY_SPLAT);
 
         public static Expression KeysExpression(Expression argumentBundle) =>
-            Expression.Property(argumentBundle, PROPERTY_KEYS);
+            argumentBundle.Property(PROPERTY_KEYS);
 
         public static Expression BlockExpression(Expression argumentBundle) =>
-            Expression.Property(argumentBundle, PROPERTY_BLOCK);
+            argumentBundle.Property(PROPERTY_BLOCK);
 
         public static Expression UnbundleCallExpression(Expression argumentBundle, Expression parameterBinders) =>
             Expression.Call(argumentBundle, METHOD_UNBUNDLE, parameterBinders);
