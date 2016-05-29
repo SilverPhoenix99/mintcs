@@ -10,8 +10,8 @@ namespace Mint.Compilation.Components
 {
     internal class PrivateMethodCallCompiler : CompilerComponentBase
     {
-        protected string MethodName => Node[1].Value.Value;
-        protected Ast<Token> ArgumentsNode => Node[2];
+        private string MethodName => Node[1].Value.Value;
+        private Ast<Token> ArgumentsNode => Node[2];
 
         public PrivateMethodCallCompiler(Compiler compiler) : base(compiler)
         { }

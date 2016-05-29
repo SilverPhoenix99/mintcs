@@ -47,15 +47,29 @@ namespace Mint
         public static readonly Symbol METHOD_MISSING;
         public static readonly Symbol NOT_OP;
         public static readonly Symbol EQ;
+        public static readonly Symbol EQQ;
         public static readonly Symbol NEQ;
+        public static readonly Symbol CMP;
         public static readonly Symbol TO_HASH;
         public static readonly Symbol TO_ARY;
+        public static readonly Symbol PLUS;
+        public static readonly Symbol MINUS;
         public static readonly Symbol DIV;
+        public static readonly Symbol PERCENT;
         public static readonly Symbol MUL;
+        public static readonly Symbol POW;
         public static readonly Symbol GREATER;
         public static readonly Symbol GEQ;
         public static readonly Symbol LESS;
         public static readonly Symbol LEQ;
+        public static readonly Symbol LSHIFT;
+        public static readonly Symbol RSHIFT;
+        public static readonly Symbol BIN_AND;
+        public static readonly Symbol BIN_OR;
+        public static readonly Symbol NEG;
+        public static readonly Symbol XOR;
+        public static readonly Symbol UPLUS;
+        public static readonly Symbol UMINUS;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -80,15 +94,29 @@ namespace Mint
             METHOD_MISSING = new Symbol("method_missing");
             NOT_OP = new Symbol("!");
             EQ = new Symbol("==");
+            EQQ = new Symbol("===");
             NEQ = new Symbol("!=");
+            CMP = new Symbol("<=>");
             TO_HASH = new Symbol("to_hash");
             TO_ARY = new Symbol("to_ary");
-            DIV = new Symbol("/");
+            PLUS = new Symbol("+");
+            MINUS = new Symbol("-");
             MUL = new Symbol("*");
+            POW = new Symbol("**");
+            DIV = new Symbol("/");
+            PERCENT = new Symbol("%");
             GREATER = new Symbol(">");
             GEQ = new Symbol(">=");
             LESS = new Symbol("<");
             LEQ = new Symbol("<=");
+            LSHIFT = new Symbol("<<");
+            RSHIFT = new Symbol(">>");
+            BIN_AND = new Symbol("&");
+            BIN_OR = new Symbol("|");
+            NEG = new Symbol("~@");
+            XOR = new Symbol("^");
+            UPLUS = new Symbol("+@");
+            UMINUS = new Symbol("-@");
         }
 
         #endregion

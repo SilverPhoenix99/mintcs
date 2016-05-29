@@ -65,7 +65,9 @@ namespace Mint.Compilation
             Register(new OrCompiler(this), kOR, kOROP);
             Register(new AndCompiler(this), kAND, kANDOP);
             Register(new EqualCompiler(this), kEQ);
+            Register(new CaseEqualsCompiler(this), kEQQ);
             Register(new NotEqualCompiler(this), kNEQ);
+            Register(new CompareCompiler(this), kCMP);
             Register(new SelfCompiler(this), kSELF);
             Register(new IdentifierCompiler(this), tIDENTIFIER);
             Register(new LabelCompiler(this), tLABEL);
@@ -75,12 +77,24 @@ namespace Mint.Compilation
             Register(new HashCompiler(this), kLBRACE);
             Register(new SplatCompiler(this), kSTAR);
             Register(new KeySplatCompiler(this), kDSTAR);
-            Register(new DivisionCompiler(this), kDIV);
+            Register(new AdditionCompiler(this), kPLUS);
+            Register(new SubtractionCompiler(this), kMINUS);
             Register(new MultiplationCompiler(this), kMUL);
+            Register(new PowerCompiler(this), kPOW);
+            Register(new DivisionCompiler(this), kDIV);
+            Register(new ModulusCompiler(this), kPERCENT);
             Register(new GreaterThanCompiler(this), kGREATER);
             Register(new GreaterOrEqualCompiler(this), kGEQ);
             Register(new LessThanCompiler(this), kLESS);
             Register(new LessOrEqualCompiler(this), kLEQ);
+            Register(new LeftShiftCompiler(this), kLSHIFT);
+            Register(new RightShiftCompiler(this), kRSHIFT);
+            Register(new BinaryAndCompiler(this), kBIN_AND);
+            Register(new BinaryOrCompiler(this), kPIPE);
+            Register(new NegationCompiler(this), kNEG);
+            Register(new XorCompiler(this), kXOR);
+            Register(new UnaryPlusCompiler(this), kUPLUS);
+            Register(new UnaryMinusCompiler(this), kUMINUS);
 
             Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);
