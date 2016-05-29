@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentKindTests.cs" />
+    <Compile Include="ArrayTests.cs" />
     <Compile Include="BignumTests.cs" />
     <Compile Include="CallSiteTests.cs" />
     <Compile Include="CompilationTests.cs" />
@@ -47,11 +48,13 @@
     <Compile Include="FalseClassTests.cs" />
     <Compile Include="FixnumTests.cs" />
     <Compile Include="FloatTests.cs" />
+    <Compile Include="HashTests.cs" />
     <Compile Include="NilClassTests.cs" />
     <Compile Include="OptionalParameterTests.cs" />
     <Compile Include="ParameterKindTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectorTests.cs" />
+    <Compile Include="RangeTests.cs" />    <Compile Include="ReflectorTests.cs" />
+    <Compile Include="SymbolTests.cs" />
     <Compile Include="TrueClassTests.cs" />
   </ItemGroup>
   <ItemGroup>

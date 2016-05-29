@@ -40,6 +40,7 @@ namespace Mint
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
+                .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .DefMethod("==", () => default(iObject).Equals(default(object)) )
@@ -131,6 +132,19 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrAccessor("[]", _ => _[default(int)])
+                .DefMethod("clear", _ => _.Clear())
+                .DefMethod("join", _ => _.Join(default(string)))
+                .DefMethod("replace", _ => _.Replace(default(Array)))
+                .DefMethod("compact", _ => _.Compact())
+                .DefMethod("compact!", _ => _.CompactSelf())
+                .DefMethod("reverse", _ => _.Reverse())
+                .DefMethod("reverse!", _ => _.ReverseSelf())
+                .DefMethod("first", _ => _.First())
+                .DefMethod("last", _ => _.Last())
+                .DefMethod("uniq", _ => _.Uniq())
+                .DefMethod("uniq!", _ => _.UniqSelf())
+                .DefMethod("<<", _ => _.Add(default(iObject)))
+            // .DefMethod("+", () => default(Array) + default(Array))
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
