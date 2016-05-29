@@ -10,8 +10,8 @@ namespace Mint.Compilation
 {
     public static class CompilerUtils
     {
-        internal static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
-        internal static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
+        private static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
+        private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
         private static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(string));
         internal static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
         internal static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
@@ -37,7 +37,7 @@ namespace Mint.Compilation
 
             if(expr.Type != typeof(iObject))
             {
-                expr = Convert(expr, typeof(iObject));
+                expr = expr.Cast<iObject>();
             }
 
             if(expr is ParameterExpression)
@@ -76,7 +76,7 @@ namespace Mint.Compilation
                 return New(STRING_CTOR1);
             }
 
-            argument = StripConversions(argument);
+            argument = argument.StripConversions();
 
             if(argument.Type == typeof(String))
             {
@@ -85,44 +85,48 @@ namespace Mint.Compilation
 
             if(argument.Type != typeof(string))
             {
-                argument = Convert(argument, typeof(object));
-                argument = Call(argument, METHOD_OBJECT_TOSTRING, null);
+                argument = argument.Cast<object>();
+                argument = Expression.Call(argument, METHOD_OBJECT_TOSTRING, null);
             }
 
             return New(STRING_CTOR3, argument);
         }
-
-        public static Expression StripConversions(Expression expression)
-        {
-            while(expression.NodeType == ExpressionType.Convert)
-            {
-                expression = ((UnaryExpression) expression).Operand;
-            }
-
-            return expression;
-        }
-
+        
         public static Expression NewArray(params Expression[] values)
         {
             var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
             return values.Length == 0
-                ? (Expression) array
-                : Convert(ListInit(array, values), typeof(iObject));
+                ? array
+                : ListInit(array, values).Cast<iObject>();
         }
 
-        public static Expression Invoke(
-            Visibility visibility,
+        public static Expression NewHash() => New(HASH_CTOR).Cast<iObject>();
+
+        public static Expression Call(
             Expression instance,
             Symbol methodName,
+            Visibility visibility,
             params InvocationArgument[] arguments
         )
         {
             var site = CallSite.Create(methodName, visibility, arguments.Select(_ => _.Kind));
-            var call = Property(Constant(site), MEMBER_CALLSITE_CALL);
+            var call = Constant(site).Property(MEMBER_CALLSITE_CALL);
             var argList = arguments.Length == 0
                         ? EMPTY_ARRAY
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
-            return Expression.Invoke(call, instance, argList);
+            return Invoke(call, instance, argList);
         }
+
+        public static Expression StringConcat(Expression first, IEnumerable<Expression> contents)
+        {
+            contents = contents.Select(ExpressionExtensions.StripConversions);
+            contents = new[] { first }.Concat(contents);
+            first = contents.Aggregate(StringConcat);
+
+            return first.Cast<iObject>();
+        }
+
+        private static Expression StringConcat(Expression left, Expression right) =>
+            Expression.Call(left, METHOD_STRING_CONCAT, right);
     }
 }

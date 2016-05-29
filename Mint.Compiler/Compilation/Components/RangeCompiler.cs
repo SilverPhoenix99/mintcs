@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Mint.Parse;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
@@ -12,9 +13,9 @@ namespace Mint.Compilation.Components
         {
             var left = Pop();
             var right = Pop();
-            var exclude = Expression.Constant(Node.Value.Type == TokenType.kDOT3);
-            var range = Expression.New(CompilerUtils.RANGE_CTOR, left, right, exclude);
-            return Expression.Convert(range, typeof(iObject));
+            var exclude = Constant(Node.Value.Type == TokenType.kDOT3);
+            var range = New(CompilerUtils.RANGE_CTOR, left, right, exclude);
+            return range.Cast<iObject>();
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Mint.Binding.Methods
 {
     public abstract class BaseMethodBinder : MethodBinder
     {
+        private static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
+
         private static readonly MethodInfo OBJECT_BOX_METHOD = Reflector.Method(
             () => Object.Box(default(object))
         );
@@ -60,12 +62,17 @@ namespace Mint.Binding.Methods
 
         protected internal static Expression Box(Expression expression)
         {
-            if(!typeof(iObject).IsAssignableFrom(expression.Type))
+            if(expression.Type == typeof(void))
             {
-                return Call(OBJECT_BOX_METHOD, Convert(expression, typeof(object)));
+                return Block(expression, NIL);
             }
 
-            return expression.Type == typeof(iObject) ? expression : Convert(expression, typeof(iObject));
+            if(!typeof(iObject).IsAssignableFrom(expression.Type))
+            {
+                return Call(OBJECT_BOX_METHOD, expression.Cast<object>());
+            }
+
+            return expression.Type == typeof(iObject) ? expression : expression.Cast<iObject>();
         }
 
         protected internal static Expression TypeIs(Expression expression, Type type)
@@ -84,10 +91,10 @@ namespace Mint.Binding.Methods
             Type convertedType;
             if(TYPES.TryGetValue(type, out convertedType))
             {
-                expression = Convert(expression, convertedType);
+                expression = expression.Cast(convertedType);
             }
 
-            return Convert(expression, type);
+            return expression.Cast(type);
         }
     }
 }

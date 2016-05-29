@@ -10,17 +10,17 @@ namespace Mint.UnitTests
     [TestFixture]
     public class CompilationTests
     {
-        private static Compiler CreateCompiler(string name, string fragment)
+        private static Compiler CreateCompiler(string name, string fragment, Closure binding = null)
         {
             name = $"(CompilationTests.{name})";
-            var binding = new Closure(new Object());
+            binding = binding ?? new Closure(new Object());
             var ast = Parser.Parse(name, fragment);
             return new Compiler(name, binding, ast);
         }
 
-        private static iObject Eval(string code, [CallerMemberName] string name = "(eval)")
+        private static iObject Eval(string code, Closure binding = null, [CallerMemberName] string name = "(eval)")
         {
-            var compiler = CreateCompiler(name, code);
+            var compiler = CreateCompiler(name, code, binding);
             var body = compiler.Compile();
             var lambda = Expression.Lambda<Func<iObject>>(body);
             var function = lambda.Compile();
@@ -236,6 +236,18 @@ namespace Mint.UnitTests
         public void TestIdentifierAndAssign()
         {
             Assert.That(Eval("a = 1; a"), Is.EqualTo(new Fixnum(1)));
+        }
+
+        [Test]
+        public void TestIndexer()
+        {
+            var binding = new Closure(new Object());
+            Eval("a = []", binding);
+            var array = binding[new Symbol("a")] as Array;
+
+            Assert.That(array, Is.Not.Null);
+            Assert.That(Eval("a[0] = 1", binding), Is.EqualTo(array[0]));
+            Assert.That(Eval("a[0]", binding), Is.EqualTo(array[0]));
         }
     }
 }

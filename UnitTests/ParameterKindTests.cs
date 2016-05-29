@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Mint.Reflection;
 using Mint.Reflection.Parameters;
 using Mint.Reflection.Parameters.Attributes;
 using NUnit.Framework;
@@ -22,9 +23,9 @@ namespace Mint.UnitTests
         )
         { }
 
-        private static readonly MethodInfo DUMMYMETHOD_INFO = typeof(ParameterKindTests).GetMethod(
-                nameof(DummyMethod),
-                BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo DUMMYMETHOD_INFO = Reflector.Method(
+            () => DummyMethod(null, null, null, null, null, null, null, null, null, null)
+        );
 
         [Test]
         public void TestRequiredParameter()

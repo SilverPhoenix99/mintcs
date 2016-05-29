@@ -1,4 +1,3 @@
-using Mint.Parse;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,27 +13,21 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var isSimpleContent = Node.List.Count == 1 && Node[0].Value.Type == tSTRING_CONTENT;
-            if(isSimpleContent)
+            if(IsSimpleContent())
             {
                 return Pop();
             }
 
             var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
-            return Reduce(CompilerUtils.NewString(), contents);
+            return CompilerUtils.StringConcat(CompilerUtils.NewString(), contents);
         }
 
-        protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)
+        private bool IsSimpleContent()
         {
-            contents = contents.Select(CompilerUtils.StripConversions);
-            contents = new[] { first }.Concat(contents);
-            first = contents.Aggregate(StringConcat);
-
-            return Convert(first, typeof(iObject));
+            var hasSingleChild = Node.List.Count == 1;
+            var firstChild = Node[0];
+            return hasSingleChild && firstChild.Value.Type == tSTRING_CONTENT;
         }
-
-        private static Expression StringConcat(Expression left, Expression right) =>
-            Call(left, CompilerUtils.METHOD_STRING_CONCAT, right);
     }
 }

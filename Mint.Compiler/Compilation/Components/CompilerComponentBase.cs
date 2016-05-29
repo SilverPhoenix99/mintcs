@@ -1,11 +1,14 @@
 using System.Linq.Expressions;
+using Mint.Binding;
 using Mint.Parse;
+using static Mint.Binding.Visibility;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
-    internal abstract class CompilerComponentBase : CompilerComponent
+    public abstract class CompilerComponentBase : CompilerComponent
     {
-        protected Compiler Compiler { get; }
+        public Compiler Compiler { get; }
         protected Ast<Token> Node => Compiler.CurrentNode;
 
         protected CompilerComponentBase(Compiler compiler)
@@ -26,5 +29,12 @@ namespace Mint.Compilation.Components
         protected void Push(Ast<Token> node) => Compiler.Push(node);
 
         protected Expression Pop() => Compiler.Pop();
+
+        protected static Visibility GetVisibility(Ast<Token> node)
+        {
+            // TODO if protected in instance_eval, and lhs != self but same class => public
+
+            return node.Value?.Type == kSELF ? Protected : Public;
+        }
     }
 }

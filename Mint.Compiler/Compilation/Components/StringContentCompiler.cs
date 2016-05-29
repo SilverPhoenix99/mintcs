@@ -1,16 +1,17 @@
 using System.Linq.Expressions;
-using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
     internal class StringContentCompiler : CompilerComponentBase
     {
+        private string Content => Node.Value.Value;
+
         public StringContentCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Reduce() => Constant(ReduceContent(), typeof(iObject));
 
-        protected String ReduceContent() => new String(Node.Value.Value);
+        protected String ReduceContent() => new String(Content);
     }
 }

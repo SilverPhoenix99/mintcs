@@ -66,7 +66,7 @@ namespace Mint.Binding.Methods
 
             if(MethodInfo.DeclaringType != null)
             {
-                instance = Expression.Convert(instance, MethodInfo.DeclaringType);
+                instance = instance.Cast(MethodInfo.DeclaringType);
             }
 
             var parameters = MethodInfo.GetParameters();

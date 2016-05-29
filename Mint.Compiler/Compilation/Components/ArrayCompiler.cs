@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
@@ -14,7 +13,7 @@ namespace Mint.Compilation.Components
             var count = Node.List.Count;
             var elements = Enumerable.Range(0, count).Select(_ => Pop());
             var array = CompilerUtils.NewArray(elements.ToArray());
-            return Convert(array, typeof(iObject));
+            return array.Cast<iObject>();
         }
     }
 }

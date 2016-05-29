@@ -16,11 +16,11 @@ namespace Mint.Compilation.Components
 
             if(count == 0)
             {
-                return Convert(first, typeof(iObject));
+                return first.Cast<iObject>();
             }
 
-            var contents = Enumerable.Range(0, Node.List.Count).Select(_ => Pop());
-            return Reduce(first, contents);
+            var contents = Enumerable.Range(0, count).Select(_ => Pop());
+            return CompilerUtils.StringConcat(first, contents);
         }
     }
 }
