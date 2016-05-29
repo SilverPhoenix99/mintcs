@@ -1,13 +1,12 @@
-using Mint.Binding;
 using Mint.Binding.Arguments;
 using System.Linq.Expressions;
-using static Mint.Parse.TokenType;
-using static System.Linq.Expressions.Expression;
+using Mint.Parse;
 
 namespace Mint.Compilation.Components
 {
     internal abstract class BinaryOperatorCompiler : CompilerComponentBase
     {
+        private Ast<Token> LeftNode => Node[0];
         protected abstract Symbol Operator { get; }
 
         protected BinaryOperatorCompiler(Compiler compiler) : base(compiler)
@@ -17,12 +16,10 @@ namespace Mint.Compilation.Components
         {
             var left = Pop();
             var right = Pop();
-
-            // TODO if protected in instance_eval, and lhs != self but same class => public
-
-            var visibility = Node[0].Value?.Type == kSELF ? Visibility.Protected : Visibility.Public;
+            
+            var visibility = GetVisibility(LeftNode);
             var argument = new InvocationArgument(ArgumentKind.Simple, right);
-            return CompilerUtils.Invoke(visibility, left, Operator, argument);
+            return CompilerUtils.Call(left, Operator, visibility, argument);
         }
     }
 }

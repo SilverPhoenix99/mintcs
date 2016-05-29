@@ -19,7 +19,7 @@ namespace Mint.Compilation.Components
                 return first.Cast<iObject>();
             }
 
-            var contents = Enumerable.Range(0, Node.List.Count).Select(_ => Pop());
+            var contents = Enumerable.Range(0, count).Select(_ => Pop());
             return Reduce(first, contents);
         }
     }

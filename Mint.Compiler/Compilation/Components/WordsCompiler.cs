@@ -20,15 +20,14 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var list = Node.List;
-            if(list.Count == 0)
+            if(Node.List.Count == 0)
             {
                 return CompilerUtils.NewArray();
             }
 
             var words = new List<Expression>();
             var contents = new List<Expression>();
-            foreach(var child in list)
+            foreach(var child in Node.List)
             {
                 if(child.Value.Type != tSPACE)
                 {

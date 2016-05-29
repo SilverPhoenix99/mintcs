@@ -19,7 +19,11 @@ namespace Mint.Compilation.Selectors
 
         public override CompilerComponent Select() => IsIdentifierSymbol() ? SimpleSymbol : ComplexSymbol;
 
-        private bool IsIdentifierSymbol() =>
-            Compiler.CurrentNode.List.Count == 1 && Compiler.CurrentNode[0].Value.Type == tIDENTIFIER;
+        private bool IsIdentifierSymbol()
+        {
+            var hasSingleChild = Node.List.Count == 1;
+            var firstChild = Node[0];
+            return hasSingleChild && firstChild.Value.Type == tIDENTIFIER;
+        }
     }
 }

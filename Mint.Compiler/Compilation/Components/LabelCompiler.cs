@@ -5,17 +5,19 @@ namespace Mint.Compilation.Components
 {
     internal class LabelCompiler : CompilerComponentBase
     {
-        public LabelCompiler(Compiler compiler) : base(compiler)
-        { }
+        private string Label => Node.Value.Value;
 
-        public override void Shift()
+        public LabelCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Reduce()
         {
-            var label = Node.Value.Value;
-            label = label.Substring(0, label.Length - 1);
-            return Constant(new Symbol(label), typeof(iObject));
+            var left = Label;
+            left = left.Substring(0, left.Length - 1);
+
+            var label = Constant(new Symbol(left), typeof(iObject));
+            var value = Pop();
+            return CompilerUtils.NewArray(label, value);
         }
     }
 }

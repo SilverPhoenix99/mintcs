@@ -5,15 +5,20 @@ namespace Mint.Compilation.Components
 {
     internal class SimpleSymbolCompiler : CompilerComponentBase
     {
+        private string Identifier => Node[0].Value.Value;
+
         public SimpleSymbolCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override void Shift()
-        { }
-        
+        {
+            // Do not shift identifier (child),
+            // otherwise the compiler assumes it is a variable or a method call.
+        }
+
         public override Expression Reduce()
         {
-            return Constant(new Symbol(Node[0].Value.Value), typeof(iObject));
+            return Constant(new Symbol(Identifier), typeof(iObject));
         }
     }
 }

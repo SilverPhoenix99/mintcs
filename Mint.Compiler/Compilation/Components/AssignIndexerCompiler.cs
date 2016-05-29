@@ -1,6 +1,7 @@
 using Mint.Parse;
 using Mint.Binding.Arguments;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using static Mint.Parse.TokenType;
 
@@ -10,43 +11,25 @@ namespace Mint.Compilation.Components
     {
         // <left>.[*<args>] = <right>   =>   <left>.[]=(*<args>, <right>)
 
+        private Ast<Token> LeftNode => Node[0][0];
+        private Ast<Token> RightNode => Node[1];
+        private Ast<Token> ArgumentsNode => Node[0][1];
+
         public AssignIndexerCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override void Shift()
         {
-            Push(Node[0][0]);
+            Push(LeftNode);
             PushArguments();
-            Push(Node[1]);
+            Push(RightNode);
         }
 
-        public void PushArguments()
+        private void PushArguments()
         {
-            foreach(var argument in Node[0][1])
+            foreach(var argument in ArgumentsNode)
             {
-                switch(argument.Value.Type)
-                {
-                    case kAMPER: goto case kSTAR;
-                    case kDSTAR: goto case kSTAR;
-                    case kSTAR:
-                        Push(argument[0]);
-                        break;
-
-                    case tLABEL:
-                        Push(argument);
-                        Push(argument[0]);
-                        break;
-
-                    case tLABEL_END: goto case kASSOC;
-                    case kASSOC:
-                        Push(argument[0]);
-                        Push(argument[1]);
-                        break;
-
-                    default:
-                        Push(argument);
-                        break;
-                }
+                Push(argument);
             }
         }
 
@@ -56,76 +39,43 @@ namespace Mint.Compilation.Components
             var arguments = PopArguments();
             var right = Pop();
 
-            // TODO create invocation expression
-            throw new System.NotImplementedException();
+            arguments = arguments.Concat(new[] { new InvocationArgument(ArgumentKind.Simple, right) });
+
+            var visibility = GetVisibility(LeftNode);
+
+            return CompilerUtils.Call(left, Symbol.ASET, visibility, arguments.ToArray());
         }
 
         private IEnumerable<InvocationArgument> PopArguments()
         {
-            var arguments = new List<InvocationArgument>(Node[0][1].List.Count);
-
-            foreach(var argumentNode in Node[0][1])
-            {
-                var argument = PopArgument(argumentNode.Value.Type);
-                arguments.Add(argument);
-            }
-
-            return arguments;
+            return from astArgument in ArgumentsNode
+                   select AsArgumentKind(astArgument.Value.Type) into kind
+                   let argument = Pop()
+                   select new InvocationArgument(kind, argument);
         }
 
-        private InvocationArgument PopArgument(TokenType type)
+        private static ArgumentKind AsArgumentKind(TokenType type)
         {
             switch(type)
             {
-                case tLABEL: goto case kASSOC;
-                case kASSOC:
-                {
-                    var label = Pop();
-                    var value = Pop();
-                    var argument = CompilerUtils.NewArray(label, value);
-                    return new InvocationArgument(ArgumentKind.Key, argument);
-                }
-
-                case tLABEL_END:
-                {
-                    var label = Pop();
-                    var value = Pop();
-
-                    if(value is BlockExpression)
-                    {
-                        //value = CompilerUtils.StringConcat(((BlockExpression) value).Expressions);
-                        //return CompilerUtils.NewSymbol(value);
-                        // TODO String.Concat(Block.Expressions)
-                        throw new System.NotImplementedException();
-                    }
-
-                    var argument = CompilerUtils.NewArray(label, value);
-                    return new InvocationArgument(ArgumentKind.Key, argument);
-                }
-
                 case kSTAR:
-                {
-                    var argument = Pop();
-                    return new InvocationArgument(ArgumentKind.Rest, argument);
-                }
+                    return ArgumentKind.Rest;
+
+                case tLABEL: goto case kASSOC;
+                case tLABEL_END: goto case kASSOC;
+                case kASSOC:
+                    return ArgumentKind.Key;
 
                 case kDSTAR:
-                {
-                    var argument = Pop();
-                    return new InvocationArgument(ArgumentKind.KeyRest, argument);
-                }
+                    return ArgumentKind.KeyRest;
 
+                case kLBRACE2: goto case kAMPER;
+                case kDO: goto case kAMPER;
                 case kAMPER:
-                {
-                    var argument = Pop();
-                    return new InvocationArgument(ArgumentKind.Block, argument);
-                }
+                    return ArgumentKind.Block;
 
                 default:
-                {
-                    var argument = Pop();
-                    return new InvocationArgument(ArgumentKind.Simple, argument);
-                }
+                    return ArgumentKind.Simple;
             }
         }
     }

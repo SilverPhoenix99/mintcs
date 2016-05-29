@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using Mint.Compilation.Components;
+using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Selectors
@@ -19,12 +20,14 @@ namespace Mint.Compilation.Selectors
         private CompilerComponent AssignIndexer =>
             assignIndexer ?? (assignIndexer = new AssignIndexerCompiler(Compiler));
 
+        private Ast<Token> LeftNode => Node[0];
+
         public AssignSelector(Compiler compiler) : base(compiler)
         { }
 
         public override CompilerComponent Select()
         {
-            switch(Node[0].Value.Type)
+            switch(LeftNode.Value.Type)
             {
                 case tIDENTIFIER:
                     return AssignVariable;
@@ -37,7 +40,7 @@ namespace Mint.Compilation.Selectors
 
                 case kSELF:
                 {
-                    var line = Node[0].Value.Location.Item1;
+                    var line = LeftNode.Value.Location.Item1;
                     throw new SyntaxError(Compiler.Filename, line, "Can't change the value of self");
                 }
 

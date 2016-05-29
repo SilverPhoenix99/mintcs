@@ -13,8 +13,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var isSimpleContent = Node.List.Count == 1 && Node[0].Value.Type == tSTRING_CONTENT;
-            if(isSimpleContent)
+            if(IsSimpleContent())
             {
                 return Pop();
             }
@@ -22,6 +21,13 @@ namespace Mint.Compilation.Components
             var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
             return Reduce(CompilerUtils.NewString(), contents);
+        }
+
+        private bool IsSimpleContent()
+        {
+            var hasSingleChild = Node.List.Count == 1;
+            var firstChild = Node[0];
+            return hasSingleChild && firstChild.Value.Type == tSTRING_CONTENT;
         }
 
         protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)

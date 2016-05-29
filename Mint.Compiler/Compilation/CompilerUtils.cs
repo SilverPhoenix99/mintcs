@@ -10,8 +10,8 @@ namespace Mint.Compilation
 {
     public static class CompilerUtils
     {
-        internal static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
-        internal static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
+        private static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
+        private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
         private static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(string));
         internal static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
         internal static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
@@ -86,7 +86,7 @@ namespace Mint.Compilation
             if(argument.Type != typeof(string))
             {
                 argument = argument.Cast<object>();
-                argument = Call(argument, METHOD_OBJECT_TOSTRING, null);
+                argument = Expression.Call(argument, METHOD_OBJECT_TOSTRING, null);
             }
 
             return New(STRING_CTOR3, argument);
@@ -100,10 +100,10 @@ namespace Mint.Compilation
                 : ListInit(array, values).Cast<iObject>();
         }
 
-        public static Expression Invoke(
-            Visibility visibility,
+        public static Expression Call(
             Expression instance,
             Symbol methodName,
+            Visibility visibility,
             params InvocationArgument[] arguments
         )
         {
@@ -112,7 +112,7 @@ namespace Mint.Compilation
             var argList = arguments.Length == 0
                         ? EMPTY_ARRAY
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
-            return Expression.Invoke(call, instance, argList);
+            return Invoke(call, instance, argList);
         }
     }
 }
