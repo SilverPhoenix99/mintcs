@@ -14,23 +14,18 @@ namespace Mint
             list = objs == null ? new List<iObject>() : new List<iObject>(objs);
         }
 
-        public Array(int count) : this()
-        {
-            for (int i = 0; i < count; i++)
-            {
-                list.Add(new NilClass());
-            }
-        }
+        public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)
+        { }
 
         public Array(int count, iObject obj) : this()
         {
-            for (int i = 0; i < count; i++)
+            for(int i = 0; i < count; i++)
             {
                 list.Add(obj);
             }
         }
 
-        public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)
+        public Array(int count) : this(count, new NilClass())
         { }
 
         public int Count => list.Count;
@@ -143,7 +138,7 @@ namespace Mint
 
         public Array UniqSelf()
         {
-            var buffer = list.Distinct<iObject>().ToList();
+            var buffer = list.Distinct().ToList();
             list.Clear();
             list.AddRange(buffer);
             return this;
