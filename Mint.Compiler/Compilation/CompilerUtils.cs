@@ -100,6 +100,8 @@ namespace Mint.Compilation
                 : ListInit(array, values).Cast<iObject>();
         }
 
+        public static Expression NewHash() => New(HASH_CTOR).Cast<iObject>();
+
         public static Expression Call(
             Expression instance,
             Symbol methodName,
@@ -114,5 +116,17 @@ namespace Mint.Compilation
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
             return Invoke(call, instance, argList);
         }
+
+        public static Expression StringConcat(Expression first, IEnumerable<Expression> contents)
+        {
+            contents = contents.Select(ExpressionExtensions.StripConversions);
+            contents = new[] { first }.Concat(contents);
+            first = contents.Aggregate(StringConcat);
+
+            return first.Cast<iObject>();
+        }
+
+        private static Expression StringConcat(Expression left, Expression right) =>
+            Expression.Call(left, METHOD_STRING_CONCAT, right);
     }
 }

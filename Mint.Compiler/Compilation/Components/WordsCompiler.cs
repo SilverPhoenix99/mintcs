@@ -36,7 +36,7 @@ namespace Mint.Compilation.Components
                 }
 
                 var word = CompilerUtils.NewString();
-                word = Reduce(word, contents);
+                word = CompilerUtils.StringConcat(word, contents);
                 word = word.StripConversions();
                 word = Wrap(word);
                 word = word.Cast<iObject>();

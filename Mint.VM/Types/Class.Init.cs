@@ -33,28 +33,18 @@ namespace Mint
 
         static Class()
         {
-            EqOp = CallSite.Create(new Symbol("=="), Visibility.Private, ArgumentKind.Simple);
+            EqOp = CallSite.Create(Symbol.EQ, Visibility.Private, ArgumentKind.Simple);
 
             // ==       |   iObject#Equals(iObject) (by default equal?)
             // equal?   |   object::ReferenceEquals(object, object)
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
-                .AttrReader("__id__", () => ((iObject) null).Id )
+                .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
-                .DefMethod("==", () => ((iObject) null).Equals(default(object)) )
+                .DefMethod("==", () => default(iObject).Equals(default(object)) )
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
-                .DefMethod("equal?", () => ((iObject) null).Equal(default(object)) )
-
-                //.DefMethod("__send__",                   () => ??? );
-                //.DefMethod("instance_eval",              () => ??? );
-                //.DefMethod("instance_exec",              () => ??? );
-                //.DefMethod("__binding__",                () => ??? );
-                //.DefMethod("initialize",                 () => ??? );
-                //.DefMethod("method_missing",             () => ??? );
-                //.DefMethod("singleton_method_added",     () => ??? );
-                //.DefMethod("singleton_method_removed",   () => ??? );
-                //.DefMethod("singleton_method_undefined", () => ??? );
+                .DefMethod("equal?", () => default(iObject).Equal(default(object)) )
             ;
 
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
@@ -69,6 +59,7 @@ namespace Mint
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE);
 
             // required hack
+            // otherwise CLASS.effectiveClass will be null
             CLASS.effectiveClass = CLASS;
 
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
@@ -145,6 +136,10 @@ namespace Mint
             HASH = ModuleBuilder<Hash>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                .AttrReader("count", _ => _.Count)
+                .AttrAccessor("[]", _ => _[default(iObject)])
+                .DefMethod("merge", _ => _.Merge(default(Hash)))
+                .DefMethod("merge!", _ => _.MergeSelf(default(Hash)))
             ;
 
             RANGE = ModuleBuilder<Range>.DescribeClass()

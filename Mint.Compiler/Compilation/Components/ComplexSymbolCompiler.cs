@@ -19,7 +19,7 @@ namespace Mint.Compilation.Components
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
 
             var first = CompilerUtils.NewString();
-            var body = Reduce(first, contents);
+            var body = CompilerUtils.StringConcat(first, contents);
             body = ((UnaryExpression) body).Operand;
             body = body.Cast<string>();
             var symbol = New(SYMBOL_CTOR, body);

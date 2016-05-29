@@ -8,6 +8,12 @@ namespace Mint
     {
         private readonly LinkedDictionary<iObject, iObject> map;
 
+        public IEnumerable<iObject> Keys => map.Keys;
+
+        public IEnumerable<iObject> Values => map.Values;
+
+        public int Count => map.Count;
+
         public Hash() : base(Class.HASH)
         {
             map = new LinkedDictionary<iObject, iObject>();
@@ -37,10 +43,6 @@ namespace Mint
             set { map[key] = value; }
         }
 
-        public IEnumerable<iObject> Keys => map.Keys;
-
-        public IEnumerable<iObject> Values => map.Values;
-
         public Array ToArray() => new Array(map.Select(_ => new Array(_.Key, _.Value)));
 
         public IEnumerator<iObject> GetEnumerator()
@@ -59,15 +61,16 @@ namespace Mint
             return $"{{{string.Join(", ", elements)}}}";
         }
 
-        #region Static
-
-        internal static readonly Symbol TO_HASH;
-
-        static Hash()
+        public Hash MergeSelf(Hash otherHash)
         {
-            TO_HASH = new Symbol("to_hash");
+            foreach(var element in otherHash.map)
+            {
+                map.Add(element);
+            }
+
+            return this;
         }
 
-        #endregion
+        public Hash Merge(Hash otherHash) => new Hash(map).MergeSelf(otherHash);
     }
 }

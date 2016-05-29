@@ -20,7 +20,7 @@ namespace Mint.Compilation.Components
             }
 
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
-            return Reduce(first, contents);
+            return CompilerUtils.StringConcat(first, contents);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Mint.Compilation.Components
 
             var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
-            return Reduce(CompilerUtils.NewString(), contents);
+            return CompilerUtils.StringConcat(CompilerUtils.NewString(), contents);
         }
 
         private bool IsSimpleContent()
@@ -29,17 +29,5 @@ namespace Mint.Compilation.Components
             var firstChild = Node[0];
             return hasSingleChild && firstChild.Value.Type == tSTRING_CONTENT;
         }
-
-        protected static Expression Reduce(Expression first, IEnumerable<Expression> contents)
-        {
-            contents = contents.Select(ExpressionExtensions.StripConversions);
-            contents = new[] { first }.Concat(contents);
-            first = contents.Aggregate(StringConcat);
-
-            return first.Cast<iObject>();
-        }
-
-        private static Expression StringConcat(Expression left, Expression right) =>
-            Call(left, CompilerUtils.METHOD_STRING_CONCAT, right);
     }
 }
