@@ -69,6 +69,7 @@ namespace Mint.Compilation
             Register(new SelfCompiler(this), kSELF);
             Register(new IdentifierCompiler(this), tIDENTIFIER);
             Register(new LabelCompiler(this), tLABEL);
+            Register(new IndexerCompiler(this), kLBRACK2);
 
             Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);

@@ -22,6 +22,22 @@ namespace Mint.UnitTests
         }
 
         [Test]
+        public void TestPropertyGetter()
+        {
+            var member = Reflector.Getter(() => default(BaseObject).Frozen);
+            var property = typeof(BaseObject).GetProperty(nameof(BaseObject.Frozen));
+            Assert.That(member, Is.EqualTo(property.GetMethod));
+        }
+
+        [Test]
+        public void TestPropertySetter()
+        {
+            var member = Reflector.Setter(() => default(BaseObject).Frozen);
+            var property = typeof(BaseObject).GetProperty(nameof(BaseObject.Frozen));
+            Assert.That(member, Is.EqualTo(property.SetMethod));
+        }
+
+        [Test]
         public void TestConvert()
         {
             var member = Reflector.Convert(() => (long) default(Fixnum));
@@ -46,7 +62,7 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestGetter()
+        public void TestIndexerGetter()
         {
             var member = Reflector.Getter(() => default(Hash)[default(iObject)]);
             Assert.That(member, Is.Not.Null);
@@ -54,7 +70,7 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestSetter()
+        public void TestIndexerSetter()
         {
             var member = Reflector.Setter(() => default(Hash)[default(iObject)]);
             Assert.That(member, Is.Not.Null);

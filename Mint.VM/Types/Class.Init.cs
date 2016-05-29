@@ -1,6 +1,5 @@
 using Mint.Binding;
 using Mint.Binding.Arguments;
-using Mint.Reflection.Parameters;
 using System;
 
 namespace Mint
@@ -34,16 +33,18 @@ namespace Mint
 
         static Class()
         {
+            EqOp = CallSite.Create(new Symbol("=="), Visibility.Private, ArgumentKind.Simple);
+
             // ==       |   iObject#Equals(iObject) (by default equal?)
             // equal?   |   object::ReferenceEquals(object, object)
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .AttrReader("__id__", () => ((iObject) null).Id )
-                .DefLambda( "!",      (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
-                .DefMethod( "==",     () => ((iObject) null).Equals(default(object)) )
-                .DefLambda( "!=",     (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
-                .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
+                .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
+                .DefMethod("==", () => ((iObject) null).Equals(default(object)) )
+                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
+                .DefMethod("equal?", () => ((iObject) null).Equal(default(object)) )
 
                 //.DefMethod("__send__",                   () => ??? );
                 //.DefMethod("instance_eval",              () => ??? );
@@ -61,7 +62,7 @@ namespace Mint
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT);
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
-                .DefMethod("to_s",    _ => _.ToString())
+                .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
 
@@ -72,14 +73,14 @@ namespace Mint
 
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
-                .DefMethod("to_s", () => ((FrozenObject) null).ToString() )
-                .DefMethod("inspect", () => ((FrozenObject) null).Inspect() )
+                .DefMethod("to_s", () => default(FrozenObject).ToString() )
+                .DefMethod("inspect", () => default(FrozenObject).Inspect() )
                 .DefLambda("nil?", (Func<iObject, iObject>) (_ => new FalseClass()) )
                 .DefLambda("frozen?", (Func<iObject, bool>) (_ => _.Frozen) )
                 .DefLambda("freeze", (Func<iObject, iObject>) (_ => { _.Freeze(); return new NilClass(); }) )
                 .DefLambda("hash", (Func<iObject, long>) (_ => _.GetHashCode()) )
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
-                .AttrReader("object_id", () => ((iObject) null).Id )
+                .AttrReader("object_id", () => default(iObject).Id )
             ;
 
             OBJECT.Include(KERNEL);
@@ -119,10 +120,10 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefLambda("nil?", (Func<iObject, iObject>) (_ => new TrueClass()) )
-                .DefLambda("to_a", (Func<iObject, Array>)   (_ => new Array()) )
-                .DefLambda("to_f", (Func<iObject, Float>)   (_ => new Float(0.0)) )
-                .DefLambda("to_i", (Func<iObject, Fixnum>)  (_ => new Fixnum()) )
-                .DefLambda("to_h", (Func<iObject, Hash>)    (_ => new Hash()) )
+                .DefLambda("to_a", (Func<iObject, Array>) (_ => new Array()) )
+                .DefLambda("to_f", (Func<iObject, Float>) (_ => new Float(0.0)) )
+                .DefLambda("to_i", (Func<iObject, Fixnum>) (_ => new Fixnum()) )
+                .DefLambda("to_h", (Func<iObject, Hash>) (_ => new Hash()) )
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()
@@ -138,6 +139,7 @@ namespace Mint
             ARRAY = ModuleBuilder<Array>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                .AttrAccessor("[]", _ => _[default(int)])
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
@@ -182,8 +184,6 @@ namespace Mint
             Object.DefineModule(STRING);
             Object.DefineModule(SYMBOL);
             Object.DefineModule(TRUE);
-
-            EqOp = CallSite.Create(new Symbol("=="), Visibility.Private, ArgumentKind.Simple);
         }
     }
 }

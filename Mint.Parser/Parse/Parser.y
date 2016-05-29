@@ -999,7 +999,7 @@ method_call :
   | primary kCOLON2 paren_args                { $$ = $2 + $1 + sexp() + $3; }
   | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
-  | primary kLBRACK2 opt_call_args rbracket   { $$ = CallNode() + $1 + $2 + $3; }
+  | primary kLBRACK2 opt_call_args rbracket   { $$ = $2 + $1 + $3; }
 ;
 
 brace_block :

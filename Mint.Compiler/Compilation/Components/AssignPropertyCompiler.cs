@@ -26,20 +26,18 @@ namespace Mint.Compilation.Components
         {
             var left = Pop();
             var right = Pop();
-            var name = new Symbol($"{PropertyName}=");
             var result = Variable(typeof(iObject), "result");
 
-            var assignResult = Assign(result, right);
-
-            var argument = new InvocationArgument(ArgumentKind.Simple, result);
-
+            var name = new Symbol($"{PropertyName}=");
             var visibility = GetVisibility(LeftNode);
-            var invokeSetter = CompilerUtils.Call(left, name, visibility, argument);
+            var argument = new InvocationArgument(ArgumentKind.Simple, result);
+            var callSetter = CompilerUtils.Call(left, name, visibility, argument);
 
             return Block(
-                typeof(iObject), new[] { result },
-                assignResult,
-                invokeSetter,
+                typeof(iObject),
+                new[] { result },
+                Assign(result, right),
+                callSetter,
                 result
             );
         }

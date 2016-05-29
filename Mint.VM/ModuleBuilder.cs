@@ -79,35 +79,28 @@ namespace Mint
         }
 
         #endregion
-
-        #region DefOperator
-
-        public ModuleBuilder<T> DefOperator<TResult>(string name, Expression<Func<TResult>> lambda) =>
-            DefOperator(name, (LambdaExpression) lambda);
-
-        public ModuleBuilder<T> DefOperator<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
-            DefOperator(name, (LambdaExpression) lambda);
-
-        public ModuleBuilder<T> DefOperator(string name, LambdaExpression lambda) =>
-            DefMethod(name, Reflector.Operator(lambda));
-
-        #endregion
-
+        
         #region DefLambda
 
-        public ModuleBuilder<T> DefLambda(Symbol name, Delegate lambda)
+        public ModuleBuilder<T> DefLambda(string name, Delegate lambda) => DefLambda(new Symbol(name), lambda);
+
+        private ModuleBuilder<T> DefLambda(Symbol name, Delegate lambda)
         {
             Module.DefineMethod(new DelegateMethodBinder(name, Module, lambda));
             return this;
         }
 
-        public ModuleBuilder<T> DefLambda(string name, Delegate lambda) => DefLambda(new Symbol(name), lambda);
-
         #endregion
 
         #region AttrReader
 
-        public ModuleBuilder<T> AttrReader(string name, LambdaExpression lambda)
+        public ModuleBuilder<T> AttrReader<TResult>(string name, Expression<Func<TResult>> lambda) =>
+            AttrReader(name, (LambdaExpression) lambda);
+
+        public ModuleBuilder<T> AttrReader<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
+            AttrReader(name, (LambdaExpression) lambda);
+
+        private ModuleBuilder<T> AttrReader(string name, LambdaExpression lambda)
         {
             if(name.EndsWith("=") || name.EndsWith("?") || name.EndsWith("!"))
             {
@@ -116,17 +109,17 @@ namespace Mint
             return DefMethod(name, Reflector.Getter(lambda));
         }
 
-        public ModuleBuilder<T> AttrReader<TResult>(string name, Expression<Func<TResult>> lambda) =>
-            AttrReader(name, (LambdaExpression) lambda);
-
-        public ModuleBuilder<T> AttrReader<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
-            AttrReader(name, (LambdaExpression) lambda);
-
         #endregion
 
         #region AttrWriter
 
-        public ModuleBuilder<T> AttrWriter(string name, LambdaExpression lambda)
+        public ModuleBuilder<T> AttrWriter<TResult>(string name, Expression<Func<TResult>> lambda) =>
+            AttrWriter(name, (LambdaExpression) lambda);
+
+        public ModuleBuilder<T> AttrWriter<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
+            AttrWriter(name, (LambdaExpression) lambda);
+
+        private ModuleBuilder<T> AttrWriter(string name, LambdaExpression lambda)
         {
             if(name.EndsWith("=") || name.EndsWith("?") || name.EndsWith("!"))
             {
@@ -135,27 +128,21 @@ namespace Mint
             return DefMethod(name + "=", Reflector.Setter(lambda));
         }
 
-        public ModuleBuilder<T> AttrWriter<TResult>(string name, Expression<Func<TResult>> lambda) =>
-            AttrWriter(name, (LambdaExpression) lambda);
-
-        public ModuleBuilder<T> AttrWriter<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
-            AttrWriter(name, (LambdaExpression) lambda);
-
         #endregion
 
         #region AttrAccessor
-
-        public ModuleBuilder<T> AttrAccessor(string name, LambdaExpression lambda)
-        {
-            AttrReader(name, lambda);
-            return AttrWriter(name, lambda);
-        }
 
         public ModuleBuilder<T> AttrAccessor<TResult>(string name, Expression<Func<T, TResult>> lambda) =>
             AttrAccessor(name, (LambdaExpression) lambda);
 
         public ModuleBuilder<T> AttrAccessor<TResult>(string name, Expression<Func<TResult>> lambda) =>
             AttrAccessor(name, (LambdaExpression) lambda);
+
+        private ModuleBuilder<T> AttrAccessor(string name, LambdaExpression lambda)
+        {
+            AttrReader(name, lambda);
+            return AttrWriter(name, lambda);
+        }
 
         #endregion
 
