@@ -73,7 +73,8 @@ namespace Mint.Compilation
             Register(new LabelEndCompiler(this), tLABEL_END);
             Register(new IndexerCompiler(this), kLBRACK2);
             Register(new HashCompiler(this), kLBRACE);
-            Register(new SplatCompiler(this), kSTAR, kDSTAR);
+            Register(new SplatCompiler(this), kSTAR);
+            Register(new KeySplatCompiler(this), kDSTAR);
 
             Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);

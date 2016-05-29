@@ -49,6 +49,7 @@ namespace Mint
         public static readonly Symbol EQ;
         public static readonly Symbol NEQ;
         public static readonly Symbol TO_HASH;
+        public static readonly Symbol TO_ARY;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
 
@@ -75,6 +76,7 @@ namespace Mint
             EQ = new Symbol("==");
             NEQ = new Symbol("!=");
             TO_HASH = new Symbol("to_hash");
+            TO_ARY = new Symbol("to_ary");
         }
 
         #endregion

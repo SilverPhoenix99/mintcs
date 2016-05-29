@@ -60,10 +60,12 @@
     <Compile Include="Compilation\Components\IfCompiler.cs" />
     <Compile Include="Compilation\Components\IndexerCompiler.cs" />
     <Compile Include="Compilation\Components\IntegerCompiler.cs" />
+    <Compile Include="Compilation\Components\KeySplatCompiler.cs" />
     <Compile Include="Compilation\Components\LabelCompiler.cs" />
     <Compile Include="Compilation\Components\LabelEndCompiler.cs" />
     <Compile Include="Compilation\Components\LineNumberCompiler.cs" />
     <Compile Include="Compilation\Components\ListCompiler.cs" />
+    <Compile Include="Compilation\Components\MethodCallCompiler.cs" />
     <Compile Include="Compilation\Components\NotCompiler.cs" />
     <Compile Include="Compilation\Components\NotEqualCompiler.cs" />
     <Compile Include="Compilation\Components\NotOperatorCompiler.cs" />
