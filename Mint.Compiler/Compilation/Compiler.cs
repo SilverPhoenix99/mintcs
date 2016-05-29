@@ -98,7 +98,7 @@ namespace Mint.Compilation
 
             Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);
-            Register(new MethodCallSelector(this), kDOT);
+            Register(new MethodCallSelector(this), kDOT, kANDDOT);
         }
 
         public void Register(CompilerComponent component, TokenType type)

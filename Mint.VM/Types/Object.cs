@@ -1,15 +1,12 @@
 ﻿using Mint.Binding;
 using Mint.Binding.Arguments;
 using Mint.Binding.Compilation;
-using Mint.Reflection.Parameters;
 using System.Linq;
 
 namespace Mint
 {
     public class Object : BaseObject
     {
-        #region Static
-
         public static iObject Box(string obj) => new String(obj);
         public static iObject Box(short obj)  => new Fixnum(obj);
         public static iObject Box(int obj)    => new Fixnum(obj);
@@ -69,7 +66,5 @@ namespace Mint
 
             throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
         }
-
-        #endregion
     }
 }

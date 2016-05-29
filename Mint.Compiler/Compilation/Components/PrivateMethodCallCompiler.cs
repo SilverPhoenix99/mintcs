@@ -10,7 +10,7 @@ namespace Mint.Compilation.Components
 {
     internal class PrivateMethodCallCompiler : CompilerComponentBase
     {
-        private string MethodName => Node[1].Value.Value;
+        protected string MethodName => Node[1].Value.Value;
         private Ast<Token> ArgumentsNode => Node[2];
 
         public PrivateMethodCallCompiler(Compiler compiler) : base(compiler)
@@ -49,7 +49,7 @@ namespace Mint.Compilation.Components
 
         protected virtual Visibility GetVisibility() => Visibility.Private;
 
-        private InvocationArgument[] PopArguments()
+        protected InvocationArgument[] PopArguments()
         {
             var count = ArgumentsNode.List.Count;
             var arguments = Enumerable.Range(0, count).Select(_ => Pop());

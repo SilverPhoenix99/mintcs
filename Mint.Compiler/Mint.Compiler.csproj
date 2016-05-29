@@ -88,6 +88,7 @@
     <Compile Include="Compilation\Components\PublicMethodCallCompiler.cs" />
     <Compile Include="Compilation\Components\RangeCompiler.cs" />
     <Compile Include="Compilation\Components\RightShiftCompiler.cs" />
+    <Compile Include="Compilation\Components\SafeMethodCallCompiler.cs" />
     <Compile Include="Compilation\Components\SelfCompiler.cs" />
     <Compile Include="Compilation\Components\SimpleSymbolCompiler.cs" />
     <Compile Include="Compilation\Components\SplatCompiler.cs" />
