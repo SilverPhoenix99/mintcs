@@ -82,6 +82,10 @@
     <Compile Include="Compilation\Components\NotCompiler.cs" />
     <Compile Include="Compilation\Components\NotEqualCompiler.cs" />
     <Compile Include="Compilation\Components\NotOperatorCompiler.cs" />
+    <Compile Include="Compilation\Components\OpAssignCompiler.cs" />
+    <Compile Include="Compilation\Components\OpAssignIndexerCompiler.cs" />
+    <Compile Include="Compilation\Components\OpAssignPropertyCompiler.cs" />
+    <Compile Include="Compilation\Components\OpAssignVariableCompiler.cs" />
     <Compile Include="Compilation\Components\OrCompiler.cs" />
     <Compile Include="Compilation\Components\PowerCompiler.cs" />
     <Compile Include="Compilation\Components\PrivateMethodCallCompiler.cs" />
@@ -102,6 +106,10 @@
     <Compile Include="Compilation\Components\UnaryPlusCompiler.cs" />
     <Compile Include="Compilation\Components\WordsCompiler.cs" />
     <Compile Include="Compilation\Components\XorCompiler.cs" />
+    <Compile Include="Compilation\Components\Operators\AndAssignOperator.cs" />
+    <Compile Include="Compilation\Components\Operators\GenericOpAssignOperator.cs" />
+    <Compile Include="Compilation\Components\Operators\OpAssignOperator.cs" />
+    <Compile Include="Compilation\Components\Operators\OrAssignOperator.cs" />
     <Compile Include="Compilation\IncompleteCompilationError.cs" />
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scope.cs" />
