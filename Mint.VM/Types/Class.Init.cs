@@ -132,6 +132,8 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrAccessor("[]", _ => _[default(int)])
+                .Alias("at", "[]")
+                .Alias("slice", "[]")
                 .DefMethod("clear", _ => _.Clear())
                 .DefMethod("join", _ => _.Join(default(string)))
                 .DefMethod("replace", _ => _.Replace(default(Array)))
@@ -144,6 +146,13 @@ namespace Mint
                 .DefMethod("uniq", _ => _.Uniq())
                 .DefMethod("uniq!", _ => _.UniqSelf())
                 .DefMethod("<<", _ => _.Add(default(iObject)))
+                .DefLambda("empty?", (Func<Array, bool>)(_ => _.IsEmpty))
+                .DefMethod("delete", _ => _.Delete(default(iObject)))
+                .DefMethod("delete_at", _ => _.DeleteAt(default(int)))
+                .DefMethod("drop", _ => _.Drop(default(int)))
+                .Alias("take", "drop")
+                .DefMethod("==", _ => _.Equals(default(object)))
+
             // .DefMethod("+", () => default(Array) + default(Array))
             ;
 

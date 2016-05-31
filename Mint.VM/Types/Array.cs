@@ -9,6 +9,9 @@ namespace Mint
     {
         private readonly List<iObject> list;
 
+        // TODO count(iObject); count &block
+        public int Count => list.Count;
+
         public Array(IEnumerable<iObject> objs = null) : base(Class.ARRAY)
         {
             list = objs == null ? new List<iObject>() : new List<iObject>(objs);
@@ -27,8 +30,6 @@ namespace Mint
 
         public Array(int count) : this(count, new NilClass())
         { }
-
-        public int Count => list.Count;
 
         public iObject this[int index]
         {
@@ -58,6 +59,50 @@ namespace Mint
             }
         }
 
+        public iObject this[int index, int count]
+        {
+            get
+            {
+                if(count < 1 || index > Count)
+                {
+                    return null;
+                }
+                if(index == Count)
+                {
+                    return new Array();
+                }
+
+                if(index < 0)
+                {
+                    index += list.Count;
+                }
+
+                if(index + count > Count)
+                {
+                    count = Count - index;
+                }
+                return new Array(list.GetRange(index, count));
+            }
+            set
+            {
+                // TODO setter
+                throw new System.NotImplementedException();
+            }
+        }
+
+        // TODO
+        public iObject this[Range range]
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
         public iObject Push(params iObject[] elements)
         {
             list.AddRange(elements);
@@ -76,22 +121,34 @@ namespace Mint
 
         public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
 
+        public iObject First() => this[0];
+
+        public Array First(int count)
+        {
+            if(count > Count)
+            {
+                count = Count;
+            }
+            return new Array(list.GetRange(0, count));
+        }
+
+        public iObject Last() => this[-1];
+
+        public Array Last(int count)
+        {
+            if (count > Count)
+            {
+                count = Count;
+            }
+            return new Array(list.GetRange(Count - count, count));
+        }
+
         public Array AndAlso(Array other)
         {
             var result = new Array(list);
             result.list.RemoveAll(item => !other.list.Contains(item));
             result.UniqSelf();
             return result;
-        }
-
-        public iObject First()
-        {
-            return this[0];
-        }
-
-        public iObject Last()
-        {
-            return this[-1];
         }
 
         public Array Clear()
@@ -102,11 +159,67 @@ namespace Mint
 
         public Array CompactSelf()
         {
-            list.RemoveAll(item => item == null || item.IsA(Class.NIL));
-            return this;
+            var count = list.Count;
+            list.RemoveAll(item => NilClass.IsNil(item));
+
+            return list.Count == count ? null : this;
         }
 
-        public Array Compact() => new Array(list).CompactSelf();
+        public Array Compact()
+        {
+            var array = new Array(list);
+            array.CompactSelf();
+            return array;
+        }
+
+        // TODO &block
+        public iObject Delete(iObject obj)
+        {
+            iObject result = null;
+            while(list.Contains(obj))
+            {
+                result = list.Find(item => item.Equals(obj));
+                list.Remove(obj);
+            }
+            return result;
+        }
+
+        public iObject DeleteAt(int index)
+        {
+            if (index >= Count || index < -Count)
+            {
+                return null;
+            }
+            var result = this[index];
+            if(index < 0)
+            {
+                index += list.Count;
+            }
+            list.RemoveAt(index);
+            return result;
+        }
+
+        public Array Drop(int count)
+        {
+            if(count < 0)
+            {
+                throw new ArgumentError();
+            }
+            var result = new Array(list);
+            result.list.RemoveRange(0, count);
+            return result;
+        }
+
+        public bool Equals(Array other)
+        {
+            return other != null
+                && list.Count == other.list.Count
+                && list.Zip(other.list, (left, right) => left?.Equals(right) ?? false).All(_ => _);
+        }
+
+        public override bool Equals(object other) => Equals(other as Array);
+
+        public bool IsEmpty => Count == 0 && !list.Any();
 
         public string Join([Optional] string str = "")
         {
