@@ -15,7 +15,7 @@ namespace Mint.Compilation.Components
 
             if(count == 0)
             {
-                return Compiler.NIL;
+                return CompilerUtils.NIL;
             }
 
             if(count == 1)

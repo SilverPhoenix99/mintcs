@@ -12,9 +12,9 @@ namespace Mint.Compilation.Components
         {
             switch(Node.Value.Type)
             {
-                case kNIL:   return Compiler.NIL;
-                case kFALSE: return Compiler.FALSE;
-                case kTRUE:  return Compiler.TRUE;
+                case kNIL:   return CompilerUtils.NIL;
+                case kFALSE: return CompilerUtils.FALSE;
+                case kTRUE:  return CompilerUtils.TRUE;
                 default:     return null;
             }
         }

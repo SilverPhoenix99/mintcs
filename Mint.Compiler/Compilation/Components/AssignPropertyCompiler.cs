@@ -1,44 +1,58 @@
 using Mint.Binding.Arguments;
-using Mint.Parse;
+using Mint.Compilation.Components.Operators;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class AssignPropertyCompiler : CompilerComponentBase
+    internal class AssignPropertyCompiler : AssignCompiler
     {
-        // <left>.<name> = <right>   =>   <left>.<name=>(<right>)
+        private readonly ParameterExpression instance;
 
-        private Ast<Token> LeftNode => Node[0][0];
-        private Ast<Token> RightNode => Node[1];
-        private string PropertyName => Node[0][1].Value.Value;
+        public override Expression Getter => CompilerUtils.Call(instance, GetterMethodName, Visibility);
 
-        public AssignPropertyCompiler(Compiler compiler) : base(compiler)
-        { }
+        private string MethodName => LeftNode[1].Value.Value;
+
+        private Symbol GetterMethodName => new Symbol(MethodName);
+
+        private Symbol SetterMethodName => new Symbol(MethodName + "=");
+
+        public AssignPropertyCompiler(Compiler compiler, AssignOperator operatorCompiler)
+            : base(compiler, operatorCompiler)
+        {
+            instance = Variable(typeof(iObject), "instance");
+        }
 
         public override void Shift()
         {
-            Push(LeftNode);
+            Push(LeftNode[0]);
             Push(RightNode);
         }
 
         public override Expression Reduce()
         {
             var left = Pop();
-            var right = Pop();
-            var result = Variable(typeof(iObject), "result");
-
-            var name = new Symbol($"{PropertyName}=");
-            var visibility = CompilerUtils.GetVisibility(LeftNode);
-            var argument = new InvocationArgument(ArgumentKind.Simple, result);
-            var callSetter = CompilerUtils.Call(left, name, visibility, argument);
+            Right = Pop();
 
             return Block(
                 typeof(iObject),
-                new[] { result },
-                Assign(result, right),
-                callSetter,
-                result
+                new[] { instance },
+                Assign(instance, left),
+                base.Reduce()
+            );
+        }
+
+        public override Expression Setter(Expression rightHandSide)
+        {
+            var rightVar = Variable(typeof(iObject), "right");
+            var rightArgument = new InvocationArgument(ArgumentKind.Simple, rightVar);
+
+            return Block(
+                typeof(iObject),
+                new[] { rightVar },
+                Assign(rightVar, rightHandSide),
+                CompilerUtils.Call(instance, SetterMethodName, Visibility, rightArgument),
+                rightVar
             );
         }
     }

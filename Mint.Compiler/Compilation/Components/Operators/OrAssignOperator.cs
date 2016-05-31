@@ -3,9 +3,9 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components.Operators
 {
-    internal class OrAssignOperator : OpAssignOperator
+    internal class OrAssignOperator : AssignOperator
     {
-        public Expression Reduce(OpAssignCompiler component)
+        public Expression Reduce(AssignCompiler component)
         {
             var getter = Variable(typeof(iObject), "getter");
             var setter = component.Setter(component.Right);

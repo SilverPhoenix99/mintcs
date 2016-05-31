@@ -18,7 +18,7 @@ namespace Mint.Compilation.Components
             var instance = Variable(typeof(iObject), "instance");
             var checkNilInstance = Call(CompilerUtils.IS_NIL, instance.Cast<object>());
             var call = CompilerUtils.Call(instance, methodName, visibility, arguments);
-            var conditionalCall = Condition(checkNilInstance, Compiler.NIL, call, typeof(iObject));
+            var conditionalCall = Condition(checkNilInstance, CompilerUtils.NIL, call, typeof(iObject));
 
             return Block(
                 typeof(iObject),

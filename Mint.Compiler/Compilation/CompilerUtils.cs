@@ -28,6 +28,17 @@ namespace Mint.Compilation
         private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
         private static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
 
+        internal static readonly MethodInfo INSTANCE_VARIABLE_GET = Reflector<iObject>.Method(
+            _ => _.InstanceVariableGet(default(Symbol))
+        );
+
+        internal static readonly MethodInfo INSTANCE_VARIABLE_SET = Reflector<iObject>.Method(
+            _ => _.InstanceVariableSet(default(Symbol), default(iObject))
+        );
+
+        internal static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
+        internal static readonly Expression FALSE = Constant(new FalseClass(), typeof(iObject));
+        internal static readonly Expression TRUE = Constant(new TrueClass(), typeof(iObject));
         private static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
 
         public static Expression ToBool(Expression expr)

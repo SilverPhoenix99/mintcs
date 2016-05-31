@@ -1,17 +1,19 @@
-using System.Linq.Expressions;
-using Mint.Parse;
+﻿using System.Linq.Expressions;
+using Mint.Compilation.Components.Operators;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class AssignVariableCompiler : CompilerComponentBase
+    internal abstract class AssignVariableCompiler : AssignCompiler
     {
-        // <id> = <right>
+        private Expression getter;
 
-        private Ast<Token> RightNode => Node[1];
-        private string VariableName => Node[0].Value.Value;
+        protected Symbol VariableName => new Symbol(LeftNode.Value.Value);
 
-        public AssignVariableCompiler(Compiler compiler) : base(compiler)
+        public override Expression Getter => getter ?? (getter = CreateGetter());
+
+        protected AssignVariableCompiler(Compiler compiler, AssignOperator operatorCompiler)
+            : base(compiler, operatorCompiler)
         { }
 
         public override void Shift()
@@ -21,11 +23,10 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var right = Pop();
-
-            var varName = new Symbol(VariableName);
-            var local = Compiler.CurrentScope.Closure.Variable(varName);
-            return Assign(local, right);
+            Right = Pop();
+            return base.Reduce();
         }
+
+        protected abstract Expression CreateGetter();
     }
 }

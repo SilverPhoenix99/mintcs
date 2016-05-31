@@ -12,7 +12,7 @@ namespace Mint.Compilation.Components
         {
             var condition = Pop();
             condition = CompilerUtils.ToBool(condition);
-            return Condition(condition, Compiler.FALSE, Compiler.TRUE, typeof(iObject));
+            return Condition(condition, CompilerUtils.FALSE, CompilerUtils.TRUE, typeof(iObject));
         }
     }
 }

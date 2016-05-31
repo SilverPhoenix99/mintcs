@@ -2,8 +2,8 @@ using System.Linq.Expressions;
 
 namespace Mint.Compilation.Components.Operators
 {
-    internal interface OpAssignOperator
+    internal interface AssignOperator
     {
-        Expression Reduce(OpAssignCompiler component);
+        Expression Reduce(AssignCompiler component);
     }
 }

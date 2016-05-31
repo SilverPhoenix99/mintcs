@@ -10,10 +10,6 @@ namespace Mint.Compilation
 {
     public partial class Compiler
     {
-        internal static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
-        internal static readonly Expression FALSE = Constant(new FalseClass(), typeof(iObject));
-        internal static readonly Expression TRUE = Constant(new TrueClass(), typeof(iObject));
-
         private readonly Stack<ShiftState> shifting;
         private readonly Stack<ReduceState> reducing;
         private readonly Queue<Expression> outputs;
@@ -95,11 +91,11 @@ namespace Mint.Compilation
             Register(new XorCompiler(this), kXOR);
             Register(new UnaryPlusCompiler(this), kUPLUS);
             Register(new UnaryMinusCompiler(this), kUMINUS);
+            Register(new InstanceVariableCompiler(this), tIVAR);
 
-            Register(new AssignSelector(this), kASSIGN);
             Register(new SymbolSelector(this), tSYMBEG);
             Register(new MethodCallSelector(this), kDOT, kANDDOT);
-            Register(new OpAssignSelector(this), tOP_ASGN);
+            Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
         }
 
         public void Register(CompilerComponent component, TokenType type)
@@ -155,7 +151,7 @@ namespace Mint.Compilation
                 throw new IncompleteCompilationError("Compilation finished but some nodes were not reduced.");
             }
 
-            return outputs.Count == 0 ? NIL
+            return outputs.Count == 0 ? CompilerUtils.NIL
                  : outputs.Count > 1 ? Block(outputs)
                  : outputs.Dequeue();
         }

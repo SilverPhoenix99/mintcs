@@ -1,24 +1,14 @@
-﻿using System;
+﻿using Mint.Parse;
 using Mint.Compilation.Components;
-using Mint.Parse;
+using Mint.Compilation.Components.Operators;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Selectors
 {
     internal class AssignSelector : ComponentSelectorBase
     {
-        private CompilerComponent assignVariable;
-        private CompilerComponent assignProperty;
-        private CompilerComponent assignIndexer;
-
-        private CompilerComponent AssignVariable =>
-            assignVariable ?? (assignVariable = new AssignVariableCompiler(Compiler));
-
-        private CompilerComponent AssignProperty =>
-            assignProperty ?? (assignProperty = new AssignPropertyCompiler(Compiler));
-
-        private CompilerComponent AssignIndexer =>
-            assignIndexer ?? (assignIndexer = new AssignIndexerCompiler(Compiler));
+        private const string OP_OP = "||";
+        private const string AND_OP = "&&";
 
         private Ast<Token> LeftNode => Node[0];
 
@@ -27,26 +17,42 @@ namespace Mint.Compilation.Selectors
 
         public override CompilerComponent Select()
         {
+            var operatorCompiler = CreateOperator(Node.Value);
+
             switch(LeftNode.Value.Type)
             {
                 case tIDENTIFIER:
-                    return AssignVariable;
+                    return new AssignLocalVariableCompiler(Compiler, operatorCompiler);
+
+                case tIVAR:
+                    return new AssignInstanceVariableCompiler(Compiler, operatorCompiler);
 
                 case kDOT:
-                    return AssignProperty;
+                    return new AssignPropertyCompiler(Compiler, operatorCompiler);
 
                 case kLBRACK2:
-                    return AssignIndexer;
-
-                case kSELF:
-                {
-                    var line = LeftNode.Value.Location.Item1;
-                    throw new SyntaxError(Compiler.Filename, line, "Can't change the value of self");
-                }
-
-                default:
-                    throw new NotImplementedException();
+                    return new AssignIndexerCompiler(Compiler, operatorCompiler);
             }
+
+            throw new System.NotImplementedException();
+        }
+
+        private static AssignOperator CreateOperator(Token token)
+        {
+            if(token.Type == kASSIGN)
+            {
+                return new SimpleAssignOperator();
+            }
+
+            if(token.Type != tOP_ASGN)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            return token.Type == kASSIGN ? new SimpleAssignOperator()
+                 : token.Value == OP_OP ? new OrAssignOperator()
+                 : token.Value == AND_OP ? new AndAssignOperator()
+                 : (AssignOperator) new GenericOpAssignOperator();
         }
     }
 }

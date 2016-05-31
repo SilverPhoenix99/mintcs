@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace Mint.Compilation.Components.Operators
 {
-    internal class GenericOpAssignOperator : OpAssignOperator
+    internal class GenericOpAssignOperator : AssignOperator
     {
-        public Expression Reduce(OpAssignCompiler component)
+        public Expression Reduce(AssignCompiler component)
         {
             var argument = new InvocationArgument(ArgumentKind.Simple, component.Right);
             var call = CompilerUtils.Call(component.Getter, component.Operator, component.Visibility, argument);

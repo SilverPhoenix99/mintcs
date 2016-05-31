@@ -1,47 +1,98 @@
-using System.Collections.Generic;
-using Mint.Parse;
 using Mint.Binding.Arguments;
+using Mint.Compilation.Components.Operators;
+using Mint.Parse;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class AssignIndexerCompiler : IndexerCompiler
+    internal class AssignIndexerCompiler : AssignCompiler
     {
-        // <left>.[*<args>] = <right>   =>   <left>.[]=(*<args>, <right>)
+        private readonly ParameterExpression instance;
+        private ParameterExpression[] argumentVars;
+        private InvocationArgument[] invocationArguments;
 
-        protected override Ast<Token> LeftNode => Node[0][0];
-        private Ast<Token> RightNode => Node[1];
-        protected override Ast<Token> ArgumentsNode => Node[0][1];
+        private Ast<Token> ArgumentsNode => LeftNode[1];
 
-        public AssignIndexerCompiler(Compiler compiler) : base(compiler)
-        { }
+        private int ArgumentCount => ArgumentsNode.List.Count;
+
+        public override Expression Getter =>
+            CompilerUtils.Call(instance, GetterMethodName, Visibility, invocationArguments);
+
+        private Symbol GetterMethodName => Symbol.AREF;
+
+        private Symbol SetterMethodName => Symbol.ASET;
+
+        public AssignIndexerCompiler(Compiler compiler, AssignOperator operatorCompiler)
+            : base(compiler, operatorCompiler)
+        {
+            instance = Variable(typeof(iObject), "instance");
+        }
 
         public override void Shift()
         {
-            base.Shift();
+            Push(LeftNode[0]);
+            PushArguments();
             Push(RightNode);
+        }
+
+        private void PushArguments()
+        {
+            foreach(var argument in ArgumentsNode)
+            {
+                Push(argument);
+            }
         }
 
         public override Expression Reduce()
         {
             var left = Pop();
-            IEnumerable<InvocationArgument> arguments = PopArguments();
-            var right = Pop();
-            var result = Variable(typeof(iObject), "result");
+            var arguments = PopArguments();
+            Right = Pop();
 
-            arguments = arguments.Concat(new[] { new InvocationArgument(ArgumentKind.Simple, result) });
+            argumentVars = CreateArgumentVariables();
 
-            var visibility = CompilerUtils.GetVisibility(LeftNode);
-            var callIndexer = CompilerUtils.Call(left, Symbol.ASET, visibility, arguments.ToArray());
+            var argumentKinds = ArgumentsNode.Select(node => CompilerUtils.GetArgumentKind(node.Value.Type));
+
+            invocationArguments =
+                argumentKinds.Zip(argumentVars, (kind, arg) => new InvocationArgument(kind, arg)).ToArray();
+
+            var argumentVarsAssignment = ArgumentCount == 0
+                ? (Expression) Empty()
+                : Block(argumentVars.Zip(arguments, Assign));
 
             return Block(
                 typeof(iObject),
-                new[] { result },
-                Assign(result, right),
-                callIndexer,
-                result
+                new[] { instance }.Concat(argumentVars),
+                Assign(instance, left),
+                argumentVarsAssignment,
+                base.Reduce()
+            );
+        }
+
+        private Expression[] PopArguments()
+        {
+            return Enumerable.Range(0, ArgumentCount).Select(_ => Pop()).ToArray();
+        }
+
+        private ParameterExpression[] CreateArgumentVariables()
+        {
+            return Enumerable.Range(0, ArgumentCount).Select(i => Variable(typeof(iObject), "arg" + i)).ToArray();
+        }
+
+        public override Expression Setter(Expression rightHandSide)
+        {
+            var rightVar = Variable(typeof(iObject), "right");
+            var rightArgument = new InvocationArgument(ArgumentKind.Simple, rightVar);
+            var setterArguments = invocationArguments.Concat(new[]{ rightArgument }).ToArray();
+
+            return Block(
+                typeof(iObject),
+                new[] { rightVar },
+                Assign(rightVar, rightHandSide),
+                CompilerUtils.Call(instance, SetterMethodName, Visibility, setterArguments),
+                rightVar
             );
         }
     }

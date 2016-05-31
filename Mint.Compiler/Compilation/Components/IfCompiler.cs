@@ -15,7 +15,7 @@ namespace Mint.Compilation.Components
             var trueBody = Pop();
 
             var hasElse = Node.List.Count == 3;
-            var elseBody = hasElse ? Pop() : Compiler.NIL;
+            var elseBody = hasElse ? Pop() : CompilerUtils.NIL;
 
             condition = CompilerUtils.ToBool(condition);
 
