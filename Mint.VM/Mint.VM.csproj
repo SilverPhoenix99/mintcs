@@ -44,6 +44,7 @@
     <Compile Include="Binding\Arguments\KeyRestArgumentKind.cs" />
     <Compile Include="Binding\Arguments\RestArgumentKind.cs" />
     <Compile Include="Binding\Arguments\SimpleArgumentKind.cs" />
+    <Compile Include="Binding\BindingUtils.cs" />
     <Compile Include="Binding\CallInfo.cs" />
     <Compile Include="Binding\CallSite.cs" />
     <Compile Include="Binding\Compilation\BaseCallCompiler.cs" />

@@ -1,9 +1,11 @@
+using System.CodeDom.Compiler;
 using Mint.Binding.Arguments;
 using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.Binding.Methods
 {
@@ -11,7 +13,7 @@ namespace Mint.Binding.Methods
     {
         private static readonly MethodInfo METHOD_GETPARAMETERBINDERS = Reflector<MethodInformation>.Method(
             _ => _.GetParameterBinders()
-            );
+        );
 
         private MethodInformation Method { get; }
         private MethodInfo MethodInfo => Method.MethodInfo;
@@ -25,7 +27,7 @@ namespace Mint.Binding.Methods
             Method = method;
             BundleInfo = bundleInfo;
             Return = returnTarget;
-            ArgumentArray = Expression.Variable(typeof(iObject[]), "arguments");
+            ArgumentArray = Variable(typeof(iObject[]), "arguments");
             ParameterInfos = MethodInfo.GetParameters();
         }
 
@@ -36,26 +38,26 @@ namespace Mint.Binding.Methods
                 return MakeCallWithReturn();
             }
 
-            var parameterBinders = Expression.Call(METHOD_GETPARAMETERBINDERS, Expression.Constant(Method));
+            var parameterBinders = Call(METHOD_GETPARAMETERBINDERS, Constant(Method));
             var unbundleExpression = ArgumentBundle.UnbundleCallExpression(
                 BundleInfo.Arguments, parameterBinders);
 
-            var argumentsAssign = Expression.Assign(ArgumentArray, unbundleExpression);
+            var argumentsAssign = Assign(ArgumentArray, unbundleExpression);
 
             var argumentTypeCheck = MakeArgumentTypeCheck();
             var callWithReturn = MakeCallWithReturn();
-            var conditionalCall = Expression.IfThen(argumentTypeCheck, callWithReturn);
+            var conditionalCall = IfThen(argumentTypeCheck, callWithReturn);
 
-            return Expression.Block(new[] { ArgumentArray }, argumentsAssign, conditionalCall);
+            return Block(new[] { ArgumentArray }, argumentsAssign, conditionalCall);
         }
 
         private Expression MakeArgumentTypeCheck() =>
             Enumerable.Range(0, BundleInfo.CallInfo.Arity)
-            .Select(MakeArgumentTypeCheck).Aggregate(Expression.AndAlso);
+            .Select(MakeArgumentTypeCheck).Aggregate(AndAlso);
 
         private Expression MakeArgumentTypeCheck(int position)
         {
-            var argument = Expression.ArrayIndex(ArgumentArray, Expression.Constant(position));
+            var argument = ArrayIndex(ArgumentArray, Constant(position));
             var parameter = ParameterInfos[position];
             return BaseMethodBinder.TypeIs(argument, parameter.ParameterType);
         }
@@ -82,14 +84,26 @@ namespace Mint.Binding.Methods
                 arguments = parameters.Select(ConvertArgument);
             }
 
-            var callExpression = BaseMethodBinder.Box(Expression.Call(instance, MethodInfo, arguments));
-            return Expression.Return(Return, callExpression);
+            var callExpression = Box(Call(instance, MethodInfo, arguments));
+            return Return(Return, callExpression);
         }
 
         private Expression ConvertArgument(ParameterInfo parameter)
         {
-            var argument = Expression.ArrayIndex(ArgumentArray, Expression.Constant(parameter.Position));
+            var argument = ArrayIndex(ArgumentArray, Constant(parameter.Position));
             return BaseMethodBinder.TryConvert(argument, parameter.ParameterType);
+        }
+
+        private static Expression Box(Expression expression)
+        {
+            expression = BaseMethodBinder.Box(expression);
+            var result = Variable(typeof(iObject), "result");
+            return Block(
+                typeof(iObject),
+                new[] { result },
+                Assign(result, expression),
+                Condition(Equal(result, Constant(null)), BindingUtils.NIL, result)
+            );
         }
     }
 }

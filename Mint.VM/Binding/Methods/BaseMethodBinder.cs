@@ -2,7 +2,6 @@ using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
 using static System.Linq.Expressions.Expression;
 
@@ -10,12 +9,6 @@ namespace Mint.Binding.Methods
 {
     public abstract class BaseMethodBinder : MethodBinder
     {
-        private static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
-
-        private static readonly MethodInfo OBJECT_BOX_METHOD = Reflector.Method(
-            () => Object.Box(default(object))
-        );
-
         private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
         {
             { typeof(string),        typeof(String) },
@@ -64,12 +57,12 @@ namespace Mint.Binding.Methods
         {
             if(expression.Type == typeof(void))
             {
-                return Block(expression, NIL);
+                return Block(expression, BindingUtils.NIL);
             }
 
             if(!typeof(iObject).IsAssignableFrom(expression.Type))
             {
-                return Call(OBJECT_BOX_METHOD, expression.Cast<object>());
+                return Call(BindingUtils.OBJECT_BOX, expression.Cast<object>());
             }
 
             return expression.Type == typeof(iObject) ? expression : expression.Cast<iObject>();
