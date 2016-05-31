@@ -78,6 +78,7 @@
     <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeError.cs" />
     <Compile Include="TypeError.cs" />
     <Compile Include="Types\Array.cs" />
     <Compile Include="Types\BaseObject.cs" />

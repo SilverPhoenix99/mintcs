@@ -5,6 +5,18 @@ namespace Mint
 {
     public abstract class BaseObject : FrozenObject
     {
+        public const string VAR_START = @"[a-zA-Z_\u0080-\uffff]";
+        public static readonly string IDENT_CHAR = $"(?:{VAR_START}|\\d)";
+
+        public static readonly Regex IVAR = new Regex($"^@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
+        public static readonly Regex CVAR = new Regex($"^@@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
+        public static readonly Regex BACK_REF = new Regex(@"^$[&+`']", RegexOptions.Compiled);
+        public static readonly Regex NTH_REF = new Regex(@"^$[1-9]\d*", RegexOptions.Compiled);
+
+        public static readonly Regex GVAR = new Regex(
+            $"^\\$(?:-{IDENT_CHAR}|(?:{VAR_START}|0){IDENT_CHAR}*|[~*$?!@/\\;,.=:<>\"])$",
+            RegexOptions.Compiled);
+
         protected Class effectiveClass;
         protected readonly IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
 
@@ -31,28 +43,17 @@ namespace Mint
             return this;
         }
 
-        public iObject InstanceVariableGet(Symbol name)
+        public override iObject InstanceVariableGet(Symbol name)
         {
+            Object.ValidateInstanceVariableName(name.Name);
             iObject ivar;
-            return variables.TryGetValue(name, out ivar) ? ivar : new NilClass();
+            return variables.TryGetValue(name, out ivar) ? ivar : null;
         }
 
-        public iObject InstanceVariableGet(String name) => InstanceVariableGet(new Symbol(name.Value));
-
-        #region Static
-
-        public const string VAR_START = @"[a-zA-Z_\u0080-\uffff]";
-        public static readonly string IDENT_CHAR = $"(?:{VAR_START}|\\d)";
-
-        public static readonly Regex IVAR = new Regex($"^@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
-        public static readonly Regex CVAR = new Regex($"^@@{VAR_START}{IDENT_CHAR}*$", RegexOptions.Compiled);
-        public static readonly Regex BACK_REF = new Regex(@"^$[&+`']", RegexOptions.Compiled);
-        public static readonly Regex NTH_REF = new Regex(@"^$[1-9]\d*", RegexOptions.Compiled);
-
-        public static readonly Regex GVAR = new Regex(
-            $"^\\$(?:-{IDENT_CHAR}|(?:{VAR_START}|0){IDENT_CHAR}*|[~*$?!@/\\;,.=:<>\"])$",
-            RegexOptions.Compiled);
-
-        #endregion
+        public override iObject InstanceVariableSet(Symbol name, iObject obj)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            return variables[name] = obj;
+        }
     }
 }

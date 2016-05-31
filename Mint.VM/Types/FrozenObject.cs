@@ -28,5 +28,21 @@ namespace Mint
         public override bool Equals(object other) => ReferenceEquals(this, other);
 
         public override int GetHashCode() => Id.GetHashCode();
+
+        public virtual iObject InstanceVariableGet(Symbol name)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            return null;
+        }
+
+        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
+
+        public virtual iObject InstanceVariableSet(Symbol name, iObject obj)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+        }
+
+        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
     }
 }

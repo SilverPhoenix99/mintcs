@@ -23,7 +23,8 @@ namespace Mint.Compilation.Selectors
         {
             var hasSingleChild = Node.List.Count == 1;
             var firstChild = Node[0];
-            return hasSingleChild && firstChild.Value.Type == tIDENTIFIER;
+            var type = firstChild.Value.Type;
+            return hasSingleChild && (type == tIDENTIFIER || type == tIVAR || type == tCVAR || type == tGVAR);
         }
     }
 }

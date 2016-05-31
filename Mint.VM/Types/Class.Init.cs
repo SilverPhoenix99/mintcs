@@ -51,7 +51,14 @@ namespace Mint
 
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
-            OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT);
+            #pragma warning disable 1720
+            OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
+                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
+                .DefMethod("instance_variable_set", () =>
+                    default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
+                )
+            ;
+            #pragma warning restore 1720
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
