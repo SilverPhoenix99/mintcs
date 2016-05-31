@@ -148,20 +148,53 @@ namespace Mint.Compilation.Selectors
 
     internal class PropertyOpAssignCompiler : OpAssignCompiler
     {
-        public override Expression Getter { get { throw new System.NotImplementedException(); } }
+        private ParameterExpression instance;
+
+        public override Expression Getter => CompilerUtils.Call(instance, GetterMethodName, Visibility);
+
+        private string MethodName => LeftNode[1].Value.Value;
+
+        private Symbol GetterMethodName => new Symbol(MethodName);
+
+        private Symbol SetterMethodName => new Symbol(MethodName + "=");
 
         public PropertyOpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
-        { }
+        {
+            instance = Variable(typeof(iObject), "instance");
+        }
+
+        public override void Shift()
+        {
+            Push(LeftNode[0]);
+            Push(RightNode);
+        }
 
         public override Expression Reduce()
         {
-            throw new System.NotImplementedException();
+            var left = Pop();
+            Right = Pop();
+
+            return Block(
+                typeof(iObject),
+                new[] { instance },
+                Assign(instance, left),
+                base.Reduce()
+            );
         }
 
         public override Expression Setter(Expression rightHandSide)
         {
-            throw new System.NotImplementedException();
+            var rightVar = Variable(typeof(iObject), "right");
+            var rightArgument = new InvocationArgument(ArgumentKind.Simple, rightVar);
+
+            return Block(
+                typeof(iObject),
+                new[] { rightVar },
+                Assign(rightVar, rightHandSide),
+                CompilerUtils.Call(instance, SetterMethodName, Visibility, rightArgument),
+                rightVar
+            );
         }
     }
 
@@ -178,9 +211,9 @@ namespace Mint.Compilation.Selectors
         public override Expression Getter =>
             CompilerUtils.Call(instance, GetterMethodName, Visibility, invocationArguments);
 
-        protected virtual Symbol GetterMethodName => Symbol.AREF;
+        private Symbol GetterMethodName => Symbol.AREF;
 
-        protected virtual Symbol SetterMethodName => Symbol.ASET;
+        private Symbol SetterMethodName => Symbol.ASET;
 
         public IndexerOpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
