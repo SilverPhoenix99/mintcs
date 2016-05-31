@@ -9,7 +9,7 @@
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
-        public void Freeze() { }
+        public iObject Freeze() => this;
 
         public override string ToString() => "false";
 
@@ -24,7 +24,7 @@
         public bool Equal(object other) => Equals(other);
 
         public override int GetHashCode() => Id.GetHashCode();
-        
+
         public static implicit operator bool(FalseClass f) => false;
 
         public static bool operator ==(FalseClass self, object other) => self.Equals(other);

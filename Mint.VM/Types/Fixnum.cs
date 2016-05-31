@@ -24,7 +24,7 @@ namespace Mint
             Value = value;
         }
 
-        public void Freeze() { }
+        public iObject Freeze() => this;
 
         public override string ToString() => ToString(10);
 

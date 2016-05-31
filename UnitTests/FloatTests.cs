@@ -40,7 +40,7 @@ namespace Mint.UnitTests
             var value = new Float(0.0);
 
             Assert.IsTrue(value.Frozen);
-            value.Freeze();
+            Assert.That(value.Freeze(), Is.EqualTo(value));
             Assert.IsTrue(value.Frozen);
         }
 

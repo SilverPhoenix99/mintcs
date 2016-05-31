@@ -21,7 +21,7 @@ namespace Mint
         public bool   HasSingletonClass => false;
         public bool   Frozen            => true;
 
-        public void Freeze() { }
+        public iObject Freeze() => this;
 
         public override string ToString() => sym.Name;
 
@@ -32,7 +32,7 @@ namespace Mint
         public bool Equals(Symbol obj) => sym.Id == obj.sym.Id;
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
-        
+
         public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
 
         public override int GetHashCode() => sym.Id.GetHashCode();

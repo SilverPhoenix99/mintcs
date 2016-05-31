@@ -39,7 +39,7 @@ namespace Mint.UnitTests
             var fixnum = new Fixnum();
 
             Assert.IsTrue(fixnum.Frozen);
-            fixnum.Freeze();
+            Assert.That(fixnum.Freeze(), Is.EqualTo(fixnum));
             Assert.IsTrue(fixnum.Frozen);
         }
 

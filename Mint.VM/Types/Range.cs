@@ -52,5 +52,12 @@ namespace Mint
             ExcludeEnd.Equals(other?.ExcludeEnd)
             && Begin.Equals(other?.Begin)
             && End.Equals(other?.End);
+
+        public override int GetHashCode()
+        {
+            var hash = 23;
+            hash = hash * 31 + Begin.GetHashCode();
+            return hash * 31 + End.GetHashCode();
+        }
     }
 }

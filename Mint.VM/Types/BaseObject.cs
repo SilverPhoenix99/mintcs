@@ -25,7 +25,11 @@ namespace Mint
                 ? effectiveClass = new Class(EffectiveClass, isSingleton: true)
                 : EffectiveClass;
 
-        public override void Freeze() { Frozen = true; }
+        public override iObject Freeze()
+        {
+            Frozen = true;
+            return this;
+        }
 
         public iObject InstanceVariableGet(Symbol name)
         {

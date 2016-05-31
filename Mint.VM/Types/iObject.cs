@@ -17,7 +17,7 @@
 
         bool Frozen { get; }
 
-        void Freeze();
+        iObject Freeze();
 
         string Inspect();
 
