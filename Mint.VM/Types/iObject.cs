@@ -17,7 +17,7 @@
 
         bool Frozen { get; }
 
-        void Freeze();
+        iObject Freeze();
 
         string Inspect();
 
@@ -28,5 +28,11 @@
         iObject Send(iObject name, params iObject[] args);
 
         bool Equal(object other);
+
+        iObject InstanceVariableGet(Symbol name);
+        iObject InstanceVariableGet(string name);
+
+        iObject InstanceVariableSet(Symbol name, iObject obj);
+        iObject InstanceVariableSet(string name, iObject obj);
     }
 }

@@ -9,7 +9,7 @@
         public bool  HasSingletonClass => false;
         public bool  Frozen            => true;
 
-        public void Freeze() { }
+        public iObject Freeze() => this;
 
         public override string ToString() => "false";
 
@@ -24,7 +24,23 @@
         public bool Equal(object other) => Equals(other);
 
         public override int GetHashCode() => Id.GetHashCode();
-        
+
+        public iObject InstanceVariableGet(Symbol name)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            return null;
+        }
+
+        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
+
+        public iObject InstanceVariableSet(Symbol name, iObject obj)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+        }
+
+        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
+
         public static implicit operator bool(FalseClass f) => false;
 
         public static bool operator ==(FalseClass self, object other) => self.Equals(other);

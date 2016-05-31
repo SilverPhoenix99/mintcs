@@ -19,6 +19,6 @@ namespace Mint.Compilation.Components
 
         protected override Expression GetLeftExpression() => Pop();
 
-        protected override Visibility GetVisibility() => GetVisibility(LeftNode);
+        protected override Visibility GetVisibility() => CompilerUtils.GetVisibility(LeftNode);
     }
 }

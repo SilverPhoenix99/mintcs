@@ -39,18 +39,26 @@ namespace Mint
             // equal?   |   object::ReferenceEquals(object, object)
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
+            #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
-                .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
+                .DefMethod( "equal?", () => default(iObject).Equal(default(object)) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .DefMethod("==", () => default(iObject).Equals(default(object)) )
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
-                .DefMethod("equal?", () => default(iObject).Equal(default(object)) )
             ;
+            #pragma warning restore 1720
 
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
-            OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT);
+            #pragma warning disable 1720
+            OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
+                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
+                .DefMethod("instance_variable_set", () =>
+                    default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
+                )
+            ;
+            #pragma warning restore 1720
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
@@ -63,17 +71,19 @@ namespace Mint
             // otherwise CLASS.effectiveClass will be null
             CLASS.effectiveClass = CLASS;
 
+            #pragma warning disable 1720
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
                 .DefMethod("to_s", () => default(FrozenObject).ToString() )
                 .DefMethod("inspect", () => default(FrozenObject).Inspect() )
-                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new FalseClass()) )
+                .DefLambda("nil?", (Func<iObject, bool>) (_ => false) )
                 .DefLambda("frozen?", (Func<iObject, bool>) (_ => _.Frozen) )
-                .DefLambda("freeze", (Func<iObject, iObject>) (_ => { _.Freeze(); return new NilClass(); }) )
-                .DefLambda("hash", (Func<iObject, long>) (_ => _.GetHashCode()) )
+                .DefMethod("freeze", () => default(iObject).Freeze() )
+                .DefMethod("hash", () => default(iObject).GetHashCode() )
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", () => default(iObject).Id )
             ;
+            #pragma warning restore 1720
 
             OBJECT.Include(KERNEL);
             Object.DefineModule(KERNEL);
@@ -111,7 +121,7 @@ namespace Mint
             NIL = ModuleBuilder<NilClass>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
-                .DefLambda("nil?", (Func<iObject, iObject>) (_ => new TrueClass()) )
+                .DefLambda("nil?", (Func<iObject, bool>) (_ => true) )
                 .DefLambda("to_a", (Func<iObject, Array>) (_ => new Array()) )
                 .DefLambda("to_f", (Func<iObject, Float>) (_ => new Float(0.0)) )
                 .DefLambda("to_i", (Func<iObject, Fixnum>) (_ => new Fixnum()) )

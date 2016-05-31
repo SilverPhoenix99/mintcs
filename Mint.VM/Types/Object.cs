@@ -66,5 +66,15 @@ namespace Mint
 
             throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
         }
+
+        internal static void ValidateInstanceVariableName(string name)
+        {
+            if(IVAR.IsMatch(name))
+            {
+                return;
+            }
+
+            throw new NameError($"`{name}' is not allowed as an instance variable name");
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace Mint
             Value = value;
         }
 
-        public void Freeze() { }
+        public iObject Freeze() => this;
 
         public override string ToString() => ToString(10);
 
@@ -109,6 +109,22 @@ namespace Mint
             y = x >>  1; if(y != 0) { return n - 2; }
             return n - x;
         }
+
+        public iObject InstanceVariableGet(Symbol name)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            return null;
+        }
+
+        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
+
+        public iObject InstanceVariableSet(Symbol name, iObject obj)
+        {
+            Object.ValidateInstanceVariableName(name.Name);
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+        }
+
+        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
 
         public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);
 

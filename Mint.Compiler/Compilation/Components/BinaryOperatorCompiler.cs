@@ -17,7 +17,7 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var right = Pop();
             
-            var visibility = GetVisibility(LeftNode);
+            var visibility = CompilerUtils.GetVisibility(LeftNode);
             var argument = new InvocationArgument(ArgumentKind.Simple, right);
             return CompilerUtils.Call(left, Operator, visibility, argument);
         }

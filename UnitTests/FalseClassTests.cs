@@ -51,7 +51,7 @@ namespace Mint.UnitTests
         {
             var value = new FalseClass();
             Assert.IsTrue(value.Frozen);
-            value.Freeze();
+            Assert.That(value.Freeze(), Is.EqualTo(value));
             Assert.IsTrue(value.Frozen);
         }
 
