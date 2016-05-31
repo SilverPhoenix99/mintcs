@@ -37,7 +37,7 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var arguments = PopArguments();
 
-            var visibility = GetVisibility(LeftNode);
+            var visibility = CompilerUtils.GetVisibility(LeftNode);
             return CompilerUtils.Call(left, Symbol.AREF, visibility, arguments);
         }
 

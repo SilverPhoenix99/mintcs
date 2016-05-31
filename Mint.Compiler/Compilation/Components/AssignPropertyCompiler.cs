@@ -29,7 +29,7 @@ namespace Mint.Compilation.Components
             var result = Variable(typeof(iObject), "result");
 
             var name = new Symbol($"{PropertyName}=");
-            var visibility = GetVisibility(LeftNode);
+            var visibility = CompilerUtils.GetVisibility(LeftNode);
             var argument = new InvocationArgument(ArgumentKind.Simple, result);
             var callSetter = CompilerUtils.Call(left, name, visibility, argument);
 

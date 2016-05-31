@@ -3,8 +3,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Binding;
+using Mint.Parse;
 using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
+using static Mint.Binding.Visibility;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation
 {
@@ -14,8 +17,9 @@ namespace Mint.Compilation
         private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
         private static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(string));
         internal static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
-        internal static readonly MethodInfo METHOD_STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
-        private static readonly MethodInfo METHOD_OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
+        private static readonly MethodInfo STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
+        private static readonly MethodInfo OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
+        internal static readonly MethodInfo IS_NIL = Reflector.Method(() => NilClass.IsNil(default(object)));
         private static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
         internal static readonly ConstructorInfo RANGE_CTOR =
             Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
@@ -86,7 +90,7 @@ namespace Mint.Compilation
             if(argument.Type != typeof(string))
             {
                 argument = argument.Cast<object>();
-                argument = Expression.Call(argument, METHOD_OBJECT_TOSTRING, null);
+                argument = Expression.Call(argument, OBJECT_TOSTRING, null);
             }
 
             return New(STRING_CTOR3, argument);
@@ -127,6 +131,13 @@ namespace Mint.Compilation
         }
 
         private static Expression StringConcat(Expression left, Expression right) =>
-            Expression.Call(left, METHOD_STRING_CONCAT, right);
+            Expression.Call(left, STRING_CONCAT, right);
+
+        public static Visibility GetVisibility(Ast<Token> left)
+        {
+            // TODO if protected in instance_eval, and lhs != self but same class => public
+
+            return left.Value?.Type == kSELF ? Protected : Public;
+        }
     }
 }

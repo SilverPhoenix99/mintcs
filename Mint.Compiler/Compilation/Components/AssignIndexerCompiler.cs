@@ -33,7 +33,7 @@ namespace Mint.Compilation.Components
 
             arguments = arguments.Concat(new[] { new InvocationArgument(ArgumentKind.Simple, result) });
 
-            var visibility = GetVisibility(LeftNode);
+            var visibility = CompilerUtils.GetVisibility(LeftNode);
             var callIndexer = CompilerUtils.Call(left, Symbol.ASET, visibility, arguments.ToArray());
 
             return Block(

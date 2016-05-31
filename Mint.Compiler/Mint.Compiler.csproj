@@ -109,6 +109,7 @@
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
     <Compile Include="Compilation\Selectors\MethodCallSelector.cs" />
+    <Compile Include="Compilation\Selectors\OpAssignSelector.cs" />
     <Compile Include="Compilation\Selectors\SymbolSelector.cs" />
     <Compile Include="Compilation\Selectors\UnconditionalSelector.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
