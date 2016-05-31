@@ -1,20 +1,49 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq;
+using System.Linq.Expressions;
 using Mint.Binding;
 using Mint.Binding.Arguments;
 using Mint.Compilation.Components;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
+using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Selectors
 {
     internal class OpAssignSelector : ComponentSelectorBase
     {
+        private const string OP_OP = "||";
+        private const string AND_OP = "&&";
+
+        private Ast<Token> LeftNode => Node[0];
+        private Ast<Token> RightNode => Node[1];
+
         public OpAssignSelector(Compiler compiler) : base(compiler)
         { }
 
         public override CompilerComponent Select()
         {
+            var operatorCompiler = CreateOperator();
+
+            switch(LeftNode.Value.Type)
+            {
+                case tIDENTIFIER:
+                    return new VariableOpAssignCompiler(Compiler, operatorCompiler);
+
+                //case kDOT:
+                //    return new PropertyOpAssignCompiler(Compiler, operatorCompiler);
+
+                case kLBRACK2:
+                    return new IndexerOpAssignCompiler(Compiler, operatorCompiler);
+            }
+
             throw new System.NotImplementedException();
+        }
+
+        private OpAssignOperator CreateOperator()
+        {
+            return Node.Value.Value == OP_OP ? new OrAssignOperator()
+                 : Node.Value.Value == AND_OP ? new AndAssignOperator()
+                 : (OpAssignOperator) new GenericOpAssignOperator();
         }
     }
 
@@ -29,34 +58,37 @@ namespace Mint.Compilation.Selectors
     {
         public Expression Reduce(OpAssignCompiler component)
         {
-            return Condition(
-                Call(CompilerUtils.IS_NIL, component.Getter),
-                component.Setter(component.Right),
-                component.Getter
+            var getter = Variable(typeof(iObject), "getter");
+            var setter = component.Setter(component.Right);
+
+            return Block(
+                typeof(iObject),
+                new[] { getter },
+                Assign(getter, component.Getter),
+                Condition(
+                    CompilerUtils.ToBool(getter),
+                    TrueOption(getter, setter),
+                    FalseOption(getter, setter)
+                )
             );
         }
+
+        protected virtual Expression TrueOption(Expression left, Expression right) => left;
+        protected virtual Expression FalseOption(Expression left, Expression right) => right;
     }
 
-    internal class AndAssignOperator : OpAssignOperator
+    internal class AndAssignOperator : OrAssignOperator
     {
-        public Expression Reduce(OpAssignCompiler component)
-        {
-            return Condition(
-                Call(CompilerUtils.IS_NIL, component.Getter),
-                component.Getter,
-                component.Setter(component.Right)
-            );
-        }
+        protected override Expression TrueOption(Expression left, Expression right) => right;
+        protected override Expression FalseOption(Expression left, Expression right) => left;
     }
 
     internal class GenericOpAssignOperator : OpAssignOperator
     {
         public Expression Reduce(OpAssignCompiler component)
         {
-            var instance = component.Getter;
-            var visibility = component.GetVisibility();
             var argument = new InvocationArgument(ArgumentKind.Simple, component.Right);
-            var call = CompilerUtils.Call(instance, component.Operator, visibility, argument);
+            var call = CompilerUtils.Call(component.Getter, component.Operator, component.Visibility, argument);
             return component.Setter(call);
         }
     }
@@ -66,48 +98,57 @@ namespace Mint.Compilation.Selectors
     internal abstract class OpAssignCompiler : CompilerComponentBase
     {
         protected Ast<Token> LeftNode => Node[0];
+        protected Ast<Token> RightNode => Node[1];
         public Symbol Operator => new Symbol(Node.Value.Value);
         protected OpAssignOperator OperatorCompiler { get; }
 
         public abstract Expression Getter { get; }
-        public abstract Expression Right { get; }
+        public Expression Right { get; protected set; }
+        public Visibility Visibility => CompilerUtils.GetVisibility(LeftNode);
 
         protected OpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler) : base(compiler)
         {
             OperatorCompiler = operatorCompiler;
         }
 
-        public abstract Expression Setter(Expression rightHandSide);
+        public override Expression Reduce() => OperatorCompiler.Reduce(this);
 
-        public Visibility GetVisibility() => CompilerUtils.GetVisibility(LeftNode);
+        public abstract Expression Setter(Expression rightHandSide);
     }
 
     internal class VariableOpAssignCompiler : OpAssignCompiler
     {
-        public override Expression Getter { get; }
+        private Expression getter;
 
-        public override Expression Right { get; }
+        public override Expression Getter => getter;
+
+        private string VariableName => Node[0].Value.Value;
 
         public VariableOpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
         { }
 
-        public override Expression Reduce()
+        public override void Shift()
         {
-            throw new System.NotImplementedException();
+            Push(RightNode);
         }
 
-        public override Expression Setter(Expression rightHandSide)
+        public override Expression Reduce()
         {
-            return Assign(Getter, rightHandSide);
+            Right = Pop();
+
+            var varName = new Symbol(VariableName);
+            getter = Compiler.CurrentScope.Closure.Variable(varName);
+
+            return base.Reduce();
         }
+
+        public override Expression Setter(Expression rightHandSide) => Assign(Getter, rightHandSide);
     }
 
     internal class PropertyOpAssignCompiler : OpAssignCompiler
     {
-        public override Expression Getter { get; }
-
-        public override Expression Right { get; }
+        public override Expression Getter { get { throw new System.NotImplementedException(); } }
 
         public PropertyOpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
@@ -126,22 +167,91 @@ namespace Mint.Compilation.Selectors
 
     internal class IndexerOpAssignCompiler : OpAssignCompiler
     {
-        public override Expression Getter { get; }
+        private ParameterExpression instance;
+        private ParameterExpression[] argumentVars;
+        private InvocationArgument[] invocationArguments;
 
-        public override Expression Right { get; }
+        private Ast<Token> ArgumentsNode => LeftNode[1];
+
+        private int ArgumentCount => ArgumentsNode.List.Count;
+
+        public override Expression Getter =>
+            CompilerUtils.Call(instance, GetterMethodName, Visibility, invocationArguments);
+
+        protected virtual Symbol GetterMethodName => Symbol.AREF;
+
+        protected virtual Symbol SetterMethodName => Symbol.ASET;
 
         public IndexerOpAssignCompiler(Compiler compiler, OpAssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
-        { }
+        {
+            instance = Variable(typeof(iObject), "instance");
+        }
+
+        public override void Shift()
+        {
+            Push(LeftNode[0]);
+            PushArguments();
+            Push(RightNode);
+        }
+
+        private void PushArguments()
+        {
+            foreach(var argument in ArgumentsNode)
+            {
+                Push(argument);
+            }
+        }
 
         public override Expression Reduce()
         {
-            throw new System.NotImplementedException();
+            var left = Pop();
+            var arguments = PopArguments();
+            Right = Pop();
+
+            argumentVars = CreateArgumentVariables();
+
+            var argumentKinds = ArgumentsNode.Select(node => CompilerUtils.GetArgumentKind(node.Value.Type));
+
+            invocationArguments =
+                argumentKinds.Zip(argumentVars, (kind, arg) => new InvocationArgument(kind, arg)).ToArray();
+
+            var argumentVarsAssignment = ArgumentCount == 0
+                ? (Expression) Empty()
+                : Block(argumentVars.Zip(arguments, (variable, argument) => Assign(variable, argument)));
+
+            return Block(
+                typeof(iObject),
+                new[] { instance }.Concat(argumentVars),
+                Assign(instance, left),
+                argumentVarsAssignment,
+                base.Reduce()
+            );
+        }
+
+        private Expression[] PopArguments()
+        {
+            return Enumerable.Range(0, ArgumentCount).Select(_ => Pop()).ToArray();
+        }
+
+        private ParameterExpression[] CreateArgumentVariables()
+        {
+            return Enumerable.Range(0, ArgumentCount).Select(i => Variable(typeof(iObject), "arg" + i)).ToArray();
         }
 
         public override Expression Setter(Expression rightHandSide)
         {
-            throw new System.NotImplementedException();
+            var rightVar = Variable(typeof(iObject), "right");
+            var rightArgument = new InvocationArgument(ArgumentKind.Simple, rightVar);
+            var setterArguments = invocationArguments.Concat(new[]{ rightArgument }).ToArray();
+
+            return Block(
+                typeof(iObject),
+                new[] { rightVar },
+                Assign(rightVar, rightHandSide),
+                CompilerUtils.Call(instance, SetterMethodName, Visibility, setterArguments),
+                rightVar
+            );
         }
     }
 }

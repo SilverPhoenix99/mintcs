@@ -4,6 +4,8 @@ using NUnit.Framework;
 
 namespace Mint.UnitTests
 {
+    #pragma warning disable 1720
+
     [TestFixture]
     internal class ReflectorTests
     {
@@ -91,4 +93,6 @@ namespace Mint.UnitTests
             Assert.That(Reflector<ReflectorTests>.Method(_ => _.TestAction()), Is.EqualTo(member));
         }
     }
+    
+    #pragma warning restore 1720
 }

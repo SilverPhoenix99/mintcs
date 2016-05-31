@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Binding;
+using Mint.Binding.Arguments;
 using Mint.Parse;
 using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
@@ -95,7 +96,7 @@ namespace Mint.Compilation
 
             return New(STRING_CTOR3, argument);
         }
-        
+
         public static Expression NewArray(params Expression[] values)
         {
             var array = New(ARRAY_CTOR, Constant(null, typeof(IEnumerable<iObject>)));
@@ -138,6 +139,31 @@ namespace Mint.Compilation
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
             return left.Value?.Type == kSELF ? Protected : Public;
+        }
+
+        public static ArgumentKind GetArgumentKind(TokenType type)
+        {
+            switch(type)
+            {
+                case kSTAR:
+                return ArgumentKind.Rest;
+
+                case tLABEL_END: goto case kASSOC;
+                case tLABEL: goto case kASSOC;
+                case kASSOC:
+                return ArgumentKind.Key;
+
+                case kDSTAR:
+                return ArgumentKind.KeyRest;
+
+                case kDO: goto case kAMPER;
+                case kLBRACE2: goto case kAMPER;
+                case kAMPER:
+                return ArgumentKind.Block;
+
+                default:
+                return ArgumentKind.Simple;
+            }
         }
     }
 }

@@ -39,14 +39,15 @@ namespace Mint
             // equal?   |   object::ReferenceEquals(object, object)
             // eql?     |   (iObject i, iObject a) => i.hash == a.hash
 
+            #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
-                .DefMethod( "equal?", () => ((iObject) null).Equal(default(object)) )
+                .DefMethod( "equal?", () => default(iObject).Equal(default(object)) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .DefMethod("==", () => default(iObject).Equals(default(object)) )
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
-                .DefMethod("equal?", () => default(iObject).Equal(default(object)) )
             ;
+            #pragma warning restore 1720
 
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
@@ -63,6 +64,7 @@ namespace Mint
             // otherwise CLASS.effectiveClass will be null
             CLASS.effectiveClass = CLASS;
 
+            #pragma warning disable 1720
             KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
                 .DefMethod("to_s", () => default(FrozenObject).ToString() )
@@ -74,6 +76,7 @@ namespace Mint
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", () => default(iObject).Id )
             ;
+            #pragma warning restore 1720
 
             OBJECT.Include(KERNEL);
             Object.DefineModule(KERNEL);
