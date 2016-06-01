@@ -12,7 +12,7 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation
 {
-    public static class CompilerUtils
+    internal static class CompilerUtils
     {
         private static readonly ConstructorInfo STRING_CTOR1 = Reflector.Ctor<String>();
         private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));

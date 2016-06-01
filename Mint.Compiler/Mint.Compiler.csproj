@@ -88,6 +88,7 @@
     <Compile Include="Compilation\Components\AssignLocalVariableCompiler.cs" />
     <Compile Include="Compilation\Components\Operators\SimpleAssignOperator.cs" />
     <Compile Include="Compilation\Components\OrCompiler.cs" />
+    <Compile Include="Compilation\Components\PosfixWhileCompiler.cs" />
     <Compile Include="Compilation\Components\PowerCompiler.cs" />
     <Compile Include="Compilation\Components\PrivateMethodCallCompiler.cs" />
     <Compile Include="Compilation\Components\PublicMethodCallCompiler.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Compilation\Components\UnaryMinusCompiler.cs" />
     <Compile Include="Compilation\Components\UnaryOperatorCompiler.cs" />
     <Compile Include="Compilation\Components\UnaryPlusCompiler.cs" />
+    <Compile Include="Compilation\Components\WhileCompiler.cs" />
     <Compile Include="Compilation\Components\WordsCompiler.cs" />
     <Compile Include="Compilation\Components\XorCompiler.cs" />
     <Compile Include="Compilation\Components\Operators\AndAssignOperator.cs" />
@@ -120,6 +122,7 @@
     <Compile Include="Compilation\Selectors\AssignSelector.cs" />
     <Compile Include="Compilation\Selectors\SymbolSelector.cs" />
     <Compile Include="Compilation\Selectors\UnconditionalSelector.cs" />
+    <Compile Include="Compilation\Selectors\WhileModSelector.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -18,7 +18,7 @@ namespace Mint.Compilation
         private ReduceState currentReducing;
 
         public string Filename { get; }
-        public Scope CurrentScope { get; private set; }
+        public Scope CurrentScope { get; set; }
         public CompilerComponent ListComponent { get; set; }
         public Ast<Token> CurrentNode { get; private set; }
 
@@ -92,10 +92,13 @@ namespace Mint.Compilation
             Register(new UnaryPlusCompiler(this), kUPLUS);
             Register(new UnaryMinusCompiler(this), kUMINUS);
             Register(new InstanceVariableCompiler(this), tIVAR);
+            Register(new SafeMethodCallCompiler(this), kANDDOT);
+            Register(new WhileCompiler(this), kWHILE, kUNTIL);
 
             Register(new SymbolSelector(this), tSYMBEG);
-            Register(new MethodCallSelector(this), kDOT, kANDDOT);
+            Register(new MethodCallSelector(this), kDOT);
             Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
+            Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
         }
 
         public void Register(CompilerComponent component, TokenType type)
