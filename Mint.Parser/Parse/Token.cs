@@ -26,5 +26,13 @@ namespace Mint.Parse
 
             return $"[{Type}, \"{Value}\", {Location.Item1}, {Location.Item2}{properties}]";
         }
+
+        public void MergeProperties(Token other)
+        {
+            foreach(var property in other.Properties)
+            {
+                Properties[property.Key] = property.Value;
+            }
+        }
     }
 }

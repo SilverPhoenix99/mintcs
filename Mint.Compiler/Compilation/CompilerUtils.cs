@@ -18,9 +18,13 @@ namespace Mint.Compilation
         private static readonly ConstructorInfo STRING_CTOR2 = Reflector.Ctor<String>(typeof(String));
         private static readonly ConstructorInfo STRING_CTOR3 = Reflector.Ctor<String>(typeof(string));
         internal static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
-        private static readonly MethodInfo STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(null));
+        private static readonly MethodInfo STRING_CONCAT = Reflector<String>.Method(_ => _.Concat(default(string)));
         private static readonly MethodInfo OBJECT_TOSTRING = Reflector<object>.Method(_ => _.ToString());
         internal static readonly MethodInfo IS_NIL = Reflector.Method(() => NilClass.IsNil(default(object)));
+
+        private static readonly MethodInfo CONVERT_TO_STRING =
+            Reflector.Method(() => System.Convert.ToString(default(object)));
+
         private static readonly ConstructorInfo ARRAY_CTOR = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
         internal static readonly ConstructorInfo RANGE_CTOR =
             Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
@@ -142,8 +146,11 @@ namespace Mint.Compilation
             return first.Cast<iObject>();
         }
 
-        private static Expression StringConcat(Expression left, Expression right) =>
-            Expression.Call(left, STRING_CONCAT, right);
+        private static Expression StringConcat(Expression left, Expression right)
+        {
+            right = Expression.Call(CONVERT_TO_STRING, right);
+            return Expression.Call(left, STRING_CONCAT, right);
+        }
 
         public static Visibility GetVisibility(Ast<Token> left)
         {

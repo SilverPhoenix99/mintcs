@@ -228,7 +228,7 @@ percent_string = '%' string_term? (
 action Heredoc {
   var lit = GenHeredocToken(lts >= 0 ? lts : ts);
   fexec lit.ContentStart = NextBOL();
-  PushFcall();
+  //PushFcall();
   fnext HEREDOC_DELIMITER;
   fbreak;
 }
@@ -1046,7 +1046,6 @@ HEREDOC_DELIMITER := |*
             GenStringEndToken();
             line_jump = te;
             fexec ((Heredoc) current_literal).Restore;
-            PopFcall();
             fnext EXPR_END;
             fbreak;
         }
@@ -1087,7 +1086,6 @@ HEREDOC_CONTENT := |*
             GenStringContentToken();
             GenToken(tSTRING_DBEG);
             InCmd = true;
-            PopFcall();
             fnext EXPR_BEG;
             fbreak;
         }

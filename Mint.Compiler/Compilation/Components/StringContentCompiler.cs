@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
@@ -5,7 +6,7 @@ namespace Mint.Compilation.Components
 {
     internal class StringContentCompiler : CompilerComponentBase
     {
-        private string Content => Node.Value.Value;
+        private string Content => Dedent(Node.Value.Value);
 
         public StringContentCompiler(Compiler compiler) : base(compiler)
         { }
@@ -13,5 +14,60 @@ namespace Mint.Compilation.Components
         public override Expression Reduce() => Constant(ReduceContent(), typeof(iObject));
 
         protected String ReduceContent() => new String(Content);
+
+        private string Dedent(string content)
+        {
+            var dedent = Dedentation();
+            if(dedent <= 0)
+            {
+                return content;
+            }
+
+            var lines = content.Split('\n').Select(line => Dedent(line, dedent));
+            return string.Join("\n", lines);
+        }
+
+        private int Dedentation()
+        {
+            object value;
+            return Node.Value.Properties.TryGetValue("dedent", out value) ? (int) value : 0;
+        }
+
+        private string Dedent(string line, int dedent)
+        {
+            if(dedent < 1)
+            {
+                return line;
+            }
+
+            var width = 0;
+            for(var i = 0; i < line.Length; i++)
+            {
+                if(width == dedent)
+                {
+                    return line.Substring(i);
+                }
+
+                switch(line[i])
+                {
+                    case ' ':
+                        width++;
+                        break;
+
+                    case '\t':
+                        width = (width / Compiler.TabWidth + 1) * Compiler.TabWidth;
+                        if(width > dedent)
+                        {
+                            return line.Substring(i);
+                        }
+                        break;
+
+                    default:
+                        return line.Substring(i);
+                }
+            }
+
+            return "";
+        }
     }
 }

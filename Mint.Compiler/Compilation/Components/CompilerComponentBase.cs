@@ -1,8 +1,5 @@
 using System.Linq.Expressions;
-using Mint.Binding;
 using Mint.Parse;
-using static Mint.Binding.Visibility;
-using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {

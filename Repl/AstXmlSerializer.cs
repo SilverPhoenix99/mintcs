@@ -3,7 +3,7 @@ using Mint.Parse;
 
 namespace Mint
 {
-    internal class AstXmlSerializer : AstVisitor<Token>
+    public class AstXmlSerializer : AstVisitor<Token>
     {
         private XContainer current;
 

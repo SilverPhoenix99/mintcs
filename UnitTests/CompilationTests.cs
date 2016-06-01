@@ -8,9 +8,9 @@ using NUnit.Framework;
 namespace Mint.UnitTests
 {
     [TestFixture]
-    public class CompilationTests
+    internal class CompilationTests
     {
-        private static Compiler CreateCompiler(string name, string fragment, Closure binding = null)
+        public static Compiler CreateCompiler(string name, string fragment, Closure binding = null)
         {
             name = $"(CompilationTests.{name})";
             binding = binding ?? new Closure(new Object());
@@ -18,7 +18,7 @@ namespace Mint.UnitTests
             return new Compiler(name, binding, ast);
         }
 
-        private static iObject Eval(string code, Closure binding = null, [CallerMemberName] string name = "(eval)")
+        public static iObject Eval(string code, Closure binding = null, [CallerMemberName] string name = "(eval)")
         {
             var compiler = CreateCompiler(name, code, binding);
             var body = compiler.Compile();

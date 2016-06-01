@@ -5,9 +5,31 @@ namespace Mint.Parse
 {
     internal class Heredoc : iLiteral
     {
+        private static readonly Regex HEREDOC_IDENT =
+            new Regex("^<<([-~]?)([\"'`]?)(.+)(?:\\2)$", RegexOptions.Compiled);
+
         private readonly char indentType;
         private readonly char idDelimiter;
         private Regex regex;
+
+        public uint BraceCount { get; set; }
+        public bool CanLabel => false;
+        public int ContentStart  { get; set; }
+        public bool Dedents => indentType == '~';
+        public int Indent { get; private set; }
+        public bool Interpolates => idDelimiter != '\'';
+        public bool IsRegexp => false;
+        public bool IsWords => false;
+        public int LineIndent { get; set; }
+        public int Restore { get; }
+        public Lexer.States State => Lexer.States.HEREDOC_DELIMITER;
+        public TokenType Type => idDelimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
+        public string UnterminatedMessage => $"can't find string {Delimiter} anywhere before EOF";
+        public bool WasContent { get { return false; } set { } }
+        public int Nesting { get { return 0; } set { } }
+        public bool IsNested => false;
+        private string Delimiter { get; }
+        private Regex Regex => regex ?? (regex = CreateRegex());
 
         public Heredoc(string token, int restore)
         {
@@ -37,24 +59,6 @@ namespace Mint.Parse
             LineIndent = 0;
         }
 
-        public uint         BraceCount    { get; set; }
-        public bool         CanLabel      => false;
-        public int          ContentStart  { get; set; }
-        public bool         Dedents       => indentType == '~';
-        public int          Indent        { get; private set; }
-        public bool         Interpolates  => idDelimiter != '\'';
-        public bool         IsRegexp      => false;
-        public bool         IsWords       => false;
-        public int          LineIndent    { get; set; }
-        public int          Restore       { get; }
-        public Lexer.States State         => Lexer.States.HEREDOC_DELIMITER;
-        public TokenType    Type          => idDelimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
-        public string UnterminatedMessage => $"can't find string {Delimiter} anywhere before EOF";
-        public bool         WasContent    { get { return false; } set { } }
-        public int          Nesting       { get { return 0; } set { } }
-        public bool         IsNested      => false;
-        private string      Delimiter     { get; }
-
         public void CommitIndent()
         {
             if(!Dedents)
@@ -69,20 +73,16 @@ namespace Mint.Parse
             LineIndent = -1;
         }
 
-        public bool IsDelimiter(string delimiter)
-        {
-            if(regex == null)
-            {
-                regex = new Regex(indentType == '\0'
-                                    ? $"^{Delimiter}\r?$"
-                                    : $@"^[\t\v\f\r ]*{Delimiter}\r?$");
-            }
-            
-            return regex.IsMatch(delimiter);
-        }
+        public bool IsDelimiter(string delimiter) => Regex.IsMatch(delimiter);
 
         public uint TranslateDelimiter(char delimiter) => delimiter;
 
-        private static readonly Regex HEREDOC_IDENT = new Regex("^<<([-~]?)([\"'`]?)(.+)(?:\\2)$", RegexOptions.Compiled);
+        private Regex CreateRegex()
+        {
+            return new Regex(indentType == '\0'
+                           ? $"^{Delimiter}\r?$"
+                           : $@"^[\t\v\f\r ]*{Delimiter}\r?$");
+        }
+
     }
 }

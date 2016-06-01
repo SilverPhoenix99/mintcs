@@ -19,12 +19,10 @@ namespace Mint.UnitTests
         {
             var emptyHash = new Hash();
             var fixnum0 = new Fixnum(0);
-            var nil = new NilClass();
             var symbol = new Symbol("symbol");
-            Assert.That(emptyHash[fixnum0], Is.EqualTo(nil));
+            Assert.That(emptyHash[fixnum0], Is.EqualTo(null));
 
-            var hash = new Hash();
-            hash[symbol] = fixnum0;
+            var hash = new Hash { [symbol] = fixnum0 };
             Assert.That(hash[symbol], Is.EqualTo(fixnum0));
         }
 

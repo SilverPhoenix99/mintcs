@@ -9,6 +9,19 @@ namespace Mint
     {
         private StringBuilder value;
 
+        public string Value
+        {
+            get
+            {
+                return value.ToString();
+            }
+            set
+            {
+                if(value == null) throw new ArgumentNullException(nameof(value));
+                this.value = new StringBuilder(value);
+            }
+        }
+
         public String(string value) : base(Class.STRING)
         {
             Value = value;
@@ -23,19 +36,6 @@ namespace Mint
         public String(String other) : this(other.Value)
         { }
 
-        public string Value
-        {
-            get
-            {
-                return value.ToString();
-            }
-            set
-            {
-                if(value == null) throw new ArgumentNullException(nameof(value));
-                this.value = new StringBuilder(value);
-            }
-        }
-
         public String Concat(iObject other)
         {
             if(other is Fixnum )// TODO || other is Bignum)
@@ -46,7 +46,7 @@ namespace Mint
 
             if(!(other is String))
             {
-                var type = (other == null || other is NilClass)
+                var type = NilClass.IsNil(other)
                          ? new String("nil")
                          : new String(other.Class.FullName);
                 throw new TypeError($"no implicit conversion of {type} into String");
@@ -54,6 +54,13 @@ namespace Mint
 
             value.Append( ((String) other).Value );
             return this;
+        }
+
+        public String Concat(string content)
+        {
+            content = content ?? "";
+            value.Append(content);
+            return  this;
         }
 
         // TODO: transform special chars into escapes

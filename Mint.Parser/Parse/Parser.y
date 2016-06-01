@@ -1057,11 +1057,17 @@ string :
 ;
 
 string1 :
-    tSTRING_BEG string_contents tSTRING_END { $$ = $1.Append($2.List); }
+    tSTRING_BEG string_contents tSTRING_END {
+		$$ = $1.Append($2.List);
+		$$.Value.MergeProperties($3.Value);
+	}
 ;
 
 xstring :
-    tXSTRING_BEG xstring_contents tSTRING_END { $$ = $1.Append($2.List); }
+    tXSTRING_BEG xstring_contents tSTRING_END {
+		$$ = $1.Append($2.List);
+		$$.Value.MergeProperties($3.Value);
+	}
 ;
 
 regexp :

@@ -21,6 +21,7 @@ namespace Mint.Compilation
         public Scope CurrentScope { get; set; }
         public CompilerComponent ListComponent { get; set; }
         public Ast<Token> CurrentNode { get; private set; }
+        public int TabWidth { get; set; }
 
         public Compiler(string filename, Closure binding, Ast<Token> root)
         {
@@ -31,6 +32,7 @@ namespace Mint.Compilation
 
             Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
+            TabWidth = 8;
 
             shifting.Push(new ShiftState(root));
 
@@ -179,21 +181,25 @@ namespace Mint.Compilation
                     throw new IncompleteCompilationError("More nodes were shifted than needed.");
                 }
 
-                if(reducing.Count == 0)
-                {
-                    outputs.Enqueue(expression);
-                }
-                else
-                {
-                    reducing.Peek().Children.Enqueue(expression);
-                }
-
+                StoreReduced(expression);
                 return true;
             }
             finally
             {
                 currentReducing = null;
                 CurrentNode = null;
+            }
+        }
+
+        private void StoreReduced(Expression expression)
+        {
+            if(reducing.Count == 0)
+            {
+                outputs.Enqueue(expression);
+            }
+            else
+            {
+                reducing.Peek().Children.Enqueue(expression);
             }
         }
 

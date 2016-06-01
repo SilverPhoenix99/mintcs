@@ -19,7 +19,7 @@ namespace Mint.Parse
 			        line_jump;
 
         private int __end__ = -1;
-		private int[] stack = new int[32];
+		private readonly int[] stack = new int[32];
         private int[] lines;
         private Token eof_token;
 
@@ -97,28 +97,31 @@ namespace Mint.Parse
 			__end__ = -1;
 			InCmd = true;
             InKwarg = false;
+            lines = ResetLines();
+            eof_token = new Token(EOF, "$eof", Location(data.Length));
+		}
 
-            List<int> lines = new List<int>();
-            lines.Add(0);
+        private int[] ResetLines()
+        {
+            var lineList = new List<int> { 0 };
 
-			for(int i = 0; i < data.Length; i++)
-			{
-				var c = data[i];
-				if(c == 0 || c == 0x4 || c == 0x1a)
-				{
+            for(var i = 0; i < data.Length; i++)
+            {
+                var c = data[i];
+                if(c == 0 || c == 0x4 || c == 0x1a)
+                {
                     data = data.Substring(0, i);
-					break;
-				}
+                    break;
+                }
 
                 if(c == '\n')
                 {
-                    lines.Add(i+1);
+                    lineList.Add(i + 1);
                 }
-			}
+            }
 
-            this.lines = lines.ToArray();
-            eof_token = new Token(EOF, "$eof", Location(data.Length));
-		}
+            return lineList.ToArray();
+        }
 
         public IEnumerator<Token> GetEnumerator()
         {

@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
@@ -10,6 +8,19 @@ namespace Mint.Compilation.Components
     {
         public StringCompiler(Compiler compiler) : base(compiler)
         { }
+
+        // Shift: copy dedent value to children if dedents property is set in Node
+        public override void Shift()
+        {
+            foreach(var child in Node.List)
+            {
+                if(child.Value?.Type == tSTRING_CONTENT)
+                {
+                    child.Value.MergeProperties(Node.Value);
+                }
+                Push(child);
+            }
+        }
 
         public override Expression Reduce()
         {
