@@ -32,6 +32,8 @@
 #define IS_LABEL_SUFFIX(n) (peek_n(':',(n)) && !peek_n(':', (n)+1))
 #define IS_AFTER_OPERATOR() IS_lex_state(EXPR_FNAME | EXPR_DOT)
 
+#define is_identchar(p,e,enc) (rb_enc_isalnum((unsigned char)(*(p)),(enc)) || (*(p)) == '_' || !ISASCII(*(p)))
+#define parser_is_identchar() (!parser->eofp && is_identchar((lex_p-1),lex_pend,current_enc))
 
 static int
 parser_yylex(struct parser_params *parser)
@@ -883,7 +885,6 @@ restore:
             if(heredoc_indent > 0)
             {
                 set_yylval_str(str);
-                flush_string_content(enc);
                 return tSTRING_CONTENT;
             }
             if(nextc() == -1)
@@ -926,7 +927,6 @@ restore:
             {
 flush:
                 set_yylval_str(STR_NEW3(tok(), toklen(), enc, func));
-                flush_string_content(enc);
                 return tSTRING_CONTENT;
             }
             tokadd(nextc());
@@ -948,20 +948,3 @@ flush:
     set_yylval_str(str);
     return tSTRING_CONTENT;
 }
-
-heredoc_restore
-heredoc_identifier
-parser_update_heredoc_indent
-flush_string_content
-parser_peek_variable_name
-
-parse_string
-parser_magic_comment
-comment_at_top
-parse_qmark
-parse_numeric
-parse_percent
-parse_gvar
-parse_atmark
-parser_is_identchar
-parse_ident
