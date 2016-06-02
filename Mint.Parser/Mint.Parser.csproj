@@ -45,7 +45,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="gen\Lex\States\ExprShared.cs" />
     <Compile Include="Lex\Lexer.cs" />
+    <Compile Include="Lex\States\ExprShared.cs" />
     <Compile Include="Lex\States\ExprBeg.cs" />
     <Compile Include="Lex\States\Main.cs" />
     <Compile Include="Lex\States\State.cs" />
@@ -75,6 +77,7 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
+    <Ragel Include="Lex\States\ExprShared.csrl" />
     <None Include="Lexing\Lexer_exec.csrl" />
     <None Include="Lexing\Lexer_data.csrl" />
     <None Include="Lexing\Lexer.csrl" />
@@ -87,7 +90,7 @@
     <Message Text="GenLexer.bat %(Ragel.Filename)" Importance="high" />
     <Exec Command="GenLexer.bat %(Ragel.Filename)" />
   </Target>
-    <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
+  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
     <Message Text="GenParser.bat" Importance="high" />
     <Exec Command="GenParser.bat" />
   </Target>

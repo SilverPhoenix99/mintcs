@@ -52,6 +52,9 @@ namespace Mint.Lex
 
         private State MainState { get; }
         internal State BegState { get; }
+        internal ExprShared SharedState { get; }
+
+        internal int LineJump { get; set; }
 
         public Lexer(string filename)
         {
@@ -68,6 +71,7 @@ namespace Mint.Lex
             Position = 0;
             tokens.Clear();
             CurrentState = MainState;
+            LineJump = -1;
         }
 
         private int CalculateDataLength()

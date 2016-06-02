@@ -45,7 +45,7 @@ namespace Mint.Lex.States
             var ts = -1;
 			var te = -1;
 			var act = 0;
-			var cs = Lexer_start;
+			var cs = Lexer_en_MAIN;
 			var pe = Lexer.Length;
 			var eof = pe;
 
