@@ -50,6 +50,7 @@
     <Compile Include="FloatTests.cs" />
     <Compile Include="HashTests.cs" />
     <Compile Include="DedentedHeredocTests.cs" />
+    <Compile Include="LexerTests.cs" />
     <Compile Include="NilClassTests.cs" />
     <Compile Include="OptionalParameterTests.cs" />
     <Compile Include="ParameterKindTests.cs" />

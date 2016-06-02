@@ -45,22 +45,29 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="gen\Lexer_data.cs" />
-    <Compile Include="gen\Lexer_exec.cs" />
-    <Compile Include="gen\Parser.cs" />
+    <Compile Include="Lex\Lexer.cs" />
+    <Compile Include="Lex\States\ExprBeg.cs" />
+    <Compile Include="Lex\States\Main.cs" />
+    <Compile Include="Lex\States\State.cs" />
+    <Compile Include="Lex\States\StateBase.cs" />
+    <Compile Include="Lexing\Lexer.States.cs" />
+    <Compile Include="Lexing\Lexer.cs" />
     <Compile Include="Parse\Ast.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
     <Compile Include="Parse\Heredoc.cs" />
-    <Compile Include="Parse\iLiteral.cs" />
-    <Compile Include="Lexing\Lexer.cs" />
-    <Compile Include="Lexing\Lexer.States.cs" />
     <Compile Include="Parse\Literal.cs" />
     <Compile Include="Parse\Parser.cs" />
     <Compile Include="Parse\RegexpFlags.cs" />
     <Compile Include="Parse\Token.cs" />
-    <Compile Include="SyntaxError.cs" />
+    <Compile Include="Parse\iLiteral.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SyntaxError.cs" />
+    <Compile Include="gen\Lex\States\ExprBeg.cs" />
+    <Compile Include="gen\Lex\States\Main.cs" />
+    <Compile Include="gen\Lexer_data.cs" />
+    <Compile Include="gen\Lexer_exec.cs" />
+    <Compile Include="gen\Parser.cs" />
     <Compile Include="vendor\ShiftReduceParserCode.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -68,22 +75,24 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
-    <Ragel Include="Lexing\Lexer_exec.csrl" />
-    <Ragel Include="Lexing\Lexer_data.csrl" />
-    <Ragel Include="Lexing\Lexer.csrl" />
+    <None Include="Lexing\Lexer_exec.csrl" />
+    <None Include="Lexing\Lexer_data.csrl" />
+    <None Include="Lexing\Lexer.csrl" />
+    <None Include="Lex\States\definitions.csrl" />
+    <Ragel Include="Lex\States\Main.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="@(Ragel->'gen\Lex\%(Filename).cs')">
+    <Exec Command="GenLexer.bat %(Ragel.Filename)" />
+  </Target>
+  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
+    <Exec Command="GenParser.bat" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="gen\Lexer_data.cs;gen\Lexer_exec.cs">
-    <Exec Command="GenLexer.bat" />
-  </Target>
-  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
-    <Exec Command="GenParser.bat" />
-  </Target>
 </Project>
