@@ -29,7 +29,7 @@
 //     ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
 // #define IS_AFTER_OPERATOR() IS_lex_state(EXPR_FNAME | EXPR_DOT)
 
-// [ \t\n\v\f\r]
+// [ \t\n\v\f\r] ( includes '\n' )
 #define ISSPACE(c) \
     (c == ' ' || ('\t' <= c && c <= '\r'))
 
@@ -94,10 +94,7 @@ retry:
     last_state = lex_state;
     switch (c = nextc())
     {
-        case '\0':                /* NUL */
-        case '\004':                /* ^D */
-        case '\032':                /* ^Z */
-        case -1:                        /* end of script. */
+        case '\0': case '\004': case '\032': case -1:
         {
             return 0;
         }
@@ -114,12 +111,10 @@ retry:
         {
             parser->token_seen = token_seen;
             /* no magic_comment in shebang line */
-            if(!parser_magic_comment(parser, lex_p, lex_pend - lex_p))
+            if(!parser_magic_comment(parser, lex_p, lex_pend - lex_p)
+            && comment_at_top(parser))
             {
-                if(comment_at_top(parser))
-                {
-                    set_file_encoding(parser, lex_p, lex_pend);
-                }
+                set_file_encoding(parser, lex_p, lex_pend);
             }
             lex_p = lex_pend;
             fallthru = TRUE;

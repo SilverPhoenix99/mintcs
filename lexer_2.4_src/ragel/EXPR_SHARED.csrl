@@ -1,0 +1,13 @@
+%%{
+# Expressions shared by all other states
+
+machine Lexer;
+
+EXPR_SHARED := |*
+
+	c_eof => { fbreak; };
+
+*|;
+
+
+}%%

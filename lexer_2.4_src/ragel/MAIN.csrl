@@ -1,0 +1,62 @@
+%%{
+
+machine Lexer;
+
+include "definitions.csrl";
+
+getkey CurrentChar;
+
+bom_marker = '\xef\xbb\xbf';
+shebang = '#!' ^'\n'* '\n';
+empty_line = ws* '\n';
+comment = '#' ^nl_eof* nl_eof;
+
+MAIN := |*
+
+    # consume only 1 shebang line
+    bom_marker? shebang => { fgoto BOF; };
+
+    bom_marker => { fgoto BOF; };
+
+    any => { fhold; fgoto BOF; };
+
+*|;
+
+action MagicComment {}
+
+BOF := |*
+
+    comment => MagicComment;
+
+    empty_line; # ignore it
+
+    any => {
+        Lexer.State = Lexer.EXPR_BEG;
+        fhold;
+        fbreak;
+    };
+
+*|;
+
+}%%
+using System;
+
+namespace Mint.Lexing.States
+{
+    internal partial class Main
+    {
+        public bool Advance()
+        {
+            var ts = -1;
+            var te = -1;
+            var act = -1;
+            var breakLexer = false;
+
+            %% write exec;
+
+            return breakLexer;
+        }
+
+        %% write data;
+    }
+}
