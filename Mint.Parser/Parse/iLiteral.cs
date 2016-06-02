@@ -1,4 +1,6 @@
-﻿namespace Mint.Parse
+﻿using Mint.Lexing;
+
+namespace Mint.Parse
 {
     interface iLiteral
     {

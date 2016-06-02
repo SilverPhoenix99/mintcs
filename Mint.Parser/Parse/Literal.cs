@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using Mint.Lexing;
 using static Mint.Parse.TokenType;
-using static Mint.Parse.Lexer.States;
+using static Mint.Lexing.Lexer.States;
 
 namespace Mint.Parse
 {

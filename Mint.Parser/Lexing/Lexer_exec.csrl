@@ -1,0 +1,53 @@
+﻿%%{
+
+machine Lex;
+include "Lexer.csrl";
+
+}%%
+using Mint.Parse;
+using System;
+using static Mint.Lexing.Lexer.States;
+using static Mint.Parse.TokenType;
+
+namespace Mint.Lexing
+{
+    public partial class Lexer
+    {
+        #pragma warning disable 162
+        private void Advance()
+        {
+            var eof = Data.Length + 1;
+            var pe = eof;
+            iLiteral current_literal = null;
+            
+            var token_type = tKEYWORD;
+            var lts = -1;
+            var lte = -1;
+            States? next_state = States.EXPR_BEG;
+            
+            var num_flags = 0;
+            var num_base = 0;
+            
+            var regexp_delim   = -1;
+            var regexp_options = RegexpFlags.None;
+
+			var in_cmd = InCmd;
+			InCmd = false;
+
+            var can_label = CanLabel || cs == (int) EXPR_ENDFN;
+            CanLabel = false;
+            
+            var in_literal = false;
+            var translate_delimiter = false;
+
+            if(literals.Count != 0)
+            {
+                current_literal = literals.Peek();
+                translate_delimiter = cs == (int) STRING_LITERAL
+                                    || cs == (int) STRING_INTERPOLATION;
+            }
+
+            %% write exec;
+        }
+    }
+}

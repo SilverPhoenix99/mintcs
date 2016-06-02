@@ -1,0 +1,1412 @@
+%%{
+
+# Character classes are in lowercase. e.g.: eof
+# Machines/scanners are in uppercase. e.g.: EXPR_BEG
+# Actions are in CamelCase. e.g.: DoEof
+
+# The first state is BOF (beginning of file)
+
+machine Lex;
+access this.;
+alphtype uint;
+variable p this.p;
+getkey Peek(translate_delimiter: translate_delimiter);
+
+# ------------------------------------------------------------------------------
+#
+# Character Classes
+#
+
+action NewLine {
+    // NewLine
+    if(line_jump > this.p)
+    {
+        fexec te = line_jump;
+        ts = p;
+    }
+}
+
+action TokStart { lts = this.p; }
+action TokEnd   { lte = this.p; }
+
+c_eof   = 0; # Lexer already excludes 0x4 and 0x1A (^D | ^Z)
+nl      = '\n' @NewLine;
+ws      = ( (space - nl) | ('\\' '\r'? nl) ) %TokStart;
+nl_eof  = nl | c_eof;
+nl_ws   = nl | ws;
+unicode = ^ascii;
+
+ident_start = lower | '_' | unicode;
+ident_char  = alnum | '_' | unicode;
+
+string_term = [QqWwIixrs];
+
+
+#-------------------------------------------------------------------------------
+#
+# Actions
+#
+
+action GotoCommonExpr {
+    fhold;
+    lts = -1;
+    lte = -1;
+    fcall COMMON_EXPR;
+}
+
+
+action Keyword {
+    // Keyword
+    KeywordToken(token_type, lts, lte, next_state);
+    fbreak;
+}
+
+
+action Number {
+    GenNumberToken(token_type, num_base, num_flags, ts: lts >= 0 ? lts : ts);
+    if(cs == (int) COMMON_EXPR)
+    {
+        PopFcall();
+    }
+    fnext EXPR_END;
+    fbreak;
+}
+
+
+action StringStart {
+    // StringStart
+    if(lte >= 0)
+    {
+        fexec te = lte;
+    }
+    GenLiteralToken(in_cmd, can_label, lts >= 0 ? lts : ts);
+    if(cs != (int) COMMON_EXPR)
+    {
+        PushFcall(); // this is so that strings can identify who called them if needed
+    }
+    fnext *((int) literals.Peek().State);
+    fbreak;
+}
+
+
+# ------------------------------------------------------------------------------
+#
+# Comments
+#
+
+# TODO: magic comments
+
+line_comment = '#' ^nl_eof*;
+
+action EmbDocEof { throw new SyntaxError(Filename, Location(p).Item1, "embedded document meets end of file"); }
+
+block_trail = (space - nl) ^nl*;
+
+block_comment =
+    '=begin' block_trail? nl
+    (
+        (any* nl)*
+        :>>
+        '=end' block_trail? nl_eof
+    ) @err(EmbDocEof)
+;
+
+# Expressions that must be at the beginning of a line.
+bol = block_comment | '__END__' %TokStart '\r'? nl_eof @{
+    __end__ = lts - 7;
+    fexec eof;
+    fbreak;
+};
+
+
+# ------------------------------------------------------------------------------
+#
+# Numerics
+#
+
+# TODO: error => numeric literal without digits
+
+action RacSuf { num_flags |= RATIONAL_FLAG; }
+action CmxSuf { num_flags |= IMAGINARY_FLAG; }
+action IntNum { token_type = tINTEGER; }
+action FloNum { token_type = tFLOAT; }
+action TrailError { throw new SyntaxError(Filename, Location(p).Item1, "trailing `_' in number"); }
+
+bdigit = [01];
+odigit = [0-7];
+
+# digits with leading `_' like in 1_000_00
+ubdigits = bdigit ( '_'? bdigit )* ('_' %TrailError)? ;
+uodigits = odigit ( '_'? odigit )* ('_' %TrailError)? ;
+uddigits =  digit ( '_'?  digit )* ('_' %TrailError)? ;
+uxdigits = xdigit ( '_'? xdigit )* ('_' %TrailError)? ;
+
+bin_number  =   '0' [bB]   ubdigits % { num_base =  2; };
+oct_number  =   '0' [oO_]? uodigits % { num_base =  8; };
+dec_number  =   '0' [dD]   uddigits % { num_base = 10; };
+hex_number  =   '0' [xX]   uxdigits % { num_base = 16; };
+int_number  = ( '0' | [1-9] ( '_'? digit )* ) ('_' %TrailError)? % { num_base = 10; };
+
+sign = [+\-];
+
+real_frac = '.' uddigits;
+real_exp  = [eE] sign? uddigits;
+
+
+real_number =
+    int_number
+    (
+          real_exp
+        | real_frac ( real_exp | ('r' @RacSuf)? )?
+    ) @FloNum
+;
+
+rationable_number = (
+      bin_number
+    | oct_number
+    | dec_number
+    | hex_number
+    | int_number
+) >IntNum ('r' @RacSuf)? ;
+
+number = ( rationable_number | real_number ) ('i' @CmxSuf)? ;
+
+
+# ------------------------------------------------------------------------------
+#
+# Sign +/-
+#
+
+action UnaryOp {
+    if(lts < 0)
+    {
+        lts = ts;
+    }
+    fexec te = lts + 1;
+    GenToken(token_type, ts: lts);
+    fnext EXPR_BEG;
+    fbreak;
+}
+
+e_beg_number = '+' %TokStart number;
+
+e_beg_unary_sign =
+      '+' [^=0-9]  % { token_type = kUPLUS; }
+    | '-' [^=>0-9] % { token_type = kUMINUS; }
+    | '-' digit    % { token_type = kUMINUS_NUM; }
+;
+
+e_arg_number = ws+ '+' %TokStart number;
+
+e_arg_unary_sign = ws+ (
+      '+' ^(space | [=0-9])  % { token_type = kUPLUS; }
+    | '-' ^(space | [=>0-9]) % { token_type = kUMINUS; }
+    | '-' digit % { token_type = kUMINUS_NUM; }
+);
+
+
+# ------------------------------------------------------------------------------
+#
+# Percent strings
+#
+
+# MRI accepts a unicode code byte as string initiator
+# but then gives an error when trying to close,
+# or if the unicode is invalid.
+# In here, unicode is explicitly disabled.
+percent_string = '%' string_term? (
+    c_eof @{ throw new SyntaxError(Filename, Location(p).Item1, "unknown type of %string"); }
+  | (ascii - alnum) @lerr{ throw new SyntaxError(Filename, Location(p).Item1, "unknown type of %string"); }
+);
+
+
+# ------------------------------------------------------------------------------
+#
+# Heredocs
+#
+
+action Heredoc {
+  var lit = GenHeredocToken(lts >= 0 ? lts : ts);
+  fexec lit.ContentStart = NextBOL();
+  //PushFcall();
+  fnext HEREDOC_DELIMITER;
+  fbreak;
+}
+
+action UnterminatedHeredoc { throw new SyntaxError(Filename, Location(p).Item1, "unterminated here document identifier"); }
+
+# This is different from MRI: MRI accepts \n in identifiers,
+# but then it can't find the identifier anywhere after. (MRI bug)
+# In this case, \n isn't accepted in identifiers.
+# There is no interpolation inside the identifier.
+# Heredocs of type <<' have no interpolation in content.
+heredoc_ident = '<<' [~\-]? (
+    ident_char+
+  | '"' ^('"' | nl_eof)* '"' @lerr(UnterminatedHeredoc)
+  | "'" ^("'" | nl_eof)* "'" @lerr(UnterminatedHeredoc)
+  | '`' ^('`' | nl_eof)* '`' @lerr(UnterminatedHeredoc)
+);
+
+
+# ------------------------------------------------------------------------------
+#
+# Identifiers
+#
+
+reserved_ident = 'alias'
+               | 'and'
+               | 'begin'
+               | 'break'
+               | 'case'
+               | 'class'
+               | 'def'
+               | 'do'
+               | 'else'
+               | 'elsif'
+               | 'end'
+               | 'ensure'
+               | 'false'
+               | 'for'
+               | 'if'
+               | 'in'
+               | 'module'
+               | 'next'
+               | 'nil'
+               | 'not'
+               | 'or'
+               | 'redo'
+               | 'rescue'
+               | 'retry'
+               | 'return'
+               | 'self'
+               | 'super'
+               | 'then'
+               | 'true'
+               | 'undef'
+               | 'unless'
+               | 'until'
+               | 'when'
+               | 'while'
+               | 'yield'
+               | '__ENCODING__'
+               | '__FILE__'
+               | '__LINE__'
+;
+
+reserved_const = 'BEGIN' | 'END';
+reserved_fid   = 'defined?' %TokEnd [^=];
+
+reserved = ( reserved_ident | reserved_const | reserved_fid ) % {
+    token_type = tRESERVED;
+    if(cs != (int) EXPR_FNAME && !FcalledBy(EXPR_FNAME))
+    {
+        // Change state here for ProcessReserved()
+        // This way no need to pass in_cmd parameter
+        InCmd = in_cmd;
+    }
+};
+
+base_identifier = ident_start ident_char*;
+base_constant   = upper       ident_char*;
+
+identifier  = ( base_identifier - reserved_ident ) % { token_type = tIDENTIFIER; };
+constant    = ( base_constant   - reserved_const ) % { token_type = tCONSTANT; };
+
+fid_identifier = (
+    base_identifier %TokEnd [?!]
+    (
+          [^=] >TokEnd % { token_type = tFID; }
+        | '='          % { token_type = tIDENTIFIER; }
+    )
+) - reserved_fid;
+
+fid_constant = (
+    base_constant %TokEnd [?!]
+    (
+          [^=] >TokEnd % { token_type = tFID; }
+        | '='          % { token_type = tCONSTANT; }
+    )
+) - reserved_fid;
+
+fid = fid_identifier | fid_constant;
+
+setter_identifier = base_identifier %TokEnd '='
+(
+        [^~=>]            >TokEnd
+      | '=>'              % { lte = this.p - 2; }
+      | ('=' ^'>' | [~>])
+) % { token_type = tIDENTIFIER; };
+
+setter_constant = base_constant %TokEnd '='
+(
+        [^~=>]            % { token_type = tIDENTIFIER; } >TokEnd
+      | '=>'              % { token_type = tIDENTIFIER; } % { lte = this.p - 2; }
+      | ('=' ^'>' | [~>]) % { token_type = tCONSTANT; }
+);
+
+setter_name = setter_identifier | setter_constant;
+
+any_ident = identifier | constant | fid;
+
+bref_char = [&+``''];
+back_ref  = '$' bref_char % { token_type = tBACK_REF; };
+
+# TODO: if it doesn't fit a Fixnum, give warning.
+#       See parse_numvar.
+#       Don't give warning in EXPR_FNAME.
+nth_ref  = '$' [1-9] digit* % { token_type = tNTH_REF; };
+
+gvar_char = [~*$?!@/\\;,.=:<>""];
+
+invalid_gvar = ^(
+    ident_char
+  | gvar_char
+  | bref_char
+  | space
+  | c_eof
+  | [1-9\-]
+);
+
+gvar = '$' (
+      '-' ident_char
+    | ( ident_char - [1-9] ) ident_char*
+    | gvar_char
+    | (space | c_eof) @ { throw new SyntaxError(Filename, Location(p).Item1, "`$' without identifiers is not allowed as a global variable name"); }
+    | invalid_gvar @ { throw new SyntaxError(Filename, Location(p).Item1, $"`{CurrentToken()}' is not allowed as a global variable name"); }
+) % { token_type = tGVAR; };
+
+var =
+      (ident_char - digit) ident_char*
+    | ( digit | ^ident_char ) % {
+        var tok = CurrentToken();
+        var type_str = token_type == tIVAR ? "n instance" : " class";
+        throw new SyntaxError(Filename, Location(p).Item1, $"`{tok}' is not allowed as a{type_str} variable name");
+      }
+
+  | ( c_eof | space ) % {
+        var tok = CurrentToken(te: te - 1);
+        var type_str = token_type == tIVAR ? "n instance" : " class";
+        var msg = $"`{tok}' without identifiers is not allowed as a{type_str} variable name";
+        throw new SyntaxError(Filename, Location(p).Item1, msg);
+    }
+;
+
+ivar = '@' % { token_type = tIVAR; } var;
+cvar = '@@' % { token_type = tCVAR; } var;
+
+any_var =
+    back_ref
+  | nth_ref
+  | gvar
+  | cvar
+  | ivar
+;
+
+op_asgn = '&&='
+        | '&='
+        | '**='
+        | '*='
+        | '||='
+        | '|='
+        | '+='
+        | '-='
+        | '/='
+        | '^='
+        | '%='
+        | '<<='
+        | '>>='
+;
+
+# Expressions common to EXPR_DOT and EXPR_FNAME
+operator_expr = (
+    # same op as COMMON_EXPR
+    '!=' | '!~' | '!'
+  | '===' | '==' | '=~' | '=>' | '='
+  | '<=>' | '<=' | '<'
+  | '>=' | '>'
+  | '~'
+
+    # similar to COMMON_EXPR
+  | '**' %TokEnd [^=]   % { token_type = tOPERATOR; }
+  | '*'  %TokEnd [^*=]  % { token_type = tOPERATOR; }
+  | '+'  %TokEnd [^@=]  % { token_type = tOPERATOR; }
+  | '-'  %TokEnd [^@=]  % { token_type = tOPERATOR; }
+  | '&'  %TokEnd [^&.=] % { token_type = tOPERATOR; }
+  | '<<' %TokEnd [^=]
+  | '>>' %TokEnd [^=]
+  | '|'  %TokEnd [^|=]
+  | '/'  %TokEnd [^=]
+  | '^'  %TokEnd [^=]
+  | '%'  %TokEnd [^=]
+  | '['  %TokEnd ^']' @ { token_type = tOPERATOR; }
+
+    # unique to operator_expr
+  | '+@' | '-@' | '!@' | '~@'
+  | '[]' | '[]='
+) % { next_state = EXPR_ARG; };
+
+
+#
+# Machines #####################################################################
+#
+
+
+#
+# Main/Entry - Beginning of File  ----------------------------------------------
+#
+
+action RetryBeg {
+    fexec 0;
+    fgoto EXPR_BEG;
+}
+
+action GotoBeg {
+    lts = -1;
+    fgoto EXPR_BEG;
+}
+
+BOF := bol @err(RetryBeg) @GotoBeg;
+
+empty_lines = nl bol? (ws* nl bol?)* % { lts = -1; };
+
+
+#
+# Expressions ------------------------------------------------------------------
+# Expressions are not callable.
+# They are transitioned to through fnext or fgoto.
+
+action PostIdent {
+    if(in_cmd)
+    {
+        // label not allowed
+        if(token_type != tKEYWORD)
+        {
+            next_state = EXPR_CMDARG;
+        }
+    }
+    else if(can_label && IsLabel(lte >= 0 ? te - lte : 0))
+    {
+        lte = (lte >= 0 ? lte : te) + 1;
+        token_type = tLABEL;
+        next_state = EXPR_LABELARG;
+    }
+    else
+    {
+        next_state = EXPR_ARG;
+    }
+}
+
+
+action PostReserved {
+    next_state = null;
+    if(!in_cmd && can_label && IsLabel(lte >= 0 ? te - lte : 0))
+    {
+        lte = (lte >= 0 ? lte : te) + 1;
+        token_type = tLABEL;
+        next_state = EXPR_LABELARG;
+    }
+}
+
+
+action PostArgIdent {
+    if(IsLabel(lte >= 0 ? te - lte : 0))
+    {
+        lte = (lte >= 0 ? lte : te) + 1;
+        token_type = tLABEL;
+        next_state = EXPR_LABELARG;
+    }
+    else
+    {
+        next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG;
+    }
+}
+
+
+action PostArgReserved {
+    next_state = null;
+    if(IsLabel(lte >= 0 ? te - lte : 0))
+    {
+        lte = (lte >= 0 ? lte : te) + 1;
+        token_type = tLABEL;
+        next_state = EXPR_LABELARG;
+    }
+}
+
+
+EXPR_BEG := |*
+
+  empty_lines;
+
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
+
+  '/' => StringStart;
+
+  percent_string => StringStart;
+
+  heredoc_ident => Heredoc;
+
+      '::'
+    | '**' %TokEnd [^=]
+    | '*'  %TokEnd [^*=]
+    | '&' %TokEnd [^&.=]
+    | '('
+    | '['
+    | reserved  %PostReserved
+    | any_ident %PostIdent
+
+  => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_ARG := |*
+  # TODO: EXPR_ARG is always accepting EXPR_LABEL. Verify when not to allow EXPR_LABEL with EXPR_ARG
+
+  ws+ heredoc_ident => Heredoc;
+
+  e_arg_number => Number;
+
+  e_arg_unary_sign => UnaryOp;
+
+  ws+ '/' %TokEnd ^(space | '=') => StringStart;
+
+  ws+ percent_string - (any* (space | '=')) => StringStart;
+
+  ws+ '::' => Keyword;
+
+  ws+ '**' %TokEnd ^(space | '=')  => Keyword;
+  ws+ '*'  %TokEnd ^(space | [*=]) => Keyword;
+
+  ws+ '&' %TokEnd ^(space | [&.=]) => Keyword;
+
+  # exclude '?\\\n': it resolves to '\n' as if '?\\n'
+  '?' %TokEnd space => Keyword;
+
+  ws+ '(' % { token_type = kLPAREN_ARG; } => Keyword;
+
+  ws+ '[' => Keyword;
+
+  '{' % {
+      token_type = LParBeg > 0 && LParBeg == ParenNest ? kLAMBEG : tOPERATOR;
+  } => Keyword;
+
+  reserved  %PostArgReserved => Keyword;
+  any_ident %PostArgIdent    => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_CLASS := |*
+
+  empty_lines;
+
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
+
+  '/' => StringStart;
+
+  percent_string => StringStart;
+
+      '::'
+    | '**' %TokEnd [^=]
+    | '*'  %TokEnd [^*=]
+    | ( '<=>' | '<=' | '<' | '<<' %TokEnd [^=] ) % { InCmd = true; }
+    | '&' %TokEnd [^&.=]
+    | '('
+    | '['
+    | reserved  % { next_state = null; }
+    | any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; }
+  => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_CMDARG := |*
+
+  e_arg_number => Number;
+
+  e_arg_unary_sign => UnaryOp;
+
+  ws+ '/' %TokEnd ^(space | '=') => StringStart;
+
+  ws+ percent_string - (any* (space | '=')) => StringStart;
+
+  ws+ heredoc_ident => Heredoc;
+
+  ws+ '::' => Keyword;
+
+  ws+ '**' %TokEnd ^(space | '=')  => Keyword;
+  ws+ '*'  %TokEnd ^(space | [*=]) => Keyword;
+
+  ws+ '&' %TokEnd ^(space | [&.=]) => Keyword;
+
+  # exclude '?\\\n': it resolves to '\n' as if '?\\n'
+  '?' %TokEnd space => Keyword;
+
+  ws+ '(' % { token_type = kLPAREN_ARG; } => Keyword;
+
+  ws+ '[' => Keyword;
+
+  '{' % {
+      token_type = LParBeg > 0 && LParBeg == ParenNest ? kLAMBEG : tOPERATOR;
+  } => Keyword;
+
+  reserved  %PostArgReserved => Keyword;
+  any_ident %PostArgIdent    => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_DOT := |*
+
+  empty_lines;
+
+  operator_expr => Keyword;
+
+  '`' % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+
+  (
+      any_ident
+    | reserved_ident % { token_type = tIDENTIFIER; }
+    | reserved_const % { token_type = tCONSTANT; }
+    | reserved_fid   % { token_type = tFID; }
+  ) % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_END := |*
+
+  ':' %TokEnd [^:] => Keyword;
+
+  '?' => Keyword;
+
+  '{' % {
+      token_type = LParBeg > 0 && LParBeg == ParenNest ? kLAMBEG : tOPERATOR;
+  } => Keyword;
+
+  reserved % { next_state = null; } => Keyword;
+
+  any_ident % { next_state = EXPR_END; } => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_ENDARG := |*
+
+  ':' %TokEnd [^:] => Keyword;
+
+  '?' => Keyword;
+
+  '{' % {
+      token_type = LParBeg > 0 && LParBeg == ParenNest ? kLAMBEG : kLBRACE_ARG;
+  } => Keyword;
+
+  reserved % { next_state = null; } => Keyword;
+
+  any_ident % { next_state = EXPR_END; } => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_ENDFN := |*
+
+  ':' %TokEnd [^:] => Keyword;
+
+  '?' => Keyword;
+
+  '{' % {
+      token_type = LParBeg > 0 && LParBeg == ParenNest ? kLAMBEG : tOPERATOR;
+  } => Keyword;
+
+  reserved  %PostReserved => Keyword;
+  any_ident %PostReserved => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_FNAME := |*
+
+  empty_lines;
+
+  heredoc_ident => Heredoc;
+
+  back_ref | nth_ref => {
+    GenToken(tGVAR);
+    fnext EXPR_END;
+    fbreak;
+  };
+
+  (
+      '`'
+    | reserved
+    | any_ident
+    | setter_name
+  ) % { next_state = EXPR_ENDFN; }
+  | operator_expr
+  => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+# Equivalent to EXPR_ARG|EXPR_LABELED in MRI.
+EXPR_LABELARG := |*
+
+  empty_lines => {
+    if(InKwarg)
+    {
+      InCmd = true;
+      GenToken(kNL, token: "\n");
+      fnext EXPR_BEG;
+      fbreak;
+    }
+  };
+
+  heredoc_ident => Heredoc;
+
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
+
+  '/' => StringStart;
+
+  percent_string => StringStart;
+
+  '::' => Keyword;
+
+  '**' %TokEnd [^=]  => Keyword;
+  '*'  %TokEnd [^*=] => Keyword;
+
+  '&' %TokEnd [^&.=] => Keyword;
+
+  # exclude '?\\\n': it resolves to '\n' as if '?\\n'
+  '?' %TokEnd space => Keyword;
+
+  '(' => Keyword;
+
+  '[' => Keyword;
+
+  reserved  %PostArgReserved => Keyword;
+  any_ident %PostArgIdent    => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+EXPR_MID := |*
+
+  e_beg_number => Number;
+
+  e_beg_unary_sign => UnaryOp;
+
+  heredoc_ident => Heredoc;
+
+  '/' => StringStart;
+
+  percent_string => StringStart;
+
+  '::' => Keyword;
+
+  '**' %TokEnd [^=]  => Keyword;
+  '*'  %TokEnd [^*=] => Keyword;
+
+  '&' %TokEnd [^&.=] => Keyword;
+
+  '(' => Keyword;
+
+  '[' => Keyword;
+
+  reserved % { next_state = null; } => Keyword;
+
+  any_ident % { next_state = in_cmd ? EXPR_CMDARG : EXPR_ARG; } => Keyword;
+
+  any => GotoCommonExpr;
+
+*|;
+
+
+# ------------------------------------------------------------------------------
+#
+# Shared expressions
+# (i.e., expressions that can exist anywhere)
+#
+
+COMMON_EXPR := |*
+  c_eof => { fbreak; };
+
+  # ignore and continue parsing in corresponding expression state
+  ws+ => {
+      lts = -1;
+      fret;
+  };
+
+  line_comment => { fret; }; # no op
+
+  empty_lines => {
+    InCmd = true;
+    GenToken(kNL, token: "\n");
+    PopFcall();
+    fnext EXPR_BEG;
+    fbreak;
+  };
+
+  # ---
+
+      # same op as operator_expr
+      '!=' | '!~' | '!'
+    | '===' | '==' | '=~' | '=>' | '='
+    | '<=>' | '<=' | '<'
+    | '>=' | '>'
+    | '~'
+
+    | '<<' | '>>' | '/' | '^' | '%'
+    | '...' | '..' | '&&'
+    | ',' % { CanLabel = true; }
+
+    | '|' [^|=] >TokEnd @ { CanLabel = true; }
+    | '||'
+
+    | ( '**' | '*' | '+' | '-' | '&' %TokEnd [^&.=] ) % { token_type = tOPERATOR; }
+    | op_asgn % { token_type = tOPERATOR; }
+    | (
+          nl %TokStart ws* '.' %TokEnd [^.0-9]
+        | nl %TokStart ws* '&.'
+        | '.'
+        | '&.'
+        | '::' % { token_type = tOPERATOR; }
+      ) % { next_state = EXPR_DOT; }
+
+    | ';' % { InCmd = true; }
+
+    | ':' %TokEnd ( space | '#' )
+
+    | ':' % { token_type = tSYMBEG; next_state = EXPR_FNAME; }
+
+    | '->' % { next_state = EXPR_ENDFN; }
+
+    | '(' % { token_type = tOPERATOR; }
+    | ')' % { next_state = EXPR_ENDFN; }
+    | '[' % { token_type = tOPERATOR; }
+    | ']' % { next_state = EXPR_ENDARG; }
+    | '}' % { next_state = null; }
+
+    | '{' % {
+        if(LParBeg > 0 && LParBeg == ParenNest)
+        {
+            token_type = kLAMBEG;
+        }
+    }
+
+    | any_var % { next_state = EXPR_END; }
+
+    | '?' %TokEnd (
+
+        (alnum | '_') ident_char
+
+        # exclude '?\\\n': it resolves to '\n' as if '?\\n'
+      | space % {
+          var c = CurrentToken(ts: ts + 1, te: te + 1)[0];
+          var i = " \n\f\r\t\v".IndexOf(c);
+          c = "snfrtv"[i];
+          Console.WriteLine($"invalid character syntax; use ?\\{c}");
+        }
+
+      | c_eof % { throw new SyntaxError(Filename, Location(p).Item1, "incomplete character syntax"); }
+
+    )
+
+  => Keyword;
+
+  # ---
+
+  '?' => {
+    PopFcall();
+    fgoto CHAR;
+  };
+
+  [''""``] | ':' [''""] => StringStart;
+
+  number => Number;
+
+  '.' digit => { throw new SyntaxError(Filename, Location(p).Item1, "no .<digit> floating literal anymore; put 0 before dot"); };
+
+  ^ident_char => {
+    throw new SyntaxError(Filename, Location(p).Item1, $"Invalid char `{CurrentToken()}' in expression at {ts}");
+  };
+
+  any => { throw new SyntaxError(Filename, Location(p).Item1, $"Don't know what to do with `{CurrentToken()}' at {ts}"); };
+
+*|;
+
+
+# ##############################################################################
+#
+# Strings: <<Heredocs, 'strings', %w(words) and ?chars
+#
+
+action EofLiteralError { throw new SyntaxError(Filename, Location(p).Item1, current_literal.UnterminatedMessage); }
+
+
+# ------------------------------------------------------------------------------
+#
+# Character escaping
+#
+
+action InvalidUnicode {
+    if(!in_literal)
+    {
+        throw new SyntaxError(Filename, Location(p).Item1, "invalid Unicode escape");
+    }
+}
+
+
+action UntermUnicode  {
+    if(!in_literal)
+    {
+        throw new SyntaxError(Filename, Location(p).Item1, "unterminated Unicode escape");
+    }
+}
+
+unicode_digits = xdigit{1,6} >lerr(InvalidUnicode);
+
+unicode_escape = '\\u' xdigit{4} @lerr(InvalidUnicode)
+               | '\\u{' unicode_digits '}' @lerr(UntermUnicode)
+;
+
+multi_unicode_escape =
+      '\\u' xdigit{4} @lerr(InvalidUnicode)
+    | '\\u{' unicode_digits ([\t ] @lerr(UntermUnicode) unicode_digits)* '}' @lerr(UntermUnicode)
+;
+
+char_escape = '\\' (any - [CMcux0-7] - c_eof);
+
+octal_escape = '\\' odigit{1,3};
+
+
+action InvalidHex { throw new SyntaxError(Filename, Location(p).Item1, "invalid hex escape"); }
+
+hex_escape   = '\\x' ( xdigit{1,2} >lerr InvalidHex );
+
+
+action InvalidControl { throw new SyntaxError(Filename, Location(p).Item1, "Invalid escape character syntax"); }
+
+ctrl_char = '\\' ( 'c' | 'C-' );
+meta_char = '\\M-';
+
+control_prefix = ctrl_char meta_char? | meta_char ctrl_char?;
+
+control_escape = control_prefix (
+    (ascii - '\\')
+  | octal_escape
+  | hex_escape
+  | '\\' (ascii - [CMcux0-7])
+) @lerr(InvalidControl);
+
+
+# ------------------------------------------------------------------------------
+#
+# Heredocs
+#
+
+# Heredoc existence condition:
+#     ( cs in (EXPR_BEG, EXPR_FNAME, EXPR_LABELARG, EXPR_MID) )
+#  || ( cs in (EXPR_ARG, EXPR_CMDARG) && ( ts == 0 || Data[ts - 1].Matches(" \f\t\r\v") ) )
+
+
+HEREDOC_DELIMITER := |*
+    c_eof => EofLiteralError;
+
+    ^nl_eof* nl_eof => {
+        if(current_literal.IsDelimiter(CurrentToken()))
+        {
+            // found delimiter => end of heredoc
+            GenStringContentToken();
+            GenStringEndToken();
+            line_jump = te;
+            fexec ((Heredoc) current_literal).Restore;
+            fnext EXPR_END;
+            fbreak;
+        }
+
+        fexec ts;
+        fgoto HEREDOC_CONTENT;
+    };
+
+*|;
+
+HEREDOC_CONTENT := |*
+    # TODO: '\\\n' - counts as not being present, if id_delimiter != "'"
+
+    c_eof => EofLiteralError;
+
+    '\n' => { // don't jump yet
+        current_literal.LineIndent = 0;
+
+        if(line_jump > this.p)
+        {
+            // content in te..line_jump isn't included
+            GenStringContentToken(this.te);
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+        }
+
+        fgoto HEREDOC_DELIMITER;
+    };
+
+    '\\' ^c_eof => { current_literal.CommitIndent(); };
+
+    '#' any_var => { GenInterpolationTokens(token_type); };
+
+    '#{' => {
+        current_literal.CommitIndent();
+        if(current_literal.Interpolates)
+        {
+            GenStringContentToken();
+            GenToken(tSTRING_DBEG);
+            InCmd = true;
+            fnext EXPR_BEG;
+            fbreak;
+        }
+    };
+
+    ' ' => {
+        if(current_literal.Dedents && current_literal.LineIndent >= 0)
+        {
+            current_literal.LineIndent++;
+        }
+    };
+
+    '\t' => {
+        if(current_literal.Dedents && current_literal.LineIndent >= 0)
+        {
+            var w = current_literal.LineIndent / TabWidth + 1;
+            current_literal.LineIndent = w * TabWidth;
+        }
+    };
+
+    any => { current_literal.CommitIndent(); };
+
+*|;
+
+
+# ------------------------------------------------------------------------------
+#
+# Strings
+#
+
+# ^D (0x4) isn't used by the lexer.
+# The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
+string_delimiter = 0x4;
+
+action StringDelimiter { // StringDelimiter
+    if(current_literal.IsNested)
+    {
+        // Delimiter is one of '{[(<'
+        current_literal.WasContent = true;
+        current_literal.Nesting--;
+        goto _again;
+    }
+
+    // If delimiter is one of '{[(<' => nesting has ended => no op
+
+    // If delimiter is '\n' => it may jump
+    //     must create content before jump
+    if(!current_literal.IsWords || current_literal.WasContent)
+    {
+        GenStringContentToken();
+        if(current_literal.IsWords)
+        {
+            GenToken(tSPACE, token: "");
+        }
+    }
+
+    // If regexp (never happens in STRING_INTERPOLATION)
+    if(current_literal.IsRegexp)
+    {
+        // If '\n' jumps
+        if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+        {
+            // Grab the '\n' for the token
+            regexp_delim = line_jump - 1;
+            fexec line_jump;
+        }
+        else
+        {
+            regexp_delim = ts;
+        }
+        fgoto REGEXP_END;
+    }
+
+    var tok = GenStringEndToken();
+
+    if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+    {
+        fexec line_jump;
+    }
+    PopFcall();
+    fnext *((int) (tok.Type == tLABEL_END ? EXPR_BEG : EXPR_END));
+    fbreak;
+
+}
+
+
+action StringDelimiterEscape { // StringDelimiterEscape
+    // No nesting
+
+    current_literal.WasContent = true;
+
+    // If '\n' jumps => generate content and jump
+
+    if(current_literal.IsDelimiter("\n") && line_jump > this.p)
+    {
+        // content in te...line_jump isn't included
+        GenStringContentToken(te); // include current token in content
+        current_literal.ContentStart = line_jump;
+        fexec line_jump;
+        fbreak;
+    }
+}
+
+
+action StringNl { // StringNl
+    if(!current_literal.IsWords)
+    {
+        if(line_jump > this.p)
+        {
+            // content in te...line_jump isn't included
+            GenStringContentToken(this.p + 1); // include current token in content
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            fbreak;
+        }
+
+        // Nothing to do
+        goto _again;
+    }
+
+    // Words
+
+    if(lts < 0)
+    {
+        // Not escape => considered as space
+
+        // Jump if needed
+        if(line_jump > p)
+        {
+            var was_content = current_literal.WasContent;
+            if(was_content)
+            {
+                GenStringContentToken();
+                GenToken(tSPACE, te: this.p + 1);
+            }
+            current_literal.WasContent = false;
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            if(was_content)
+            {
+                fbreak;
+            }
+
+            // Start the space token from after the jump
+            ts = p;
+            te = line_jump;
+        }
+    }
+    else
+    {
+        // Escape => considered as char
+        lts = -1;
+
+        current_literal.WasContent = true;
+
+        if(line_jump > p)
+        {
+            GenStringContentToken();
+            GenToken(tSPACE, te: this.p + 1);
+            current_literal.WasContent = false;
+            current_literal.ContentStart = line_jump;
+            fexec line_jump;
+            fbreak;
+        }
+    }
+}
+
+
+action StringDBeg { // StringDBeg
+    current_literal.WasContent = true;
+
+    if(current_literal.Interpolates)
+    {
+        // should always happen
+        // (only called by strings with interpolation)
+        GenStringContentToken();
+        GenToken(tSTRING_DBEG);
+        InCmd = true;
+        fnext EXPR_BEG;
+        fbreak;
+    }
+}
+
+
+action StringDVar { // StringDVar
+    if(GenInterpolationTokens(token_type))
+    {
+        // this should always happen
+        // (only called by strings with interpolation)
+        fbreak;
+    }
+}
+
+
+action StringNesting { // StringNesting
+    current_literal.WasContent = true;
+    if(((Literal) current_literal).BeginDelimiter == CurrentToken())
+    {
+        current_literal.Nesting++;
+    }
+}
+
+
+action WordSpace { // WordSpace
+    if(!current_literal.IsWords)
+    {
+        goto _again;
+    }
+
+    var was_content = current_literal.WasContent;
+    if(was_content)
+    {
+        GenStringContentToken();
+        GenToken(tSPACE);
+    }
+    current_literal.WasContent = false;
+    current_literal.ContentStart = this.te;
+    if(was_content)
+    {
+        fbreak;
+    }
+}
+
+
+# String with no interpolation
+STRING_LITERAL := |*
+    c_eof => EofLiteralError;
+    string_delimiter => StringDelimiter;
+
+    # The only allowed escapes in a non interpolation string
+    '\\' string_delimiter => StringDelimiterEscape;
+    '\\\\' => { current_literal.WasContent = true; };
+
+    # Not an escape, but it's content for words
+    ( '\\' '\r'? ) >TokStart '\n' => StringNl;
+
+    [\[{(<] => StringNesting;
+
+    ( space | '\n' @StringNl )+ => WordSpace;
+
+    # This can match backslash escape ('\\')
+    ^(c_eof | string_delimiter | space | [\n\[{(<]) => { current_literal.WasContent = true; };
+*|;
+
+
+STRING_INTERPOLATION := |*
+    c_eof => EofLiteralError;
+    string_delimiter => StringDelimiter;
+
+    '\\' string_delimiter => StringDelimiterEscape;
+
+    [\[{(<] => StringNesting;
+
+    ( '\\' '\r'? ) >TokStart '\n' => StringNl;
+
+    '#' any_var => StringDVar;
+    '#{'        => StringDBeg;
+
+    char_escape - '\\\n' - '\\' string_delimiter => { current_literal.WasContent = true; };
+    octal_escape                                 => { current_literal.WasContent = true; };
+    hex_escape                                   => { current_literal.WasContent = true; };
+    multi_unicode_escape                         => { current_literal.WasContent = true; };
+    control_escape                               => { current_literal.WasContent = true; };
+
+    ( space | '\n' @StringNl )+ => WordSpace;
+
+    ^(c_eof | string_delimiter | space | [\\\n\[{(<]) => { current_literal.WasContent = true; };
+*|;
+
+
+REGEXP_END := |*
+    (
+          'm' @ { regexp_options |= RegexpFlags.Multiline; }
+        | 'i' @ { regexp_options |= RegexpFlags.IgnoreCase; }
+        | 'x' @ { regexp_options |= RegexpFlags.Extend; }
+        | 'o' @ { regexp_options |= RegexpFlags.Once; }
+        # accept the last encoding option
+        | 'n' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.ASCII8; }
+        | 'e' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.EUC_JP; }
+        | 's' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.Windows_31J; }
+        | 'u' @ { regexp_options = (regexp_options & ~RegexpFlags.EncodingMask) | RegexpFlags.UTF_8; }
+    )+;
+
+    ( alpha - [mixo] )+ => {
+        var tok = CurrentToken();
+        var opt = tok.Length == 1 ? "" : "s";
+        throw new SyntaxError(Filename, Location(p).Item1, $"unknown regexp option{opt} - {tok}");
+    };
+
+    ^alpha => {
+        fexec --this.te;
+        GenStringEndToken(ts: regexp_delim, regexp_options: regexp_options);
+        PopFcall();
+        fnext EXPR_END;
+        fbreak;
+    };
+*|;
+
+
+# ------------------------------------------------------------------------------
+#
+# Single characters (e.g.: ?a)
+#
+
+CHAR := |*
+  c_eof => { throw new SyntaxError(Filename, Location(p).Item1, "incomplete character syntax"); };
+
+    unicode_escape
+  | octal_escape
+  | hex_escape
+  | char_escape
+  | control_escape
+  | ^c_eof
+  => {
+    GenToken(tCHAR);
+    fnext EXPR_END;
+    fbreak;
+  };
+
+*|;
+
+
+}%%
+}%%

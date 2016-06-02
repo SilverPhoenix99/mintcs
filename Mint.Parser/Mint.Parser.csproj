@@ -53,8 +53,8 @@
     <Compile Include="Parse\BitStack.cs" />
     <Compile Include="Parse\Heredoc.cs" />
     <Compile Include="Parse\iLiteral.cs" />
-    <Compile Include="Parse\Lexer.cs" />
-    <Compile Include="Parse\Lexer_States.cs" />
+    <Compile Include="Lexing\Lexer.cs" />
+    <Compile Include="Lexing\Lexer.States.cs" />
     <Compile Include="Parse\Literal.cs" />
     <Compile Include="Parse\Parser.cs" />
     <Compile Include="Parse\RegexpFlags.cs" />
@@ -68,9 +68,9 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
-    <Ragel Include="Parse\Lexer_exec.csrl" />
-    <Ragel Include="Parse\Lexer_data.csrl" />
-    <Ragel Include="Parse\Lexer.csrl" />
+    <Ragel Include="Lexing\Lexer_exec.csrl" />
+    <Ragel Include="Lexing\Lexer_data.csrl" />
+    <Ragel Include="Lexing\Lexer.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

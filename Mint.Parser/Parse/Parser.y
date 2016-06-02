@@ -6,6 +6,8 @@
 %scanbasetype Lexer
 %tokentype TokenType
 
+%using Mint.Lexing;
+
 %YYSTYPE Ast<Token>
 
 %token tUNKNOWN
