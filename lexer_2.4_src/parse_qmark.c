@@ -4,7 +4,7 @@ parse_qmark(struct parser_params *parser)
     rb_encoding *enc;
     register int c;
 
-    if(IS_END())
+    if(IS_lex_state(EXPR_END | EXPR_ENDARG | EXPR_ENDFN))
     {
         SET_LEX_STATE(EXPR_VALUE);
         return '?';
@@ -17,7 +17,7 @@ parse_qmark(struct parser_params *parser)
     }
     if(rb_enc_isspace(c, current_enc))
     {
-        if(!IS_ARG())
+        if(!IS_lex_state(EXPR_ARG | EXPR_CMDARG))
         {
             int c2 = 0;
             switch (c)

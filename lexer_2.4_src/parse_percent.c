@@ -3,7 +3,7 @@ parse_percent(struct parser_params *parser, const int space_seen, const enum lex
 {
     register int c;
 
-    if(IS_BEG())
+    if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
     {
         int term;
         int paren;
@@ -111,11 +111,14 @@ quotation:
         SET_LEX_STATE(EXPR_BEG);
         return tOP_ASGN;
     }
-    if(IS_SPCARG(c) || (IS_lex_state(EXPR_FITEM) && c == 's'))
+
+    if((IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
+    || (IS_lex_state(EXPR_FITEM) && c == 's'))
     {
         goto quotation;
     }
-    SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+
+    SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
     pushback(c);
     warn_balanced("%%", "string literal");
     return '%';

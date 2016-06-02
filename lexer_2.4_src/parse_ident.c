@@ -54,7 +54,8 @@ parse_ident(struct parser_params *parser, int c, int cmd_state)
         }
     }
 
-    if(IS_LABEL_POSSIBLE())
+    if((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state)
+    || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
     {
         if(IS_LABEL_SUFFIX(0))
         {
@@ -110,7 +111,7 @@ parse_ident(struct parser_params *parser, int c, int cmd_state)
         }
     }
 
-    if(IS_lex_state(EXPR_BEG_ANY | EXPR_ARG_ANY | EXPR_DOT))
+    if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS | EXPR_ARG | EXPR_CMDARG | EXPR_DOT))
     {
         if(cmd_state)
         {

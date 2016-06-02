@@ -21,19 +21,27 @@
 #define IS_lex_state(ls)            IS_lex_state_for(lex_state, (ls))
 #define IS_lex_state_all(ls)        IS_lex_state_all_for(lex_state, (ls))
 
-#define ISSPACE(c) (c == ' ' || ('\t' <= c && c <= '\r'))
-#define IS_ARG() IS_lex_state(EXPR_ARG_ANY)
-#define IS_END() IS_lex_state(EXPR_END_ANY)
-#define IS_BEG() (IS_lex_state(EXPR_BEG_ANY) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
-#define IS_SPCARG(c) (IS_ARG() && space_seen && !ISSPACE(c))
-#define IS_LABEL_POSSIBLE() (\
-        (IS_lex_state(EXPR_LABEL|EXPR_ENDFN) && !cmd_state) || \
-        IS_ARG())
-#define IS_LABEL_SUFFIX(n) (peek_n(':',(n)) && !peek_n(':', (n)+1))
-#define IS_AFTER_OPERATOR() IS_lex_state(EXPR_FNAME | EXPR_DOT)
+// #define IS_ARG() IS_lex_state(EXPR_ARG | EXPR_CMDARG)
+// #define IS_END() IS_lex_state(EXPR_END | EXPR_ENDARG | EXPR_ENDFN)
+// #define IS_BEG() (IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
+// #define IS_SPCARG(c) (IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
+// #define IS_LABEL_POSSIBLE() \
+//     ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
+// #define IS_AFTER_OPERATOR() IS_lex_state(EXPR_FNAME | EXPR_DOT)
 
-#define is_identchar(p,e,enc) (rb_enc_isalnum((unsigned char)(*(p)),(enc)) || (*(p)) == '_' || !ISASCII(*(p)))
-#define parser_is_identchar() (!parser->eofp && is_identchar((lex_p-1),lex_pend,current_enc))
+// [ \t\n\v\f\r]
+#define ISSPACE(c) \
+    (c == ' ' || ('\t' <= c && c <= '\r'))
+
+// end_with? /:[^:]/
+#define IS_LABEL_SUFFIX(n) \
+    (peek_n(':',(n)) && !peek_n(':', (n)+1))
+
+#define is_identchar(p,e,enc) \
+    (rb_enc_isalnum((unsigned char)(*(p)),(enc)) || (*(p)) == '_' || !ISASCII(*(p)))
+
+#define parser_is_identchar() \
+    (!parser->eofp && is_identchar((lex_p-1),lex_pend,current_enc))
 
 static int
 parser_yylex(struct parser_params *parser)
@@ -63,7 +71,7 @@ parser_yylex(struct parser_params *parser)
             token = parse_string(lex_strterm);
             if((token == tSTRING_END) && (lex_strterm->nd_func & STR_FUNC_LABEL))
             {
-                if(((IS_lex_state(EXPR_BEG | EXPR_ENDFN) && !COND_P()) || IS_ARG()) &&
+                if(((IS_lex_state(EXPR_BEG | EXPR_ENDFN) && !COND_P()) || IS_lex_state(EXPR_ARG | EXPR_CMDARG)) &&
                     IS_LABEL_SUFFIX(0))
                 {
                     nextc();
@@ -79,8 +87,8 @@ parser_yylex(struct parser_params *parser)
         }
         return token;
     }
-    cmd_state = command_start;
-    command_start = FALSE;
+    cmd_state = parser->command_start;
+    parser->command_start = FALSE;
     parser->token_seen = TRUE;
 retry:
     last_state = lex_state;
@@ -121,8 +129,7 @@ retry:
         case '\n':
         {
             parser->token_seen = token_seen;
-            c = (IS_lex_state(EXPR_BEG|EXPR_CLASS|EXPR_FNAME|EXPR_DOT) &&
-                 !IS_lex_state(EXPR_LABELED));
+            c = (IS_lex_state(EXPR_BEG|EXPR_CLASS|EXPR_FNAME|EXPR_DOT) && !IS_lex_state(EXPR_LABELED));
             if(c || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
                 fallthru = FALSE;
@@ -158,7 +165,7 @@ retry:
                 }
             }
 normal_newline:
-            command_start = TRUE;
+            parser->command_start = TRUE;
             SET_LEX_STATE(EXPR_BEG);
             return '\n';
         }
@@ -174,11 +181,11 @@ normal_newline:
                     return tOP_ASGN;
                 }
                 pushback(c);
-                if(IS_SPCARG(c))
+                if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
                 {
                     c = tDSTAR;
                 }
-                else if(IS_BEG())
+                else if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
                 {
                     c = tDSTAR;
                 }
@@ -196,11 +203,11 @@ normal_newline:
                     return tOP_ASGN;
                 }
                 pushback(c);
-                if(IS_SPCARG(c))
+                if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
                 {
                     c = tSTAR;
                 }
-                else if(IS_BEG())
+                else if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
                 {
                     c = tSTAR;
                 }
@@ -209,14 +216,14 @@ normal_newline:
                     c = '*';
                 }
             }
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             return c;
         }
 
         case '!':
         {
             c = nextc();
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 SET_LEX_STATE(EXPR_ARG);
                 if(c == '@')
@@ -272,7 +279,7 @@ normal_newline:
                 }
             }
 
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             if((c = nextc()) == '=')
             {
                 if((c = nextc()) == '=')
@@ -300,20 +307,20 @@ normal_newline:
             c = nextc();
             if(c == '<' &&
                 !IS_lex_state(EXPR_DOT | EXPR_CLASS) &&
-                !IS_END() &&
-                (!IS_ARG() || IS_lex_state(EXPR_LABELED) || space_seen))
+                !IS_lex_state(EXPR_END | EXPR_ENDARG | EXPR_ENDFN) &&
+                (!IS_lex_state(EXPR_ARG | EXPR_CMDARG) || IS_lex_state(EXPR_LABELED) || space_seen))
             {
                 int token = heredoc_identifier();
                 if(token) return token;
             }
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 SET_LEX_STATE(EXPR_ARG);
             }
             else
             {
                 if(IS_lex_state(EXPR_CLASS))
-                    command_start = TRUE;
+                    parser->command_start = TRUE;
                 SET_LEX_STATE(EXPR_BEG);
             }
             if(c == '=')
@@ -342,7 +349,7 @@ normal_newline:
 
         case '>':
         {
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             if((c = nextc()) == '=')
             {
                 return tGEQ;
@@ -364,7 +371,10 @@ normal_newline:
 
         case '"':
         {
-            label = (IS_LABEL_POSSIBLE() ? str_label : 0);
+            label =
+                ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
+                ? str_label
+                : 0;
             lex_strterm = NEW_STRTERM(str_dquote | label, '"', 0);
             return tSTRING_BEG;
         }
@@ -390,7 +400,11 @@ normal_newline:
 
         case '\'':
         {
-            label = (IS_LABEL_POSSIBLE() ? str_label : 0);
+            label =
+                ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
+                ? str_label
+                : 0
+            ;
             lex_strterm = NEW_STRTERM(str_squote | label, '\'', 0);
             return tSTRING_BEG;
         }
@@ -424,11 +438,11 @@ normal_newline:
                 return tANDDOT;
             }
             pushback(c);
-            if(IS_SPCARG(c))
+            if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
             {
                 c = tAMPER;
             }
-            else if(IS_BEG())
+            else if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
                 c = tAMPER;
             }
@@ -436,7 +450,7 @@ normal_newline:
             {
                 c = '&';
             }
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             return c;
         }
 
@@ -460,7 +474,7 @@ normal_newline:
                 SET_LEX_STATE(EXPR_BEG);
                 return tOP_ASGN;
             }
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG|EXPR_LABEL);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG|EXPR_LABEL);
             pushback(c);
             return '|';
         }
@@ -468,7 +482,7 @@ normal_newline:
         case '+':
         {
             c = nextc();
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 SET_LEX_STATE(EXPR_ARG);
                 if(c == '@')
@@ -484,7 +498,8 @@ normal_newline:
                 SET_LEX_STATE(EXPR_BEG);
                 return tOP_ASGN;
             }
-            if(IS_BEG() || IS_SPCARG(c))
+            if((IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
+            || (IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c)))
             {
                 SET_LEX_STATE(EXPR_BEG);
                 pushback(c);
@@ -502,7 +517,7 @@ normal_newline:
         case '-':
         {
             c = nextc();
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 SET_LEX_STATE(EXPR_ARG);
                 if(c == '@')
@@ -524,7 +539,8 @@ normal_newline:
                 token_info_push("->");
                 return tLAMBDA;
             }
-            if(IS_BEG() || IS_SPCARG(c))
+            if((IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
+            || (IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c)))
             {
                 SET_LEX_STATE(EXPR_BEG);
                 pushback(c);
@@ -587,7 +603,9 @@ normal_newline:
             c = nextc();
             if(c == ':')
             {
-                if(IS_BEG() || IS_lex_state(EXPR_CLASS) || IS_SPCARG(-1))
+                if((IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
+                || IS_lex_state(EXPR_CLASS)
+                || (IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(-1)))
                 {
                     SET_LEX_STATE(EXPR_BEG);
                     return tCOLON3;
@@ -595,7 +613,7 @@ normal_newline:
                 SET_LEX_STATE(EXPR_DOT);
                 return tCOLON2;
             }
-            if(IS_END() || ISSPACE(c) || c == '#')
+            if(IS_lex_state(EXPR_END | EXPR_ENDARG | EXPR_ENDFN) || ISSPACE(c) || c == '#')
             {
                 pushback(c);
                 SET_LEX_STATE(EXPR_BEG);
@@ -619,7 +637,7 @@ normal_newline:
 
         case '/':
         {
-            if(IS_BEG())
+            if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
                 lex_strterm = NEW_STRTERM(str_regexp, '/', 0);
                 return tREGEXP_BEG;
@@ -631,12 +649,12 @@ normal_newline:
                 return tOP_ASGN;
             }
             pushback(c);
-            if(IS_SPCARG(c))
+            if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(c))
             {
                 lex_strterm = NEW_STRTERM(str_regexp, '/', 0);
                 return tREGEXP_BEG;
             }
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             return '/';
         }
 
@@ -648,7 +666,7 @@ normal_newline:
                 SET_LEX_STATE(EXPR_BEG);
                 return tOP_ASGN;
             }
-            SET_LEX_STATE(IS_AFTER_OPERATOR() ? EXPR_ARG : EXPR_BEG);
+            SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             pushback(c);
             return '^';
         }
@@ -656,7 +674,7 @@ normal_newline:
         case ';':
         {
             SET_LEX_STATE(EXPR_BEG);
-            command_start = TRUE;
+            parser->command_start = TRUE;
             return ';';
         }
 
@@ -668,7 +686,7 @@ normal_newline:
 
         case '~':
         {
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 if((c = nextc()) != '@')
             {
@@ -685,11 +703,11 @@ normal_newline:
 
         case '(':
         {
-            if(IS_BEG())
+            if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
                 c = tLPAREN;
             }
-            else if(IS_SPCARG(-1))
+            else if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && space_seen && !ISSPACE(-1))
             {
                 c = tLPAREN_ARG;
             }
@@ -703,7 +721,7 @@ normal_newline:
         case '[':
         {
             paren_nest++;
-            if(IS_AFTER_OPERATOR())
+            if(IS_lex_state(EXPR_FNAME | EXPR_DOT))
             {
                 SET_LEX_STATE(EXPR_ARG);
                 if((c = nextc()) == ']')
@@ -719,11 +737,11 @@ normal_newline:
                 lex_state |= EXPR_LABEL;
                 return '[';
             }
-            else if(IS_BEG())
+            else if(IS_lex_state(EXPR_BEG | EXPR_MID | EXPR_CLASS) || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
                 c = tLBRACK;
             }
-            else if(IS_ARG() && (space_seen || IS_lex_state(EXPR_LABELED)))
+            else if(IS_lex_state(EXPR_ARG | EXPR_CMDARG) && (space_seen || IS_lex_state(EXPR_LABELED)))
             {
                 c = tLBRACK;
             }
@@ -747,7 +765,7 @@ normal_newline:
             }
             if(IS_lex_state(EXPR_LABELED))
                 c = tLBRACE;      /* hash */
-            else if(IS_lex_state(EXPR_ARG_ANY | EXPR_END | EXPR_ENDFN))
+            else if(IS_lex_state(EXPR_ARG | EXPR_CMDARG | EXPR_END | EXPR_ENDFN))
                 c = '{';          /* block (primary) */
             else if(IS_lex_state(EXPR_ENDARG))
                 c = tLBRACE_ARG;  /* block (expr) */
@@ -756,8 +774,10 @@ normal_newline:
             COND_PUSH(0);
             CMDARG_PUSH(0);
             SET_LEX_STATE(EXPR_BEG);
-            if(c != tLBRACE_ARG) lex_state |= EXPR_LABEL;
-            if(c != tLBRACE) command_start = TRUE;
+            if(c != tLBRACE_ARG)
+                lex_state |= EXPR_LABEL;
+            if(c != tLBRACE)
+                parser->command_start = TRUE;
             return c;
         }
 
