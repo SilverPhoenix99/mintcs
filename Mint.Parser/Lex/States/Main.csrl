@@ -4,13 +4,10 @@ machine Lexer;
 
 include "definitions.csrl";
 
-getkey Lexer.CurrentChar;
-variable p Lexer.Position;
-
 bom_marker = '\xef\xbb\xbf';
 shebang = '#!' ^'\n'* nl_eof;
 empty_line = ws* '\n';
-comment = ws* '#' ^nl_eof* nl_eof;
+comment = '#' ^nl_eof* nl_eof;
 
 MAIN := |*
 
@@ -27,7 +24,7 @@ action MagicComment {}
 
 BOF := |*
 
-    comment => MagicComment;
+    ws* comment => MagicComment;
 
     empty_line; # ignore it
 

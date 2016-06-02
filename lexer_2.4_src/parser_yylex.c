@@ -117,7 +117,6 @@ retry:
                 set_file_encoding(parser, lex_p, lex_pend);
             }
             lex_p = lex_pend;
-            fallthru = TRUE;
             /* fall through */
         }
 
@@ -127,7 +126,6 @@ retry:
             c = (IS_lex_state(EXPR_BEG|EXPR_CLASS|EXPR_FNAME|EXPR_DOT) && !IS_lex_state(EXPR_LABELED));
             if(c || IS_lex_state_all(EXPR_ARG|EXPR_LABELED))
             {
-                fallthru = FALSE;
                 if(!c && parser->in_kwarg)
                 {
                     goto normal_newline;

@@ -78,14 +78,17 @@
     <None Include="Lexing\Lexer_exec.csrl" />
     <None Include="Lexing\Lexer_data.csrl" />
     <None Include="Lexing\Lexer.csrl" />
-    <None Include="Lex\States\definitions.csrl" />
+    <RagelDependency Include="Lex\States\definitions.csrl" />
     <Ragel Include="Lex\States\Main.csrl" />
+    <Ragel Include="Lex\States\ExprBeg.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel)" Outputs="@(Ragel->'gen\Lex\%(Filename).cs')">
+  <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel);@(RagelDependency)" Outputs="@(Ragel->'gen\%(relativedir)%(Filename).cs')">
+    <Message Text="GenLexer.bat %(Ragel.Filename)" Importance="high" />
     <Exec Command="GenLexer.bat %(Ragel.Filename)" />
   </Target>
-  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
+    <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
+    <Message Text="GenParser.bat" Importance="high" />
     <Exec Command="GenParser.bat" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

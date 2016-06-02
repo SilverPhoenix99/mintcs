@@ -1,4 +1,23 @@
 %%{
 # ignore newline, +/- is a sign.
 
+machine Lexer;
+
+include "definitions.csrl";
+
+comment = '#' ^nl_eof* nl_eof;
+
+EXPR_BEG := |*
+
+    empty_lines;
+
+    comment; # ignore it
+
+    any => {
+        fhold;
+        return Lexer.CommonState;
+    };
+
+*|;
+
 }%%

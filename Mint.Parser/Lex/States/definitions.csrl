@@ -6,8 +6,29 @@
 
 machine Lexer;
 
+getkey Lexer.CurrentChar;
+variable p Lexer.Position;
+
+### Actions
+
+
+action NewLine
+{
+    // NewLine
+    if(Lexer.LineJump > Lexer.Position)
+    {
+        fexec te = Lexer.LineJump;
+        ts = Lexer.Position;
+    }
+}
+
+
+### Definitions
+
 c_eof = 0;
 nl_eof = '\n' | c_eof;
 ws = [ \t\v\f\r];
+
+empty_lines = '\n' @NewLine;
 
 }%%
