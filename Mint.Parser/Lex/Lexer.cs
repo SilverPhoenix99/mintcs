@@ -13,7 +13,7 @@ namespace Mint.Lex
         private readonly Queue<Token> tokens;
 
         public string Filename { get; }
-        
+
         public string Data
         {
             get { return data; }
@@ -52,7 +52,7 @@ namespace Mint.Lex
 
         private State MainState { get; }
         internal State BegState { get; }
-        internal ExprShared SharedState { get; }
+        internal Shared SharedState { get; }
 
         internal int LineJump { get; set; }
 
@@ -62,7 +62,7 @@ namespace Mint.Lex
             data = string.Empty;
             tokens = new Queue<Token>();
             MainState = new Main(this);
-            BegState = new ExprBeg(this);
+            BegState = new Beg(this);
             Reset();
         }
 

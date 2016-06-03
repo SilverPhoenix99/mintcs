@@ -1,29 +1,14 @@
 %%{
-# ignore newline, +/- is a sign.
+# newline significant, +/- is an operator.  just after a label.
 
-machine Lexer;
-
-include "definitions.csrl";
-
-comment = '#' ^nl_eof* nl_eof;
-
-EXPR_BEG := |*
-
-    empty_lines;
-
-    comment; # ignore it
-
-    any => {
-        fhold;
-        return Lexer.SharedState.Advance(this);
-    };
+EXPR_ARG_LABELED := |*
 
 *|;
 
 }%%
 namespace Mint.Lex.States
 {
-    internal partial class ExprBeg
+    internal partial class ArgLabeled
     {
         public override State Advance()
         {

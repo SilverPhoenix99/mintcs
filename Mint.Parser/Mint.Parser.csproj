@@ -45,11 +45,16 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="gen\Lex\States\ExprShared.cs" />
+    <Compile Include="gen\Lex\States\Beg.cs" />
+    <Compile Include="gen\Lex\States\Main.cs" />
+    <Compile Include="gen\Lex\States\Shared.cs" />
+    <Compile Include="gen\Lexer_data.cs" />
+    <Compile Include="gen\Lexer_exec.cs" />
+    <Compile Include="gen\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
-    <Compile Include="Lex\States\ExprShared.cs" />
-    <Compile Include="Lex\States\ExprBeg.cs" />
+    <Compile Include="Lex\States\Beg.cs" />
     <Compile Include="Lex\States\Main.cs" />
+    <Compile Include="Lex\States\Shared.cs" />
     <Compile Include="Lex\States\State.cs" />
     <Compile Include="Lex\States\StateBase.cs" />
     <Compile Include="Lexing\Lexer.States.cs" />
@@ -65,11 +70,6 @@
     <Compile Include="Parse\iLiteral.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyntaxError.cs" />
-    <Compile Include="gen\Lex\States\ExprBeg.cs" />
-    <Compile Include="gen\Lex\States\Main.cs" />
-    <Compile Include="gen\Lexer_data.cs" />
-    <Compile Include="gen\Lexer_exec.cs" />
-    <Compile Include="gen\Parser.cs" />
     <Compile Include="vendor\ShiftReduceParserCode.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -77,21 +77,21 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
-    <Ragel Include="Lex\States\ExprShared.csrl" />
     <None Include="Lexing\Lexer_exec.csrl" />
     <None Include="Lexing\Lexer_data.csrl" />
     <None Include="Lexing\Lexer.csrl" />
     <RagelDependency Include="Lex\States\definitions.csrl" />
+    <Ragel Include="Lex\States\Beg.csrl" />
     <Ragel Include="Lex\States\Main.csrl" />
-    <Ragel Include="Lex\States\ExprBeg.csrl" />
+    <Ragel Include="Lex\States\Shared.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel);@(RagelDependency)" Outputs="@(Ragel->'gen\%(relativedir)%(Filename).cs')">
-    <Message Text="GenLexer.bat %(Ragel.Filename)" Importance="high" />
+    <Message Text="> GenLexer.bat %(Ragel.Filename)" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
     <Exec Command="GenLexer.bat %(Ragel.Filename)" />
   </Target>
   <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
-    <Message Text="GenParser.bat" Importance="high" />
+    <Message Text="> GenParser.bat" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
     <Exec Command="GenParser.bat" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -1,23 +1,16 @@
 %%{
-# Expressions shared by all other states
+# right after `.' or `::', no reserved words.
 
-machine Lexer;
-
-include "definitions.csrl";
-
-EXPR_SHARED := |*
-
-	c_eof => { fbreak; };
+EXPR_DOT := |*
 
 *|;
-
 
 }%%
 namespace Mint.Lex.States
 {
-    internal partial class ExprShared
+    internal partial class Dot
     {
-        public State Advance(State caller)
+        public override State Advance()
         {
             var ts = -1;
 			var te = -1;

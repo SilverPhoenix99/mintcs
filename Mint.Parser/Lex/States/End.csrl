@@ -1,0 +1,29 @@
+%%{
+# newline significant, +/- is an operator.
+
+EXPR_END := |*
+
+*|;
+
+}%%
+namespace Mint.Lex.States
+{
+    internal partial class End
+    {
+        public override State Advance()
+        {
+            var ts = -1;
+			var te = -1;
+			var act = 0;
+			var cs = Lexer_start;
+			var pe = Lexer.Length;
+			var eof = pe;
+
+            %% write exec;
+
+            return null;
+        }
+
+        %% write data;
+    }
+}

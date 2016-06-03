@@ -1,10 +1,10 @@
 ﻿namespace Mint.Lex.States
 {
-    internal partial class ExprShared
+    internal partial class Shared
     {
         private Lexer Lexer { get; }
 
-        public ExprShared(Lexer lexer)
+        public Shared(Lexer lexer)
         {
             Lexer = lexer;
         }
