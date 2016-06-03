@@ -5,8 +5,7 @@ machine Lexer;
 include "definitions.csrl";
 
 bom_marker = '\xef\xbb\xbf';
-shebang = '#!' ^'\n'* nl_eof;
-empty_line = ws* '\n';
+shebang = '#!' ^nl_eof* nl_eof;
 comment = '#' ^nl_eof* nl_eof;
 
 MAIN := |*
@@ -24,9 +23,7 @@ action MagicComment {}
 
 BOF := |*
 
-    ws* comment => MagicComment;
-
-    empty_line; # ignore it
+    ws_nl* %TokStart comment => MagicComment;
 
     any => {
         fhold;

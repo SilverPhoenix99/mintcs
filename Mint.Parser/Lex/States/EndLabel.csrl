@@ -1,7 +1,94 @@
 %%{
 # newline significant, +/- is an operator. label is allowed.
 
+machine Lexer;
+
+include "definitions.csrl";
+
 EXPR_END_LABEL := |*
+
+    nl ws_nl* %TokEnd ('&.' | '.' ^'.') => {
+        fexec tokEnd;
+        return Lexer.CurrentState;
+    };
+
+    nl ws_nl* => {
+        EmitToken(tNL, ts, ts + 1);
+        Lexer.CommandStart = true;
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '**' => {
+        EmitToken(tPOW, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '*' => {
+        EmitToken(tMUL, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!@' => {
+        EmitToken(tNOT_OP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!=' => {
+        EmitToken(tNEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!~' => {
+        EmitToken(tNMATCH, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!' => {
+        EmitToken(tNOT_OP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '===' => {
+        EmitToken(tEQQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '==' => {
+        EmitToken(tEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=~' => {
+        EmitToken(tMATCH, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=>' => {
+        EmitToken(tASSOC, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=' => {
+        EmitToken(tASSIGN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    any => {
+        fhold;
+        return Lexer.SharedState.Advance(this);
+    };
 
 *|;
 

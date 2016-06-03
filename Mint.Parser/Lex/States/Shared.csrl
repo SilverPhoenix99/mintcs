@@ -5,9 +5,38 @@ machine Lexer;
 
 include "definitions.csrl";
 
+action EmbDocEof
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.CurrentLine, "embedded document meets end of file");
+}
+
+comment = '#' ^nl_eof* nl_eof;
+
+embedded_doc =
+    nl '=begin' (ws ^nl*)? nl
+    (
+        (any* nl)*
+        :>>
+        '=end' (ws ^nl*)? nl_eof
+    ) @err(EmbeddedDocEof)
+;
+
 EXPR_SHARED := |*
 
-	c_eof => { fbreak; };
+	c_eof => { return null; };
+
+    ws+ => { return caller; };
+
+    comment => { fhold; return caller; };
+
+    embedded_doc =>{ fhold; return caller; };
+
+      '**='
+    | '*='  => {
+        EmitToken(tOP_ASGN, ts, te - 1);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
 
 *|;
 

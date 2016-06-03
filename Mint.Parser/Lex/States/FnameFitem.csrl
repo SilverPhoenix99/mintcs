@@ -1,7 +1,84 @@
 %%{
 # ignore newline, no reserved words. symbol literal as FNAME.
 
+machine Lexer;
+
+include "definitions.csrl";
+
 EXPR_FNAME_FITEM := |*
+
+    nl;
+
+    '**' => {
+        EmitToken(tPOW, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '*' => {
+        EmitToken(tMUL, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '!@' => {
+        EmitToken(tNOT_OP, ts, te);
+        Lexer.CurrentStatE = Lexer.ArgState;
+        return null;
+    };
+
+    '!=' => {
+        EmitToken(tNEQ, ts, te);
+        Lexer.CurrentStatE = Lexer.ArgState;
+        return null;
+    };
+
+    '!~' => {
+        EmitToken(tNMATCH, ts, te);
+        Lexer.CurrentStatE = Lexer.ArgState;
+        return null;
+    };
+
+    '!' => {
+        EmitToken(tNOT_OP, ts, te);
+        Lexer.CurrentStatE = Lexer.ArgState;
+        return null;
+    };
+
+    '===' => {
+        EmitToken(tEQQ, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '==' => {
+        EmitToken(tEQ, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '=~' => {
+        EmitToken(tMATCH, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '=>' => {
+        EmitToken(tASSOC, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '=' => {
+        EmitToken(tASSIGN, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    any => {
+        fhold;
+        return Lexer.SharedState.Advance(this);
+    };
 
 *|;
 
