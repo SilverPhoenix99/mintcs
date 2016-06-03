@@ -1,3 +1,24 @@
+/*
+
+All possible state combinations:
+
+EXPR_ARG
+EXPR_ARG | EXPR_LABELED
+EXPR_BEG
+EXPR_BEG | EXPR_LABEL
+EXPR_CMDARG
+EXPR_DOT
+EXPR_END
+EXPR_ENDARG
+EXPR_ENDFN
+EXPR_ENDFN | EXPR_LABEL
+EXPR_END | EXPR_LABEL
+EXPR_FNAME
+EXPR_FNAME | EXPR_FITEM
+
+*/
+
+
 # define BITSTACK_PUSH(stack, n) ((stack) = ((stack)<<1)|((n)&1))
 # define BITSTACK_POP(stack)     ((stack) = (stack) >> 1)
 # define BITSTACK_LEXPOP(stack)  ((stack) = ((stack) >> 1) | ((stack) & 1))
@@ -128,7 +149,9 @@ retry:
             {
                 if(!c && parser->in_kwarg)
                 {
-                    goto normal_newline;
+                    parser->command_start = TRUE;
+                    SET_LEX_STATE(EXPR_BEG);
+                    return '\n';
                 }
                 goto retry;
             }
@@ -136,28 +159,31 @@ retry:
             {
                 switch (c)
                 {
-                  case ' ': case '\t': case '\f': case '\r':
-                  case '\13': /* '\v' */
-                    space_seen = 1;
-                    break;
-                  case '&':
-                  case '.':
-                  {
-                    if(peek('.') == (c == '&'))
+                    case ' ': case '\t': case '\f': case '\r':
+                    case '\13': /* '\v' */
+                        space_seen = 1;
+                        break;
+                    case '&':
+                    case '.':
                     {
-                        pushback(c);
-                        goto retry;
+                        if(peek('.') == (c == '&')) // '&.' | '.' [^.]
+                        {
+                            pushback(c);
+                            goto retry;
+                        }
                     }
-                  }
-                  default:
-                    --ruby_sourceline;
-                    lex_nextline = lex_lastline;
-                  case -1:                /* EOF no decrement*/
-                    lex_goto_eol(parser);
-                    goto normal_newline;
+                    default:
+                        --ruby_sourceline;
+                        lex_nextline = lex_lastline;
+
+                    case -1:                /* EOF no decrement*/
+                        lex_goto_eol(parser);
+                        parser->command_start = TRUE;
+                        SET_LEX_STATE(EXPR_BEG);
+                        return '\n';
                 }
             }
-normal_newline:
+
             parser->command_start = TRUE;
             SET_LEX_STATE(EXPR_BEG);
             return '\n';

@@ -6,7 +6,7 @@ parse_qmark(struct parser_params *parser)
 
     if(IS_lex_state(EXPR_END | EXPR_ENDARG | EXPR_ENDFN))
     {
-        SET_LEX_STATE(EXPR_VALUE);
+        SET_LEX_STATE(EXPR_BEG);
         return '?';
     }
     c = nextc();
@@ -49,7 +49,7 @@ parse_qmark(struct parser_params *parser)
         }
 ternary:
         pushback(c);
-        SET_LEX_STATE(EXPR_VALUE);
+        SET_LEX_STATE(EXPR_BEG);
         return '?';
     }
     newtok();
