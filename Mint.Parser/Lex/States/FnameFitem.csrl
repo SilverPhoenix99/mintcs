@@ -9,69 +9,131 @@ EXPR_FNAME_FITEM := |*
 
     nl;
 
-    '**' => {
-        EmitToken(tPOW, ts, te);
+    '**' ^'=' => {
+        Lexer.EmitToken(kPOW, ts, te - 1);
         Lexer.CurrentState = Lexer.ArgState;
+        fhold;
         return null;
     };
 
-    '*' => {
-        EmitToken(tMUL, ts, te);
+    '*' ^'=' => {
+        Lexer.EmitToken(kMUL, ts, te - 1);
         Lexer.CurrentState = Lexer.ArgState;
+        fhold;
         return null;
     };
 
     '!@' => {
-        EmitToken(tNOT_OP, ts, te);
-        Lexer.CurrentStatE = Lexer.ArgState;
+        Lexer.EmitToken(kNOTOP, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '!=' => {
-        EmitToken(tNEQ, ts, te);
-        Lexer.CurrentStatE = Lexer.ArgState;
+        Lexer.EmitToken(kNEQ, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '!~' => {
-        EmitToken(tNMATCH, ts, te);
-        Lexer.CurrentStatE = Lexer.ArgState;
+        Lexer.EmitToken(kNMATCH, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '!' => {
-        EmitToken(tNOT_OP, ts, te);
-        Lexer.CurrentStatE = Lexer.ArgState;
+        Lexer.EmitToken(kNOTOP, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '===' => {
-        EmitToken(tEQQ, ts, te);
+        Lexer.EmitToken(kEQQ, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '==' => {
-        EmitToken(tEQ, ts, te);
+        Lexer.EmitToken(kEQ, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '=~' => {
-        EmitToken(tMATCH, ts, te);
+        Lexer.EmitToken(kMATCH, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '=>' => {
-        EmitToken(tASSOC, ts, te);
+        Lexer.EmitToken(kASSOC, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
         return null;
     };
 
     '=' => {
-        EmitToken(tASSIGN, ts, te);
+        Lexer.EmitToken(kASSIGN, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    heredoc_identifier => {
+        Lexer.EmitHeredocToken(ts, te);
+        return null;
+    };
+
+    '<=>' => {
+        Lexer.EmitToken(kCMP, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '<=' => {
+        Lexer.EmitToken(kLEQ, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '<<' ^'=' => {
+        Lexer.EmitToken(kLSHIFT, ts, te - 1);
+        Lexer.CurrentState = Lexer.ArgState;
+        fhold;
+        return null;
+    };
+
+    '<' => {
+        Lexer.EmitToken(kLESS, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '>=' => {
+        Lexer.EmitToken(kGEQ, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    '>>' ^'=' => {
+        Lexer.EmitToken(kRSHIFT, ts, te - 1);
+        Lexer.CurrentState = Lexer.ArgState;
+        fhold;
+        return null;
+    };
+
+    '>' => {
+        Lexer.EmitToken(kGREATER, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        return null;
+    };
+
+    [''""] => {
+        Lexer.EmitStringToken(ts, te);
+        return null;
+    };
+
+    '`' => {
+        Lexer.EmitToken(kBACKTICK, ts, te);
+        Lexer.CurrentState = Lexer.EndfnState;
         return null;
     };
 
@@ -83,10 +145,17 @@ EXPR_FNAME_FITEM := |*
 *|;
 
 }%%
+#pragma warning disable 162
+
+using static Mint.Parse.TokenType;
+
 namespace Mint.Lex.States
 {
-    internal partial class FnameFitem
+    internal class FnameFitem : StateBase
     {
+        public FnameFitem(Lexer lexer) : base(lexer)
+        { }
+
         public override State Advance()
         {
             var ts = -1;
@@ -95,6 +164,9 @@ namespace Mint.Lex.States
 			var cs = Lexer_start;
 			var pe = Lexer.Length;
 			var eof = pe;
+            var tokStart = -1;
+            var tokEnd = -1;
+            var commandStart = Lexer.CommandStart;
 
             %% write exec;
 

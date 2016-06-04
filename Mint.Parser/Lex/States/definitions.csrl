@@ -8,6 +8,7 @@ machine Lexer;
 
 getkey Lexer.CurrentChar;
 variable p Lexer.Position;
+alphtype uint;
 
 ### Actions
 
@@ -34,6 +35,11 @@ action TokEnd
     tokEnd = Lexer.Position;
 }
 
+action UnterminatedHeredocIdentifier
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.CurrentLine, "unterminated here document identifier");
+}
+
 
 ### Definitions
 
@@ -42,5 +48,14 @@ nl = '\n' @LineJump;
 nl_eof = nl | c_eof;
 ws = space - nl;
 ws_nl = ws | nl;
+unicode = ^ascii;
+ident_char = alnum | '_' | unicode;
+
+heredoc_identifier = '<<' [~\-]? (
+    ident_char+
+  | '"' ^('"' | nl_eof)* '"' @lerr(UnterminatedHeredocIdentifier)
+  | "'" ^("'" | nl_eof)* "'" @lerr(UnterminatedHeredocIdentifier)
+  | '`' ^('`' | nl_eof)* '`' @lerr(UnterminatedHeredocIdentifier)
+);
 
 }%%

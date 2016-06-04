@@ -52,7 +52,7 @@ namespace Mint.Parse
             if(!((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
             {
                 var token = Scanner.yylval.Value;
-                throw new SyntaxError(Filename, token.Location.Item1, $"unexpected {token.Type}");
+                throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
             }
             return Result;
         }
@@ -61,10 +61,10 @@ namespace Mint.Parse
         //       They are: kLBRACK2
 
         protected static Ast<Token> EnsureNode() =>
-            (Ast<Token>) new Token(kENSURE, "ensure", new Tuple<int, int>(-1, -1));
+            (Ast<Token>) new Token(kENSURE, "ensure", new LexLocation(-1, -1, -1, -1));
 
         protected static Ast<Token> CallNode() =>
-            (Ast<Token>) new Token(kDOT, ".", new Tuple<int, int>(-1, -1));
+            (Ast<Token>) new Token(kDOT, ".", new LexLocation(-1, -1, -1, -1));
 
         private static Ast<Token> sexp() => new Ast<Token>();
 

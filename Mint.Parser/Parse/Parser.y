@@ -132,7 +132,7 @@ stmt_or_begin :
     stmt
   | kAPP_BEGIN
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "BEGIN is permitted only at toplevel");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "BEGIN is permitted only at toplevel");
     }
     kLBRACE2 top_compstmt kRBRACE
 ;
@@ -143,7 +143,7 @@ stmt :
   | kALIAS tGVAR tBACK_REF { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tNTH_REF
     {
-        throw new SyntaxError(Filename, $3.Value.Location.Item1, "can't make alias for the number variables");
+        throw new SyntaxError(Filename, $3.Value.Location.StartLine, "can't make alias for the number variables");
     }
   | kUNDEF undef_list     { $$ = $1 + $2; }
   | stmt kIF_MOD expr     { $$ = $2 + $3 + $1; }
@@ -288,7 +288,7 @@ mlhs_node :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $3.Value.Location.Item1, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -296,7 +296,7 @@ mlhs_node :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $2.Value.Location.Item1, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $1 + $2;
     }
@@ -326,7 +326,7 @@ lhs :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $3.Value.Location.Item1, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -334,7 +334,7 @@ lhs :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $2.Value.Location.Item1, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
         }
       $$ = $1 + $2;
     }
@@ -348,7 +348,7 @@ lhs :
 cname :
     tIDENTIFIER
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "class/module name must be CONSTANT");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class/module name must be CONSTANT");
     }
   | tCONSTANT
 ;
@@ -689,7 +689,7 @@ primary :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.Item1, "class definition in method body");
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class definition in method body");
         }
     }
     bodystmt kEND
@@ -722,7 +722,7 @@ primary :
     {
         if(in_def || in_single)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.Item1, "module definition in method body");
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "module definition in method body");
         }
     }
     bodystmt kEND { $$ = $1 + $2 + $4; }
@@ -1305,19 +1305,19 @@ f_args :
 f_bad_arg :
     tCONSTANT
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "formal argument cannot be a constant");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a constant");
     }
   | tIVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "formal argument cannot be an instance variable");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be an instance variable");
     }
   | tGVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "formal argument cannot be a global variable");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a global variable");
     }
   | tCVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.Item1, "formal argument cannot be a class variable");
+        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a class variable");
     }
 ;
 

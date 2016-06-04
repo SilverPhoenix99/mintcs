@@ -1,95 +1,162 @@
 %%{
 # newline significant, +/- is an operator.
 
+machine Lexer;
+
+include "definitions.csrl";
+
 EXPR_ARG := |*
 
-    nl ws_nl* %TokEnd ('&.' | '.' ^'.') => {
-        fexec tokEnd;
-        return Lexer.CurrentState;
+    nl ws_nl* ('&.' | '.' ^'.') => {
+        fexec te - 2;
     };
 
     nl ws_nl* => {
-        EmitToken(tNL, ts, ts + 1);
+        Lexer.EmitToken(kNL, ts, ts + 1);
         Lexer.CommandStart = true;
         Lexer.CurrentState = Lexer.BegState;
+        fhold;
         return null;
     };
 
-    ws+ '**' >TokStart ^ws => {
-        EmitToken(tDSTAR, tokStart, tokStart + 2);
+    ws+ '**' ^(ws | '=') => {
+        Lexer.EmitToken(kDSTAR, te - 3, te - 1);
         Lexer.CurrentState = Lexer.BegState;
+        fhold;
         return null;
     };
 
-    '**' => {
-        EmitToken(tPOW, ts, te);
+    '**' ^'=' => {
+        Lexer.EmitToken(kPOW, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
+        fhold;
         return null;
     };
 
-    ws+ '*' >TokStart ^ws => {
-        EmitToken(tSTAR, tokStart, tokStart + 1);
+    ws+ '*' ^(ws | '=') => {
+        Lexer.EmitToken(kSTAR, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
+        fhold;
         return null;
     };
 
-    '*' => {
-        EmitToken(tMUL, ts, te);
+    '*' ^'=' => {
+        Lexer.EmitToken(kMUL, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
+        fhold;
         return null;
     };
 
     '!@' => {
-        EmitToken(tNOT_OP, ts, te);
+        Lexer.EmitToken(kNOTOP, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '!=' => {
-        EmitToken(tNEQ, ts, te);
+        Lexer.EmitToken(kNEQ, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '!~' => {
-        EmitToken(tNMATCH, ts, te);
+        Lexer.EmitToken(kNMATCH, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '!' => {
-        EmitToken(tNOT_OP, ts, te);
+        Lexer.EmitToken(kNOTOP, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '===' => {
-        EmitToken(tEQQ, ts, te);
+        Lexer.EmitToken(kEQQ, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '==' => {
-        EmitToken(tEQ, ts, te);
+        Lexer.EmitToken(kEQ, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '=~' => {
-        EmitToken(tMATCH, ts, te);
+        Lexer.EmitToken(kMATCH, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '=>' => {
-        EmitToken(tASSOC, ts, te);
+        Lexer.EmitToken(kASSOC, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
     '=' => {
-        EmitToken(tASSIGN, ts, te);
+        Lexer.EmitToken(kASSIGN, ts, te);
         Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    ws+ %TokStart heredoc_identifier => {
+        Lexer.EmitHeredocToken(tokStart, te);
+        return null;
+    };
+
+    '<=>' => {
+        Lexer.EmitToken(kCMP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '<=' => {
+        Lexer.EmitToken(kLEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '<<' ^'=' => {
+        Lexer.EmitToken(kLSHIFT, ts, te - 1);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    '<' => {
+        Lexer.EmitToken(kLESS, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '>=' => {
+        Lexer.EmitToken(kGEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '>>' ^'=' => {
+        Lexer.EmitToken(kRSHIFT, ts, te - 1);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    '>' => {
+        Lexer.EmitToken(kGREATER, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    [''""] => {
+        Lexer.EmitLabelableStringToken(ts, te);
+        return null;
+    };
+
+    '`' => {
+        Lexer.EmitStringToken(ts, te);
         return null;
     };
 
@@ -101,10 +168,17 @@ EXPR_ARG := |*
 *|;
 
 }%%
+#pragma warning disable 162
+
+using static Mint.Parse.TokenType;
+
 namespace Mint.Lex.States
 {
-    internal partial class Arg
+    internal class Arg : StateBase
     {
+        public Arg(Lexer lexer) : base(lexer)
+        { }
+
         public override State Advance()
         {
             var ts = -1;
@@ -113,6 +187,9 @@ namespace Mint.Lex.States
 			var cs = Lexer_start;
 			var pe = Lexer.Length;
 			var eof = pe;
+            var tokStart = -1;
+            var tokEnd = -1;
+            var commandStart = Lexer.CommandStart;
 
             %% write exec;
 

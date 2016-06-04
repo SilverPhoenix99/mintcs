@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Mint.Parse;
+using QUT.Gppg;
 using static Mint.Lexing.Lexer.States;
 using static Mint.Parse.TokenType;
 
@@ -99,7 +100,7 @@ namespace Mint.Lexing
 			InCmd = true;
             InKwarg = false;
             lines = ResetLines();
-            eof_token = new Token(EOF, "$eof", Location(data.Length));
+            eof_token = new Token(EOF, "$eof", Location(data.Length, 0));
 		}
 
         private int[] ResetLines()
@@ -138,7 +139,7 @@ namespace Mint.Lexing
             return GetEnumerator();
         }
 
-        public Tuple<int, int> Location(int pos = -1)
+        public LexLocation Location(int pos, int length)
         {
             if(pos < 0)
             {
@@ -147,7 +148,8 @@ namespace Mint.Lexing
 
             var line = Array.BinarySearch(lines, pos) + 1;
             line = Math.Abs(line < 0 ? -line : line);
-            return new Tuple<int, int>(line, pos - lines[line - 1] + 1);
+            var column = pos - lines[line - 1] + 1;
+            return new LexLocation(line, column, line, column + length);
         }
 
         private uint Peek(int op = 0, bool translate_delimiter = true)
@@ -208,7 +210,7 @@ namespace Mint.Lexing
         }
 
         private Token GenToken(TokenType type,
-                               string token = null, Tuple<int, int> location = null,
+                               string token = null, LexLocation location = null,
                                int ts = -1, int te = -1)
         {
             switch(type)
@@ -222,7 +224,7 @@ namespace Mint.Lexing
             if(te < 0) { te = this.te; }
 
             token = token ?? CurrentToken(ts, te);
-            location = location ?? Location(ts);
+            location = location ?? Location(ts, token.Length);
 
             switch(type)
             {
@@ -306,7 +308,7 @@ namespace Mint.Lexing
         }
 
         private Token GenToken(IReadOnlyDictionary<string, TokenType> type,
-                               string token = null, Tuple<int, int> location = null,
+                               string token = null, LexLocation location = null,
                                int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }
@@ -324,7 +326,7 @@ namespace Mint.Lexing
         }
 
         private Token GenToken(IReadOnlyDictionary<string, Tuple<States, TokenType, TokenType>> type,
-                               string token = null, Tuple<int, int> location = null,
+                               string token = null, LexLocation location = null,
                                int ts = -1, int te = -1)
         {
             if(ts < 0) { ts = this.ts; }

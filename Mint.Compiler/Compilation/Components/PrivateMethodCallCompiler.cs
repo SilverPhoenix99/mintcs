@@ -24,7 +24,7 @@ namespace Mint.Compilation.Components
 
             if(ArgumentsNode.Any(_ => _.Value.Type == kAMPER) && blockNode != null)
             {
-                var line = blockNode.Value.Location.Item1;
+                var line = blockNode.Value.Location.StartLine;
                 throw new SyntaxError(Compiler.Filename, line, "both block arg and actual block given");
             }
 

@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using QUT.Gppg;
 
 namespace Mint.Parse
 {
     public class Token
     {
-		public TokenType Type                        { get; }
-        public string Value                          { get; }
-        public Tuple<int, int> Location              { get; } // < line, column >
+		public TokenType Type { get; }
+        public string Value { get; }
+        public LexLocation Location { get; }
         public Dictionary<string, object> Properties { get; }
 
-        public Token(TokenType type, string token, Tuple<int, int> location)
+        public Token(TokenType type, string token, LexLocation location)
 		{
 			Type = type;
             Value = token;
@@ -24,7 +24,7 @@ namespace Mint.Parse
         {
             var properties = Properties.Count == 0 ? "" : ", **";
 
-            return $"[{Type}, \"{Value}\", {Location.Item1}, {Location.Item2}{properties}]";
+            return $"[{Type}, \"{Value}\", {Location.StartLine}, {Location.StartColumn}{properties}]";
         }
 
         public void MergeProperties(Token other)

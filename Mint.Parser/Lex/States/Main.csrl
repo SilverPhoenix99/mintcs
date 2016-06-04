@@ -33,10 +33,17 @@ BOF := |*
 *|;
 
 }%%
+#pragma warning disable 162
+
+using static Mint.Parse.TokenType;
+
 namespace Mint.Lex.States
 {
-    internal partial class Main
+    internal class Main : StateBase
     {
+        public Main(Lexer lexer) : base(lexer)
+        { }
+
         public override State Advance()
         {
             var ts = -1;
@@ -45,6 +52,9 @@ namespace Mint.Lex.States
 			var cs = Lexer_en_MAIN;
 			var pe = Lexer.Length;
 			var eof = pe;
+            var tokStart = -1;
+            var tokEnd = -1;
+            var commandStart = Lexer.CommandStart;
 
             %% write exec;
 

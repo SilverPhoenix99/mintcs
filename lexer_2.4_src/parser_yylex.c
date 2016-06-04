@@ -322,7 +322,7 @@ retry:
             return '=';
         }
 
-        case '<':
+        case '<':  // done
         {
             last_state = lex_state;
             c = nextc();
@@ -368,7 +368,7 @@ retry:
             return '<';
         }
 
-        case '>':
+        case '>':  // done
         {
             SET_LEX_STATE(IS_lex_state(EXPR_FNAME | EXPR_DOT) ? EXPR_ARG : EXPR_BEG);
             if((c = nextc()) == '=')
@@ -390,7 +390,7 @@ retry:
             return '>';
         }
 
-        case '"':
+        case '"':  // done
         {
             label =
                 ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
@@ -400,7 +400,7 @@ retry:
             return tSTRING_BEG;
         }
 
-        case '`':
+        case '`':  // done
         {
             if(IS_lex_state(EXPR_FNAME))
             {
@@ -419,7 +419,7 @@ retry:
             return tXSTRING_BEG;
         }
 
-        case '\'':
+        case '\'':  // done
         {
             label =
                 ((IS_lex_state(EXPR_LABEL | EXPR_ENDFN) && !cmd_state) || IS_lex_state(EXPR_ARG | EXPR_CMDARG))
@@ -429,9 +429,6 @@ retry:
             lex_strterm = NEW_STRTERM(str_squote | label, '\'', 0);
             return tSTRING_BEG;
         }
-
-        case '?':
-            return parse_qmark(parser);
 
         case '&':
         {
@@ -596,10 +593,6 @@ retry:
             SET_LEX_STATE(EXPR_DOT);
             return '.';
         }
-
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
-            return parse_numeric(parser, c);
 
         case ')':
         case ']':
@@ -814,15 +807,6 @@ retry:
             return '\\';
         }
 
-        case '%':
-            return parse_percent(parser, space_seen, last_state);
-
-        case '$':
-            return parse_gvar(parser, last_state);
-
-        case '@':
-            return parse_atmark(parser, last_state);
-
         case '_':
         {
             if(was_bol() && whole_match_p("__END__", 7, 0))
@@ -834,6 +818,22 @@ retry:
             newtok();
             break;
         }
+
+        case '?':
+            return parse_qmark(parser);
+
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            return parse_numeric(parser, c);
+
+        case '%':
+            return parse_percent(parser, space_seen, last_state);
+
+        case '$':
+            return parse_gvar(parser, last_state);
+
+        case '@':
+            return parse_atmark(parser, last_state);
 
         default:
         {

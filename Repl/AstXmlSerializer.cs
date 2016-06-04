@@ -35,7 +35,7 @@ namespace Mint
             {
                 current = new XElement("token",
                     new XAttribute("type", token.Type),
-                    new XAttribute("location", $"{token.Location.Item1} {token.Location.Item2}"),
+                    new XAttribute("location", $"{token.Location.StartLine} {token.Location.StartColumn}"),
                     new XAttribute("text", token.Value)
                 );
 

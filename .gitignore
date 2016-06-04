@@ -3,3 +3,4 @@ bin
 obj
 Mint.Parser/gen
 /*.user
+*.DotSettings
