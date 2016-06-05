@@ -18,11 +18,11 @@ namespace Mint.UnitTests
         {
             var source = "some random text";
             var lexer = CreateLexer(source);
-            Assert.That(lexer.Length, Is.EqualTo(source.Length + 1));
+            Assert.That(lexer.DataLength, Is.EqualTo(source.Length + 1));
 
             source = " a b c \x4 ";
             lexer.Data = source;
-            Assert.That(lexer.Length, Is.EqualTo(source.IndexOf('\x4')));
+            Assert.That(lexer.DataLength, Is.EqualTo(source.IndexOf('\x4')));
         }
 
         [Test]

@@ -4548,7 +4548,8 @@ f_arglist	: '(' f_args rparen
 		|   {
 			$<num>$ = parser->in_kwarg;
 			parser->in_kwarg = 1;
-			lex_state |= EXPR_LABEL; /* force for args */
+            SET_LEX_STATE(EXPR_ENDFN | EXPR_LABEL);
+			//lex_state |= EXPR_LABEL; /* force for args */
 		    }
 		    f_args term
 		    {

@@ -2,6 +2,6 @@
 {
     internal interface State
     {
-        State Advance();
+        State Advance(State caller);
     }
 }

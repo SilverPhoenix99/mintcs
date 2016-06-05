@@ -5,65 +5,544 @@ machine Lexer;
 
 include "definitions.csrl";
 
+
+### Embedded documentation
+
 action EmbeddedDocEof
 {
-    throw new SyntaxError(Lexer.Filename, Lexer.CurrentLine, "embedded document meets end of file");
+    var line = Lexer.LocationFor(ts, 0).StartLine;
+    throw new SyntaxError(Lexer.Filename, line, "embedded document meets end of file");
 }
 
-comment = '#' ^nl_eof* nl_eof;
-
 embedded_doc =
-    nl '=begin' (ws ^nl*)? nl
+    '=begin' (ws ^nl*)? nl
     (
         (any* nl)*
         :>>
-        '=end' (ws ^nl*)? nl_eof
+        '=end' (ws ^nl_eof*)? nl_eof
     ) @err(EmbeddedDocEof)
 ;
+
 
 EXPR_SHARED := |*
 
 	c_eof => { return null; };
 
-    ws+ => { return caller; };
-
-    comment => { fhold; return caller; };
-
-    embedded_doc =>{ fhold; return caller; };
+    (
+          esc_ws+
+        | nl
+        | comment
+        | embedded_doc
+    ) => {
+        return caller;
+    };
 
       '**='
     | '*='
     | '<<='
     | '>>='
+    | '&&='
+    | '&='
+    | '||='
+    | '|='
+    | '+='
+    | '-='
+    | '/='
+    | '^='
+    | '%='
     => {
         Lexer.EmitToken(tOP_ASGN, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         return null;
     };
 
-*|;
+    '**' => {
+        Lexer.EmitToken(kPOW, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
 
+    '*' => {
+        Lexer.EmitToken(kMUL, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!=' => {
+        Lexer.EmitToken(kNEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!~' => {
+        Lexer.EmitToken(kNMATCH, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '!' => {
+        Lexer.EmitToken(kNOTOP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '===' => {
+        Lexer.EmitToken(kEQQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '==' => {
+        Lexer.EmitToken(kEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=~' => {
+        Lexer.EmitToken(kMATCH, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=>' => {
+        Lexer.EmitToken(kASSOC, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '=' => {
+        Lexer.EmitToken(kASSIGN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '<=>' => {
+        Lexer.EmitToken(kCMP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '<=' => {
+        Lexer.EmitToken(kLEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '<<' => {
+        Lexer.EmitToken(kLSHIFT, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    '<' => {
+        Lexer.EmitToken(kLESS, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '>=' => {
+        Lexer.EmitToken(kGEQ, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '>>' => {
+        Lexer.EmitToken(kRSHIFT, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    '>' => {
+        Lexer.EmitToken(kGREATER, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    [''""``] => {
+        if(Lexer.CanLabel && !commandStart)
+        {
+            Lexer.EmitLabelableStringToken(ts, te);
+        }
+        else
+        {
+            Lexer.EmitStringToken(ts, te);
+        }
+        return null;
+    };
+
+    '`' => {
+        Lexer.EmitStringToken(ts, te);
+        return null;
+    };
+
+    '&&' => {
+        Lexer.EmitToken(kANDOP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '&.' => {
+        Lexer.EmitToken(kANDDOT, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '&' => {
+        Lexer.EmitToken(kBIN_AND, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '||' => {
+        Lexer.EmitToken(kOROP, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '|' => {
+        Lexer.EmitToken(kPIPE, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        return null;
+    };
+
+    '+' => {
+        Lexer.EmitToken(kPLUS, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '->' => {
+        Lexer.EmitToken(kLAMBDA, ts, te);
+        Lexer.CurrentState = Lexer.EndfnState;
+        return null;
+    };
+
+    '-' => {
+        Lexer.EmitToken(kMINUS, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '...' => {
+        Lexer.EmitToken(kDOT3, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '..' => {
+        Lexer.EmitToken(kDOT2, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '.' digit => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        throw new SyntaxError(Lexer.Filename, line, "no .<digit> floating literal anymore; put 0 before dot");
+    };
+
+    '.' => {
+        Lexer.EmitToken(kDOT, ts, te);
+        Lexer.CurrentState = Lexer.DotState;
+        return null;
+    };
+
+    '::' => {
+        Lexer.EmitToken(kCOLON2, ts, te);
+        Lexer.CurrentState = Lexer.DotState;
+        return null;
+    };
+
+    ':' (ws_nl | '#') => {
+        Lexer.EmitToken(kCOLON, ts, te - 1);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    ':' [""''] => {
+        Lexer.EmitStringToken(ts, te);
+        return null;
+    };
+
+    ':' => {
+        Lexer.EmitToken(tSYMBEG, ts, te);
+        Lexer.CurrentState = Lexer.FnameState;
+        return null;
+    };
+
+    '/' => {
+        Lexer.EmitToken(kDIV, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+        return null;
+    };
+
+    '^' => {
+        Lexer.EmitToken(kXOR, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    ';' => {
+        Lexer.EmitToken(kSEMICOLON, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        return null;
+    };
+
+    ',' => {
+        Lexer.EmitToken(kCOLON, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        return null;
+    };
+
+    '~' => {
+        Lexer.EmitToken(kNEG, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    nl '__END__' nl_eof => {
+        Lexer.DataLength = ts;
+        Lexer.EmitToken(EOF, ts + 1, te - 1);
+        return null;
+    };
+
+    integer_number => {
+        Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    float_number => {
+        Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '(' => {
+        Lexer.EmitToken(kLPAREN2, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.ParenNest++;
+        Lexer.Cond.Push(false);
+        Lexer.Cmdarg.Push(false);
+        return null;
+    };
+
+    ')' => {
+        Lexer.EmitToken(kRPAREN, ts, te);
+        Lexer.CurrentState = Lexer.EndfnState;
+        Lexer.ParenNest--;
+        Lexer.Cond.LexPop();
+        Lexer.Cmdarg.LexPop();
+        return null;
+    };
+
+    '[' => {
+        Lexer.EmitToken(kLBRACK2, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.ParenNest++;
+        Lexer.Cond.Push(false);
+        Lexer.Cmdarg.Push(false);
+        return null;
+    };
+
+    ']' => {
+        Lexer.EmitToken(kRBRACK, ts, te);
+        Lexer.CurrentState = Lexer.EndargState;
+        Lexer.ParenNest--;
+        Lexer.Cond.LexPop();
+        Lexer.Cmdarg.LexPop();
+        return null;
+    };
+
+    '{' => {
+        TokenType tokenType;
+        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+        {
+            tokenType = kLAMBEG;
+            Lexer.LeftParenCounter = 0;
+            Lexer.ParenNest--;
+        }
+        else
+        {
+            tokenType = kLBRACE;
+            Lexer.CanLabel = true;
+        }
+        Lexer.EmitToken(tokenType, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.IncrementBraceNest();
+        Lexer.Cond.Push(false);
+        Lexer.Cmdarg.Push(false);
+        return null;
+    };
+
+    '}' => {
+        if(currentLiteral != null && --currentLiteral.BraceNest == 0)
+        {
+            Lexer.EmitToken(tSTRING_DEND, ts, te);
+            Lexer.CurrentState = currentLiteral.State;
+        }
+        else
+        {
+            Lexer.EmitToken(kRBRACE, ts, te);
+            Lexer.CurrentState = Lexer.EndargState;
+        }
+        Lexer.Cond.LexPop();
+        Lexer.Cmdarg.LexPop();
+        return null;
+    };
+
+    '@@' identifier_prefix identifier_char* => {
+        Lexer.EmitToken(tCVAR, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '@@' (c_eof | ws_nl) => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        throw new SyntaxError(Lexer.Filename, line,
+            "`@@' without identifiers is not allowed as a class variable name");
+    };
+
+    '@@' ^(c_eof | ws_nl | identifier_prefix) => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        var c = Lexer.Data[ts + 2];
+        throw new SyntaxError(Lexer.Filename, line, $"`@@{c}' is not allowed as a class variable name");
+    };
+
+    '@' identifier_prefix identifier_char* => {
+        Lexer.EmitToken(tIVAR, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '@' (c_eof | ws_nl) => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        throw new SyntaxError(Lexer.Filename, line,
+            "`@' without identifiers is not allowed as an instance variable name");
+    };
+
+    '@' ^('@' | c_eof | ws_nl | identifier_prefix) => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        var c = Lexer.Data[ts + 1];
+        throw new SyntaxError(Lexer.Filename, line, $"`@{c}' is not allowed as an instance variable name");
+    };
+
+    '$' (gvar_char | (identifier_prefix | '0') identifier_char*) => {
+        Lexer.EmitToken(tGVAR, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '$-' identifier_char => {
+        Lexer.EmitToken(tGVAR, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '$-' ^identifier_char => {
+        var line = Lexer.LocationFor(ts, 1).StartLine;
+        throw new SyntaxError(Lexer.Filename, line, "syntax error, unexpected $undefined");
+    };
+
+    '$' [1-9] digit* => {
+        Lexer.EmitToken(tNTH_REF, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '$' back_ref_char => {
+        Lexer.EmitToken(tGVAR, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    '$' (c_eof | ws_nl) => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        throw new SyntaxError(Lexer.Filename, line,
+            "`$' without identifiers is not allowed as a global variable name");
+    };
+
+    '$' ^(c_eof | ws_nl | back_ref_char | gvar_char | identifier_char | '-') => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        var c = Lexer.Data[ts + 1];
+        throw new SyntaxError(Lexer.Filename, line, $"`${c}' is not allowed as a global variable name");
+    };
+
+    '%' => {
+        Lexer.EmitToken(kPERCENT, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        return null;
+    };
+
+    '?' (alnum | '_') identifier_char => {
+        Lexer.EmitToken(kQMARK, ts, te - 2);
+        Lexer.CurrentState = Lexer.BegState;
+        fexec ts + 1;
+        return null;
+    };
+
+    '?' c_eof => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        throw new SyntaxError(Lexer.Filename, line, "incomplete character syntax");
+    };
+
+    '?' ws_nl => {
+        var line = Lexer.LocationFor(ts, 0).StartLine;
+        var c = Lexer.Data[ts + 1];
+        var index = SPACE_CHARS.IndexOf(c);
+        c = PRINTABLE_SPACE_CHARS[index];
+        throw new SyntaxError(Lexer.Filename, line, $"invalid character syntax; use ?\\{c}");
+    };
+
+    '?'
+    (
+          unicode_escape
+        | octal_escape
+        | hex_escape
+        | char_escape
+        | control_escape
+        | ^(c_eof | ws_nl)
+    ) => {
+        Lexer.EmitToken(tCHAR, ts + 1, te);
+        Lexer.CurrentState = Lexer.EndState;
+        return null;
+    };
+
+    any => {
+        var line = Lexer.LocationFor(ts, 1).StartLine;
+        var c = Lexer.Data[ts];
+        throw new SyntaxError(Lexer.Filename, line, $"Invalid char `{c}' in expression");
+    };
+
+*|;
 
 }%%
 #pragma warning disable 162
 
+using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal partial class Shared
+    internal partial class Shared : StateBase
     {
-        public State Advance(State caller)
+        private const string SPACE_CHARS = "\t\n\v\f\r ";
+        private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
+
+        public Shared(Lexer lexer) : base(lexer)
+        { }
+
+        public override State Advance(State caller)
         {
-            var ts = -1;
-			var te = -1;
-			var act = 0;
-			var cs = Lexer_start;
-			var pe = Lexer.Length;
-			var eof = pe;
-            var tokStart = -1;
-            var tokEnd = -1;
-            var commandStart = Lexer.CommandStart;
+            Reset(Lexer_start);
 
             %% write exec;
 

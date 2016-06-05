@@ -6,7 +6,6 @@ include "definitions.csrl";
 
 bom_marker = '\xef\xbb\xbf';
 shebang = '#!' ^nl_eof* nl_eof;
-comment = '#' ^nl_eof* nl_eof;
 
 MAIN := |*
 
@@ -19,11 +18,14 @@ MAIN := |*
 
 *|;
 
-action MagicComment {}
+action MagicComment
+{
+    // TODO
+}
 
 BOF := |*
 
-    ws_nl* %TokStart comment => MagicComment;
+    space* %TokStart comment => MagicComment;
 
     any => {
         fhold;
@@ -35,6 +37,7 @@ BOF := |*
 }%%
 #pragma warning disable 162
 
+using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
@@ -44,17 +47,9 @@ namespace Mint.Lex.States
         public Main(Lexer lexer) : base(lexer)
         { }
 
-        public override State Advance()
+        public override State Advance(State caller)
         {
-            var ts = -1;
-			var te = -1;
-			var act = 0;
-			var cs = Lexer_en_MAIN;
-			var pe = Lexer.Length;
-			var eof = pe;
-            var tokStart = -1;
-            var tokEnd = -1;
-            var commandStart = Lexer.CommandStart;
+            Reset(Lexer_en_MAIN);
 
             %% write exec;
 
