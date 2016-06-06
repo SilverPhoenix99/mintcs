@@ -58,21 +58,29 @@ namespace Mint.Compilation.Components
         {
             var scope = Compiler.CurrentScope;
 
-            body = Block(
-                typeof(iObject),
-                Label(scope.RedoLabel),
-                body
-            );
+            /*
+             * next:
+             *     if(cond)
+             *     {
+             * redo:
+             *         body;
+             *         goto next;
+             *     }
+             * break: nil;
+             */
 
-            return Loop(
-                Condition(
+            return Block(
+                typeof(iObject),
+                Label(scope.NextLabel),
+                IfThen(
                     condition,
-                    body,
-                    Break(scope.BreakLabel, CompilerUtils.NIL, typeof(iObject)),
-                    typeof(iObject)
+                    Block(
+                        Label(scope.RedoLabel),
+                        body,
+                        Goto(scope.NextLabel)
+                    )
                 ),
-                scope.BreakLabel,
-                scope.NextLabel
+                Label(scope.BreakLabel, CompilerUtils.NIL)
             );
         }
     }

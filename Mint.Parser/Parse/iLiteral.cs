@@ -1,8 +1,8 @@
-﻿using Mint.Lexing;
+﻿using Mint.Lex.States;
 
 namespace Mint.Parse
 {
-    interface iLiteral
+    internal interface iLiteral
     {
         uint         BraceCount          { get; set; }
         bool         CanLabel            { get; }
@@ -14,7 +14,7 @@ namespace Mint.Parse
         string       UnterminatedMessage { get; }
         bool         IsWords             { get; }
         int          ContentStart        { get; set; }
-        Lexer.States State               { get; }
+        State        State               { get; }
         bool         WasContent          { get; set; }
         int          Nesting             { get; set; }
         bool         IsNested            { get; }

@@ -1,5 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using Mint.Lexing;
+﻿using System;
+using System.Text.RegularExpressions;
+using Mint.Lex.States;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Parse
@@ -23,7 +24,10 @@ namespace Mint.Parse
         public bool IsWords => false;
         public int LineIndent { get; set; }
         public int Restore { get; }
-        public Lexer.States State => Lexer.States.HEREDOC_DELIMITER;
+        public State State //=> Lexer.States.HEREDOC_DELIMITER;
+        {
+            get { throw new NotImplementedException(); }
+        }
         public TokenType Type => idDelimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
         public string UnterminatedMessage => $"can't find string {Delimiter} anywhere before EOF";
         public bool WasContent { get { return false; } set { } }

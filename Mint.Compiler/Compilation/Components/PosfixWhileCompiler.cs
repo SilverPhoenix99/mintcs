@@ -8,25 +8,28 @@ namespace Mint.Compilation.Components
         public PosfixWhileCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-            base.Shift();
-            Compiler.CurrentScope.RedoLabel = Compiler.CurrentScope.NextLabel;
-        }
-
         protected override Expression Reduce(Expression condition, Expression body)
         {
             var scope = Compiler.CurrentScope;
 
-            return Loop(
-                Block(
-                    typeof(iObject),
-                    body,
-                    IfThen(condition, Continue(scope.NextLabel)),
-                    Break(scope.BreakLabel, CompilerUtils.NIL, typeof(iObject))
-                ),
-                scope.BreakLabel,
-                scope.NextLabel
+            /*
+             * redo:
+             *     body;
+             * next:
+             *     if(cond)
+             *     {
+             *         goto redo;
+             *     }
+             * break: nil;
+             */
+
+            return Block(
+                typeof(iObject),
+                Label(scope.RedoLabel),
+                body,
+                Label(scope.NextLabel),
+                IfThen(condition, Goto(scope.RedoLabel)),
+                Label(scope.BreakLabel, CompilerUtils.NIL)
             );
         }
     }

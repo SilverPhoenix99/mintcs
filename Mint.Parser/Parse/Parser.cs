@@ -1,23 +1,21 @@
 ﻿using QUT.Gppg;
-using System;
 using System.Collections.Generic;
-using Mint.Lexing;
+using Mint.Lex;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Parse
 {
     public partial class Parser
     {
-        bool in_def,
-             in_single,
-             in_defined;
+        private bool in_def;
+        private bool in_single;
 
-        readonly Stack<BitStack> cmdarg_stack = new Stack<BitStack>();
-        readonly Stack<BitStack> cond_stack = new Stack<BitStack>();
-        BitStack in_def_stack = new BitStack();
-        BitStack in_single_stack = new BitStack();
-        Stack<int> lpar_beg_stack = new Stack<int>();
-        BitStack in_kwarg_stack = new BitStack();
+        private readonly Stack<BitStack> cmdarg_stack = new Stack<BitStack>();
+        private readonly Stack<BitStack> cond_stack = new Stack<BitStack>();
+        private BitStack in_def_stack = new BitStack();
+        private BitStack in_single_stack = new BitStack();
+        private readonly Stack<int> lpar_beg_stack = new Stack<int>();
+        private BitStack in_kwarg_stack = new BitStack();
 
         public Parser(Lexer lexer) : base(new LexerAdapter(lexer)) { }
 
@@ -41,8 +39,8 @@ namespace Mint.Parse
         private void PushSingle() { in_single_stack.Push(in_single); }
         private void PopSingle()  { in_single = in_single_stack.Pop(); }
 
-        private void PushLParBeg() { lpar_beg_stack.Push(Lexer.LParBeg); }
-        private void PopLParBeg()  { Lexer.LParBeg = lpar_beg_stack.Pop(); }
+        private void PushLParBeg() { lpar_beg_stack.Push(Lexer.LeftParenCounter); }
+        private void PopLParBeg()  { Lexer.LeftParenCounter = lpar_beg_stack.Pop(); }
 
         private void PushKwarg() { in_kwarg_stack.Push(Lexer.InKwarg); }
         private void PopKwarg()  { Lexer.InKwarg = in_kwarg_stack.Pop(); }
@@ -75,7 +73,7 @@ namespace Mint.Parse
             return new Parser(filename, data).Parse();
         }
 
-        private static void VerifyFormalArgument(Token token)
+        private void VerifyFormalArgument(Token token)
         {
             var name = token.Value;
 
@@ -100,7 +98,7 @@ namespace Mint.Parse
             }
         }
 
-        class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>
+        private class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>
         {
             public Lexer Lexer { get; }
 

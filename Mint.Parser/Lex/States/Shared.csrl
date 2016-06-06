@@ -384,7 +384,7 @@ EXPR_SHARED := |*
     };
 
     '}' => {
-        if(currentLiteral != null && --currentLiteral.BraceNest == 0)
+        if(currentLiteral != null && --currentLiteral.BraceCount == 0)
         {
             Lexer.EmitToken(tSTRING_DEND, ts, te);
             Lexer.CurrentState = currentLiteral.State;
@@ -532,7 +532,7 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal partial class Shared : StateBase
+    internal class Shared : StateBase
     {
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";

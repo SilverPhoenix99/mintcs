@@ -6,7 +6,7 @@
 %scanbasetype Lexer
 %tokentype TokenType
 
-%using Mint.Lexing;
+%using Mint.Lex;
 
 %YYSTYPE Ast<Token>
 
@@ -138,7 +138,7 @@ stmt_or_begin :
 ;
 
 stmt :
-    kALIAS fitem { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + $2 + $4; }
+    kALIAS fitem { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + $2 + $4; }
   | kALIAS tGVAR tGVAR     { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tBACK_REF { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tNTH_REF
@@ -305,7 +305,7 @@ mlhs_node :
         if($1.Value.Type == TokenType.tNTH_REF
         || $1.Value.Type == TokenType.tBACK_REF)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, $"Can't set variable {$1.Value.Value}");
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "Can't set variable " + $1.Value.Value);
         }
     }
 ;
@@ -346,7 +346,7 @@ lhs :
         if($1.Value.Type == TokenType.tNTH_REF
         || $1.Value.Type == TokenType.tBACK_REF)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, $"Can't set variable {$1.Value.Value}");
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "Can't set variable " + $1.Value.Value);
         }
     }
 ;
@@ -369,8 +369,8 @@ fname :
     tIDENTIFIER
   | tCONSTANT
   | tFID
-  | op { Lexer.State = Lexer.States.EXPR_ENDFN; }
-  | reswords { Lexer.State = Lexer.States.EXPR_ENDFN; }
+  | op { Lexer.CurrentState = Lexer.EndfnState; }
+  | reswords { Lexer.CurrentState = Lexer.EndfnState; }
 ;
 
 fsym :
@@ -385,7 +385,7 @@ fitem :
 
 undef_list :
     fitem { $$ = sexp($1); }
-  | undef_list kCOMMA { Lexer.State = Lexer.States.EXPR_FNAME; } fitem { $$ = $1 + sexp($4); }
+  | undef_list kCOMMA { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + sexp($4); }
 ;
 
 op :
@@ -509,10 +509,7 @@ arg :
   | arg kDIV arg         { $$ = $2 + $1 + $3; }
   | arg kPERCENT arg     { $$ = $2 + $1 + $3; }
   | arg kPOW arg         { $$ = $2 + $1 + $3; }
-  | kUMINUS_NUM simple_numeric kPOW arg
-    {
-      $$ = $3 + ($1 + $2) + $4;
-    }
+  | kUMINUS_NUM simple_numeric kPOW arg { $$ = $3 + ($1 + $2) + $4; }
   | kUPLUS arg           { $$ = $1 + $2; }
   | kUMINUS arg          { $$ = $1 + $2; }
   | arg kPIPE arg        { $$ = $2 + $1 + $3; }
@@ -534,11 +531,7 @@ arg :
   | arg kRSHIFT arg      { $$ = $2 + $1 + $3; }
   | arg kANDOP arg       { $$ = $2 + $1 + $3; }
   | arg kOROP arg        { $$ = $2 + $1 + $3; }
-  | kDEFINED opt_nl { in_defined = true; } arg
-    {
-      in_defined = false;
-      $$ = $1 + $4;
-    }
+  | kDEFINED opt_nl arg  { $$ = $1 + $3; }
   | arg kQMARK arg opt_nl kCOLON arg
     {
       $$ = $2 + $1 + $3 + $6;
@@ -635,13 +628,13 @@ primary :
       Lexer.Cmdarg = new BitStack();
     }
     bodystmt kEND { PopCmdarg(); $$ = $1.Append($3.List); }
-  | kLPAREN_ARG { Lexer.State = Lexer.States.EXPR_ENDARG; } rparen { $$ = sexp(); }
+  | kLPAREN_ARG { Lexer.CurrentState = Lexer.EndargState; } rparen { $$ = sexp(); }
   | kLPAREN_ARG
     {
       PushCmdarg();
       Lexer.Cmdarg = new BitStack();
     }
-    expr { Lexer.State = Lexer.States.EXPR_ENDARG; } rparen
+    expr { Lexer.CurrentState = Lexer.EndargState; } rparen
     {
       PopCmdarg();
       $$ = $3;
@@ -655,7 +648,7 @@ primary :
   | kYIELD kLPAREN2 call_args rparen { $$ = $1 + $3; }
   | kYIELD kLPAREN2 rparen           { $$ = $1 + sexp(); }
   | kYIELD
-  | kDEFINED opt_nl kLPAREN2 { in_defined = true; } expr { in_defined = false; } rparen { $$ = $1 + $5; }
+  | kDEFINED opt_nl kLPAREN2 expr rparen { $$ = $1 + $4; }
   | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
   | kNOT kLPAREN2 rparen      { $$ = $1 + sexp(); }
   | fcall brace_block         { $$ = CallNode() + sexp() + $1 + sexp($2); }
@@ -742,11 +735,11 @@ primary :
       PopDef();
       $$ = $1 + $2 + $4 + $5;
     }
-  | kDEF singleton dot_or_colon { Lexer.State = Lexer.States.EXPR_FNAME; } fname
+  | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
       PushSingle();
       in_single = true;
-      Lexer.State = Lexer.States.EXPR_ENDFN;
+      Lexer.CurrentState = Lexer.EndfnState;
       Lexer.CanLabel = true;
     }
     f_arglist bodystmt kEND
@@ -888,7 +881,7 @@ block_param :
 
 opt_block_param :
     { $$ = sexp(); } // nothing
-  | block_param_def { Lexer.InCmd = true; }
+  | block_param_def { Lexer.CommandStart = true; }
 ;
 
 block_param_def :
@@ -919,7 +912,7 @@ bvar :
 lambda :
     {
       PushLParBeg();
-      Lexer.LParBeg = ++Lexer.ParenNest;
+      Lexer.LeftParenCounter = ++Lexer.ParenNest;
     }
     f_larglist
     {
@@ -1226,8 +1219,8 @@ backref :
 superclass :
     kLESS
     {
-      Lexer.State = Lexer.States.EXPR_BEG;
-      Lexer.InCmd = true;
+      Lexer.CurrentState = Lexer.BegState;
+      Lexer.CommandStart = true;
     }
     expr term { $$ = $1 + $3; }
   | { $$ = sexp(); } // nothing
@@ -1236,8 +1229,8 @@ superclass :
 f_arglist :
     kLPAREN2 f_args rparen
     {
-      Lexer.State = Lexer.States.EXPR_BEG;
-      Lexer.InCmd = true;
+      Lexer.CurrentState = Lexer.BegState;
+      Lexer.CommandStart = true;
       $$ = $2;
     }
   | {
@@ -1248,8 +1241,8 @@ f_arglist :
     f_args term
     {
       PopKwarg();
-      Lexer.State = Lexer.States.EXPR_BEG;
-      Lexer.InCmd = true;
+      Lexer.CurrentState = Lexer.BegState;
+      Lexer.CommandStart = true;
       $$ = $2;
     }
 ;

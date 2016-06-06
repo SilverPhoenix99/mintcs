@@ -89,13 +89,13 @@ namespace Mint.Lex
             }
         }
 
-        public Lexer(string filename)
+        public Lexer(string filename, string data = "")
         {
-            Filename = filename;
             tokens = new Queue<Token>();
-            Data = string.Empty;
             literals = new Stack<iLiteral>();
             Variables = new Stack<Stack<ISet<string>>>();
+            Filename = filename;
+            Data = data;
 
             MainState = new Main(this);
             SharedState = new Shared(this);

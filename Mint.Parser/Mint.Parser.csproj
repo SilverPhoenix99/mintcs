@@ -59,14 +59,10 @@
     <Compile Include="gen\Lex\States\Main.cs" />
     <Compile Include="gen\Lex\States\Mid.cs" />
     <Compile Include="gen\Lex\States\Shared.cs" />
-    <Compile Include="gen\Lexer_data.cs" />
-    <Compile Include="gen\Lexer_exec.cs" />
     <Compile Include="gen\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
     <Compile Include="Lex\States\State.cs" />
     <Compile Include="Lex\States\StateBase.cs" />
-    <Compile Include="Lexing\Lexer.States.cs" />
-    <Compile Include="Lexing\Lexer.cs" />
     <Compile Include="Parse\Ast.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
@@ -85,9 +81,6 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
-    <None Include="Lexing\Lexer_exec.csrl" />
-    <None Include="Lexing\Lexer_data.csrl" />
-    <None Include="Lexing\Lexer.csrl" />
     <Ragel Include="Lex\States\Arg.csrl" />
     <Ragel Include="Lex\States\ArgLabeled.csrl" />
     <Ragel Include="Lex\States\Class.csrl" />
