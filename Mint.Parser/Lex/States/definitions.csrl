@@ -182,7 +182,7 @@ control_escape = control_prefix (
 
 identifier = identifier_prefix identifier_char*;
 constant = upper identifier_char*;
-variable = (identifier_prefix - upper) identifier_char*;
+var_name = identifier - constant;
 
 reserved_identifier =
       'alias'

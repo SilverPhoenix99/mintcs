@@ -272,13 +272,13 @@ mlhs_post :
 mlhs_node :
     user_variable
     {
-        // assignable($1, 0)
-        //assignable("mlhs_node > user_variable", $1);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
   | keyword_variable
     {
-        // assignable($1, 0)
-        //assignable("mlhs_node > keyword_variable", $1);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
   | primary kLBRACK2 opt_call_args rbracket  { $$ = $2 + $1 + $3; }
   | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
@@ -302,21 +302,24 @@ mlhs_node :
     }
   | backref
     {
-      //Console.WriteLine("mlhs_node > backref : #{val.inspect}");
-      //backref_error($1);
+        if($1.Value.Type == TokenType.tNTH_REF
+        || $1.Value.Type == TokenType.tBACK_REF)
+        {
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, $"Can't set variable {$1.Value.Value}");
+        }
     }
 ;
 
 lhs :
     user_variable
     {
-      // assignable($1, 0)
-      //assignable("lhs > user_variable", $1);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
   | keyword_variable
     {
-      // assignable($1, 0)
-      //assignable("lhs > keyword_variable", $1);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
   | primary kLBRACK2 opt_call_args rbracket { $$ = $2 + $1 + $3; }
   | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
@@ -340,8 +343,11 @@ lhs :
     }
   | backref
     {
-      //Console.WriteLine("lhs > backref : #{val.inspect}");
-      //backref_error($1);
+        if($1.Value.Type == TokenType.tNTH_REF
+        || $1.Value.Type == TokenType.tBACK_REF)
+        {
+            throw new SyntaxError(Filename, $1.Value.Location.StartLine, $"Can't set variable {$1.Value.Value}");
+        }
     }
 ;
 
@@ -682,9 +688,9 @@ primary :
   | kCASE expr opt_terms case_body kEND { $$ = $1 + $2 + $4; }
   | kCASE opt_terms case_body kEND { $$ = $1 + sexp() + $3; }
   | kFOR for_var kIN { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND
-  {
-      $$ = $1 + $2 + $5 + $8;
-  }
+    {
+        $$ = $1 + $2 + $5 + $8;
+    }
   | kCLASS cpath superclass
     {
         if(in_def || in_single)
@@ -781,12 +787,7 @@ for_var :
 ;
 
 f_marg :
-    f_norm_arg
-    {
-      // assignable($1, 0);
-      //assignable("f_marg > f_norm_arg", val)
-      $$ = sexp($1);
-    }
+    f_norm_arg { $$ = sexp($1); }
   | kLPAREN f_margs rparen { $$ = $2; }
 ;
 
@@ -797,32 +798,12 @@ f_marg_list :
 
 f_margs :
     f_marg_list
-  | f_marg_list kCOMMA kSTAR f_norm_arg
-    {
-      // assignable($4, 0);
-      //assignable("f_margs > f_marg_list kCOMMA kSTAR f_norm_arg", val)
-      $$ = $1 + ($3 + $4);
-    }
-  | f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list
-    {
-      // assignable($4, 0);
-      //assignable("f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list", val)
-      $$ = $1 + ($3 + $4) + $6;
-    }
+  | f_marg_list kCOMMA kSTAR f_norm_arg { $$ = $1 + ($3 + $4); }
+  | f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list { $$ = $1 + ($3 + $4) + $6; }
   | f_marg_list kCOMMA kSTAR { $$ = $1 + $3; }
   | f_marg_list kCOMMA kSTAR kCOMMA f_marg_list { $$ = $1 + $3 + $5; }
-  | kSTAR f_norm_arg
-    {
-      // assignable($2, 0);
-      //assignable("kSTAR f_norm_arg", val)
-      $$ = sexp($1 + $2);
-    }
-  | kSTAR f_norm_arg kCOMMA f_marg_list
-    {
-      // assignable($2, 0);
-      //assignable("kSTAR f_norm_arg kCOMMA f_marg_list", val)
-      $$ = sexp($1 + $2) + $4;
-    }
+  | kSTAR f_norm_arg { $$ = sexp($1 + $2); }
+  | kSTAR f_norm_arg kCOMMA f_marg_list { $$ = sexp($1 + $2) + $4; }
   | kSTAR { $$ = sexp($1); }
   | kSTAR kCOMMA f_marg_list { $$ = sexp($1) + $3; }
 ;
@@ -928,6 +909,10 @@ bv_decls :
 
 bvar :
     tIDENTIFIER
+    {
+        $$ = $1;
+        Lexer.DefineArgument($$);
+    }
   | f_bad_arg
 ;
 
@@ -1223,13 +1208,13 @@ var_ref :
 var_lhs :
     user_variable
     {
-      // assignable($1, 0);
-      //assignable("var_lhs > user_variable", val);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
   | keyword_variable
     {
-      // assignable($1, 0);
-      //assignable("var_lhs > keyword_variable", val);
+        $$ = $1;
+        Lexer.DefineVariable($$);
     }
 ;
 
@@ -1325,8 +1310,9 @@ f_norm_arg :
     f_bad_arg
   | tIDENTIFIER
     {
-      // formal_argument(get_id($1));
-      //formal_argument("f_norm_arg > tIDENTIFIER", val);
+        $$ = $1;
+        VerifyFormalArgument($$.Value);
+        Lexer.DefineArgument($1);
     }
 ;
 
@@ -1347,37 +1333,35 @@ f_arg :
 f_label :
     tLABEL
     {
-      //formal_argument("f_label > tLABEL", val)
-      //#ID id = get_id($1);
-      //#arg_var(formal_argument(id));
+        $$ = $1;
+        VerifyFormalArgument($$.Value);
+        Lexer.DefineArgument($$);
     }
 ;
 
 f_kw :
     f_label arg
     {
-      //assignable("f_kw > f_label arg", val)
-      //#assignable($1, $2);
-      $$ = $1 + $2;
+        $$ = $1 + $2;
+        Lexer.DefineArgument($$);
     }
   | f_label
     {
-      //assignable("f_kw > f_label", val)
-      //#assignable($1, (NODE *)-1);
+        $$ = $1;
+        Lexer.DefineArgument($$);
     }
 ;
 
 f_block_kw :
     f_label primary
     {
-      //assignable("f_block_kw > f_label primary", val)
-      //#$$ = assignable($1, $2);
-      $$ = $1 + $2;
+        $$ = $1 + $2;
+        Lexer.DefineArgument($$);
     }
   | f_label
     {
-      //assignable("f_block_kw > f_label", val)
-      //#assignable($1, (NODE *)-1);
+        $$ = $1;
+        Lexer.DefineArgument($$);
     }
 ;
 
@@ -1397,25 +1381,27 @@ kwrest_mark :
 ;
 
 f_kwrest :
-    kwrest_mark tIDENTIFIER { $$ = $1 + $2; }
+    kwrest_mark tIDENTIFIER
+    {
+        $$ = $1 + $2;
+        Lexer.DefineArgument($$);
+    }
   | kwrest_mark
 ;
 
 f_opt :
     f_arg_asgn kASSIGN arg
     {
-      //assignable("f_opt > f_arg_asgn kASSIGN arg", val)
-      //#assignable($1, $3);
-      $$ = $2 + $1 + $3;
+        $$ = $2 + $1 + $3;
+        Lexer.DefineArgument($1);
     }
 ;
 
 f_block_opt :
     f_arg_asgn kASSIGN primary
     {
-      //assignable("f_block_opt > f_arg_asgn kASSIGN primary", val)
-      //#assignable($1, $3);
-      $$ = $2 + $1 + $3;
+        $$ = $2 + $1 + $3;
+        Lexer.DefineArgument($1);
     }
 ;
 
@@ -1437,10 +1423,8 @@ restarg_mark :
 f_rest_arg :
     restarg_mark tIDENTIFIER
     {
-      //puts "f_rest_arg > restarg_mark tIDENTIFIER : #{val.inspect}"
-      //#if (id_type($2) != ID_LOCAL)
-      //#    yyerror("rest argument must be local variable");
-      $$ = $1 + $2;
+        $$ = $1 + $2;
+        Lexer.DefineArgument($2);
     }
   | restarg_mark
 ;
@@ -1453,10 +1437,8 @@ blkarg_mark :
 f_block_arg :
     blkarg_mark tIDENTIFIER
     {
-      //puts "f_block_arg > blkarg_mark tIDENTIFIER : #{val.inspect}"
-      //#if (id_type($2) != ID_LOCAL)
-      //#    yyerror("block argument must be local variable");
-      $$ = $1 + $2;
+        $$ = $1 + $2;
+        Lexer.DefineArgument($2);
     }
 ;
 

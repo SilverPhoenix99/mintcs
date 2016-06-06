@@ -140,3 +140,81 @@ parse_ident(struct parser_params *parser, int c, int cmd_state)
     }
     return result;
 }
+
+static int
+lvar_defined_gen(struct parser_params *parser, ID id)
+{
+    return (dyna_in_block() && dvar_defined_get(id)) || local_id(id);
+}
+
+static int
+dvar_defined_gen(struct parser_params *parser, ID id, int get)
+{
+    struct vtable *vars, *args, *used;
+    int i;
+
+    args = lvtbl->args;
+    vars = lvtbl->vars;
+    used = lvtbl->used;
+
+    while(POINTER_P(vars))
+    {
+        if(vtable_included(args, id))
+        {
+            return 1;
+        }
+        if((i = vtable_included(vars, id)) != 0)
+        {
+            if(used)
+                used->tbl[i-1] |= LVAR_USED;
+            return 1;
+        }
+        args = args->prev;
+        vars = vars->prev;
+        if(get)
+            used = 0;
+
+        if(used)
+            used = used->prev;
+    }
+
+    if(vars == DVARS_INHERIT)
+    {
+        return rb_dvar_defined(id, parser->base_block);
+    }
+
+    return 0;
+}
+
+static int
+local_id_gen(struct parser_params *parser, ID id)
+{
+    struct vtable *vars, *args, *used;
+
+    vars = lvtbl->vars;
+    args = lvtbl->args;
+    used = lvtbl->used;
+
+    while(vars && POINTER_P(vars->prev))
+    {
+        vars = vars->prev;
+        args = args->prev;
+        if(used)
+            used = used->prev;
+    }
+
+    if(vars && vars->prev == DVARS_INHERIT)
+    {
+        return rb_local_defined(id, parser->base_block);
+    }
+
+    if(vtable_included(args, id))
+    {
+        return 1;
+    }
+
+    int i = vtable_included(vars, id);
+    if (i && used)
+        used->tbl[i-1] |= LVAR_USED;
+    return i != 0;
+}

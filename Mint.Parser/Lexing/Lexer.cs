@@ -139,7 +139,7 @@ namespace Mint.Lexing
             return GetEnumerator();
         }
 
-        public LexLocation Location(int pos, int length)
+        public LexLocation Location(int pos, int length = 0)
         {
             if(pos < 0)
             {

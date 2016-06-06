@@ -28,7 +28,7 @@ namespace Mint.Parse
         public Ast<Token> Result => CurrentSemanticValue;
 
         public string Filename => Lexer.Filename;
-        
+
         private void PushCmdarg() { cmdarg_stack.Push(Lexer.Cmdarg); }
         private void PopCmdarg()  { Lexer.Cmdarg = cmdarg_stack.Pop(); }
 
@@ -73,6 +73,31 @@ namespace Mint.Parse
         public static Ast<Token> Parse(string filename, string data)
         {
             return new Parser(filename, data).Parse();
+        }
+
+        private static void VerifyFormalArgument(Token token)
+        {
+            var name = token.Value;
+
+            if(name.StartsWith("@@"))
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, "formal argument cannot be a class variable");
+            }
+
+            if(name.StartsWith("@"))
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, "formal argument cannot be an instance variable");
+            }
+
+            if(name.StartsWith("$"))
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, "formal argument cannot be a global variable");
+            }
+
+            if("ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) >= 0)
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, "formal argument cannot be a constant");
+            }
         }
 
         class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>

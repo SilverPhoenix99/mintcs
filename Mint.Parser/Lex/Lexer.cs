@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Mint.Lex.States;
 using Mint.Parse;
@@ -30,6 +31,7 @@ namespace Mint.Lex
         public bool CanLabel { get; set; }
         internal iLiteral CurrentLiteral => literals.Count == 0 ? null : literals.Peek();
         internal int LeftParenCounter;
+        internal Stack<Stack<ISet<string>>> Variables { get; }
 
         internal State CurrentState
         {
@@ -93,6 +95,7 @@ namespace Mint.Lex
             tokens = new Queue<Token>();
             Data = string.Empty;
             literals = new Stack<iLiteral>();
+            Variables = new Stack<Stack<ISet<string>>>();
 
             MainState = new Main(this);
             SharedState = new Shared(this);
@@ -122,6 +125,9 @@ namespace Mint.Lex
             CanLabel = false;
             literals.Clear();
             LeftParenCounter = 0;
+
+            Variables.Clear();
+            PushClosedScope();
         }
 
         private static int[] ResetLines(string data, int dataLength)
@@ -231,6 +237,104 @@ namespace Mint.Lex
         internal void IncrementBraceNest()
         {
             throw new NotImplementedException();
+        }
+
+        internal void PushClosedScope()
+        {
+            Variables.Push(new Stack<ISet<string>>());
+            PushOpenScope();
+        }
+
+        internal void PopClosedScope()
+        {
+            Variables.Pop();
+        }
+
+        internal void PushOpenScope()
+        {
+            Variables.Peek().Push(new HashSet<string>());
+        }
+
+        internal void PopOpenScope()
+        {
+            Variables.Peek().Pop();
+        }
+
+        internal void DefineVariable(Token token)
+        {
+            var name = token.Value;
+            if(token.Type == TokenType.tLABEL)
+            {
+                name = name.Substring(0, name.Length - 1);
+            }
+
+            if(!IsVariableName(name))
+            {
+                throw new ArgumentException($"{name} is not a valid local variable name.");
+            }
+
+            switch(name)
+            {
+                case "nil": goto case "self";
+                case "true": goto case "self";
+                case "false": goto case "self";
+                case "__FILE__": goto case "self";
+                case "__LINE__": goto case "self";
+                case "__ENCODING__": goto case "self";
+                case "self":
+                    throw new SyntaxError(Filename, token.Location.StartLine, $"Can't assign to {name}");
+            }
+
+            if(IsVariableDefined(name))
+            {
+                return;
+            }
+
+            Variables.Peek().Peek().Add(name);
+        }
+
+        internal bool IsVariableName(string name) => "$@ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) < 0;
+
+        internal bool IsVariableDefined(string name) => Variables.Peek().Any(_ => _.Contains(name));
+
+        internal void DefineVariable(Ast<Token> node)
+        {
+            if(!node.IsList)
+            {
+                DefineVariable(node.Value);
+                return;
+            }
+
+            foreach(var child in node)
+            {
+                DefineVariable(child);
+            }
+        }
+
+        internal void DefineArgument(Token token)
+        {
+            var isDefined = Variables.Peek().Peek().Contains(token.Value);
+
+            if(isDefined)
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, "duplicated argument name");
+            }
+
+            DefineVariable(token);
+        }
+
+        internal void DefineArgument(Ast<Token> node)
+        {
+            if(!node.IsList)
+            {
+                DefineArgument(node.Value);
+                return;
+            }
+
+            foreach(var child in node)
+            {
+                DefineArgument(child);
+            }
         }
     }
 }
