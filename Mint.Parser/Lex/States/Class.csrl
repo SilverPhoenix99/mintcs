@@ -152,11 +152,7 @@ EXPR_CLASS := |*
         throw new SyntaxError(Lexer.Filename, line, "unknown type of %string");
     };
 
-    any => {
-        Lexer.SharedState.Advance(this);
-        NextState = Lexer.SharedState.NextState;
-        fbreak;
-    };
+    any => CallSharedState;
 
 *|;
 

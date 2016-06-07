@@ -14,8 +14,6 @@ set OUTPUT_FILENAME=%FILENAME%.cs
 
 cd "%MINT_DIR%"
 
-if not exist "%MINT_GEN_DIR%" mkdir "%MINT_GEN_DIR%"
-
 ::set RAGEL_OPTIONS=-F1
 set RAGEL_OPTIONS=-T0
 

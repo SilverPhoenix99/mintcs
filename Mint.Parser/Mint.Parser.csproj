@@ -59,7 +59,7 @@
     <Compile Include="gen\Lex\States\Main.cs" />
     <Compile Include="gen\Lex\States\Mid.cs" />
     <Compile Include="gen\Lex\States\Shared.cs" />
-    <Compile Include="gen\Parser.cs" />
+    <Compile Include="gen\Parse\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
     <Compile Include="Lex\States\State.cs" />
     <Compile Include="Lex\States\StateBase.cs" />
@@ -100,11 +100,16 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel);@(RagelDependency)" Outputs="@(Ragel->'gen\%(relativedir)%(Filename).cs')">
     <Message Text="&gt; GenLexer.bat %(Ragel.Filename)" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+    <MakeDir Directories="gen\Lex\States" Condition="!Exists('gen\Lex\States')" />
     <Exec Command="GenLexer.bat %(Ragel.Filename)" />
   </Target>
   <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
     <Message Text="&gt; GenParser.bat" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+    <MakeDir Directories="gen\Parse" Condition="!Exists('gen\Parse')" />
     <Exec Command="GenParser.bat" />
+  </Target>
+  <Target Name="CleanGen" AfterTargets="AfterClean">
+    <RemoveDir Directories="gen" Condition="Exists('gen')" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

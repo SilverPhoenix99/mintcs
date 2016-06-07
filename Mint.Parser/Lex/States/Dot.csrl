@@ -210,11 +210,56 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    any => {
-        Lexer.SharedState.Advance(this);
-        NextState = Lexer.SharedState.NextState;
+    name [!?] ':' ^':' => {
+        var definiteType = EmitLabelOrFallbackToken(tFID);
+        if(definiteType != tLABEL)
+        {
+            fhold;
+        }
+        fhold;
         fbreak;
     };
+
+    name [!?] ^'=' => {
+        Lexer.EmitToken(tFID, ts, te - 1);
+        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fhold;
+        fbreak;
+    };
+
+    constant ':' ^':' => {
+        var definiteType = EmitLabelOrFallbackToken(tCONSTANT);
+        if(definiteType != tLABEL)
+        {
+            fhold;
+        }
+        fhold;
+        fbreak;
+    };
+
+    constant => {
+        Lexer.EmitToken(tCONSTANT, ts, te);
+        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fbreak;
+    };
+
+    identifier ':' ^':' => {
+        var definiteType = EmitLabelOrFallbackToken(tIDENTIFIER);
+        if(definiteType != tLABEL)
+        {
+            fhold;
+        }
+        fhold;
+        fbreak;
+    };
+
+    identifier => {
+        Lexer.EmitToken(tIDENTIFIER, ts, te);
+        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fbreak;
+    };
+
+    any => CallSharedState;
 
 *|;
 

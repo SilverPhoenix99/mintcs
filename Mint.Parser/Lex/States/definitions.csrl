@@ -8,7 +8,6 @@ machine Lexer;
 
 getkey Lexer.CurrentChar;
 variable p Lexer.Position;
-alphtype int;
 
 
 ### Shared Definitions
@@ -27,6 +26,13 @@ action LineJump
     }
 }
 
+action CallSharedState
+{
+    Lexer.SharedState.Advance(this);
+    NextState = Lexer.SharedState.NextState;
+    return;
+}
+
 c_eof = 0;
 nl = '\n' @LineJump;
 nl_eof = nl | c_eof;
@@ -37,8 +43,8 @@ esc_ws = ws | '\\' nl;
 esc_ws_nl = esc_ws | nl;
 
 unicode = ^ascii;
-identifier_prefix = alpha | '_' | unicode;
-identifier_char = identifier_prefix | digit;
+name_prefix = alpha | '_' | unicode;
+name_char = name_prefix | digit;
 back_ref_char = [&`''+];
 gvar_char = [~*$?!@/\\;,.=:<>""];
 comment = '#' ^nl_eof*;
@@ -53,7 +59,7 @@ action UnterminatedHeredocIdentifier
 }
 
 heredoc_identifier = '<<' [~\-]? (
-    identifier_char+
+    name_char+
   | '"' ^('"' | nl_eof)* '"' @lerr(UnterminatedHeredocIdentifier)
   | "'" ^("'" | nl_eof)* "'" @lerr(UnterminatedHeredocIdentifier)
   | '`' ^('`' | nl_eof)* '`' @lerr(UnterminatedHeredocIdentifier)
@@ -180,11 +186,11 @@ control_escape = control_prefix (
 
 ### Identifiers
 
-identifier = identifier_prefix identifier_char*;
-constant = upper identifier_char*;
-var_name = identifier - constant;
+name = name_prefix name_char*;
+constant = upper name_char*;
+identifier = name - constant;
 
-reserved_identifier =
+reserved =
       'alias'
     | 'and'
     | 'begin'

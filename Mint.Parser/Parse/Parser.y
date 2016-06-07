@@ -54,11 +54,6 @@
 %right     kPOW
 %right     kNOTOP kNEG kUPLUS
 
-// special token types - used for grouping
-%token tKEYWORD   // e.g.: kSTAR, kAMPER, etc...
-%token tOPERATOR  // e.g.: kMUL, kDIV, etc...
-%token tRESERVED  // e.g.: kIF, kBEGIN, etc...
-
 %%
 
 program :
@@ -153,7 +148,7 @@ stmt :
   | stmt kRESCUE_MOD stmt { $$ = EnsureNode() + $1 + ($2 + $3) + sexp(); }
   | kAPP_END kLBRACE2 compstmt kRBRACE
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             Console.WriteLine("END in method; use at_exit");
         }
@@ -286,7 +281,7 @@ mlhs_node :
   | primary call_op tCONSTANT   { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tCONSTANT
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
         }
@@ -294,7 +289,7 @@ mlhs_node :
     }
   | kCOLON3 tCONSTANT
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
         }
@@ -327,7 +322,7 @@ lhs :
   | primary call_op tCONSTANT   { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tCONSTANT
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
         }
@@ -335,7 +330,7 @@ lhs :
     }
   | kCOLON3 tCONSTANT
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
         }
@@ -686,7 +681,7 @@ primary :
     }
   | kCLASS cpath superclass
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class definition in method body");
         }
@@ -710,9 +705,9 @@ primary :
   | kCLASS kLSHIFT expr
     {
         PushDef();
-        in_def = false;
+        inDef = false;
         PushSingle();
-        in_single = false;
+        inSingle = false;
         Lexer.PushClosedScope();
     }
     term bodystmt kEND
@@ -724,7 +719,7 @@ primary :
     }
   | kMODULE cpath
     {
-        if(in_def || in_single)
+        if(inDef || inSingle)
         {
             throw new SyntaxError(Filename, $1.Value.Location.StartLine, "module definition in method body");
         }
@@ -738,7 +733,7 @@ primary :
   | kDEF fname
     {
         PushDef();
-        in_def = true;
+        inDef = true;
         Lexer.PushClosedScope();
     }
     f_arglist bodystmt kEND
@@ -750,7 +745,7 @@ primary :
   | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
         PushSingle();
-        in_single = true;
+        inSingle = true;
         Lexer.CurrentState = Lexer.EndfnState;
         Lexer.CanLabel = true;
         Lexer.PushClosedScope();

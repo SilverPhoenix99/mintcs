@@ -7,15 +7,15 @@ namespace Mint.Parse
 {
     public partial class Parser
     {
-        private bool in_def;
-        private bool in_single;
+        private bool inDef;
+        private bool inSingle;
 
-        private readonly Stack<BitStack> cmdarg_stack = new Stack<BitStack>();
-        private readonly Stack<BitStack> cond_stack = new Stack<BitStack>();
-        private BitStack in_def_stack = new BitStack();
-        private BitStack in_single_stack = new BitStack();
-        private readonly Stack<int> lpar_beg_stack = new Stack<int>();
-        private BitStack in_kwarg_stack = new BitStack();
+        private readonly Stack<BitStack> cmdargStack = new Stack<BitStack>();
+        private readonly Stack<BitStack> condStack = new Stack<BitStack>();
+        private BitStack inDefStack = new BitStack();
+        private BitStack inSingleStack = new BitStack();
+        private readonly Stack<int> leftParenCounterStack = new Stack<int>();
+        private BitStack inKwargStack = new BitStack();
 
         public Parser(Lexer lexer) : base(new LexerAdapter(lexer)) { }
 
@@ -27,23 +27,23 @@ namespace Mint.Parse
 
         public string Filename => Lexer.Filename;
 
-        private void PushCmdarg() { cmdarg_stack.Push(Lexer.Cmdarg); }
-        private void PopCmdarg()  { Lexer.Cmdarg = cmdarg_stack.Pop(); }
+        private void PushCmdarg() { cmdargStack.Push(Lexer.Cmdarg); }
+        private void PopCmdarg()  { Lexer.Cmdarg = cmdargStack.Pop(); }
 
-        private void PushCond() { cond_stack.Push(Lexer.Cond); }
-        private void PopCond()  { Lexer.Cond = cond_stack.Pop(); }
+        private void PushCond() { condStack.Push(Lexer.Cond); }
+        private void PopCond()  { Lexer.Cond = condStack.Pop(); }
 
-        private void PushDef() { in_def_stack.Push(in_def); }
-        private void PopDef()  { in_def = in_def_stack.Pop(); }
+        private void PushDef() { inDefStack.Push(inDef); }
+        private void PopDef()  { inDef = inDefStack.Pop(); }
 
-        private void PushSingle() { in_single_stack.Push(in_single); }
-        private void PopSingle()  { in_single = in_single_stack.Pop(); }
+        private void PushSingle() { inSingleStack.Push(inSingle); }
+        private void PopSingle()  { inSingle = inSingleStack.Pop(); }
 
-        private void PushLParBeg() { lpar_beg_stack.Push(Lexer.LeftParenCounter); }
-        private void PopLParBeg()  { Lexer.LeftParenCounter = lpar_beg_stack.Pop(); }
+        private void PushLParBeg() { leftParenCounterStack.Push(Lexer.LeftParenCounter); }
+        private void PopLParBeg()  { Lexer.LeftParenCounter = leftParenCounterStack.Pop(); }
 
-        private void PushKwarg() { in_kwarg_stack.Push(Lexer.InKwarg); }
-        private void PopKwarg()  { Lexer.InKwarg = in_kwarg_stack.Pop(); }
+        private void PushKwarg() { inKwargStack.Push(Lexer.InKwarg); }
+        private void PopKwarg()  { Lexer.InKwarg = inKwargStack.Pop(); }
 
         public new Ast<Token> Parse()
         {

@@ -411,7 +411,7 @@ EXPR_SHARED := |*
         fbreak;
     };
 
-    '@@' identifier_prefix identifier_char* => {
+    '@@' name => {
         Lexer.EmitToken(tCVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
@@ -423,13 +423,13 @@ EXPR_SHARED := |*
             "`@@' without identifiers is not allowed as a class variable name");
     };
 
-    '@@' ^(c_eof | ws_nl | identifier_prefix) => {
+    '@@' ^(c_eof | ws_nl | name_prefix) => {
         var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 2];
         throw new SyntaxError(Lexer.Filename, line, $"`@@{c}' is not allowed as a class variable name");
     };
 
-    '@' identifier_prefix identifier_char* => {
+    '@' name => {
         Lexer.EmitToken(tIVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
@@ -441,25 +441,25 @@ EXPR_SHARED := |*
             "`@' without identifiers is not allowed as an instance variable name");
     };
 
-    '@' ^('@' | c_eof | ws_nl | identifier_prefix) => {
+    '@' ^('@' | c_eof | ws_nl | name_prefix) => {
         var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 1];
         throw new SyntaxError(Lexer.Filename, line, $"`@{c}' is not allowed as an instance variable name");
     };
 
-    '$' (gvar_char | (identifier_prefix | '0') identifier_char*) => {
+    '$' (gvar_char | (name_prefix | '0') name_char*) => {
         Lexer.EmitToken(tGVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
 
-    '$-' identifier_char => {
+    '$-' name_char => {
         Lexer.EmitToken(tGVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
 
-    '$-' ^identifier_char => {
+    '$-' ^name_char => {
         var line = Lexer.LocationFor(ts, 1).StartLine;
         throw new SyntaxError(Lexer.Filename, line, "syntax error, unexpected $undefined");
     };
@@ -482,7 +482,7 @@ EXPR_SHARED := |*
             "`$' without identifiers is not allowed as a global variable name");
     };
 
-    '$' ^(c_eof | ws_nl | back_ref_char | gvar_char | identifier_char | '-') => {
+    '$' ^(c_eof | ws_nl | back_ref_char | gvar_char | name_char | '-') => {
         var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 1];
         throw new SyntaxError(Lexer.Filename, line, $"`${c}' is not allowed as a global variable name");
@@ -494,7 +494,7 @@ EXPR_SHARED := |*
         fbreak;
     };
 
-    '?' (alnum | '_') identifier_char => {
+    '?' (alnum | '_') name_char => {
         Lexer.EmitToken(kQMARK, ts, te - 2);
         Lexer.CurrentState = Lexer.BegState;
         fexec ts + 1;

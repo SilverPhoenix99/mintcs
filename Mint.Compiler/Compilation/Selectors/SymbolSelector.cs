@@ -1,5 +1,4 @@
 ﻿using Mint.Compilation.Components;
-using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Selectors
 {
@@ -22,9 +21,14 @@ namespace Mint.Compilation.Selectors
         private bool IsIdentifierSymbol()
         {
             var hasSingleChild = Node.List.Count == 1;
+            if(!hasSingleChild)
+            {
+                return false;
+            }
+
             var firstChild = Node[0];
-            var type = firstChild.Value.Type;
-            return hasSingleChild && (type == tIDENTIFIER || type == tIVAR || type == tCVAR || type == tGVAR);
+            var isSimpleChild = firstChild.List.Count == 0;
+            return isSimpleChild;
         }
     }
 }

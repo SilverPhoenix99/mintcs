@@ -233,11 +233,7 @@ EXPR_FNAME_FITEM := |*
         fbreak;
     };
 
-    any => {
-        Lexer.SharedState.Advance(this);
-        NextState = Lexer.SharedState.NextState;
-        fbreak;
-    };
+    any => CallSharedState;
 
 *|;
 
