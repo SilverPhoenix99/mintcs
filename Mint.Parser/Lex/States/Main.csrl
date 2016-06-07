@@ -51,11 +51,11 @@ namespace Mint.Lex.States
         {
             Reset(Lexer_en_MAIN);
 
-            %% write exec;
+            %% write exec noend;
 
             return null;
         }
 
-        %% write data;
+        %% write data nofinal noerror;
     }
 }

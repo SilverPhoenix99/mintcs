@@ -16,7 +16,6 @@ namespace Mint.Lex.States
         protected iLiteral currentLiteral;
 
         protected Lexer Lexer { get; }
-        protected int pe => Lexer.DataLength;
         protected int eof => Lexer.DataLength;
         //protected abstract State DefaultNextState => Lexer.BegState;
 

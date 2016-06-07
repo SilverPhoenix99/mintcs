@@ -74,13 +74,13 @@ namespace Mint.Lex.States
 
         public override State Advance(State caller)
         {
-            Reset(Lexer_start);
+            Reset(%%{ write start; }%%);
 
-            %% write exec;
+            %% write exec noend;
 
             return null;
         }
 
-        %% write data;
+        %% write data nofinal noerror;
     }
 }
