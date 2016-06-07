@@ -2,6 +2,8 @@
 {
     internal interface State
     {
-        State Advance(State caller);
+        State NextState { get; }
+
+        void Advance(State caller);
     }
 }

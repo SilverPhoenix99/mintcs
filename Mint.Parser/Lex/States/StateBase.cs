@@ -15,6 +15,7 @@ namespace Mint.Lex.States
         protected bool isRational;
         protected iLiteral currentLiteral;
 
+        public State NextState { get; protected set; }
         protected Lexer Lexer { get; }
         protected int eof => Lexer.DataLength;
         //protected abstract State DefaultNextState => Lexer.BegState;
@@ -24,7 +25,7 @@ namespace Mint.Lex.States
             Lexer = lexer;
         }
 
-        public abstract State Advance(State caller);
+        public abstract void Advance(State caller);
 
         protected void Reset(int initialState)
         {
@@ -38,6 +39,7 @@ namespace Mint.Lex.States
             isRational = false;
             numBase = 0;
             currentLiteral = Lexer.CurrentLiteral;
+            NextState = null;
         }
     }
 }

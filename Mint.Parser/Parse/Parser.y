@@ -165,8 +165,8 @@ stmt :
   | primary kLBRACK2 opt_call_args rbracket tOP_ASGN command_call { $$ = $5 + ( $2 + $1 + $3 ) + $6; }
   | primary call_op tIDENTIFIER tOP_ASGN command_call             { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
   | primary call_op tCONSTANT tOP_ASGN command_call               { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
-  | primary kCOLON2 tCONSTANT tOP_ASGN command_call               { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
   | primary kCOLON2 tIDENTIFIER tOP_ASGN command_call             { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
+  | primary kCOLON2 tCONSTANT tOP_ASGN command_call               { $$ = $4 + ( $2 + $3 + $1 ) + $5; }
   | backref tOP_ASGN command_call                                 { $$ = $2 + $1 + $3; }
   | lhs kASSIGN mrhs                                              { $$ = $2 + $1 + $3; }
   | mlhs kASSIGN mrhs_arg                                         { $$ = $2 + $1 + $3; }
@@ -198,7 +198,7 @@ block_command :
 ;
 
 cmd_brace_block :
-    kLBRACE_ARG opt_block_param compstmt kRBRACE { $$ = $1 + $2 + $3; }
+    kLBRACE_ARG { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kRBRACE { $$ = $1 + $3 + $4; }
 ;
 
 fcall :
@@ -690,32 +690,37 @@ primary :
         {
             throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class definition in method body");
         }
+        Lexer.PushClosedScope();
     }
     bodystmt kEND
     {
+        Lexer.PopClosedScope();
         var superclass = $3;
-        if(!superclass.IsList)
+        if(superclass.IsList)
+        {
+            // => empty list => no superclass
+            superclass = $2;
+        }
+        else
         {
             superclass = (Ast<Token>) superclass.Value + $2 + superclass[0];
-        }
-        else // => empty list => no superclass
-        {
-            superclass = $2;
         }
         $$ = $1 + superclass + $5;
     }
   | kCLASS kLSHIFT expr
     {
-      PushDef();
-      in_def = false;
-      PushSingle();
-      in_single = false;
+        PushDef();
+        in_def = false;
+        PushSingle();
+        in_single = false;
+        Lexer.PushClosedScope();
     }
     term bodystmt kEND
     {
-      PopDef();
-      PopSingle();
-      $$ = $1 + ($2 + $3) + $6;
+        Lexer.PopClosedScope();
+        PopDef();
+        PopSingle();
+        $$ = $1 + ($2 + $3) + $6;
     }
   | kMODULE cpath
     {
@@ -723,29 +728,38 @@ primary :
         {
             throw new SyntaxError(Filename, $1.Value.Location.StartLine, "module definition in method body");
         }
+        Lexer.PushClosedScope();
     }
-    bodystmt kEND { $$ = $1 + $2 + $4; }
+    bodystmt kEND
+    {
+        Lexer.PopClosedScope();
+        $$ = $1 + $2 + $4;
+    }
   | kDEF fname
     {
-      PushDef();
-      in_def = true;
+        PushDef();
+        in_def = true;
+        Lexer.PushClosedScope();
     }
     f_arglist bodystmt kEND
     {
-      PopDef();
-      $$ = $1 + $2 + $4 + $5;
+        Lexer.PopClosedScope();
+        PopDef();
+        $$ = $1 + $2 + $4 + $5;
     }
   | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
-      PushSingle();
-      in_single = true;
-      Lexer.CurrentState = Lexer.EndfnState;
-      Lexer.CanLabel = true;
+        PushSingle();
+        in_single = true;
+        Lexer.CurrentState = Lexer.EndfnState;
+        Lexer.CanLabel = true;
+        Lexer.PushClosedScope();
     }
     f_arglist bodystmt kEND
     {
-      PopSingle();
-      $$ = $1 + ($3 + $2 + $5) + $7 + $8;
+        Lexer.PopClosedScope();
+        PopSingle();
+        $$ = $1 + ($3 + $2 + $5) + $7 + $8;
     }
   | kBREAK
   | kNEXT
@@ -911,20 +925,22 @@ bvar :
 
 lambda :
     {
-      PushLParBeg();
-      Lexer.LeftParenCounter = ++Lexer.ParenNest;
+        PushLParBeg();
+        Lexer.LeftParenCounter = ++Lexer.ParenNest;
+        Lexer.PushOpenScope();
     }
     f_larglist
     {
-      PushCmdarg();
-      Lexer.Cmdarg = new BitStack();
+        PushCmdarg();
+        Lexer.Cmdarg = new BitStack();
     }
     lambda_body
     {
-      PopLParBeg();
-      PopCmdarg();
-      Lexer.Cmdarg.LexPop();
-      $$ = sexp($2, $4);
+        Lexer.PopOpenScope();
+        PopLParBeg();
+        PopCmdarg();
+        Lexer.Cmdarg.LexPop();
+        $$ = sexp($2, $4);
     }
 ;
 
@@ -939,7 +955,7 @@ lambda_body :
 ;
 
 do_block :
-    kDO_BLOCK opt_block_param compstmt kEND { $$ = $1 + $2 + $3; }
+    kDO_BLOCK { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kEND { $$ = $1 + $3 + $4; }
 ;
 
 block_call :
@@ -983,8 +999,8 @@ method_call :
 ;
 
 brace_block :
-    kLBRACE2 opt_block_param compstmt kRBRACE { $$ = $1 + $2 + $3; }
-  | kDO opt_block_param compstmt kEND         { $$ = $1 + $2 + $3; }
+    kLBRACE2 { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kRBRACE { $$ = $1 + $3 + $4; }
+  | kDO { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kEND         { $$ = $1 + $3 + $4; }
 ;
 
 case_body :

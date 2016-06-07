@@ -5,7 +5,7 @@ machine Lexer;
 include "definitions.csrl";
 
 bom_marker = '\xef\xbb\xbf';
-shebang = '#!' ^nl_eof* nl_eof;
+shebang = '#!' ^nl_eof*;
 
 MAIN := |*
 
@@ -14,7 +14,10 @@ MAIN := |*
 
     bom_marker => { fgoto BOF; };
 
-    any => { fhold; fgoto BOF; };
+    any => {
+        fhold;
+        fgoto BOF;
+    };
 
 *|;
 
@@ -28,8 +31,9 @@ BOF := |*
     space* %TokStart comment => MagicComment;
 
     any => {
+        NextState = Lexer.BegState;
         fhold;
-        return Lexer.BegState;
+        fbreak;
     };
 
 *|;
@@ -47,13 +51,11 @@ namespace Mint.Lex.States
         public Main(Lexer lexer) : base(lexer)
         { }
 
-        public override State Advance(State caller)
+        public override void Advance(State caller)
         {
             Reset(Lexer_en_MAIN);
 
             %% write exec noend;
-
-            return null;
         }
 
         %% write data nofinal noerror;

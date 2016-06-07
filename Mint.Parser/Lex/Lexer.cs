@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Mint.Lex.States;
 using Mint.Parse;
 using QUT.Gppg;
+using static Mint.Parse.TokenType;
 using State = Mint.Lex.States.State;
 
 namespace Mint.Lex
@@ -63,7 +64,7 @@ namespace Mint.Lex
             get { return data; }
             set
             {
-                if(data == null)
+                if(value == null)
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
@@ -89,14 +90,17 @@ namespace Mint.Lex
             }
         }
 
-        public Lexer(string filename, string data = "")
+        public Lexer(string filename, string data = "") : this()
+        {
+            Filename = filename;
+            Data = data;
+        }
+
+        private Lexer()
         {
             tokens = new Queue<Token>();
             literals = new Stack<iLiteral>();
             Variables = new Stack<Stack<ISet<string>>>();
-            Filename = filename;
-            Data = data;
-
             MainState = new Main(this);
             SharedState = new Shared(this);
             ArgState = new Arg(this);
@@ -133,6 +137,11 @@ namespace Mint.Lex
         private static int[] ResetLines(string data, int dataLength)
         {
             var lines = new List<int> { 0 };
+
+            if(dataLength > data.Length)
+            {
+                dataLength = data.Length;
+            }
 
             for(var i = 0; i < dataLength; i++)
             {
@@ -180,31 +189,32 @@ namespace Mint.Lex
 
             for(;;)
             {
-                var nextState = CurrentState.Advance(null);
-                if(nextState == null)
+                CurrentState.Advance(null);
+                if(CurrentState.NextState == null)
                 {
                     break;
                 }
 
-                CurrentState = nextState;
+                CurrentState = CurrentState.NextState;
             }
         }
 
         private Token CreateEofToken() => new Token(TokenType.EOF, "$eof", LocationFor(DataLength, 0));
 
-        public void EmitToken(TokenType type, int ts, int te)
+        public Token EmitToken(TokenType type, int ts, int te)
         {
             var length = te - ts;
             var text = Data.Substring(ts, length);
             var location = LocationFor(ts, length);
             var token = new Token(type, text, location);
             tokens.Enqueue(token);
+            return token;
         }
 
         internal LexLocation LocationFor(int position, int length)
         {
             var line = Array.BinarySearch(lines, position) + 1;
-            line = Math.Abs(line < 0 ? -line : line);
+            line = line < 0 ? -line : line;
             var column = position - lines[line - 1] + 1;
             return new LexLocation(line, column, line, column + length);
         }
@@ -226,17 +236,31 @@ namespace Mint.Lex
 
         public void EmitIntegerToken(int ts, int te, int numBase, bool isRational, bool isImaginary)
         {
-            throw new NotImplementedException();
+            var type = isImaginary ? tIMAGINARY
+                     : isRational ? tRATIONAL
+                     : tINTEGER;
+
+            var token = EmitToken(type, ts, te);
+            token.Properties["num_base"] = numBase;
         }
 
         public void EmitFloatToken(int ts, int te, bool isRational, bool isImaginary)
         {
-            throw new NotImplementedException();
+            var type = isImaginary ? tIMAGINARY
+                     : isRational ? tRATIONAL
+                     : tFLOAT;
+
+            EmitToken(type, ts, te);
         }
 
-        internal void IncrementBraceNest()
+        internal void IncrementBraceCount()
         {
-            throw new NotImplementedException();
+            if(literals.Count == 0)
+            {
+                return;
+            }
+
+            literals.Peek().BraceCount++;
         }
 
         internal void PushClosedScope()

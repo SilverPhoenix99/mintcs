@@ -15,14 +15,14 @@ EXPR_ENDARG := |*
         Lexer.EmitToken(kNL, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CommandStart = true;
-        return null;
+        fbreak;
     };
 
     ':' ^':' => {
         Lexer.EmitToken(kCOLON, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '{' => {
@@ -40,21 +40,22 @@ EXPR_ENDARG := |*
         }
         Lexer.EmitToken(tokenType, ts, te);
         Lexer.CurrentState = Lexer.BegState;
-        Lexer.IncrementBraceNest();
+        Lexer.IncrementBraceCount();
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '?' => {
         Lexer.EmitToken(kQMARK, ts, te);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     any => {
-        fhold;
-        return Lexer.SharedState.Advance(this);
+        Lexer.SharedState.Advance(this);
+        NextState = Lexer.SharedState.NextState;
+        fbreak;
     };
 
 *|;
@@ -72,13 +73,11 @@ namespace Mint.Lex.States
         public Endarg(Lexer lexer) : base(lexer)
         { }
 
-        public override State Advance(State caller)
+        public override void Advance(State caller)
         {
             Reset(%%{ write start; }%%);
 
             %% write exec noend;
-
-            return null;
         }
 
         %% write data nofinal noerror;

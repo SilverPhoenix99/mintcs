@@ -11,28 +11,28 @@ EXPR_CLASS := |*
         Lexer.EmitToken(kDSTAR, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '*' ^'=' => {
         Lexer.EmitToken(kSTAR, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '<=>' => {
         Lexer.EmitToken(kCMP, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CommandStart = true;
-        return null;
+        fbreak;
     };
 
     '<=' => {
         Lexer.EmitToken(kLEQ, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CommandStart = true;
-        return null;
+        fbreak;
     };
 
     '<<' ^'=' => {
@@ -40,65 +40,65 @@ EXPR_CLASS := |*
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CommandStart = true;
         fhold;
-        return null;
+        fbreak;
     };
 
     '<' => {
         Lexer.EmitToken(kLESS, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CommandStart = true;
-        return null;
+        fbreak;
     };
 
     '&' ^[=&.] => {
         Lexer.EmitToken(kAMPER, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '+' integer_number => {
         Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     '+' float_number => {
         Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     '+' ^'=' => {
         Lexer.EmitToken(kUPLUS, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '-' digit => {
         Lexer.EmitToken(kUMINUS_NUM, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '-' ^(ws_nl | [=>]) => {
         Lexer.EmitToken(kUMINUS, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '::' => {
         Lexer.EmitToken(kCOLON3, ts, te);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     '/' => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     '(' => {
@@ -108,7 +108,7 @@ EXPR_CLASS := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '[' => {
@@ -118,28 +118,28 @@ EXPR_CLASS := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '%' [Qqxr] (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     '%s' (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
-        return null;
+        fbreak;
     };
 
     '%' [WwIi] (ascii - alnum) ws_nl* => {
         Lexer.EmitStringToken(ts, ts + 3);
-        return null;
+        fbreak;
     };
 
     '%' (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     '%' [QqWwIixrs]? c_eof => {
@@ -153,8 +153,9 @@ EXPR_CLASS := |*
     };
 
     any => {
-        fhold;
-        return Lexer.SharedState.Advance(this);
+        Lexer.SharedState.Advance(this);
+        NextState = Lexer.SharedState.NextState;
+        fbreak;
     };
 
 *|;
@@ -172,13 +173,11 @@ namespace Mint.Lex.States
         public Class(Lexer lexer) : base(lexer)
         { }
 
-        public override State Advance(State caller)
+        public override void Advance(State caller)
         {
             Reset(%%{ write start; }%%);
 
             %% write exec noend;
-
-            return null;
         }
 
         %% write data nofinal noerror;

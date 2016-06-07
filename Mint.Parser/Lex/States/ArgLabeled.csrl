@@ -13,7 +13,7 @@ EXPR_ARG_LABELED := |*
             Lexer.EmitToken(kNL, ts, te);
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
-            return null;
+            fbreak;
         }
     };
 
@@ -21,142 +21,141 @@ EXPR_ARG_LABELED := |*
         Lexer.EmitToken(kDSTAR, te - 3, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '**' ^'=' => {
         Lexer.EmitToken(kDSTAR, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '*' ^(ws_nl | '=') => {
         Lexer.EmitToken(kSTAR, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '*' ^'=' => {
         Lexer.EmitToken(kSTAR, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     heredoc_identifier => {
         Lexer.EmitHeredocToken(ts, te);
-        return null;
+        fbreak;
     };
 
     [''""] => {
         Lexer.EmitLabelableStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '&' ^(ws_nl | [=&.]) => {
         Lexer.EmitToken(kAMPER, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '&' ^[=&.] => {
         Lexer.EmitToken(kAMPER, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ %TokStart '+' integer_number => {
         Lexer.EmitIntegerToken(tokStart, te, numBase, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ %TokStart '+' float_number => {
         Lexer.EmitFloatToken(tokStart, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '+' ^(ws_nl | '=') => {
         Lexer.EmitToken(kUPLUS, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '+' integer_number => {
         Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     '+' float_number => {
         Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     '+' ^'=' => {
         Lexer.EmitToken(kUPLUS, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '-' digit => {
         Lexer.EmitToken(kUMINUS_NUM, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '-' ^(ws_nl | digit | [=>]) => {
         Lexer.EmitToken(kUMINUS, te - 2, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '-' digit => {
         Lexer.EmitToken(kUMINUS_NUM, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     '-' ^(ws_nl | [=>]) => {
         Lexer.EmitToken(kUMINUS, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '::' => {
         Lexer.EmitToken(kCOLON3, te - 2, te);
         Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        return null;
+        fbreak;
     };
 
     '::' => {
         Lexer.EmitToken(kCOLON3, ts, te);
         Lexer.CurrentState = Lexer.BegState;
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '/' ^(ws_nl | '=') => {
         Lexer.EmitStringToken(te - 2, te - 1);
         fhold;
-        return null;
+        fbreak;
     };
 
     '/' => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '(' => {
@@ -166,7 +165,7 @@ EXPR_ARG_LABELED := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '(' => {
@@ -176,7 +175,7 @@ EXPR_ARG_LABELED := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     esc_ws_nl+ '[' => {
@@ -186,7 +185,7 @@ EXPR_ARG_LABELED := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '[' => {
@@ -196,28 +195,28 @@ EXPR_ARG_LABELED := |*
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
-        return null;
+        fbreak;
     };
 
     '%' [Qqxr] (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     '%s' (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
-        return null;
+        fbreak;
     };
 
     '%' [WwIi] (ascii - alnum) ws_nl* => {
         Lexer.EmitStringToken(ts, ts + 3);
-        return null;
+        fbreak;
     };
 
     '%' (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
-        return null;
+        fbreak;
     };
 
     '%' [QqWwIixrs]? c_eof => {
@@ -234,12 +233,13 @@ EXPR_ARG_LABELED := |*
         Lexer.EmitToken(kQMARK, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-        return null;
+        fbreak;
     };
 
     any => {
-        fhold;
-        return Lexer.SharedState.Advance(this);
+        Lexer.SharedState.Advance(this);
+        NextState = Lexer.SharedState.NextState;
+        fbreak;
     };
 
 *|;
@@ -257,13 +257,11 @@ namespace Mint.Lex.States
         public ArgLabeled(Lexer lexer) : base(lexer)
         { }
 
-        public override State Advance(State caller)
+        public override void Advance(State caller)
         {
             Reset(%%{ write start; }%%);
 
             %% write exec noend;
-
-            return null;
         }
 
         %% write data nofinal noerror;
