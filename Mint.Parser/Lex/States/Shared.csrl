@@ -26,28 +26,25 @@ embedded_doc =
 
 EXPR_SHARED := |*
 
-	c_eof => {
-        fhold;
-        fbreak;
-    };
+	c_eof => { fbreak; };
 
     esc_ws+ => {
-        NextState = caller;
+        Lexer.Retry = true;
         fbreak;
     };
 
     nl => {
-        NextState = caller;
+        Lexer.Retry = true;
         fbreak;
     };
 
     comment => {
-        NextState = caller;
+        Lexer.Retry = true;
         fbreak;
     };
 
     embedded_doc => {
-        NextState = caller;
+        Lexer.Retry = true;
         fhold;
         fbreak;
     };
@@ -73,108 +70,108 @@ EXPR_SHARED := |*
 
     '**' => {
         Lexer.EmitToken(kPOW, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '*' => {
         Lexer.EmitToken(kMUL, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '!=' => {
         Lexer.EmitToken(kNEQ, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '!~' => {
         Lexer.EmitToken(kNMATCH, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '!' => {
         Lexer.EmitToken(kNOTOP, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '===' => {
         Lexer.EmitToken(kEQQ, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '==' => {
         Lexer.EmitToken(kEQ, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '=~' => {
         Lexer.EmitToken(kMATCH, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '=>' => {
         Lexer.EmitToken(kASSOC, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '=' => {
         Lexer.EmitToken(kASSIGN, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '<=>' => {
         Lexer.EmitToken(kCMP, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '<=' => {
         Lexer.EmitToken(kLEQ, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '<<' => {
         Lexer.EmitToken(kLSHIFT, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '<' => {
         Lexer.EmitToken(kLESS, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '>=' => {
         Lexer.EmitToken(kGEQ, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '>>' => {
         Lexer.EmitToken(kRSHIFT, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '>' => {
         Lexer.EmitToken(kGREATER, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     [''""``] => {
-        if(Lexer.CanLabel && !commandStart)
+        if(Lexer.CanLabel && !Lexer.CommandStart)
         {
             Lexer.EmitLabelableStringToken(ts, te);
         }
@@ -198,7 +195,7 @@ EXPR_SHARED := |*
 
     '&.' => {
         Lexer.EmitToken(kANDDOT, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = Lexer.DotState;
         fbreak;
     };
 
@@ -223,7 +220,7 @@ EXPR_SHARED := |*
 
     '+' => {
         Lexer.EmitToken(kPLUS, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
@@ -235,19 +232,19 @@ EXPR_SHARED := |*
 
     '-' => {
         Lexer.EmitToken(kMINUS, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '...' => {
         Lexer.EmitToken(kDOT3, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '..' => {
         Lexer.EmitToken(kDOT2, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
@@ -270,7 +267,7 @@ EXPR_SHARED := |*
 
     ':' (ws_nl | '#') => {
         Lexer.EmitToken(kCOLON, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fhold;
         fbreak;
     };
@@ -288,33 +285,33 @@ EXPR_SHARED := |*
 
     '/' => {
         Lexer.EmitToken(kDIV, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '^' => {
         Lexer.EmitToken(kXOR, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     ';' => {
         Lexer.EmitToken(kSEMICOLON, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         Lexer.CommandStart = true;
         fbreak;
     };
 
     ',' => {
         Lexer.EmitToken(kCOLON, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         Lexer.CanLabel = true;
         fbreak;
     };
 
     '~' => {
         Lexer.EmitToken(kNEG, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
@@ -338,7 +335,7 @@ EXPR_SHARED := |*
 
     '(' => {
         Lexer.EmitToken(kLPAREN2, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         Lexer.CanLabel = true;
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
@@ -357,7 +354,7 @@ EXPR_SHARED := |*
 
     '[' => {
         Lexer.EmitToken(kLBRACK2, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         Lexer.CanLabel = true;
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
@@ -375,7 +372,7 @@ EXPR_SHARED := |*
     };
 
     '{' => {
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         TokenType tokenType;
         if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
         {
@@ -490,7 +487,7 @@ EXPR_SHARED := |*
 
     '%' => {
         Lexer.EmitToken(kPERCENT, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
@@ -530,7 +527,25 @@ EXPR_SHARED := |*
 
     constant - reserved => {
         Lexer.EmitToken(tCONSTANT, ts, te);
-        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fbreak;
+    };
+
+    name [!?]? ':' ^':' when { CanLabel } => {
+        Lexer.EmitToken(tLABEL, ts, te - 1);
+        Lexer.CurrentState = Lexer.ArgLabeledState;
+        fhold;
+        fbreak;
+    };
+
+    (name [!?] - reserved) ^'=' => {
+        EmitFidToken(ts, te - 1);
+        fhold;
+        fbreak;
+    };
+
+    identifier - reserved => {
+        EmitIdentifierToken(ts, te);
         fbreak;
     };
 
@@ -817,13 +832,29 @@ namespace Mint.Lex.States
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
 
+        public override bool CanLabel => Caller.CanLabel;
+
+        public override State OperatorState => Caller.OperatorState;
+
+        protected override int InitialState => %%{ write start; }%%;
+
+        public State Caller { get; set; }
+
         public Shared(Lexer lexer) : base(lexer)
         { }
 
-        public override void Advance(State caller)
+        public override void EmitIdentifierToken(int ts, int te)
         {
-            Reset(%%{ write start; }%%);
+            Caller.EmitIdentifierToken(ts, te);
+        }
 
+        public override void EmitFidToken(int ts, int te)
+        {
+            Caller.EmitFidToken(ts, te);
+        }
+
+        protected override void InternalAdvance()
+        {
             %% write exec noend;
         }
 

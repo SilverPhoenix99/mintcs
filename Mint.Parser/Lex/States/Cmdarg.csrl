@@ -85,7 +85,6 @@ EXPR_CMDARG := |*
     esc_ws_nl+ '::' => {
         Lexer.EmitToken(kCOLON3, te - 2, te);
         Lexer.CurrentState = Lexer.BegState;
-        fhold;
         fbreak;
     };
 
@@ -175,35 +174,6 @@ EXPR_CMDARG := |*
         fbreak;
     };
 
-    name [!?]? ':' ^':' => {
-        Lexer.EmitToken(tLABEL, ts, te - 1);
-        Lexer.CurrentState = Lexer.ArgLabeledState;
-        fhold;
-        fbreak;
-    };
-
-    (name [!?] - reserved) ^'=' => {
-        Lexer.EmitToken(tFID, ts, te - 1);
-        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
-        fhold;
-        fbreak;
-    };
-
-    identifier - reserved => {
-        var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
-        var isLocalVar = Lexer.IsVariableDefined(token.Value);
-        if(isLocalVar)
-        {
-            Lexer.CurrentState = Lexer.EndState;
-            Lexer.CanLabel = true;
-        }
-        else
-        {
-            Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
-        }
-        fbreak;
-    };
-
     'do' => {
         var tokenType = kDO;
 
@@ -238,13 +208,36 @@ namespace Mint.Lex.States
 {
     internal class Cmdarg : StateBase
     {
+        public override bool CanLabel => true;
+
+        protected override int InitialState => %%{ write start; }%%;
+
         public Cmdarg(Lexer lexer) : base(lexer)
         { }
 
-        public override void Advance(State caller)
+        public override void EmitIdentifierToken(int ts, int te)
         {
-            Reset(%%{ write start; }%%);
+            var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
+            var isLocalVar = Lexer.IsVariableDefined(token.Value);
+            if(isLocalVar)
+            {
+                Lexer.CurrentState = Lexer.EndState;
+                Lexer.CanLabel = true;
+            }
+            else
+            {
+                Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+            }
+        }
 
+        public override void EmitFidToken(int ts, int te)
+        {
+            Lexer.EmitToken(tFID, ts, te);
+            Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+
+        protected override void InternalAdvance()
+        {
             %% write exec noend;
         }
 

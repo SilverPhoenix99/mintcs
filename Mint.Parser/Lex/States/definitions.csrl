@@ -28,8 +28,8 @@ action LineJump
 
 action CallSharedState
 {
-    Lexer.SharedState.Advance(this);
-    NextState = Lexer.SharedState.NextState;
+    Lexer.SharedState.Caller = this;
+    Lexer.SharedState.Advance();
     return;
 }
 

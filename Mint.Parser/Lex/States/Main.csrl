@@ -31,7 +31,8 @@ BOF := |*
     space* %TokStart comment => MagicComment;
 
     any => {
-        NextState = Lexer.BegState;
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.Retry = true;
         fhold;
         fbreak;
     };
@@ -48,13 +49,23 @@ namespace Mint.Lex.States
 {
     internal class Main : StateBase
     {
+        protected override int InitialState => Lexer_en_MAIN;
+
         public Main(Lexer lexer) : base(lexer)
         { }
 
-        public override void Advance(State caller)
+        public override void EmitIdentifierToken(int ts, int te)
         {
-            Reset(Lexer_en_MAIN);
+            throw new System.MethodAccessException();
+        }
 
+        public override void EmitFidToken(int ts, int te)
+        {
+            throw new System.MethodAccessException();
+        }
+
+        protected override void InternalAdvance()
+        {
             %% write exec noend;
         }
 

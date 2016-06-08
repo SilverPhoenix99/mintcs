@@ -27,12 +27,13 @@ namespace Mint.Lex
         internal int LineJump { get; set; }
         internal bool CommandStart { get; set; }
         internal bool InKwarg { get; set; }
-        public bool Eof => Position >= DataLength;
+        private bool Eof => Position >= DataLength;
         public int ParenNest { get; set; }
         public bool CanLabel { get; set; }
         internal iLiteral CurrentLiteral => literals.Count == 0 ? null : literals.Peek();
         internal int LeftParenCounter;
-        internal Stack<Stack<ISet<string>>> Variables { get; }
+        private Stack<Stack<ISet<string>>> Variables { get; }
+        internal bool Retry { get; set; }
 
         internal State CurrentState
         {
@@ -45,7 +46,7 @@ namespace Mint.Lex
         }
 
         private State MainState { get; }
-        internal State SharedState { get; }
+        internal Shared SharedState { get; }
         internal State ArgState { get; }
         internal State ArgLabeledState { get; }
         internal State BegState { get; }
@@ -187,19 +188,14 @@ namespace Mint.Lex
         {
             CommandStart = false;
 
-            for(;;)
+            do
             {
-                CurrentState.Advance(null);
-                if(CurrentState.NextState == null)
-                {
-                    break;
-                }
-
-                CurrentState = CurrentState.NextState;
-            }
+                Retry = false;
+                CurrentState.Advance();
+            } while(Retry);
         }
 
-        private Token CreateEofToken() => new Token(TokenType.EOF, "$eof", LocationFor(DataLength, 0));
+        private Token CreateEofToken() => new Token(EOF, "$eof", LocationFor(DataLength, 0));
 
         public Token EmitToken(TokenType type, int ts, int te)
         {

@@ -2,8 +2,14 @@
 {
     internal interface State
     {
-        State NextState { get; }
+        State OperatorState { get; }
 
-        void Advance(State caller);
+        bool CanLabel { get; }
+
+        void Advance();
+
+        void EmitIdentifierToken(int ts, int te);
+
+        void EmitFidToken(int ts, int te);
     }
 }

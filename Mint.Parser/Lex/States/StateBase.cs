@@ -9,37 +9,45 @@ namespace Mint.Lex.States
         protected int cs;
         protected int act;
         protected int tokStart;
-        protected bool commandStart;
         protected int numBase;
         protected bool isImaginary;
         protected bool isRational;
         protected iLiteral currentLiteral;
 
-        public State NextState { get; protected set; }
+        public virtual bool CanLabel => false;
+        public virtual State OperatorState => Lexer.BegState;
         protected Lexer Lexer { get; }
         protected int eof => Lexer.DataLength;
-        //protected abstract State DefaultNextState => Lexer.BegState;
+        protected abstract int InitialState { get; }
 
         protected StateBase(Lexer lexer)
         {
             Lexer = lexer;
         }
 
-        public abstract void Advance(State caller);
+        public void Advance()
+        {
+            Reset();
+            InternalAdvance();
+        }
 
-        protected void Reset(int initialState)
+        private void Reset()
         {
             ts = -1;
             te = -1;
-            cs = initialState;
+            cs = InitialState;
             act = 0;
             tokStart = -1;
-            commandStart = Lexer.CommandStart;
             isImaginary = false;
             isRational = false;
             numBase = 0;
             currentLiteral = Lexer.CurrentLiteral;
-            NextState = null;
         }
+
+        protected abstract void InternalAdvance();
+
+        public abstract void EmitIdentifierToken(int ts, int te);
+
+        public abstract void EmitFidToken(int ts, int te);
     }
 }

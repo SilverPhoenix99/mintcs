@@ -26,6 +26,7 @@ EXPR_ENDARG := |*
     };
 
     '{' => {
+        Lexer.CurrentState = Lexer.BegState;
         TokenType tokenType;
         if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
         {
@@ -39,7 +40,6 @@ EXPR_ENDARG := |*
             Lexer.CommandStart = true;
         }
         Lexer.EmitToken(tokenType, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
         Lexer.IncrementBraceCount();
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
@@ -52,27 +52,9 @@ EXPR_ENDARG := |*
         fbreak;
     };
 
-    (name [!?] - reserved) ^'=' => {
-        Lexer.EmitToken(tFID, ts, te - 1);
-        Lexer.CurrentState = Lexer.EndState;
-        fhold;
-        fbreak;
-    };
-
     constant - reserved => {
         Lexer.EmitToken(tCONSTANT, ts, te);
         Lexer.CurrentState = Lexer.EndState;
-        fbreak;
-    };
-
-    identifier - reserved => {
-        var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
-        Lexer.CurrentState = Lexer.EndState;
-        var isLocalVar = Lexer.IsVariableDefined(token.Value);
-        if(isLocalVar)
-        {
-            Lexer.CanLabel = true;
-        }
         fbreak;
     };
 
@@ -110,13 +92,30 @@ namespace Mint.Lex.States
 {
     internal class Endarg : StateBase
     {
+        protected override int InitialState => %%{ write start; }%%;
+
         public Endarg(Lexer lexer) : base(lexer)
         { }
 
-        public override void Advance(State caller)
+        public override void EmitIdentifierToken(int ts, int te)
         {
-            Reset(%%{ write start; }%%);
+            var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
+            Lexer.CurrentState = Lexer.EndState;
+            var isLocalVar = Lexer.IsVariableDefined(token.Value);
+            if(isLocalVar)
+            {
+                Lexer.CanLabel = true;
+            }
+        }
 
+        public override void EmitFidToken(int ts, int te)
+        {
+            Lexer.EmitToken(tFID, ts, te);
+            Lexer.CurrentState = Lexer.EndState;
+        }
+
+        protected override void InternalAdvance()
+        {
             %% write exec noend;
         }
 
