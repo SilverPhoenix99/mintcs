@@ -324,7 +324,7 @@ EXPR_END := |*
     };
 
     'defined?' ^'=' => {
-        Lexer.EmitToken(kDEFINED, ts, te);
+        Lexer.EmitToken(kDEFINED, ts, te - 1);
         Lexer.CurrentState = Lexer.ArgState;
         fhold;
         fbreak;

@@ -397,9 +397,10 @@ EXPR_BEG := |*
         fbreak;
     };
 
-    'defined?' => {
-        Lexer.EmitToken(kDEFINED, ts, te);
+    'defined?' ^'=' => {
+        Lexer.EmitToken(kDEFINED, ts, te - 1);
         Lexer.CurrentState = Lexer.ArgState;
+        fhold;
         fbreak;
     };
 
