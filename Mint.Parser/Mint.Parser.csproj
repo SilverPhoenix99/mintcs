@@ -100,12 +100,12 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel);@(RagelDependency)" Outputs="@(Ragel->'gen\%(relativedir)%(Filename).cs')">
     <Message Text="&gt; GenLexer.bat %(Ragel.Filename)" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
-    <MakeDir Directories="gen\Lex\States" Condition="!Exists('gen\Lex\States')" />
+    <MakeDir Directories="gen\%(Ragel.relativedir)" Condition="!Exists('gen\%(Ragel.relativedir)')" />
     <Exec Command="GenLexer.bat %(Ragel.Filename)" />
   </Target>
-  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="gen\Parser.cs">
+  <Target Name="GenParser" BeforeTargets="CoreCompile" Inputs="@(Gppg)" Outputs="@(Gppg->'gen\%(relativedir)%(Filename).cs')">
     <Message Text="&gt; GenParser.bat" Importance="high" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
-    <MakeDir Directories="gen\Parse" Condition="!Exists('gen\Parse')" />
+    <MakeDir Directories="gen\%(Gppg.relativedir)" Condition="!Exists('gen\%(Gppg.relativedir)')" />
     <Exec Command="GenParser.bat" />
   </Target>
   <Target Name="CleanGen" AfterTargets="AfterClean">

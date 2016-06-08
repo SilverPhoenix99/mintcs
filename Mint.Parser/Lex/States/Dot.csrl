@@ -210,16 +210,6 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    name [!?] ':' ^':' => {
-        var definiteType = EmitLabelOrFallbackToken(tFID);
-        if(definiteType != tLABEL)
-        {
-            fhold;
-        }
-        fhold;
-        fbreak;
-    };
-
     name [!?] ^'=' => {
         Lexer.EmitToken(tFID, ts, te - 1);
         Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
@@ -227,29 +217,9 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    constant ':' ^':' => {
-        var definiteType = EmitLabelOrFallbackToken(tCONSTANT);
-        if(definiteType != tLABEL)
-        {
-            fhold;
-        }
-        fhold;
-        fbreak;
-    };
-
     constant => {
         Lexer.EmitToken(tCONSTANT, ts, te);
         Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
-        fbreak;
-    };
-
-    identifier ':' ^':' => {
-        var definiteType = EmitLabelOrFallbackToken(tIDENTIFIER);
-        if(definiteType != tLABEL)
-        {
-            fhold;
-        }
-        fhold;
         fbreak;
     };
 

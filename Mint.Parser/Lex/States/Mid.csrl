@@ -139,6 +139,320 @@ EXPR_MID := |*
         throw new SyntaxError(Lexer.Filename, line, "unknown type of %string");
     };
 
+    (name [!?] - reserved) ^'=' => {
+        Lexer.EmitToken(tFID, ts, te - 1);
+        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fhold;
+        fbreak;
+    };
+
+    constant - reserved => {
+        Lexer.EmitToken(tCONSTANT, ts, te);
+        Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        fbreak;
+    };
+
+    identifier - reserved => {
+        var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
+        var isLocalVar = Lexer.IsVariableDefined(token.Value);
+        if(isLocalVar)
+        {
+            Lexer.CurrentState = Lexer.EndState;
+            Lexer.CanLabel = true;
+        }
+        else
+        {
+            Lexer.CurrentState = commandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+        fbreak;
+    };
+
+    '__ENCODING__' => {
+        Lexer.EmitToken(k__ENCODING__, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    '__LINE__' => {
+        Lexer.EmitToken(k__LINE__, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    '__FILE__' => {
+        Lexer.EmitToken(k__FILE__, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'BEGIN' => {
+        Lexer.EmitToken(kAPP_BEGIN, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'END' => {
+        Lexer.EmitToken(kAPP_END, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'end' => {
+        Lexer.EmitToken(kEND, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'false' => {
+        Lexer.EmitToken(kFALSE, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'nil' => {
+        Lexer.EmitToken(kNIL, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'redo' => {
+        Lexer.EmitToken(kREDO, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'retry' => {
+        Lexer.EmitToken(kRETRY, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'self' => {
+        Lexer.EmitToken(kSELF, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'true' => {
+        Lexer.EmitToken(kTRUE, ts, te);
+        Lexer.CurrentState = Lexer.EndState;
+        fbreak;
+    };
+
+    'def' => {
+        Lexer.EmitToken(kDEF, ts, te);
+        Lexer.CurrentState = Lexer.FnameState;
+        fbreak;
+    };
+
+    'alias' => {
+        Lexer.EmitToken(kALIAS, ts, te);
+        Lexer.CurrentState = Lexer.FnameFitemState;
+        fbreak;
+    };
+
+    'undef' => {
+        Lexer.EmitToken(kUNDEF, ts, te);
+        Lexer.CurrentState = Lexer.FnameFitemState;
+        fbreak;
+    };
+
+    'and' => {
+        Lexer.EmitToken(kAND, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'begin' => {
+        Lexer.EmitToken(kBEGIN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'case' => {
+        Lexer.EmitToken(kCASE, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'else' => {
+        Lexer.EmitToken(kELSE, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'elsif' => {
+        Lexer.EmitToken(kELSIF, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'ensure' => {
+        Lexer.EmitToken(kENSURE, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'for' => {
+        Lexer.EmitToken(kFOR, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'if' => {
+        Lexer.EmitToken(kIF_MOD, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'in' => {
+        Lexer.EmitToken(kIN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'module' => {
+        Lexer.EmitToken(kMODULE, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'or' => {
+        Lexer.EmitToken(kOR, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'then' => {
+        Lexer.EmitToken(kTHEN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'unless' => {
+        Lexer.EmitToken(kUNLESS_MOD, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'until' => {
+        Lexer.EmitToken(kUNTIL_MOD, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'when' => {
+        Lexer.EmitToken(kWHEN, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'while' => {
+        Lexer.EmitToken(kWHILE_MOD, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
+    'break' => {
+        Lexer.EmitToken(kBREAK, ts, te);
+        Lexer.CurrentState = Lexer.MidState;
+        fbreak;
+    };
+
+    'next' => {
+        Lexer.EmitToken(kNEXT, ts, te);
+        Lexer.CurrentState = Lexer.MidState;
+        fbreak;
+    };
+
+    'rescue' => {
+        Lexer.EmitToken(kRESCUE_MOD, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CanLabel = true;
+        fbreak;
+    };
+
+    'return' => {
+        Lexer.EmitToken(kRETURN, ts, te);
+        Lexer.CurrentState = Lexer.MidState;
+        fbreak;
+    };
+
+    'class' => {
+        Lexer.EmitToken(kCLASS, ts, te);
+        Lexer.CurrentState = Lexer.ClassState;
+        fbreak;
+    };
+
+    'defined?' ^'=' => {
+        Lexer.EmitToken(kDEFINED, ts, te - 1);
+        Lexer.CurrentState = Lexer.ArgState;
+        fhold;
+        fbreak;
+    };
+
+    'not' => {
+        Lexer.EmitToken(kNOT, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        fbreak;
+    };
+
+    'super' => {
+        Lexer.EmitToken(kSUPER, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        fbreak;
+    };
+
+    'yield' => {
+        Lexer.EmitToken(kYIELD, ts, te);
+        Lexer.CurrentState = Lexer.ArgState;
+        fbreak;
+    };
+
+    'do' => {
+        var tokenType = kDO;
+
+        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+        {
+            Lexer.LeftParenCounter = 0;
+            Lexer.ParenNest--;
+            tokenType = kDO_LAMBDA;
+        }
+        else if(Lexer.Cond.Peek)
+        {
+            tokenType = kDO_COND;
+        }
+        else if(Lexer.Cmdarg.Peek)
+        {
+            tokenType = kDO_BLOCK;
+        }
+
+        Lexer.EmitToken(tokenType, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
+        Lexer.CommandStart = true;
+        fbreak;
+    };
+
     any => CallSharedState;
 
 *|;

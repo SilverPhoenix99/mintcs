@@ -375,6 +375,7 @@ EXPR_SHARED := |*
     };
 
     '{' => {
+        Lexer.CurrentState = Lexer.BegState;
         TokenType tokenType;
         if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
         {
@@ -388,7 +389,6 @@ EXPR_SHARED := |*
             Lexer.CanLabel = true;
         }
         Lexer.EmitToken(tokenType, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
         Lexer.IncrementBraceCount();
         Lexer.Cond.Push(false);
         Lexer.Cmdarg.Push(false);
@@ -535,6 +535,8 @@ EXPR_SHARED := |*
     };
 
 *|;
+
+test := constant - reserved;
 
 }%%
 #pragma warning disable 162

@@ -41,31 +41,5 @@ namespace Mint.Lex.States
             currentLiteral = Lexer.CurrentLiteral;
             NextState = null;
         }
-
-        protected TokenType EmitLabelOrFallbackToken(TokenType fallbackType)
-        {
-            var tokenType = fallbackType;
-            var tokenEnd = te;
-
-            if(commandStart)
-            {
-                // cannot label
-                Lexer.CurrentState = Lexer.CmdargState;
-                tokenEnd -= 1;
-            }
-            else if(Lexer.CanLabel)
-            {
-                Lexer.CurrentState = Lexer.ArgLabeledState;
-                tokenType = TokenType.tLABEL;
-            }
-            else
-            {
-                Lexer.CurrentState = Lexer.ArgState;
-                tokenEnd -= 1;
-            }
-
-            Lexer.EmitToken(tokenType, ts, tokenEnd);
-            return tokenType;
-        }
     }
 }
