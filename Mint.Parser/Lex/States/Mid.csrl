@@ -18,29 +18,8 @@ EXPR_MID := |*
         fbreak;
     };
 
-    '**' ^'=' => {
-        Lexer.EmitToken(kDSTAR, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    '*' ^'=' => {
-        Lexer.EmitToken(kSTAR, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
     heredoc_identifier => {
         Lexer.EmitHeredocToken(ts, te);
-        fbreak;
-    };
-
-    '&' ^[=&.] => {
-        Lexer.EmitToken(kAMPER, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
         fbreak;
     };
 
@@ -53,13 +32,6 @@ EXPR_MID := |*
     '+' float_number => {
         Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    '+' ^'=' => {
-        Lexer.EmitToken(kUPLUS, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
         fbreak;
     };
 
@@ -80,31 +52,6 @@ EXPR_MID := |*
     '::' => {
         Lexer.EmitToken(kCOLON3, ts, te);
         Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    '/' => {
-        Lexer.EmitStringToken(ts, te);
-        fbreak;
-    };
-
-    '(' => {
-        Lexer.EmitToken(kLPAREN, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
-    '[' => {
-        Lexer.EmitToken(kLBRACK, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
         fbreak;
     };
 
@@ -139,31 +86,7 @@ EXPR_MID := |*
         throw new SyntaxError(Lexer.Filename, line, "unknown type of %string");
     };
 
-    'do' => {
-        var tokenType = kDO;
-
-        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
-        {
-            Lexer.LeftParenCounter = 0;
-            Lexer.ParenNest--;
-            tokenType = kDO_LAMBDA;
-        }
-        else if(Lexer.Cond.Peek)
-        {
-            tokenType = kDO_COND;
-        }
-        else if(Lexer.Cmdarg.Peek)
-        {
-            tokenType = kDO_BLOCK;
-        }
-
-        Lexer.EmitToken(tokenType, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    any => CallSharedState;
+    any => CallBaseState;
 
 *|;
 
@@ -177,6 +100,13 @@ namespace Mint.Lex.States
 {
     internal class Mid : Shared
     {
+        protected override TokenType DoubleStarTokenType => kDSTAR;
+        protected override TokenType StarTokenType => kSTAR;
+        protected override TokenType AmpersandTokenType => kAMPER;
+        protected override TokenType PlusTokenType => kUPLUS;
+        protected override TokenType LeftBracketTokenType => kLBRACK;
+        protected override TokenType LeftParenTokenType => kLPAREN;
+
         public Mid(Lexer lexer) : base(lexer)
         { }
 
@@ -199,6 +129,35 @@ namespace Mint.Lex.States
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+
+        protected override void EmitDoToken()
+        {
+            var tokenType = kDO;
+
+            if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+            {
+                Lexer.LeftParenCounter = 0;
+                Lexer.ParenNest--;
+                tokenType = kDO_LAMBDA;
+            }
+            else if(Lexer.Cond.Peek)
+            {
+                tokenType = kDO_COND;
+            }
+            else if(Lexer.Cmdarg.Peek)
+            {
+                tokenType = kDO_BLOCK;
+            }
+
+            Lexer.EmitToken(tokenType, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CommandStart = true;
+        }
+
+        protected override void EmitDivToken()
+        {
+            Lexer.EmitStringToken(ts, te);
         }
 
         public override void Advance()

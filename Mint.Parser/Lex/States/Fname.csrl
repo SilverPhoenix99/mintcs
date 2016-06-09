@@ -24,20 +24,6 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    '&' ^[=&.] => {
-        Lexer.EmitToken(kAMPER, ts, te - 1);
-        Lexer.CurrentState = Lexer.ArgState;
-        fhold;
-        fbreak;
-    };
-
-    '|' ^[=|] => {
-        Lexer.EmitToken(kPIPE, ts, te - 1);
-        Lexer.CurrentState = Lexer.ArgState;
-        fhold;
-        fbreak;
-    };
-
     '+@' => {
         Lexer.EmitToken(kUPLUS, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
@@ -68,14 +54,6 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    '[' => {
-        Lexer.EmitToken(kLBRACK2, ts, te);
-        Lexer.CurrentState = Lexer.ArgState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        fbreak;
-    };
-
     '$' [1-9] digit* => {
         Lexer.EmitToken(tGVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
@@ -102,16 +80,10 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    name '==>' =>  {
+    name '==>' => {
         Lexer.EmitToken(tIDENTIFIER, ts, te - 2);
         Lexer.CurrentState = Lexer.EndfnState;
         fexec te - 2;
-        fbreak;
-    };
-
-    constant - reserved => {
-        Lexer.EmitToken(tCONSTANT, ts, te);
-        Lexer.CurrentState = Lexer.EndfnState;
         fbreak;
     };
 
@@ -157,12 +129,6 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    'if' => {
-        Lexer.EmitToken(kIF, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
     'in' => {
         Lexer.EmitToken(kIN, ts, te);
         Lexer.CurrentState = Lexer.BegState;
@@ -187,43 +153,13 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    'unless' => {
-        Lexer.EmitToken(kUNLESS, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    'until' => {
-        Lexer.EmitToken(kUNTIL, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
     'when' => {
         Lexer.EmitToken(kWHEN, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         fbreak;
     };
 
-    'while' => {
-        Lexer.EmitToken(kWHILE, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    'rescue' => {
-        Lexer.EmitToken(kRESCUE, ts, te);
-        Lexer.CurrentState = Lexer.MidState;
-        fbreak;
-    };
-
-    'do' => {
-        Lexer.EmitToken(kDO, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    any => CallSharedState;
+    any => CallBaseState;
 
 *|;
 
@@ -239,6 +175,12 @@ namespace Mint.Lex.States
     {
         protected override State OperatorState => Lexer.ArgState;
 
+        protected override TokenType AmpersandTokenType => kAMPER;
+        protected override TokenType IfTokenType => kIF;
+        protected override TokenType UnlessTokenType => kUNLESS;
+        protected override TokenType UntilTokenType => kUNTIL;
+        protected override TokenType WhileTokenType => kWHILE;
+
         public Fname(Lexer lexer) : base(lexer)
         { }
 
@@ -251,6 +193,38 @@ namespace Mint.Lex.States
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
+            Lexer.CurrentState = Lexer.EndfnState;
+        }
+
+        protected override void EmitDoToken()
+        {
+            Lexer.EmitToken(kDO, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+        }
+
+        protected override void EmitModifierKeywordToken(TokenType type)
+        {
+            Lexer.EmitToken(type, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+        }
+
+        protected override void EmitRescueToken()
+        {
+            Lexer.EmitToken(kRESCUE, ts, te);
+            Lexer.CurrentState = Lexer.MidState;
+        }
+
+        protected override void EmitLeftBracket()
+        {
+            Lexer.EmitToken(kLBRACK2, ts, te);
+            Lexer.CurrentState = OperatorState;
+            Lexer.CanLabel = true;
+            Lexer.ParenNest++;
+        }
+
+        protected override void EmitConstantToken()
+        {
+            Lexer.EmitToken(tCONSTANT, ts, te);
             Lexer.CurrentState = Lexer.EndfnState;
         }
 

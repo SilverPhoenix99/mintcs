@@ -114,28 +114,6 @@ EXPR_ARG := |*
         fbreak;
     };
 
-    '{' => {
-        Lexer.CurrentState = Lexer.BegState;
-        TokenType tokenType;
-        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
-        {
-            tokenType = kLAMBEG;
-            Lexer.LeftParenCounter = 0;
-            Lexer.ParenNest--;
-        }
-        else
-        {
-            tokenType = kLBRACE2;
-            Lexer.CanLabel = true;
-            Lexer.CommandStart = true;
-        }
-        Lexer.EmitToken(tokenType, ts, te);
-        Lexer.IncrementBraceCount();
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
     esc_ws_nl+ '%' [Qqxr] (ascii - alnum) => {
         Lexer.EmitStringToken(te - 3, te);
         fbreak;
@@ -174,31 +152,7 @@ EXPR_ARG := |*
         fbreak;
     };
 
-    'do' => {
-        var tokenType = kDO;
-
-        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
-        {
-            Lexer.LeftParenCounter = 0;
-            Lexer.ParenNest--;
-            tokenType = kDO_LAMBDA;
-        }
-        else if(Lexer.Cond.Peek)
-        {
-            tokenType = kDO_COND;
-        }
-        else if(Lexer.Cmdarg.Peek)
-        {
-            tokenType = kDO_BLOCK;
-        }
-
-        Lexer.EmitToken(tokenType, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    any => CallSharedState;
+    any => CallBaseState;
 
 *|;
 
@@ -236,6 +190,52 @@ namespace Mint.Lex.States
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+
+        protected override void EmitDoToken()
+        {
+            var tokenType = kDO;
+
+            if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+            {
+                Lexer.LeftParenCounter = 0;
+                Lexer.ParenNest--;
+                tokenType = kDO_LAMBDA;
+            }
+            else if(Lexer.Cond.Peek)
+            {
+                tokenType = kDO_COND;
+            }
+            else if(Lexer.Cmdarg.Peek)
+            {
+                tokenType = kDO_BLOCK;
+            }
+
+            Lexer.EmitToken(tokenType, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CommandStart = true;
+        }
+
+        protected override void EmitLeftBrace()
+        {
+            Lexer.CurrentState = Lexer.BegState;
+            TokenType tokenType;
+            if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+            {
+                tokenType = kLAMBEG;
+                Lexer.LeftParenCounter = 0;
+                Lexer.ParenNest--;
+            }
+            else
+            {
+                tokenType = kLBRACE2;
+                Lexer.CanLabel = true;
+                Lexer.CommandStart = true;
+            }
+            Lexer.EmitToken(tokenType, ts, te);
+            Lexer.IncrementBraceCount();
+            Lexer.Cond.Push(false);
+            Lexer.Cmdarg.Push(false);
         }
 
         public override void Advance()

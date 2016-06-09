@@ -19,20 +19,6 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    '&' ^[=&.] => {
-        Lexer.EmitToken(kAMPER, ts, te - 1);
-        Lexer.CurrentState = Lexer.ArgState;
-        fhold;
-        fbreak;
-    };
-
-    '|' ^[=|] => {
-        Lexer.EmitToken(kPIPE, ts, te - 1);
-        Lexer.CurrentState = Lexer.ArgState;
-        fhold;
-        fbreak;
-    };
-
     '+@' => {
         Lexer.EmitToken(kUPLUS, ts, te);
         Lexer.CurrentState = Lexer.ArgState;
@@ -63,14 +49,6 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    '[' => {
-        Lexer.EmitToken(kLBRACK2, ts, te);
-        Lexer.CurrentState = Lexer.ArgState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        fbreak;
-    };
-
     '%' ^'=' => {
         Lexer.EmitToken(kPERCENT, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
@@ -85,8 +63,7 @@ EXPR_DOT := |*
     };
 
     constant => {
-        Lexer.EmitToken(tCONSTANT, ts, te);
-        Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        EmitConstantToken();
         fbreak;
     };
 
@@ -95,7 +72,7 @@ EXPR_DOT := |*
         fbreak;
     };
 
-    any => CallSharedState;
+    any => CallBaseState;
 
 *|;
 
@@ -124,6 +101,19 @@ namespace Mint.Lex.States
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+
+        protected override void EmitDoToken()
+        {
+            throw new System.MethodAccessException("Dot state has no keywords.");
+        }
+
+        protected override void EmitLeftBracket()
+        {
+            Lexer.EmitToken(kLBRACK2, ts, te);
+            Lexer.CurrentState = OperatorState;
+            Lexer.CanLabel = true;
+            Lexer.ParenNest++;
         }
 
         public override void Advance()

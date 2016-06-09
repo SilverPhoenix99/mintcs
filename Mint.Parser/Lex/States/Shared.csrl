@@ -69,13 +69,13 @@ EXPR_SHARED := |*
     };
 
     '**' => {
-        Lexer.EmitToken(kPOW, ts, te);
+        Lexer.EmitToken(DoubleStarTokenType, ts, te);
         Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
     '*' => {
-        Lexer.EmitToken(kMUL, ts, te);
+        Lexer.EmitToken(StarTokenType, ts, te);
         Lexer.CurrentState = OperatorState;
         fbreak;
     };
@@ -200,8 +200,8 @@ EXPR_SHARED := |*
     };
 
     '&' => {
-        Lexer.EmitToken(kBIN_AND, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
+        Lexer.EmitToken(AmpersandTokenType, ts, te);
+        Lexer.CurrentState = OperatorState;
         fbreak;
     };
 
@@ -213,13 +213,16 @@ EXPR_SHARED := |*
 
     '|' => {
         Lexer.EmitToken(kPIPE, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
+        Lexer.CurrentState = OperatorState;
+        if(OperatorState == Lexer.BegState)
+        {
+            Lexer.CanLabel = true;
+        }
         fbreak;
     };
 
     '+' => {
-        Lexer.EmitToken(kPLUS, ts, te);
+        Lexer.EmitToken(PlusTokenType, ts, te);
         Lexer.CurrentState = OperatorState;
         fbreak;
     };
@@ -284,8 +287,7 @@ EXPR_SHARED := |*
     };
 
     '/' => {
-        Lexer.EmitToken(kDIV, ts, te);
-        Lexer.CurrentState = OperatorState;
+        EmitDivToken();
         fbreak;
     };
 
@@ -334,8 +336,8 @@ EXPR_SHARED := |*
     };
 
     '(' => {
-        Lexer.EmitToken(kLPAREN2, ts, te);
-        Lexer.CurrentState = OperatorState;
+        Lexer.EmitToken(LeftParenTokenType, ts, te);
+        Lexer.CurrentState = Lexer.BegState;
         Lexer.CanLabel = true;
         Lexer.ParenNest++;
         Lexer.Cond.Push(false);
@@ -353,12 +355,7 @@ EXPR_SHARED := |*
     };
 
     '[' => {
-        Lexer.EmitToken(kLBRACK2, ts, te);
-        Lexer.CurrentState = OperatorState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
+        EmitLeftBracket();
         fbreak;
     };
 
@@ -372,23 +369,7 @@ EXPR_SHARED := |*
     };
 
     '{' => {
-        Lexer.CurrentState = OperatorState;
-        TokenType tokenType;
-        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
-        {
-            tokenType = kLAMBEG;
-            Lexer.LeftParenCounter = 0;
-            Lexer.ParenNest--;
-        }
-        else
-        {
-            tokenType = kLBRACE;
-            Lexer.CanLabel = true;
-        }
-        Lexer.EmitToken(tokenType, ts, te);
-        Lexer.IncrementBraceCount();
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
+        EmitLeftBrace();
         fbreak;
     };
 
@@ -526,8 +507,7 @@ EXPR_SHARED := |*
     };
 
     constant - reserved => {
-        Lexer.EmitToken(tCONSTANT, ts, te);
-        Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        EmitConstantToken();
         fbreak;
     };
 
@@ -773,41 +753,32 @@ EXPR_SHARED := |*
     };
 
     'if' => {
-        Lexer.EmitToken(kIF_MOD, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.CommandStart = true;
+        EmitModifierKeywordToken(IfTokenType);
         fbreak;
     };
 
     'unless' => {
-        Lexer.EmitToken(kUNLESS_MOD, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.CommandStart = true;
+        EmitModifierKeywordToken(UnlessTokenType);
         fbreak;
     };
 
     'until' => {
-        Lexer.EmitToken(kUNTIL_MOD, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.CommandStart = true;
+        EmitModifierKeywordToken(UntilTokenType);
         fbreak;
     };
 
     'while' => {
-        Lexer.EmitToken(kWHILE_MOD, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.CommandStart = true;
+        EmitModifierKeywordToken(WhileTokenType);
         fbreak;
     };
 
     'rescue' => {
-        Lexer.EmitToken(kRESCUE_MOD, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
+        EmitRescueToken();
+        fbreak;
+    };
+
+    'do' => {
+        EmitDoToken();
         fbreak;
     };
 
@@ -832,12 +803,83 @@ namespace Mint.Lex.States
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
 
+        protected virtual TokenType DoubleStarTokenType => kPOW;
+        protected virtual TokenType StarTokenType => kMUL;
+        protected virtual TokenType AmpersandTokenType => kBIN_AND;
+        protected virtual TokenType PlusTokenType => kPLUS;
+        protected virtual TokenType LeftParenTokenType => kLPAREN2;
+        protected virtual TokenType LeftBracketTokenType => kLBRACK2;
+        protected virtual TokenType IfTokenType => kIF_MOD;
+        protected virtual TokenType UnlessTokenType => kUNLESS_MOD;
+        protected virtual TokenType UntilTokenType => kUNTIL_MOD;
+        protected virtual TokenType WhileTokenType => kWHILE_MOD;
+
         public Shared(Lexer lexer) : base(lexer)
         { }
 
         protected abstract void EmitIdentifierToken();
 
         protected abstract void EmitFidToken();
+
+        protected abstract void EmitDoToken();
+
+        protected virtual void EmitModifierKeywordToken(TokenType type)
+        {
+            Lexer.EmitToken(type, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CanLabel = true;
+            Lexer.CommandStart = true;
+        }
+
+        protected virtual void EmitRescueToken()
+        {
+            Lexer.EmitToken(kRESCUE_MOD, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CanLabel = true;
+        }
+
+        protected virtual void EmitLeftBrace()
+        {
+            Lexer.CurrentState = Lexer.BegState;
+            TokenType tokenType;
+            if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+            {
+                tokenType = kLAMBEG;
+                Lexer.LeftParenCounter = 0;
+                Lexer.ParenNest--;
+            }
+            else
+            {
+                tokenType = kLBRACE;
+                Lexer.CanLabel = true;
+            }
+            Lexer.EmitToken(tokenType, ts, te);
+            Lexer.IncrementBraceCount();
+            Lexer.Cond.Push(false);
+            Lexer.Cmdarg.Push(false);
+        }
+
+        protected virtual void EmitLeftBracket()
+        {
+            Lexer.EmitToken(LeftBracketTokenType, ts, te);
+            Lexer.CurrentState = OperatorState;
+            Lexer.CanLabel = true;
+            Lexer.ParenNest++;
+            Lexer.Cond.Push(false);
+            Lexer.Cmdarg.Push(false);
+        }
+
+        protected virtual void EmitDivToken()
+        {
+            Lexer.EmitToken(kDIV, ts, te);
+            Lexer.CurrentState = OperatorState;
+        }
+
+        protected virtual void EmitConstantToken()
+        {
+            Lexer.EmitToken(tCONSTANT, ts, te);
+            Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
 
         public override void Advance()
         {

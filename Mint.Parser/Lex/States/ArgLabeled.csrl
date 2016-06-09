@@ -24,22 +24,8 @@ EXPR_ARG_LABELED := |*
         fbreak;
     };
 
-    '**' ^'=' => {
-        Lexer.EmitToken(kDSTAR, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
     esc_ws_nl+ '*' ^(ws_nl | '=') => {
         Lexer.EmitToken(kSTAR, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    '*' ^'=' => {
-        Lexer.EmitToken(kSTAR, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
         fbreak;
@@ -57,13 +43,6 @@ EXPR_ARG_LABELED := |*
 
     esc_ws_nl+ '&' ^(ws_nl | [=&.]) => {
         Lexer.EmitToken(kAMPER, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    '&' ^[=&.] => {
-        Lexer.EmitToken(kAMPER, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
         fbreak;
@@ -97,13 +76,6 @@ EXPR_ARG_LABELED := |*
     '+' float_number => {
         Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    '+' ^'=' => {
-        Lexer.EmitToken(kUPLUS, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
         fbreak;
     };
 
@@ -153,11 +125,6 @@ EXPR_ARG_LABELED := |*
         fbreak;
     };
 
-    '/' => {
-        Lexer.EmitStringToken(ts, te);
-        fbreak;
-    };
-
     esc_ws_nl+ '(' => {
         Lexer.EmitToken(kLPAREN_ARG, te - 1, te);
         Lexer.CurrentState = Lexer.BegState;
@@ -168,28 +135,8 @@ EXPR_ARG_LABELED := |*
         fbreak;
     };
 
-    '(' => {
-        Lexer.EmitToken(kLPAREN, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
     esc_ws_nl+ '[' => {
         Lexer.EmitToken(kLBRACK, te - 1, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
-    '[' => {
-        Lexer.EmitToken(kLBRACK, ts, te);
         Lexer.CurrentState = Lexer.BegState;
         Lexer.CanLabel = true;
         Lexer.ParenNest++;
@@ -236,65 +183,7 @@ EXPR_ARG_LABELED := |*
         fbreak;
     };
 
-    'if' => {
-        Lexer.EmitToken(kIF, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    'unless' => {
-        Lexer.EmitToken(kUNLESS, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    'until' => {
-        Lexer.EmitToken(kUNTIL, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    'while' => {
-        Lexer.EmitToken(kWHILE, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    'rescue' => {
-        Lexer.EmitToken(kRESCUE, ts, te);
-        Lexer.CurrentState = Lexer.MidState;
-        fbreak;
-    };
-
-    'do' => {
-        var tokenType = kDO;
-
-        if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
-        {
-            Lexer.LeftParenCounter = 0;
-            Lexer.ParenNest--;
-            tokenType = kDO_LAMBDA;
-        }
-        else if(Lexer.Cond.Peek)
-        {
-            tokenType = kDO_COND;
-        }
-        else if(Lexer.Cmdarg.Peek)
-        {
-            tokenType = kDO_BLOCK;
-        }
-
-        Lexer.EmitToken(tokenType, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    any => CallSharedState;
+    any => CallBaseState;
 
 *|;
 
@@ -308,6 +197,16 @@ namespace Mint.Lex.States
 {
     internal class ArgLabeled : Shared
     {
+        protected override TokenType DoubleStarTokenType => kDSTAR;
+        protected override TokenType StarTokenType => kSTAR;
+        protected override TokenType PlusTokenType => kUPLUS;
+        protected override TokenType LeftBracketTokenType => kLBRACK;
+        protected override TokenType LeftParenTokenType => kLPAREN;
+        protected override TokenType IfTokenType => kIF;
+        protected override TokenType UnlessTokenType => kUNLESS;
+        protected override TokenType UntilTokenType => kUNTIL;
+        protected override TokenType WhileTokenType => kWHILE;
+
         public ArgLabeled(Lexer lexer) : base(lexer)
         { }
 
@@ -330,6 +229,48 @@ namespace Mint.Lex.States
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
+        }
+
+        protected override void EmitDoToken()
+        {
+            var tokenType = kDO;
+
+            if(Lexer.LeftParenCounter > 0 && Lexer.LeftParenCounter == Lexer.ParenNest)
+            {
+                Lexer.LeftParenCounter = 0;
+                Lexer.ParenNest--;
+                tokenType = kDO_LAMBDA;
+            }
+            else if(Lexer.Cond.Peek)
+            {
+                tokenType = kDO_COND;
+            }
+            else if(Lexer.Cmdarg.Peek)
+            {
+                tokenType = kDO_BLOCK;
+            }
+
+            Lexer.EmitToken(tokenType, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CommandStart = true;
+        }
+
+        protected override void EmitModifierKeywordToken(TokenType type)
+        {
+            Lexer.EmitToken(type, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CommandStart = true;
+        }
+
+        protected override void EmitRescueToken()
+        {
+            Lexer.EmitToken(kRESCUE, ts, te);
+            Lexer.CurrentState = Lexer.MidState;
+        }
+
+        protected override void EmitDivToken()
+        {
+            Lexer.EmitStringToken(ts, te);
         }
 
         public override void Advance()
