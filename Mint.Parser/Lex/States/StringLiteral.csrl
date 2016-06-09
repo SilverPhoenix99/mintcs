@@ -12,6 +12,13 @@ action EofLiteralError
 
 action CanLabel { canLabel }
 
+action StringDelimiter { throw new System.NotImplementedException("action StringDelimiter"); }
+
+action StringDelimiterEscape { throw new System.NotImplementedException("action StringDelimiterEscape"); }
+
+action StringNewLine { throw new System.NotImplementedException("action StringNewLine"); }
+
+
 # ^D (0x4) isn't used by the lexer.
 # The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
 string_delimiter = 0x4;
@@ -20,6 +27,12 @@ string_delimiter = 0x4;
 EXPR_STRING := |*
 
     c_eof => EofLiteralError;
+
+    string_delimiter => StringDelimiter;
+
+    '\\' string_delimiter => StringDelimiterEscape;
+
+    '\n' => StringNewLine;
 
     any;
 
