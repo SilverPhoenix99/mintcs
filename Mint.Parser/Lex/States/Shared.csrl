@@ -10,8 +10,7 @@ include "definitions.csrl";
 
 action EmbeddedDocEof
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "embedded document meets end of file");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "embedded document meets end of file");
 }
 
 embedded_doc =
@@ -252,7 +251,7 @@ EXPR_SHARED := |*
     };
 
     '.' digit => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
+        var line = Lexer.LineAt(ts);
         throw new SyntaxError(Lexer.Filename, line, "no .<digit> floating literal anymore; put 0 before dot");
     };
 
@@ -396,15 +395,15 @@ EXPR_SHARED := |*
     };
 
     '@@' (c_eof | ws_nl) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line,
+        throw new SyntaxError(
+            Lexer.Filename,
+            Lexer.LineAt(ts),
             "`@@' without identifiers is not allowed as a class variable name");
     };
 
     '@@' ^(c_eof | ws_nl | name_prefix) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 2];
-        throw new SyntaxError(Lexer.Filename, line, $"`@@{c}' is not allowed as a class variable name");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@@{c}' is not allowed as a class variable name");
     };
 
     '@' name => {
@@ -414,15 +413,15 @@ EXPR_SHARED := |*
     };
 
     '@' (c_eof | ws_nl) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line,
+        throw new SyntaxError(
+            Lexer.Filename,
+            Lexer.LineAt(ts),
             "`@' without identifiers is not allowed as an instance variable name");
     };
 
     '@' ^('@' | c_eof | ws_nl | name_prefix) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 1];
-        throw new SyntaxError(Lexer.Filename, line, $"`@{c}' is not allowed as an instance variable name");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@{c}' is not allowed as an instance variable name");
     };
 
     '$' (gvar_char | (name_prefix | '0') name_char*) => {
@@ -438,8 +437,7 @@ EXPR_SHARED := |*
     };
 
     '$-' ^name_char => {
-        var line = Lexer.LocationFor(ts, 1).StartLine;
-        throw new SyntaxError(Lexer.Filename, line, "syntax error, unexpected $undefined");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "syntax error, unexpected $undefined");
     };
 
     '$' [1-9] digit* => {
@@ -455,15 +453,15 @@ EXPR_SHARED := |*
     };
 
     '$' (c_eof | ws_nl) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line,
+        throw new SyntaxError(
+            Lexer.Filename,
+            Lexer.LineAt(ts),
             "`$' without identifiers is not allowed as a global variable name");
     };
 
     '$' ^(c_eof | ws_nl | back_ref_char | gvar_char | name_char | '-') => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 1];
-        throw new SyntaxError(Lexer.Filename, line, $"`${c}' is not allowed as a global variable name");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`${c}' is not allowed as a global variable name");
     };
 
     '%' => {
@@ -480,16 +478,14 @@ EXPR_SHARED := |*
     };
 
     '?' c_eof => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line, "incomplete character syntax");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "incomplete character syntax");
     };
 
     '?' ws_nl => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
         var c = Lexer.Data[ts + 1];
         var index = SPACE_CHARS.IndexOf(c);
         c = PRINTABLE_SPACE_CHARS[index];
-        throw new SyntaxError(Lexer.Filename, line, $"invalid character syntax; use ?\\{c}");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"invalid character syntax; use ?\\{c}");
     };
 
     '?'
@@ -759,9 +755,8 @@ EXPR_SHARED := |*
     };
 
     any => {
-        var line = Lexer.LocationFor(ts, 1).StartLine;
         var c = Lexer.Data[ts];
-        throw new SyntaxError(Lexer.Filename, line, $"Invalid char `{c}' in expression");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"Invalid char `{c}' in expression");
     };
 
 *|;
@@ -791,6 +786,8 @@ namespace Mint.Lex.States
         protected virtual TokenType UnlessTokenType => kUNLESS_MOD;
         protected virtual TokenType UntilTokenType => kUNTIL_MOD;
         protected virtual TokenType WhileTokenType => kWHILE_MOD;
+
+        protected iLiteral currentLiteral;
 
         public Shared(Lexer lexer) : base(lexer)
         { }
@@ -871,6 +868,12 @@ namespace Mint.Lex.States
             Reset(%%{ write start; }%%);
 
             %% write exec noend;
+        }
+
+        protected override void Reset(int initialState)
+        {
+            base.Reset(initialState);
+            currentLiteral = Lexer.CurrentLiteral;
         }
 
         %% write data nofinal noerror;

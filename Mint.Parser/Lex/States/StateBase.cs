@@ -12,7 +12,6 @@ namespace Mint.Lex.States
         protected int numBase;
         protected bool isImaginary;
         protected bool isRational;
-        protected iLiteral currentLiteral;
 
         protected virtual bool CanLabel => false;
         protected virtual State OperatorState => Lexer.BegState;
@@ -26,7 +25,7 @@ namespace Mint.Lex.States
 
         public abstract void Advance();
 
-        protected void Reset(int initialState)
+        protected virtual void Reset(int initialState)
         {
             ts = -1;
             te = -1;
@@ -36,7 +35,6 @@ namespace Mint.Lex.States
             isImaginary = false;
             isRational = false;
             numBase = 0;
-            currentLiteral = Lexer.CurrentLiteral;
         }
     }
 }

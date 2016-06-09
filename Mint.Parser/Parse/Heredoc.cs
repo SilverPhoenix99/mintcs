@@ -13,6 +13,7 @@ namespace Mint.Parse
         private readonly char indentType;
         private readonly char idDelimiter;
         private Regex regex;
+        private int lineIndent;
 
         public uint BraceCount { get; set; }
         public bool CanLabel => false;
@@ -22,16 +23,14 @@ namespace Mint.Parse
         public bool Interpolates => idDelimiter != '\'';
         public bool IsRegexp => false;
         public bool IsWords => false;
-        public int LineIndent { get; set; }
         public int Restore { get; }
         public State State //=> Lexer.States.HEREDOC_DELIMITER;
         {
             get { throw new NotImplementedException(); }
         }
         public TokenType Type => idDelimiter == '`' ? tXSTRING_BEG : tSTRING_BEG;
-        public string UnterminatedMessage => $"can't find string {Delimiter} anywhere before EOF";
+        public string EofErrorMessage => $"can't find string {Delimiter} anywhere before EOF";
         public bool WasContent { get { return false; } set { } }
-        public int Nesting { get { return 0; } set { } }
         public bool IsNested => false;
         private string Delimiter { get; }
         private Regex Regex => regex ?? (regex = CreateRegex());
@@ -41,9 +40,9 @@ namespace Mint.Parse
             /*
                indent_type '\0' (empty) doesn't allow whitespace before delimiter,
                i.e., the delimiter must be isolated in a line
-  
+
                indent_type '-' allows whitespace before delimiter
-  
+
                indent type '~' removes left margin:
                    margin = heredoc_content.scan(/^ +/).map(&:size).min
                    heredoc_content.gsub(/^ {#{margin}}/, '')
@@ -61,7 +60,7 @@ namespace Mint.Parse
 
             Restore = restore;
             Indent = -1;
-            LineIndent = 0;
+            lineIndent = 0;
         }
 
         public void CommitIndent()
@@ -71,11 +70,11 @@ namespace Mint.Parse
                 return;
             }
 
-            if(Indent == -1 || (0 <= LineIndent && LineIndent < Indent))
+            if(Indent == -1 || (0 <= lineIndent && lineIndent < Indent))
             {
-                Indent = LineIndent;
+                Indent = lineIndent;
             }
-            LineIndent = -1;
+            lineIndent = -1;
         }
 
         public bool IsDelimiter(string delimiter) => Regex.IsMatch(delimiter);

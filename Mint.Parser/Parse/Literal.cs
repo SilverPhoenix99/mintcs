@@ -27,54 +27,40 @@ namespace Mint.Parse
                 { ":\"", tSYMBEG       },
             });
 
-        private static readonly IReadOnlyDictionary<string, string> STRING_END =
-            new ReadOnlyDictionary<string, string>(new SortedList<string, string>(4)
+        private static readonly IReadOnlyDictionary<char, string> STRING_END =
+            new ReadOnlyDictionary<char, string>(new SortedList<char, string>(4)
             {
-                { "{", "}" },
-                { "<", ">" },
-                { "[", "]" },
-                { "(", ")" },
+                { '{', "}" },
+                { '<', ">" },
+                { '[', "]" },
+                { '(', ")" },
             });
 
-        public Literal(string delimiter, int contentStart, bool canLabel)
-        {
-            Delimiter = delimiter;
-            ContentStart = contentStart;
-            CanLabel = canLabel;
+        private int nesting;
 
-            EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
-            string endDelimiter;
+        public uint BraceCount { get; set; }
+        public bool CanLabel { get; }
+        public int ContentStart { get; set; }
+        public bool Dedents => false;
+        public int Indent => 0; // Do nothing
+        public bool Interpolates => INTERPOLATES.IsMatch(Delimiter);
+        public bool IsRegexp => Delimiter[0] == '/' || Delimiter.StartsWith("%r");
+        public bool IsWords => Delimiter[0] == '%' && "WwIi".IndexOf(Delimiter[1]) >= 0;
+        public string EofErrorMessage => "unterminated string meets end of file";
+        public bool WasContent { get; set; }
+        public bool IsNested => STRING_END.ContainsKey(BeginDelimiter) && nesting > 0;
 
-            if(STRING_END.TryGetValue(EndDelimiter, out endDelimiter))
-            {
-                EndDelimiter = endDelimiter;
-            }
-        }
-
-        public uint         BraceCount          { get; set; }
-        public bool         CanLabel            { get; }
-        public int          ContentStart        { get; set; }
-        public bool         Dedents             => false;
-        public int          Indent              => 0; // Do nothing
-        public bool         Interpolates        => INTERPOLATES.IsMatch(Delimiter);
-        public bool         IsRegexp            => Delimiter[0] == '/' || Delimiter.StartsWith("%r");
-        public bool         IsWords             => Delimiter[0] == '%' && "WwIi".IndexOf(Delimiter[1]) >= 0;
-        public int          LineIndent          { get { return 0; } set { } } // Do nothing
-        public State        State               //=> Interpolates ? STRING_INTERPOLATION : STRING_LITERAL;
+        public State State //=> Interpolates ? STRING_INTERPOLATION : STRING_LITERAL;
         {
             get { throw new NotImplementedException(); }
         }
-        public string       UnterminatedMessage => "unterminated string meets end of file";
-        public bool         WasContent          { get; set; }
-        public int          Nesting             { get; set; }
-        public bool         IsNested            => STRING_END.ContainsKey(BeginDelimiter) && Nesting > 0;
 
         // Not inherited
-        private string      Delimiter           { get; }
-        private string      EndDelimiter        { get; }
+        private string Delimiter { get; }
+        private string EndDelimiter { get; }
 
         // Returns the last character from the begin delimiter
-        public string BeginDelimiter => Delimiter.Substring(Delimiter.Length - 1);
+        public char BeginDelimiter => Delimiter[Delimiter.Length - 1];
 
         public TokenType Type
         {
@@ -83,6 +69,22 @@ namespace Mint.Parse
                 var delim = Delimiter[0] == '%' ? Delimiter.Substring(0, 2) : Delimiter;
                 TokenType type;
                 return STRING_BEG.TryGetValue(delim, out type) ? type : tSTRING_BEG;
+            }
+        }
+
+        public Literal(string delimiter, int contentStart, bool canLabel)
+        {
+            Delimiter = delimiter;
+            ContentStart = contentStart;
+            CanLabel = canLabel;
+            nesting = 0;
+
+            EndDelimiter = Delimiter.Substring(Delimiter.Length - 1);
+            string endDelimiter;
+
+            if(STRING_END.TryGetValue(EndDelimiter[0], out endDelimiter))
+            {
+                EndDelimiter = endDelimiter;
             }
         }
 

@@ -90,13 +90,11 @@ EXPR_CLASS := |*
     };
 
     '%' [QqWwIixrs]? c_eof => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line, "unterminated quoted string meets end of file");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated quoted string meets end of file");
     };
 
     '%' [QqWwIixrs]? (unicode | alnum) => {
-        var line = Lexer.LocationFor(ts, 0).StartLine;
-        throw new SyntaxError(Lexer.Filename, line, "unknown type of %string");
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unknown type of %string");
     };
 
     any => CallBaseState;

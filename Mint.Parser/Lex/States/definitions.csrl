@@ -53,8 +53,7 @@ comment = '#' ^nl_eof*;
 
 action UnterminatedHeredocIdentifier
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "unterminated here document identifier");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated here document identifier");
 }
 
 heredoc_identifier = '<<' [~\-]? (
@@ -79,8 +78,7 @@ action ImaginarySuffix
 
 action TrailError
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "trailing `_' in number");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "trailing `_' in number");
 }
 
 bdigit = [01];
@@ -134,14 +132,12 @@ octal_escape = '\\' odigit{1,3};
 
 action InvalidUnicode
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "invalid Unicode escape");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "invalid Unicode escape");
 }
 
 action UnterminatedUnicode
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "unterminated Unicode escape");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated Unicode escape");
 }
 
 unicode_digits = xdigit{1,6} >lerr(InvalidUnicode);
@@ -155,8 +151,7 @@ unicode_escape = '\\u' xdigit{4} @lerr(InvalidUnicode)
 
 action InvalidHex
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "invalid hex escape");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "invalid hex escape");
 }
 
 hex_escape   = '\\x' ( xdigit{1,2} >lerr InvalidHex );
@@ -166,8 +161,7 @@ hex_escape   = '\\x' ( xdigit{1,2} >lerr InvalidHex );
 
 action InvalidControl
 {
-    var line = Lexer.LocationFor(ts, 0).StartLine;
-    throw new SyntaxError(Lexer.Filename, line, "Invalid escape character syntax");
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "Invalid escape character syntax");
 }
 
 ctrl_char = '\\' ( 'c' | 'C-' );

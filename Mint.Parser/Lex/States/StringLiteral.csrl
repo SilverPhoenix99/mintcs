@@ -1,0 +1,47 @@
+%%{
+# String literals.
+
+machine Lexer;
+
+include "definitions.csrl";
+
+action EofLiteralError
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), currentLiteral.EofErrorMessage);
+}
+
+action CanLabel { canLabel }
+
+# ^D (0x4) isn't used by the lexer.
+# The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
+string_delimiter = 0x4;
+
+
+EXPR_STRING := |*
+
+    c_eof => EofLiteralError;
+
+    any;
+
+*|;
+
+}%%
+#pragma warning disable 162
+
+using Mint.Parse;
+using static Mint.Parse.TokenType;
+
+namespace Mint.Lex.States
+{
+    internal partial class StringLiteral
+    {
+        public override void Advance()
+        {
+            Reset(%%{ write start; }%%);
+
+            %% write exec noend;
+        }
+
+        %% write data nofinal noerror;
+    }
+}

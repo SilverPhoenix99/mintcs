@@ -207,10 +207,22 @@ namespace Mint.Lex
 
         internal LexLocation LocationFor(int position, int length)
         {
-            var line = Array.BinarySearch(lines, position) + 1;
-            line = line < 0 ? -line : line;
+            var start = LocationFor(position);
+            var end = LocationFor(position + length);
+            return new LexLocation(start.Item1, start.Item2, end.Item1, end.Item2);
+        }
+
+        private Tuple<int, int> LocationFor(int position)
+        {
+            var line = LineAt(position);
             var column = position - lines[line - 1] + 1;
-            return new LexLocation(line, column, line, column + length);
+            return new Tuple<int, int>(line, column);
+        }
+
+        internal int LineAt(int position)
+        {
+            var line = Array.BinarySearch(lines, position) + 1;
+            return line < 0 ? -line : line;
         }
 
         public void EmitStringToken(int ts, int te)
