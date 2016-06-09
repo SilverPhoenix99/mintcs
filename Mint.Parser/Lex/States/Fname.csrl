@@ -235,29 +235,29 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal class Fname : StateBase
+    internal class Fname : Shared
     {
-        public override State OperatorState => Lexer.ArgState;
-
-        protected override int InitialState => %%{ write start; }%%;
+        protected override State OperatorState => Lexer.ArgState;
 
         public Fname(Lexer lexer) : base(lexer)
         { }
 
-        public override void EmitIdentifierToken(int ts, int te)
+        protected override void EmitIdentifierToken()
         {
             Lexer.EmitToken(tIDENTIFIER, ts, te);
             Lexer.CurrentState = Lexer.EndfnState;
         }
 
-        public override void EmitFidToken(int ts, int te)
+        protected override void EmitFidToken()
         {
-            Lexer.EmitToken(tFID, ts, te);
+            Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.EndfnState;
         }
 
-        protected override void InternalAdvance()
+        public override void Advance()
         {
+            Reset(%%{ write start; }%%);
+
             %% write exec noend;
         }
 

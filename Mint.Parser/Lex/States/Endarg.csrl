@@ -90,14 +90,12 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal class Endarg : StateBase
+    internal class Endarg : Shared
     {
-        protected override int InitialState => %%{ write start; }%%;
-
         public Endarg(Lexer lexer) : base(lexer)
         { }
 
-        public override void EmitIdentifierToken(int ts, int te)
+        protected override void EmitIdentifierToken()
         {
             var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
             Lexer.CurrentState = Lexer.EndState;
@@ -108,14 +106,16 @@ namespace Mint.Lex.States
             }
         }
 
-        public override void EmitFidToken(int ts, int te)
+        protected override void EmitFidToken()
         {
-            Lexer.EmitToken(tFID, ts, te);
+            Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.EndState;
         }
 
-        protected override void InternalAdvance()
+        public override void Advance()
         {
+            Reset(%%{ write start; }%%);
+
             %% write exec noend;
         }
 

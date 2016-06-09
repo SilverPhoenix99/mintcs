@@ -46,7 +46,6 @@ namespace Mint.Lex
         }
 
         private State MainState { get; }
-        internal Shared SharedState { get; }
         internal State ArgState { get; }
         internal State ArgLabeledState { get; }
         internal State BegState { get; }
@@ -103,7 +102,6 @@ namespace Mint.Lex
             literals = new Stack<iLiteral>();
             Variables = new Stack<Stack<ISet<string>>>();
             MainState = new Main(this);
-            SharedState = new Shared(this);
             ArgState = new Arg(this);
             ArgLabeledState = new ArgLabeled(this);
             BegState = new Beg(this);
@@ -283,7 +281,7 @@ namespace Mint.Lex
         internal void DefineVariable(Token token)
         {
             var name = token.Value;
-            if(token.Type == TokenType.tLABEL)
+            if(token.Type == tLABEL)
             {
                 name = name.Substring(0, name.Length - 1);
             }

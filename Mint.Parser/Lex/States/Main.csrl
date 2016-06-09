@@ -49,23 +49,13 @@ namespace Mint.Lex.States
 {
     internal class Main : StateBase
     {
-        protected override int InitialState => Lexer_en_MAIN;
-
         public Main(Lexer lexer) : base(lexer)
         { }
 
-        public override void EmitIdentifierToken(int ts, int te)
+        public override void Advance()
         {
-            throw new System.MethodAccessException();
-        }
+            Reset(Lexer_en_MAIN);
 
-        public override void EmitFidToken(int ts, int te)
-        {
-            throw new System.MethodAccessException();
-        }
-
-        protected override void InternalAdvance()
-        {
             %% write exec noend;
         }
 

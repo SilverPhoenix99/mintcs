@@ -306,14 +306,12 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal class ArgLabeled : StateBase
+    internal class ArgLabeled : Shared
     {
-        protected override int InitialState => %%{ write start; }%%;
-
         public ArgLabeled(Lexer lexer) : base(lexer)
         { }
 
-        public override void EmitIdentifierToken(int ts, int te)
+        protected override void EmitIdentifierToken()
         {
             var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
             var isLocalVar = Lexer.IsVariableDefined(token.Value);
@@ -328,14 +326,16 @@ namespace Mint.Lex.States
             }
         }
 
-        public override void EmitFidToken(int ts, int te)
+        protected override void EmitFidToken()
         {
-            Lexer.EmitToken(tFID, ts, te);
+            Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
-        protected override void InternalAdvance()
+        public override void Advance()
         {
+            Reset(%%{ write start; }%%);
+
             %% write exec noend;
         }
 

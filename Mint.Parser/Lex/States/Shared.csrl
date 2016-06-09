@@ -539,13 +539,13 @@ EXPR_SHARED := |*
     };
 
     (name [!?] - reserved) ^'=' => {
-        EmitFidToken(ts, te - 1);
+        EmitFidToken();
         fhold;
         fbreak;
     };
 
     identifier - reserved => {
-        EmitIdentifierToken(ts, te);
+        EmitIdentifierToken();
         fbreak;
     };
 
@@ -827,34 +827,22 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal class Shared : StateBase
+    internal abstract class Shared : StateBase
     {
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
 
-        public override bool CanLabel => Caller.CanLabel;
-
-        public override State OperatorState => Caller.OperatorState;
-
-        protected override int InitialState => %%{ write start; }%%;
-
-        public State Caller { get; set; }
-
         public Shared(Lexer lexer) : base(lexer)
         { }
 
-        public override void EmitIdentifierToken(int ts, int te)
-        {
-            Caller.EmitIdentifierToken(ts, te);
-        }
+        protected abstract void EmitIdentifierToken();
 
-        public override void EmitFidToken(int ts, int te)
-        {
-            Caller.EmitFidToken(ts, te);
-        }
+        protected abstract void EmitFidToken();
 
-        protected override void InternalAdvance()
+        public override void Advance()
         {
+            Reset(%%{ write start; }%%);
+
             %% write exec noend;
         }
 

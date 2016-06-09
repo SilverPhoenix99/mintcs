@@ -14,28 +14,23 @@ namespace Mint.Lex.States
         protected bool isRational;
         protected iLiteral currentLiteral;
 
-        public virtual bool CanLabel => false;
-        public virtual State OperatorState => Lexer.BegState;
+        protected virtual bool CanLabel => false;
+        protected virtual State OperatorState => Lexer.BegState;
         protected Lexer Lexer { get; }
         protected int eof => Lexer.DataLength;
-        protected abstract int InitialState { get; }
 
         protected StateBase(Lexer lexer)
         {
             Lexer = lexer;
         }
 
-        public void Advance()
-        {
-            Reset();
-            InternalAdvance();
-        }
+        public abstract void Advance();
 
-        private void Reset()
+        protected void Reset(int initialState)
         {
             ts = -1;
             te = -1;
-            cs = InitialState;
+            cs = initialState;
             act = 0;
             tokStart = -1;
             isImaginary = false;
@@ -43,11 +38,5 @@ namespace Mint.Lex.States
             numBase = 0;
             currentLiteral = Lexer.CurrentLiteral;
         }
-
-        protected abstract void InternalAdvance();
-
-        public abstract void EmitIdentifierToken(int ts, int te);
-
-        public abstract void EmitFidToken(int ts, int te);
     }
 }
