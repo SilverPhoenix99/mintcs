@@ -1,50 +1,12 @@
-%%{
-# newline significant, +/- is an operator., and unbound braces.
-
-machine Lexer;
-
-include "definitions.csrl";
-
-EXPR_ENDARG := |*
-
-    nl ws* ('&.' | '.' ^'.') => {
-        fexec te - 2;
-    };
-
-    nl => {
-        Lexer.EmitToken(kNL, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CommandStart = true;
-        fbreak;
-    };
-
-    ':' ^':' => {
-        Lexer.EmitToken(kCOLON, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    '?' => {
-        Lexer.EmitToken(kQMARK, ts, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    any => CallBaseState;
-
-*|;
-
-}%%
-#pragma warning disable 162
-
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
-    internal class Endarg : Shared
+    internal class Endarg : End
     {
+        protected override bool CanLabel => false;
+
         public Endarg(Lexer lexer) : base(lexer)
         { }
 
@@ -110,6 +72,12 @@ namespace Mint.Lex.States
         {
             Lexer.EmitToken(tCONSTANT, ts, te);
             Lexer.CurrentState = Lexer.EndState;
+        }
+
+        protected override void EmitConstantToken()
+        {
+            Lexer.EmitToken(tCONSTANT, ts, te);
+            Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
         public override void Advance()
