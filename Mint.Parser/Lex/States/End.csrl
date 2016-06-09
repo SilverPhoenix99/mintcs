@@ -113,6 +113,12 @@ namespace Mint.Lex.States
             Lexer.Cmdarg.Push(false);
         }
 
+        protected override void EmitConstantToken()
+        {
+            Lexer.EmitToken(tCONSTANT, ts, te);
+            Lexer.CurrentState = Lexer.EndState;
+        }
+
         public override void Advance()
         {
             Reset(%%{ write start; }%%);

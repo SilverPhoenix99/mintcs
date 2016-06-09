@@ -67,26 +67,5 @@ namespace Mint.Lex.States
             Lexer.Cond.Push(false);
             Lexer.Cmdarg.Push(false);
         }
-
-        protected override void EmitConstantToken()
-        {
-            Lexer.EmitToken(tCONSTANT, ts, te);
-            Lexer.CurrentState = Lexer.EndState;
-        }
-
-        protected override void EmitConstantToken()
-        {
-            Lexer.EmitToken(tCONSTANT, ts, te);
-            Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
-        }
-
-        public override void Advance()
-        {
-            Reset(%%{ write start; }%%);
-
-            %% write exec noend;
-        }
-
-        %% write data nofinal noerror;
     }
 }

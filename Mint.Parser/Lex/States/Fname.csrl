@@ -54,18 +54,6 @@ EXPR_FNAME := |*
         fbreak;
     };
 
-    '$' [1-9] digit* => {
-        Lexer.EmitToken(tGVAR, ts, te);
-        Lexer.CurrentState = Lexer.EndState;
-        fbreak;
-    };
-
-    '$' back_ref_char => {
-        Lexer.EmitToken(tGVAR, ts, te);
-        Lexer.CurrentState = Lexer.EndState;
-        fbreak;
-    };
-
     '%' ^'=' => {
         Lexer.EmitToken(kPERCENT, ts, te - 1);
         Lexer.CurrentState = Lexer.BegState;
@@ -104,6 +92,8 @@ namespace Mint.Lex.States
         protected override State OperatorState => Lexer.ArgState;
 
         protected override TokenType AmpersandTokenType => kAMPER;
+        protected override TokenType NthRefTokenType => tGVAR;
+        protected override TokenType BackRefTokenType => tGVAR;
         protected override TokenType IfTokenType => kIF;
         protected override TokenType UnlessTokenType => kUNLESS;
         protected override TokenType UntilTokenType => kUNTIL;

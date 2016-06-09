@@ -443,13 +443,13 @@ EXPR_SHARED := |*
     };
 
     '$' [1-9] digit* => {
-        Lexer.EmitToken(tNTH_REF, ts, te);
+        Lexer.EmitToken(NthRefTokenType, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
 
     '$' back_ref_char => {
-        Lexer.EmitToken(tGVAR, ts, te);
+        Lexer.EmitToken(BackRefTokenType, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
@@ -785,6 +785,8 @@ namespace Mint.Lex.States
         protected virtual TokenType PlusTokenType => kPLUS;
         protected virtual TokenType LeftParenTokenType => kLPAREN2;
         protected virtual TokenType LeftBracketTokenType => kLBRACK2;
+        protected virtual TokenType NthRefTokenType => tNTH_REF;
+        protected virtual TokenType BackRefTokenType => tBACK_REF;
         protected virtual TokenType IfTokenType => kIF_MOD;
         protected virtual TokenType UnlessTokenType => kUNLESS_MOD;
         protected virtual TokenType UntilTokenType => kUNTIL_MOD;
