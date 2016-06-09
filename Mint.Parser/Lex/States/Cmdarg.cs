@@ -1,4 +1,3 @@
-using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States

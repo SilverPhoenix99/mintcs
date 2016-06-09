@@ -5,7 +5,7 @@ machine Lexer;
 
 include "definitions.csrl";
 
-EXPR_ENDFN := |*
+main := |*
 
     [''""] => {
         if(Lexer.CommandStart)
@@ -26,33 +26,10 @@ EXPR_ENDFN := |*
 }%%
 #pragma warning disable 162
 
-using Mint.Parse;
-using static Mint.Parse.TokenType;
-
 namespace Mint.Lex.States
 {
-    internal class Endfn : End
+    internal partial class Endfn
     {
-        protected override bool CanLabel => !Lexer.CommandStart;
-
-        public Endfn(Lexer lexer) : base(lexer)
-        { }
-
-        protected override void EmitIdentifierToken()
-        {
-            var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
-            var isLocalVar = Lexer.IsVariableDefined(token.Value);
-            if(isLocalVar)
-            {
-                Lexer.CurrentState = Lexer.EndState;
-                Lexer.CanLabel = true;
-            }
-            else
-            {
-                Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
-            }
-        }
-
         public override void Advance()
         {
             Reset(%%{ write start; }%%);

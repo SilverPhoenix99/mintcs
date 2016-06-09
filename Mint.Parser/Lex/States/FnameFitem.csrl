@@ -5,7 +5,7 @@ machine Lexer;
 
 include "definitions.csrl";
 
-EXPR_FNAME_FITEM := |*
+main := |*
 
     '%s' (ascii - alnum) => {
         Lexer.EmitStringToken(ts, te);
@@ -19,9 +19,6 @@ EXPR_FNAME_FITEM := |*
 
 }%%
 #pragma warning disable 162
-
-using Mint.Parse;
-using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {

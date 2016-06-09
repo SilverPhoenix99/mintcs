@@ -12,11 +12,20 @@ action EofLiteralError
 
 action CanLabel { canLabel }
 
-action StringDelimiter { throw new System.NotImplementedException("action StringDelimiter"); }
+action StringDelimiter
+{
+	throw new System.NotImplementedException("action StringDelimiter");
+}
 
-action StringDelimiterEscape { throw new System.NotImplementedException("action StringDelimiterEscape"); }
+action StringDelimiterEscape
+{
+	throw new System.NotImplementedException("action StringDelimiterEscape");
+}
 
-action StringNewLine { throw new System.NotImplementedException("action StringNewLine"); }
+action StringNewLine
+{
+	throw new System.NotImplementedException("action StringNewLine");
+}
 
 
 # ^D (0x4) isn't used by the lexer.
@@ -24,7 +33,7 @@ action StringNewLine { throw new System.NotImplementedException("action StringNe
 string_delimiter = 0x4;
 
 
-EXPR_STRING := |*
+main := |*
 
     c_eof => EofLiteralError;
 

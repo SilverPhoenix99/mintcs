@@ -7,7 +7,7 @@ include "definitions.csrl";
 bom_marker = '\xef\xbb\xbf';
 shebang = '#!' ^nl_eof*;
 
-MAIN := |*
+main := |*
 
     # consume only 1 shebang line
     bom_marker? shebang => { fgoto BOF; };
@@ -42,9 +42,6 @@ BOF := |*
 }%%
 #pragma warning disable 162
 
-using Mint.Parse;
-using static Mint.Parse.TokenType;
-
 namespace Mint.Lex.States
 {
     internal class Main : StateBase
@@ -54,7 +51,7 @@ namespace Mint.Lex.States
 
         public override void Advance()
         {
-            Reset(Lexer_en_MAIN);
+            Reset(%%{ write start; }%%);
 
             %% write exec noend;
         }
