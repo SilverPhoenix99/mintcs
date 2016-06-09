@@ -9,13 +9,15 @@ namespace Mint.Lex.States
 {
     internal partial class StringLiteral : StateBase
     {
-        private static readonly IReadOnlyDictionary<char, string> CLOSE_DELIMITERS =
-            new ReadOnlyDictionary<char, string>(new SortedList<char, string>(4)
+        private const char LEXER_DELIMITER = '\x4';
+
+        private static readonly IReadOnlyDictionary<char, char> CLOSE_DELIMITERS =
+            new ReadOnlyDictionary<char, char>(new SortedList<char, char>(4)
             {
-                { '{', "}" },
-                { '<', ">" },
-                { '[', "]" },
-                { '(', ")" },
+                { '{', '}' },
+                { '<', '>' },
+                { '[', ']' },
+                { '(', ')' },
             });
 
         private static readonly IReadOnlyDictionary<string, TokenType> OPEN_DELIMITERS =
@@ -38,6 +40,15 @@ namespace Mint.Lex.States
         private readonly char closeDelimiter;
         private readonly bool canLabel;
         private int contentStart;
+
+        protected override char CurrentChar
+        {
+            get
+            {
+                var current = Lexer.CurrentChar;
+                return current == closeDelimiter ? LEXER_DELIMITER : current;
+            }
+        }
 
         private char OpenDelimiter => delimiter[delimiter.Length - 1];
 

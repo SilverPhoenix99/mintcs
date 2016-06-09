@@ -6,7 +6,7 @@
 
 machine Lexer;
 
-getkey Lexer.CurrentChar;
+getkey CurrentChar;
 variable p Lexer.Position;
 
 

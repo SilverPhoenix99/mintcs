@@ -17,6 +17,7 @@ namespace Mint.Lex.States
         protected virtual State OperatorState => Lexer.BegState;
         protected Lexer Lexer { get; }
         protected int eof => Lexer.DataLength;
+        protected virtual char CurrentChar => Lexer.CurrentChar;
 
         protected StateBase(Lexer lexer)
         {

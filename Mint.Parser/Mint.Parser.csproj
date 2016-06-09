@@ -57,12 +57,14 @@
     <Compile Include="gen\Lex\States\Main.cs" />
     <Compile Include="gen\Lex\States\Mid.cs" />
     <Compile Include="gen\Lex\States\Shared.cs" />
+    <Compile Include="gen\Lex\States\StringLiteral.cs" />
     <Compile Include="gen\Parse\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
     <Compile Include="Lex\States\Cmdarg.cs" />
     <Compile Include="Lex\States\Endarg.cs" />
     <Compile Include="Lex\States\State.cs" />
     <Compile Include="Lex\States\StateBase.cs" />
+    <Compile Include="Lex\States\StringLiteral.cs" />
     <Compile Include="Parse\Ast.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
@@ -90,10 +92,11 @@
     <Ragel Include="Lex\States\Fname.csrl" />
     <Ragel Include="Lex\States\FnameFitem.csrl" />
     <Ragel Include="Lex\States\Mid.csrl" />
-    <RagelDependency Include="Lex\States\definitions.csrl" />
     <Ragel Include="Lex\States\Beg.csrl" />
     <Ragel Include="Lex\States\Main.csrl" />
     <Ragel Include="Lex\States\Shared.csrl" />
+    <Ragel Include="Lex\States\StringLiteral.csrl" />
+    <RagelDependency Include="Lex\States\definitions.csrl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenLexer" BeforeTargets="CoreCompile" Inputs="@(Ragel);@(RagelDependency)" Outputs="@(Ragel->'gen\%(relativedir)%(Filename).cs')">

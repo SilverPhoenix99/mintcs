@@ -1,5 +1,5 @@
 %%{
-# String literals.
+# String literals with no interpolation.
 
 machine Lexer;
 
@@ -7,7 +7,7 @@ include "definitions.csrl";
 
 action EofLiteralError
 {
-    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), currentLiteral.EofErrorMessage);
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
 }
 
 action CanLabel { canLabel }
