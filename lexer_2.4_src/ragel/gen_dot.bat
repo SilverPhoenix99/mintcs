@@ -1,1 +1,1 @@
-ragel -M test -RVp Mint.Parser\Lex\States\Beg.csrl | clip
+ragel -M test -RVp Mint.Parser\Lex\States\Shared.csrl | clip
