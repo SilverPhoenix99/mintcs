@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="gen\Lex\States\Arg.cs" />
+    <Compile Include="gen\Lex\States\ArgBase.cs" />
     <Compile Include="gen\Lex\States\ArgLabeled.cs" />
     <Compile Include="gen\Lex\States\Beg.cs" />
     <Compile Include="gen\Lex\States\Class.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="gen\Parse\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
     <Compile Include="Lex\States\Arg.cs" />
+    <Compile Include="Lex\States\ArgBase.cs" />
     <Compile Include="Lex\States\ArgLabeled.cs" />
     <Compile Include="Lex\States\Beg.cs" />
     <Compile Include="Lex\States\Class.cs" />
@@ -93,6 +95,7 @@
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />
+    <Ragel Include="Lex\States\ArgBase.csrl" />
     <Ragel Include="Lex\States\Arg.csrl" />
     <Ragel Include="Lex\States\ArgLabeled.csrl" />
     <Ragel Include="Lex\States\Class.csrl" />

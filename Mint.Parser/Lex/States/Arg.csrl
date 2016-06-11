@@ -18,119 +18,28 @@ main := |*
         fbreak;
     };
 
-    esc_ws_nl+ '**' ^(ws_nl | '=') => {
-        Lexer.EmitToken(kDSTAR, te - 3, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ '*' ^(ws_nl | '=') => {
-        Lexer.EmitToken(kSTAR, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
     esc_ws_nl+ %TokStart heredoc_identifier => {
         Lexer.EmitHeredocToken(tokStart, te);
         fbreak;
     };
 
-    [''""] => {
-        Lexer.EmitLabelableStringToken(ts, te);
-        fbreak;
-    };
-
-    esc_ws_nl+ '&' ^(ws_nl | [=&.]) => {
-        Lexer.EmitToken(kAMPER, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ %TokStart '+' integer_number => {
-        Lexer.EmitIntegerToken(tokStart, te, numBase, isRational, isImaginary);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    esc_ws_nl+ %TokStart '+' float_number => {
-        Lexer.EmitFloatToken(tokStart, te, isRational, isImaginary);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    esc_ws_nl+ '+' ^(ws_nl | '=') => {
-        Lexer.EmitToken(kUPLUS, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ '-' digit => {
-        Lexer.EmitToken(kUMINUS_NUM, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ '-' ^(ws_nl | digit | [=>]) => {
-        Lexer.EmitToken(kUMINUS, te - 2, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ '::' => {
-        Lexer.EmitToken(kCOLON3, te - 2, te);
-        Lexer.CurrentState = Lexer.BegState;
-        fbreak;
-    };
-
-    esc_ws_nl+ '/' ^(ws_nl | '=') => {
-        Lexer.EmitStringToken(te - 2, te - 1);
-        fhold;
-        fbreak;
-    };
-
-    esc_ws_nl+ '(' => {
-        Lexer.EmitToken(kLPAREN_ARG, te - 1, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
-    esc_ws_nl+ '[' => {
-        Lexer.EmitToken(kLBRACK, te - 1, te);
-        Lexer.CurrentState = Lexer.BegState;
-        Lexer.CanLabel = true;
-        Lexer.ParenNest++;
-        Lexer.Cond.Push(false);
-        Lexer.Cmdarg.Push(false);
-        fbreak;
-    };
-
-    esc_ws_nl+ '%' [Qqxr] (ascii - alnum) => {
+    esc_ws_nl+ '%' [Qqxr] percent_string_delimiter => {
         Lexer.EmitStringToken(te - 3, te);
         fbreak;
     };
 
-    esc_ws_nl+ '%s' (ascii - alnum) => {
+    esc_ws_nl+ '%s' percent_string_delimiter => {
         Lexer.EmitStringToken(te - 3, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
         fbreak;
     };
 
-    esc_ws_nl+ %TokStart '%' [WwIi] (ascii - alnum) ws_nl* => {
+    esc_ws_nl+ %TokStart '%' [WwIi] percent_string_delimiter ws_nl* => {
         Lexer.EmitStringToken(tokStart, tokStart + 3);
         fbreak;
     };
 
-    esc_ws_nl+ '%' (ascii - alnum - ws_nl - '=') => {
+    esc_ws_nl+ '%' (percent_string_delimiter - ws_nl - '=') => {
         Lexer.EmitStringToken(te - 2, te);
         fbreak;
     };
@@ -141,13 +50,6 @@ main := |*
 
     esc_ws_nl+ '%' [QqWwIixrs]? (unicode | alnum) => {
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unknown type of %string");
-    };
-
-    '?' ws_nl => {
-        Lexer.EmitToken(kQMARK, ts, te - 1);
-        Lexer.CurrentState = Lexer.BegState;
-        fhold;
-        fbreak;
     };
 
     any => CallBaseState;
