@@ -67,6 +67,7 @@
     <Compile Include="Lex\States\Beg.cs" />
     <Compile Include="Lex\States\Class.cs" />
     <Compile Include="Lex\States\Cmdarg.cs" />
+    <Compile Include="Lex\States\Delimiters\Delimiter.cs" />
     <Compile Include="Lex\States\Dot.cs" />
     <Compile Include="Lex\States\End.cs" />
     <Compile Include="Lex\States\Endarg.cs" />

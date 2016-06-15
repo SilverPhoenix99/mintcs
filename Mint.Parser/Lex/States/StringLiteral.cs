@@ -7,7 +7,7 @@ namespace Mint.Lex.States
 {
     internal partial class StringLiteral : StateBase
     {
-        private const char LEXER_DELIMITER = '\x4';
+        public const char LEXER_DELIMITER = '\x4';
 
         private static readonly IReadOnlyDictionary<char, char> CLOSE_DELIMITERS =
             new ReadOnlyDictionary<char, char>(new SortedList<char, char>(4)

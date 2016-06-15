@@ -13,9 +13,9 @@ namespace Mint.Lex.States
         protected bool isImaginary;
         protected bool isRational;
 
+        public Lexer Lexer { get; }
         protected virtual bool CanLabel => false;
         protected virtual State OperatorState => Lexer.BegState;
-        protected Lexer Lexer { get; }
         protected int eof => Lexer.DataLength;
         protected virtual char CurrentChar => Lexer.CurrentChar;
 

@@ -14,22 +14,75 @@ action CanLabel { canLabel }
 
 action StringDelimiter
 {
+    /*
+
+    General:
+        emit content
+        state <- nextState (REGEX_END vs END)
+        fbreak;
+
+    New Line:
+        emit content
+        if jump => jump
+        fbreak;
+
+    Nesting:
+        nesting--
+
+        if not nested
+           emit content
+           fbreak;
+    */
+
 	throw new System.NotImplementedException("action StringDelimiter");
 }
 
 action StringDelimiterEscape
 {
+    /*
+
+    General / Nesting:
+        do nothing
+
+    New Line:
+        if jump => emit content
+
+    */
+
 	throw new System.NotImplementedException("action StringDelimiterEscape");
 }
 
 action StringNewLine
 {
+    /*
+
+    Implies that New Line is not the delimiter.
+
+    Any:
+        if jump => emit content
+
+    */
+
 	throw new System.NotImplementedException("action StringNewLine");
+}
+
+action StringNesting
+{
+    /*
+
+    General / New Line:
+        do nothing
+
+    Nesting:
+        nesting++ (if it matches open delimiter)
+    */
+
+	throw new System.NotImplementedException("action StringNesting");
 }
 
 
 # ^D (0x4) isn't used by the lexer.
-# The real string delimiter is replaced by ^D to generalize STRING_CONTENT.
+# The real string delimiter is replaced by ^D to generalize string content.
 string_delimiter = 0x4;
 
 
@@ -42,6 +95,8 @@ main := |*
     '\\' string_delimiter => StringDelimiterEscape;
 
     '\n' => StringNewLine;
+
+    [\[{(<] => StringNesting;
 
     any;
 
