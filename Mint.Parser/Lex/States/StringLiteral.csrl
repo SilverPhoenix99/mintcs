@@ -10,7 +10,7 @@ action EofLiteralError
     throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
 }
 
-action CanLabel { canLabel }
+action CanLabel { CanLabel }
 
 action LabelDelimiter
 {

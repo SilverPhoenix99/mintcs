@@ -34,10 +34,11 @@ namespace Mint.Lex.States
             });
 
         private readonly string delimiter;
-        private readonly bool canLabel;
         private int contentStart;
 
         protected override char CurrentChar => Delimiter.CurrentChar;
+
+        protected override bool CanLabel { get; }
 
         private char OpenDelimiter => delimiter[delimiter.Length - 1];
 
@@ -52,7 +53,7 @@ namespace Mint.Lex.States
         {
             this.delimiter = delimiter;
             this.contentStart = contentStart;
-            this.canLabel = canLabel;
+            CanLabel = canLabel;
             Delimiter = CreateDelimiter(OpenDelimiter);
         }
 
