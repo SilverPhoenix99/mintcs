@@ -77,7 +77,7 @@ namespace Mint.Lex.States
 
         protected override void EmitDivToken()
         {
-            Lexer.EmitStringToken(ts, te);
+            Lexer.EmitStringBeginToken(ts, te);
         }
     }
 }

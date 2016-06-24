@@ -269,23 +269,23 @@ beg_expressions =
     }
 
     | '%' [Qqxr] percent_string_delimiter % {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     }
 
     | '%s' percent_string_delimiter % {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
         fbreak;
     }
 
     | '%' [WwIi] percent_string_delimiter ws_nl* % {
-        Lexer.EmitStringToken(ts, ts + 3);
+        Lexer.EmitStringBeginToken(ts, ts + 3);
         fbreak;
     }
 
     | '%' percent_string_delimiter % {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     }
 

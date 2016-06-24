@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Mint.Lex.States.Delimiters;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 
@@ -7,9 +8,7 @@ namespace Mint.Lex.States
 {
     internal partial class StringLiteral : StateBase
     {
-        public const char LEXER_DELIMITER = '\x4';
-
-        private static readonly IReadOnlyDictionary<char, char> CLOSE_DELIMITERS =
+        private static readonly IReadOnlyDictionary<char, char> NESTING_DELIMITERS =
             new ReadOnlyDictionary<char, char>(new SortedList<char, char>(4)
             {
                 { '{', '}' },
@@ -35,31 +34,42 @@ namespace Mint.Lex.States
             });
 
         private readonly string delimiter;
-        private readonly char closeDelimiter;
         private readonly bool canLabel;
         private int contentStart;
 
-        protected override char CurrentChar
-        {
-            get
-            {
-                var current = Lexer.CurrentChar;
-                return current == closeDelimiter ? LEXER_DELIMITER : current;
-            }
-        }
+        protected override char CurrentChar => Delimiter.CurrentChar;
 
         private char OpenDelimiter => delimiter[delimiter.Length - 1];
+
+        protected Delimiter Delimiter { get; }
+
+        protected State EndState
+        {
+            get { throw new System.NotImplementedException(nameof(EndState)); }
+        }
 
         public StringLiteral(Lexer lexer, string delimiter, int contentStart, bool canLabel) : base(lexer)
         {
             this.delimiter = delimiter;
             this.contentStart = contentStart;
             this.canLabel = canLabel;
+            Delimiter = CreateDelimiter(OpenDelimiter);
+        }
 
-            if(!CLOSE_DELIMITERS.TryGetValue(OpenDelimiter, out closeDelimiter))
+        private Delimiter CreateDelimiter(char openDelimiter)
+        {
+            if(openDelimiter == '\n')
             {
-                closeDelimiter = OpenDelimiter;
+                return new NewLineDelimiter(this);
             }
+
+            char closeDelimiter;
+            if(NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter))
+            {
+                return new NestingDelimiter(this, openDelimiter, closeDelimiter);
+            }
+
+            return new SimpleDelimiter(this, openDelimiter);
         }
     }
 }

@@ -10,11 +10,11 @@ main := |*
     [''""] => {
         if(Lexer.CommandStart)
         {
-            Lexer.EmitStringToken(ts, te);
+            Lexer.EmitStringBeginToken(ts, te);
         }
         else
         {
-            Lexer.EmitLabelableStringToken(ts, te);
+            Lexer.EmitLabelableStringBeginToken(ts, te);
         }
         fbreak;
     };

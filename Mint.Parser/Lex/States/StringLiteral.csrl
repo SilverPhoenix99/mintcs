@@ -12,72 +12,60 @@ action EofLiteralError
 
 action CanLabel { canLabel }
 
+action LabelDelimiter
+{
+    // only ', " and ` can be used for labels
+
+    Lexer.EmitStringContentToken(ts, te - 3);
+    Lexer.EmitStringEndToken(te - 3, te - 1);
+    Lexer.CurrentState = EndState;
+    fhold;
+    fbreak;
+}
+
 action StringDelimiter
 {
-    /*
+    Delimiter.DecrementNesting();
 
-    General:
-        emit content
-        state <- nextState (REGEX_END vs END)
+    if(!Delimiter.IsNested)
+    {
+        Lexer.EmitStringContentToken(ts, te - 1);
+        Lexer.EmitStringEndToken(te - 1, te);
+        Lexer.CurrentState = EndState;
+
+        if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
+        {
+            fexec te = Lexer.LineJump;
+            ts = Lexer.Position;
+        }
+
         fbreak;
-
-    New Line:
-        emit content
-        if jump => jump
-        fbreak;
-
-    Nesting:
-        nesting--
-
-        if not nested
-           emit content
-           fbreak;
-    */
-
-	throw new System.NotImplementedException("action StringDelimiter");
+    }
 }
 
 action StringDelimiterEscape
 {
-    /*
-
-    General / Nesting:
-        do nothing
-
-    New Line:
-        if jump => emit content
-
-    */
-
-	throw new System.NotImplementedException("action StringDelimiterEscape");
+    if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
+    {
+        Lexer.EmitStringContentToken(ts, te);
+        fexec te = Lexer.LineJump;
+        ts = Lexer.Position;
+    }
 }
 
 action StringNewLine
 {
-    /*
-
-    Implies that New Line is not the delimiter.
-
-    Any:
-        if jump => emit content
-
-    */
-
-	throw new System.NotImplementedException("action StringNewLine");
+    if(Lexer.LineJump > Lexer.Position)
+    {
+        Lexer.EmitStringContentToken(ts, te);
+        fexec te = Lexer.LineJump;
+        ts = Lexer.Position;
+    }
 }
 
 action StringNesting
 {
-    /*
-
-    General / New Line:
-        do nothing
-
-    Nesting:
-        nesting++ (if it matches open delimiter)
-    */
-
-	throw new System.NotImplementedException("action StringNesting");
+	Delimiter.IncrementNesting();
 }
 
 
@@ -89,6 +77,9 @@ string_delimiter = 0x4;
 main := |*
 
     c_eof => EofLiteralError;
+
+    # only ', " and ` can be used for labels
+    string_delimiter ':' ^':' when CanLabel => LabelDelimiter;
 
     string_delimiter => StringDelimiter;
 

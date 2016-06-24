@@ -24,23 +24,23 @@ main := |*
     };
 
     esc_ws_nl+ '%' [Qqxr] percent_string_delimiter => {
-        Lexer.EmitStringToken(te - 3, te);
+        Lexer.EmitStringBeginToken(te - 3, te);
         fbreak;
     };
 
     esc_ws_nl+ '%s' percent_string_delimiter => {
-        Lexer.EmitStringToken(te - 3, te);
+        Lexer.EmitStringBeginToken(te - 3, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
         fbreak;
     };
 
     esc_ws_nl+ %TokStart '%' [WwIi] percent_string_delimiter ws_nl* => {
-        Lexer.EmitStringToken(tokStart, tokStart + 3);
+        Lexer.EmitStringBeginToken(tokStart, tokStart + 3);
         fbreak;
     };
 
     esc_ws_nl+ '%' (percent_string_delimiter - ws_nl - '=') => {
-        Lexer.EmitStringToken(te - 2, te);
+        Lexer.EmitStringBeginToken(te - 2, te);
         fbreak;
     };
 

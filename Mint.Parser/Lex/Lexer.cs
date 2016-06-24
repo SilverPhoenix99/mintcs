@@ -225,19 +225,29 @@ namespace Mint.Lex
             return line < 0 ? -line : line;
         }
 
-        public void EmitStringToken(int ts, int te)
+        public void EmitStringBeginToken(int ts, int te)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(EmitStringBeginToken));
         }
 
-        public void EmitLabelableStringToken(int ts, int te)
+        public void EmitLabelableStringBeginToken(int ts, int te)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(EmitLabelableStringBeginToken));
         }
 
         public void EmitHeredocToken(int ts, int te)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(nameof(EmitHeredocToken));
+        }
+
+        public void EmitStringContentToken(int ts, int te)
+        {
+            throw new NotImplementedException(nameof(EmitStringContentToken));
+        }
+
+        public void EmitStringEndToken(int ts, int te)
+        {
+            throw new NotImplementedException(nameof(EmitStringEndToken));
         }
 
         public void EmitIntegerToken(int ts, int te, int numBase, bool isRational, bool isImaginary)

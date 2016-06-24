@@ -69,23 +69,23 @@ main := |*
     };
 
     '%' [Qqxr] (ascii - alnum) => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     };
 
     '%s' (ascii - alnum) => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
         fbreak;
     };
 
     '%' [WwIi] (ascii - alnum) ws_nl* => {
-        Lexer.EmitStringToken(ts, ts + 3);
+        Lexer.EmitStringBeginToken(ts, ts + 3);
         fbreak;
     };
 
     '%' (ascii - alnum) => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     };
 

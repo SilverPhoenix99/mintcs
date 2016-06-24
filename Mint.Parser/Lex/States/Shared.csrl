@@ -172,17 +172,17 @@ main := |*
     [''""``] => {
         if(Lexer.CanLabel && !Lexer.CommandStart)
         {
-            Lexer.EmitLabelableStringToken(ts, te);
+            Lexer.EmitLabelableStringBeginToken(ts, te);
         }
         else
         {
-            Lexer.EmitStringToken(ts, te);
+            Lexer.EmitStringBeginToken(ts, te);
         }
         fbreak;
     };
 
     '`' => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     };
 
@@ -275,7 +275,7 @@ main := |*
     };
 
     ':' [""''] => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         fbreak;
     };
 

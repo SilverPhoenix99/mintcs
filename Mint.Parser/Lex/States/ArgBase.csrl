@@ -22,7 +22,7 @@ main := |*
     };
 
     [''""] => {
-        Lexer.EmitLabelableStringToken(ts, te);
+        Lexer.EmitLabelableStringBeginToken(ts, te);
         fbreak;
     };
 
@@ -73,7 +73,7 @@ main := |*
     };
 
     esc_ws_nl+ '/' ^(ws_nl | '=') => {
-        Lexer.EmitStringToken(te - 2, te - 1);
+        Lexer.EmitStringBeginToken(te - 2, te - 1);
         fhold;
         fbreak;
     };

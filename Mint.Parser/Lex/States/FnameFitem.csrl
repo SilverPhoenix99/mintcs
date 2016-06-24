@@ -8,7 +8,7 @@ include "definitions.csrl";
 main := |*
 
     '%s' (ascii - alnum) => {
-        Lexer.EmitStringToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te);
         Lexer.CurrentState = Lexer.FnameFitemState;
         fbreak;
     };

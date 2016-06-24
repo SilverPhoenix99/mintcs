@@ -3,85 +3,93 @@
     internal interface Delimiter
     {
         char CurrentChar { get; }
+
         bool IsNested { get; }
 
-        void IncrementNesting(char currentChar);
+        bool CanJump { get; }
 
-        void DecrementNesting(char currentChar);
+        void IncrementNesting();
+
+        void DecrementNesting();
     }
 
-    internal class SimpleDelimiter : Delimiter
+    internal abstract class DelimiterBase : Delimiter
     {
+        public const char LEXER_DELIMITER = '\x4';
+
         protected StringLiteral Literal { get; }
 
-        public virtual char CurrentChar => Literal.Lexer.CurrentChar;
-
-        public virtual bool IsNested => false;
-
-        protected SimpleDelimiter(StringLiteral literal)
-        {
-            Literal = literal;
-        }
-
-        public virtual void IncrementNesting(char currentChar)
-        { }
-
-        public virtual void DecrementNesting(char currentChar)
-        { }
-    }
-    
-    internal class NewLineDelimiter : SimpleDelimiter
-    {
-        public override char CurrentChar
+        public virtual char CurrentChar
         {
             get
             {
                 var currentChar = Literal.Lexer.CurrentChar;
-                return currentChar == '\n' ? StringLiteral.LEXER_DELIMITER : currentChar;
+                return currentChar == CloseDelimiter ? LEXER_DELIMITER : currentChar;
             }
         }
-        
+
+        protected abstract char CloseDelimiter { get; }
+
+        public virtual bool IsNested => false;
+
+        public virtual bool CanJump => false;
+
+        protected DelimiterBase(StringLiteral literal)
+        {
+            Literal = literal;
+        }
+
+        public virtual void IncrementNesting()
+        { }
+
+        public virtual void DecrementNesting()
+        { }
+    }
+
+    internal class SimpleDelimiter : DelimiterBase
+    {
+        protected override char CloseDelimiter { get; }
+
+        public SimpleDelimiter(StringLiteral literal, char closeDelimiter) : base(literal)
+        {
+            CloseDelimiter = closeDelimiter;
+        }
+    }
+
+    internal class NewLineDelimiter : DelimiterBase
+    {
+        public override bool CanJump => true;
+
+        protected override char CloseDelimiter => '\n';
+
         public NewLineDelimiter(StringLiteral literal) : base(literal)
         { }
     }
 
     internal class NestingDelimiter : SimpleDelimiter
     {
+        private readonly char openDelimter;
         private int nesting;
-        private readonly char openDelimiter;
-        private readonly char closeDelimiter;
-
-        public override char CurrentChar
-        {
-            get
-            {
-                var currentChar = Literal.Lexer.CurrentChar;
-                return currentChar == closeDelimiter ? StringLiteral.LEXER_DELIMITER : currentChar;
-            }
-        }
 
         public override bool IsNested => nesting > 0;
 
-        public NestingDelimiter(StringLiteral literal, char openDelimiter, char closeDelimiter) : base(literal)
+        public NestingDelimiter(StringLiteral literal, char openDelimter, char closeDelimiter)
+            : base(literal, closeDelimiter)
         {
-            this.openDelimiter = openDelimiter;
-            this.closeDelimiter = closeDelimiter;
+            this.openDelimter = openDelimter;
         }
 
-        public override void IncrementNesting(char currentChar)
+        public override void IncrementNesting()
         {
-            if(currentChar == openDelimiter)
+            if(Literal.Lexer.CurrentChar == openDelimter)
             {
                 nesting++;
             }
         }
 
-        public override void DecrementNesting(char currentChar)
+        public override void DecrementNesting()
         {
-            if(currentChar == closeDelimiter)
-            {
-                nesting--;
-            }
+            nesting--;
         }
     }
 }
