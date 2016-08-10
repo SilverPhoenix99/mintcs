@@ -10,7 +10,10 @@ action EofLiteralError
     throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
 }
 
+action IsNested { IsNested }
 action CanLabel { CanLabel }
+action HasInterpolation { HasInterpolation }
+action IsWords { IsWords }
 
 action LabelDelimiter
 {
@@ -23,7 +26,7 @@ action LabelDelimiter
     fbreak;
 }
 
-action StringDelimiter
+action Delimiter
 {
     Delimiter.DecrementNesting();
 
@@ -43,7 +46,7 @@ action StringDelimiter
     }
 }
 
-action StringDelimiterEscape
+action DelimiterEscape
 {
     if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
     {
@@ -53,7 +56,7 @@ action StringDelimiterEscape
     }
 }
 
-action StringNewLine
+action NewLine
 {
     if(Lexer.LineJump > Lexer.Position)
     {
@@ -63,33 +66,57 @@ action StringNewLine
     }
 }
 
-action StringNesting
-{
-	Delimiter.IncrementNesting();
-}
+action NewLineEscape { throw new System.NotImplementedException("action NewLineEscape"); }
+
+action WordSpace { throw new System.NotImplementedException("action WordSpace"); }
 
 
 # ^D (0x4) isn't used by the lexer.
 # The real string delimiter is replaced by ^D to generalize string content.
+
 string_delimiter = 0x4;
+
+word_space = space | '\n' @NewLine;
+
+interpolation_escape = '\\' when HasInterpolation any+;
 
 
 main := |*
 
-    c_eof => EofLiteralError;
+	c_eof => EofLiteralError;
 
     # only ', " and ` can be used for labels
-    string_delimiter ':' ^':' when CanLabel => LabelDelimiter;
+	string_delimiter when !IsNested ':' when CanLabel ^':' => { EmitLabelDelimiter(); fbreak; };
 
-    string_delimiter => StringDelimiter;
+	string_delimiter when !IsNested => { EmitDelimiter(); fbreak; };
 
-    '\\' string_delimiter => StringDelimiterEscape;
+	string_delimiter when IsNested => { DecrementNesting(); };
 
-    '\n' => StringNewLine;
+	[\[{(<] => { IncrementNesting(); };
 
-    [\[{(<] => StringNesting;
+	word_space when IsWords word_space* => WordSpace;
 
-    any;
+	'\\' string_delimiter => DelimiterEscape;
+
+	'\\' '\r'? '\n' => NewLineEscape;
+
+	'\\\\';
+
+	interpolation_escape & (char_escape - '\\' (string_delimiter | '\n' | '\\'));
+
+    interpolation_escape & octal_escape;
+    interpolation_escape & hex_escape;
+    interpolation_escape & multi_unicode_escape;
+    interpolation_escape & control_escape;
+
+	'#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
+	'#' when HasInterpolation '@@' name => { EmitDVar(tCVAR); };
+	'#' when HasInterpolation '@' name => { EmitDVar(tIVAR); };
+	'#' when HasInterpolation '$' ( gvar_char | name | '0' name_char* | '-' name_char ) => { EmitDVar(tGVAR); };
+	'#' when HasInterpolation '$' [1-9] digit* => { EmitDVar(tNTH_REF); };
+	'#' when HasInterpolation '$' back_ref_char => { EmitDVar(tBACK_REF); };
+
+	any;
 
 *|;
 

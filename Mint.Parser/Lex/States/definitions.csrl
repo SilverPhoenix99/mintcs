@@ -146,6 +146,11 @@ unicode_escape = '\\u' xdigit{4} @lerr(InvalidUnicode)
                | '\\u{' unicode_digits '}' @lerr(UnterminatedUnicode)
 ;
 
+multi_unicode_escape =
+      '\\u' xdigit{4} @lerr(InvalidUnicode)
+    | '\\u{' unicode_digits ([\t ] @lerr(UnterminatedUnicode) unicode_digits)* '}' @lerr(UnterminatedUnicode)
+;
+
 
 ### Hexadecimal escape
 
