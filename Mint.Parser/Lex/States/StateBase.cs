@@ -1,6 +1,4 @@
-﻿using Mint.Parse;
-
-namespace Mint.Lex.States
+﻿namespace Mint.Lex.States
 {
     internal abstract class StateBase : State
     {

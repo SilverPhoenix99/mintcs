@@ -14,7 +14,7 @@ action CanLabel { CanLabel }
 
 action LabelDelimiter
 {
-    // only ', " and ` can be used for labels
+    //# only ', " and ` can be used for labels
 
     Lexer.EmitStringContentToken(ts, te - 3);
     Lexer.EmitStringEndToken(te - 3, te - 1);

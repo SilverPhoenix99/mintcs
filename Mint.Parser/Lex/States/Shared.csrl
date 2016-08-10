@@ -23,6 +23,51 @@ embedded_doc =
 ;
 
 
+reserved =
+      'alias'
+    | 'and'
+    | 'begin'
+    | 'BEGIN'
+    | 'break'
+    | 'case'
+    | 'class'
+    | 'def'
+    | 'defined?'
+    | 'do'
+    | 'else'
+    | 'elsif'
+    | 'end'
+    | 'END'
+    | 'ensure'
+    | 'false'
+    | 'for'
+    | 'if'
+    | 'in'
+    | 'module'
+    | 'next'
+    | 'nil'
+    | 'not'
+    | 'or'
+    | 'redo'
+    | 'rescue'
+    | 'retry'
+    | 'return'
+    | 'self'
+    | 'super'
+    | 'then'
+    | 'true'
+    | 'undef'
+    | 'unless'
+    | 'until'
+    | 'when'
+    | 'while'
+    | 'yield'
+    | '__ENCODING__'
+    | '__FILE__'
+    | '__LINE__'
+;
+
+
 main := |*
 
 	c_eof => { fbreak; };
@@ -424,20 +469,15 @@ main := |*
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@{c}' is not allowed as an instance variable name");
     };
 
-    '$' (gvar_char | (name_prefix | '0') name_char*) => {
+    '$' (
+          gvar_char
+        | name
+        | '0' name_char*
+        | '-' name_char
+    ) => {
         Lexer.EmitToken(tGVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
-    };
-
-    '$-' name_char => {
-        Lexer.EmitToken(tGVAR, ts, te);
-        Lexer.CurrentState = Lexer.EndState;
-        fbreak;
-    };
-
-    '$-' ^name_char => {
-        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "syntax error, unexpected $undefined");
     };
 
     '$' [1-9] digit* => {
@@ -450,6 +490,10 @@ main := |*
         Lexer.EmitToken(BackRefTokenType, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
+    };
+
+    '$-' ^name_char => {
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "syntax error, unexpected $undefined");
     };
 
     '$' (c_eof | ws_nl) => {

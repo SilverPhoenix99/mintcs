@@ -183,50 +183,6 @@ name = name_prefix name_char*;
 constant = upper name_char*;
 identifier = name - constant;
 
-reserved =
-      'alias'
-    | 'and'
-    | 'begin'
-    | 'BEGIN'
-    | 'break'
-    | 'case'
-    | 'class'
-    | 'def'
-    | 'defined?'
-    | 'do'
-    | 'else'
-    | 'elsif'
-    | 'end'
-    | 'END'
-    | 'ensure'
-    | 'false'
-    | 'for'
-    | 'if'
-    | 'in'
-    | 'module'
-    | 'next'
-    | 'nil'
-    | 'not'
-    | 'or'
-    | 'redo'
-    | 'rescue'
-    | 'retry'
-    | 'return'
-    | 'self'
-    | 'super'
-    | 'then'
-    | 'true'
-    | 'undef'
-    | 'unless'
-    | 'until'
-    | 'when'
-    | 'while'
-    | 'yield'
-    | '__ENCODING__'
-    | '__FILE__'
-    | '__LINE__'
-;
-
 percent_string_delimiter = ascii - alnum - c_eof;
 
 beg_expressions =

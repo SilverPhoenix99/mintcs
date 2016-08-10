@@ -35,6 +35,8 @@ namespace Mint.Lex
         private Stack<Stack<ISet<string>>> Variables { get; }
         internal bool Retry { get; set; }
 
+        internal int TokenCount => tokens.Count;
+
         internal State CurrentState
         {
             get { return currentState; }
