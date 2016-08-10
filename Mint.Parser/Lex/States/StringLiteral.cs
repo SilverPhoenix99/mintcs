@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Mint.Lex.States.Delimiters;
@@ -6,6 +7,15 @@ using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
 {
+    [Flags]
+    internal enum LiteralFeatures
+    {
+        Label,
+        Interpolation,
+        Words,
+        RegExp
+    }
+
     internal partial class StringLiteral : StateBase
     {
         private static readonly IReadOnlyDictionary<char, char> NESTING_DELIMITERS =
@@ -34,11 +44,16 @@ namespace Mint.Lex.States
             });
 
         private readonly string delimiter;
+        private readonly LiteralFeatures features;
         private int contentStart;
 
         protected override char CurrentChar => Delimiter.CurrentChar;
 
-        protected override bool CanLabel { get; }
+        protected override bool CanLabel => features.HasFlag(LiteralFeatures.Label);
+
+        protected bool HasInterpolation => features.HasFlag(LiteralFeatures.Interpolation);
+
+        protected bool IsWords => features.HasFlag(LiteralFeatures.Words);
 
         private char OpenDelimiter => delimiter[delimiter.Length - 1];
 
@@ -49,11 +64,11 @@ namespace Mint.Lex.States
             get { throw new System.NotImplementedException(nameof(EndState)); }
         }
 
-        public StringLiteral(Lexer lexer, string delimiter, int contentStart, bool canLabel) : base(lexer)
+        public StringLiteral(Lexer lexer, string delimiter, int contentStart, LiteralFeatures features) : base(lexer)
         {
             this.delimiter = delimiter;
             this.contentStart = contentStart;
-            CanLabel = canLabel;
+            this.features = features;
             Delimiter = CreateDelimiter(OpenDelimiter);
         }
 
@@ -71,6 +86,26 @@ namespace Mint.Lex.States
             }
 
             return new SimpleDelimiter(this, openDelimiter);
+        }
+
+        protected void EmitDelimiter()
+        {
+            throw new NotImplementedException(nameof(EmitDelimiter));
+        }
+
+        protected void EmitLabelDelimiter()
+        {
+            throw new NotImplementedException(nameof(EmitLabelDelimiter));
+        }
+
+        protected void EmitDBeg()
+        {
+            throw new NotImplementedException(nameof(EmitDBeg));
+        }
+
+        protected void EmitDVar(TokenType type)
+        {
+            throw new NotImplementedException(nameof(EmitDVar));
         }
     }
 }

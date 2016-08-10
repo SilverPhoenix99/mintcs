@@ -10,7 +10,7 @@ action EofLiteralError
     throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
 }
 
-action IsNested { IsNested }
+action IsNested { Delimiter.IsNested }
 action CanLabel { CanLabel }
 action HasInterpolation { HasInterpolation }
 action IsWords { IsWords }
@@ -90,9 +90,9 @@ main := |*
 
 	string_delimiter when !IsNested => { EmitDelimiter(); fbreak; };
 
-	string_delimiter when IsNested => { DecrementNesting(); };
+	string_delimiter when IsNested => { Delimiter.DecrementNesting(); };
 
-	[\[{(<] => { IncrementNesting(); };
+	[\[{(<] => { Delimiter.IncrementNesting(); };
 
 	word_space when IsWords word_space* => WordSpace;
 
