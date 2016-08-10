@@ -10,10 +10,10 @@ namespace Mint.Lex.States
     [Flags]
     internal enum LiteralFeatures
     {
-        Label,
-        Interpolation,
-        Words,
-        RegExp
+        Label         = 0x1,
+        Interpolation = 0x2,
+        Words         = 0x4,
+        Regexp        = 0x8 | Interpolation
     }
 
     internal partial class StringLiteral : StateBase
@@ -46,6 +46,7 @@ namespace Mint.Lex.States
         private readonly string delimiter;
         private readonly LiteralFeatures features;
         private int contentStart;
+        private RegexpFlags regexpOptions;
 
         protected override char CurrentChar => Delimiter.CurrentChar;
 
@@ -54,6 +55,8 @@ namespace Mint.Lex.States
         protected bool HasInterpolation => features.HasFlag(LiteralFeatures.Interpolation);
 
         protected bool IsWords => features.HasFlag(LiteralFeatures.Words);
+
+        protected bool IsRegexp => features.HasFlag(LiteralFeatures.Regexp);
 
         private char OpenDelimiter => delimiter[delimiter.Length - 1];
 
@@ -86,16 +89,6 @@ namespace Mint.Lex.States
             }
 
             return new SimpleDelimiter(this, openDelimiter);
-        }
-
-        protected void EmitDelimiter()
-        {
-            throw new NotImplementedException(nameof(EmitDelimiter));
-        }
-
-        protected void EmitLabelDelimiter()
-        {
-            throw new NotImplementedException(nameof(EmitLabelDelimiter));
         }
 
         protected void EmitDBeg()

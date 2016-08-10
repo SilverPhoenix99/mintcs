@@ -28,20 +28,22 @@ action LabelDelimiter
 
 action Delimiter
 {
-    Delimiter.DecrementNesting();
+    Lexer.EmitStringContentToken(ts, te - 1);
+    Lexer.EmitStringEndToken(te - 1, te);
+    Lexer.CurrentState = EndState;
 
-    if(!Delimiter.IsNested)
+    if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
     {
-        Lexer.EmitStringContentToken(ts, te - 1);
-        Lexer.EmitStringEndToken(te - 1, te);
-        Lexer.CurrentState = EndState;
+        fexec te = Lexer.LineJump;
+        ts = Lexer.Position;
+    }
 
-        if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
-        {
-            fexec te = Lexer.LineJump;
-            ts = Lexer.Position;
-        }
-
+    if(IsRegexp)
+    {
+        fgoto REGEXP_END;
+    }
+    else
+    {
         fbreak;
     }
 }
@@ -86,9 +88,9 @@ main := |*
 	c_eof => EofLiteralError;
 
     # only ', " and ` can be used for labels
-	string_delimiter when !IsNested ':' when CanLabel ^':' => { EmitLabelDelimiter(); fbreak; };
+	string_delimiter when !IsNested ':' when CanLabel ^':' => LabelDelimiter;
 
-	string_delimiter when !IsNested => { EmitDelimiter(); fbreak; };
+	string_delimiter when !IsNested => Delimiter;
 
 	string_delimiter when IsNested => { Delimiter.DecrementNesting(); };
 
@@ -118,6 +120,35 @@ main := |*
 
 	any;
 
+*|;
+
+REGEXP_END := |*
+    (
+          'm' @ { regexpOptions |= RegexpFlags.Multiline; }
+        | 'i' @ { regexpOptions |= RegexpFlags.IgnoreCase; }
+        | 'x' @ { regexpOptions |= RegexpFlags.Extend; }
+        | 'o' @ { regexpOptions |= RegexpFlags.Once; }
+        # accept the last encoding option
+        | 'n' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.ASCII8; }
+        | 'e' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.EUC_JP; }
+        | 's' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.Windows_31J; }
+        | 'u' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.UTF_8; }
+    )+;
+
+    ( alpha - [eimnosux] )+ => {
+        //var tok = CurrentToken();
+        //var opt = tok.Length == 1 ? "" : "s";
+        //throw new SyntaxError(Filename, Location(p).Item1, $"unknown regexp option{opt} - {tok}");
+        throw new System.NotImplementedException();
+    };
+
+    ^alpha => {
+        //fexec --this.te;
+        //GenStringEndToken(ts: regexp_delim, regexpOptions: regexpOptions);
+        //fnext EXPR_END;
+        //fbreak;
+        throw new System.NotImplementedException();
+    };
 *|;
 
 }%%
