@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,6 +13,11 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -85,18 +90,17 @@
     <Compile Include="Parse\Ast.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
-    <Compile Include="Parse\Heredoc.cs" />
-    <Compile Include="Parse\Literal.cs" />
+    <Compile Include="Lex\Heredoc.cs" />
+    <Compile Include="Lex\Literal.cs" />
     <Compile Include="Parse\Parser.cs" />
-    <Compile Include="Parse\RegexpFlags.cs" />
+    <Compile Include="Lex\RegexpFlags.cs" />
     <Compile Include="Parse\Token.cs" />
-    <Compile Include="Parse\iLiteral.cs" />
+    <Compile Include="Lex\iLiteral.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyntaxError.cs" />
     <Compile Include="vendor\ShiftReduceParserCode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="GenLexer.bat" />
     <None Include="GenParser.bat" />
     <Gppg Include="Parse\Parser.y" />

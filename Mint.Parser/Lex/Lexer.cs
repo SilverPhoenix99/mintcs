@@ -19,7 +19,7 @@ namespace Mint.Lex
         private readonly Queue<Token> tokens;
         internal BitStack Cmdarg;
         internal BitStack Cond;
-        private readonly Stack<iLiteral> literals;
+        private readonly Stack<States.Literal> literals;
 
         public string Filename { get; }
         public int DataLength { get; internal set; }
@@ -30,7 +30,7 @@ namespace Mint.Lex
         private bool Eof => Position >= DataLength;
         public int ParenNest { get; set; }
         public bool CanLabel { get; set; }
-        internal iLiteral CurrentLiteral => literals.Count == 0 ? null : literals.Peek();
+        internal States.Literal CurrentLiteral => literals.Count == 0 ? null : literals.Peek();
         internal int LeftParenCounter;
         private Stack<Stack<ISet<string>>> Variables { get; }
         internal bool Retry { get; set; }
@@ -101,7 +101,7 @@ namespace Mint.Lex
         private Lexer()
         {
             tokens = new Queue<Token>();
-            literals = new Stack<iLiteral>();
+            literals = new Stack<States.Literal>();
             Variables = new Stack<Stack<ISet<string>>>();
             MainState = new Main(this);
             ArgState = new Arg(this);
@@ -199,15 +199,21 @@ namespace Mint.Lex
 
         public Token EmitToken(TokenType type, int ts, int te)
         {
+            var text = TextAt(ts, te);
             var length = te - ts;
-            var text = Data.Substring(ts, length);
             var location = LocationFor(ts, length);
             var token = new Token(type, text, location);
             tokens.Enqueue(token);
             return token;
         }
 
-        internal LexLocation LocationFor(int position, int length)
+        internal string TextAt(int ts, int te)
+        {
+            var length = te - ts;
+            return Data.Substring(ts, length);
+        }
+
+        private LexLocation LocationFor(int position, int length)
         {
             var start = LocationFor(position);
             var end = LocationFor(position + length);
@@ -227,24 +233,22 @@ namespace Mint.Lex
             return line < 0 ? -line : line;
         }
 
-        public void EmitStringBeginToken(int ts, int te, bool canLabel = false, State endState = null)
+        public Token EmitStringBeginToken(int ts, int te, bool canLabel = false, State endState = null)
         {
-            throw new NotImplementedException(nameof(EmitStringBeginToken));
+            var literal = new StringLiteral(this, ts, te, canLabel, endState);
+            literals.Push(literal);
+            CurrentState = literal;
+
+            return literal.BeginToken;
         }
 
-        public void EmitHeredocToken(int ts, int te)
+        public Token EmitStringContentToken(int ts, int te) => EmitToken(tSTRING_CONTENT, ts, te);
+
+        public Token EmitStringEndToken(int ts, int te) => EmitToken(CurrentLiteral.EndTokenType, ts, te);
+
+        public Token EmitHeredocToken(int ts, int te)
         {
             throw new NotImplementedException(nameof(EmitHeredocToken));
-        }
-
-        public void EmitStringContentToken(int ts, int te)
-        {
-            throw new NotImplementedException(nameof(EmitStringContentToken));
-        }
-
-        public void EmitStringEndToken(int ts, int te)
-        {
-            throw new NotImplementedException(nameof(EmitStringEndToken));
         }
 
         public void EmitIntegerToken(int ts, int te, int numBase, bool isRational, bool isImaginary)
@@ -296,6 +300,8 @@ namespace Mint.Lex
         {
             Variables.Peek().Pop();
         }
+
+        internal States.Literal PopLiteral() => literals.Pop();
 
         internal void DefineVariable(Token token)
         {

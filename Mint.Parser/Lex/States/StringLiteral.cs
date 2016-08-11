@@ -18,7 +18,19 @@ namespace Mint.Lex.States
         Regexp        = 0x8 | Interpolation
     }
 
-    internal partial class StringLiteral : StateBase
+    internal abstract class Literal : StateBase
+    {
+        public uint BraceCount { get; set; }
+
+        public abstract Token BeginToken { get; }
+
+        public abstract TokenType EndTokenType { get; }
+
+        public Literal(Lexer lexer) : base(lexer)
+        { }
+    }
+
+    internal partial class StringLiteral : Literal
     {
         private static readonly IReadOnlyDictionary<char, char> NESTING_DELIMITERS =
             new ReadOnlyDictionary<char, char>(new SortedList<char, char>(4)
@@ -44,43 +56,56 @@ namespace Mint.Lex.States
                 { ":'",  tSYMBEG },
                 { ":\"", tSYMBEG },
             });
-
-        private readonly string delimiter;
         private readonly LiteralFeatures features;
         private int contentStart;
-        private RegexpFlags regexpOptions;
-
-        protected override char CurrentChar => Delimiter.CurrentChar;
-
-        protected override bool CanLabel => features.HasFlag(LiteralFeatures.Label);
-
-        protected bool HasInterpolation => features.HasFlag(LiteralFeatures.Interpolation);
-
-        protected bool IsWords => features.HasFlag(LiteralFeatures.Words);
-
-        protected bool IsRegexp => features.HasFlag(LiteralFeatures.Regexp);
-
-        private char OpenDelimiter => delimiter[delimiter.Length - 1];
+        private RegexpFlags regexpOptions = RegexpFlags.None;
 
         protected Delimiter Delimiter { get; }
 
         public State EndState { get; }
 
-        public StringLiteral(
-                Lexer lexer, string delimiter, int contentStart, bool canLabel = false, State endState = null)
-            : base(lexer)
+        protected override char CurrentChar => Delimiter.CurrentChar;
+
+        protected override bool CanLabel => features.HasFlag(Label);
+
+        protected bool HasInterpolation => features.HasFlag(Interpolation);
+
+        protected bool IsWords => features.HasFlag(Words);
+
+        protected bool IsRegexp => features.HasFlag(Regexp);
+
+        private string DelimiterString => BeginToken.Value;
+
+        private char OpenDelimiter => DelimiterString[DelimiterString.Length - 1];
+
+        public override TokenType EndTokenType => IsRegexp ? tREGEXP_END : tSTRING_END;
+
+        public override Token BeginToken { get; }
+
+        public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null) : base(lexer)
         {
-            this.delimiter = delimiter;
-            this.contentStart = contentStart;
+            var text = lexer.TextAt(ts, te);
+            var type = CalculateBeginTokenType(text);
+            BeginToken = lexer.EmitToken(type, ts, te);
+
+            contentStart = te;
             EndState = endState ?? lexer.EndState;
 
-            this.features = CalculateFeatures();
+            features = CalculateFeatures();
             if(canLabel)
             {
-                this.features |= LiteralFeatures.Label;
+                features |= Label;
             }
 
             Delimiter = CreateDelimiter(OpenDelimiter);
+        }
+
+        private static TokenType CalculateBeginTokenType(string delimiter)
+        {
+            var length = Math.Min(delimiter.Length, 2);
+            var key = delimiter.Substring(0, length);
+            TokenType type;
+            return OPEN_DELIMITERS.TryGetValue(key, out type) ? type : tSTRING_BEG;
         }
 
         private Delimiter CreateDelimiter(char openDelimiter)
@@ -91,12 +116,9 @@ namespace Mint.Lex.States
             }
 
             char closeDelimiter;
-            if(NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter))
-            {
-                return new NestingDelimiter(this, openDelimiter, closeDelimiter);
-            }
-
-            return new SimpleDelimiter(this, openDelimiter);
+            return NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter)
+                ? new NestingDelimiter(this, openDelimiter, closeDelimiter)
+                : new SimpleDelimiter(this, openDelimiter);
         }
 
         protected void EmitDBeg()
@@ -111,11 +133,11 @@ namespace Mint.Lex.States
 
         private LiteralFeatures CalculateFeatures()
         {
-            char effectiveDelimiter = delimiter[0];
+            var effectiveDelimiter = DelimiterString[0];
 
             if(effectiveDelimiter == '%')
             {
-                switch(delimiter[1])
+                switch(DelimiterString[1])
                 {
                     case 'q': return None;
                     case 'r': return Regexp;
@@ -129,7 +151,7 @@ namespace Mint.Lex.States
 
             if(effectiveDelimiter == ':')
             {
-                effectiveDelimiter = delimiter[1];
+                effectiveDelimiter = DelimiterString[1];
             }
 
             switch(effectiveDelimiter)

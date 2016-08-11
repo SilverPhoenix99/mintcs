@@ -8,7 +8,7 @@ namespace Mint.Lex.States
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
 
-        private iLiteral currentLiteral;
+        private Literal currentLiteral;
 
         protected virtual TokenType DoubleStarTokenType => kPOW;
         protected virtual TokenType StarTokenType => kMUL;

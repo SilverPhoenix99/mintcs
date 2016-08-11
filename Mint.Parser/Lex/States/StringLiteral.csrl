@@ -19,7 +19,7 @@ action LabelDelimiter
 {
     //# only ', " and ` can be used for labels
 
-    Lexer.EmitStringContentToken(ts, te - 3);
+    Lexer.EmitStringContentToken(contentStart, te - 3);
     Lexer.EmitStringEndToken(te - 3, te - 1);
     Lexer.CurrentState = EndState;
     fhold;
@@ -28,7 +28,7 @@ action LabelDelimiter
 
 action Delimiter
 {
-    Lexer.EmitStringContentToken(ts, te - 1);
+    Lexer.EmitStringContentToken(contentStart, te - 1);
     Lexer.EmitStringEndToken(te - 1, te);
     Lexer.CurrentState = EndState;
 
@@ -44,6 +44,7 @@ action Delimiter
     }
     else
     {
+		Lexer.PopLiteral();
         fbreak;
     }
 }
@@ -124,15 +125,15 @@ main := |*
 
 REGEXP_END := |*
     (
-          'm' @ { regexpOptions |= RegexpFlags.Multiline; }
-        | 'i' @ { regexpOptions |= RegexpFlags.IgnoreCase; }
-        | 'x' @ { regexpOptions |= RegexpFlags.Extend; }
-        | 'o' @ { regexpOptions |= RegexpFlags.Once; }
+          'm' @ { regexpOptions |= Multiline; }
+        | 'i' @ { regexpOptions |= IgnoreCase; }
+        | 'x' @ { regexpOptions |= Extend; }
+        | 'o' @ { regexpOptions |= Once; }
         # accept the last encoding option
-        | 'n' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.ASCII8; }
-        | 'e' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.EUC_JP; }
-        | 's' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.Windows_31J; }
-        | 'u' @ { regexpOptions = (regexpOptions & ~RegexpFlags.EncodingMask) | RegexpFlags.UTF_8; }
+        | 'n' @ { regexpOptions = (regexpOptions & ~EncodingMask) | Ascii8; }
+        | 'e' @ { regexpOptions = (regexpOptions & ~EncodingMask) | EucJp; }
+        | 's' @ { regexpOptions = (regexpOptions & ~EncodingMask) | Windows31J; }
+        | 'u' @ { regexpOptions = (regexpOptions & ~EncodingMask) | Utf8; }
     )+;
 
     ( alpha - [eimnosux] )+ => {
@@ -145,6 +146,7 @@ REGEXP_END := |*
     ^alpha => {
         //fexec --this.te;
         //GenStringEndToken(ts: regexp_delim, regexpOptions: regexpOptions);
+		//Lexer.PopLiteral();
         //fnext EXPR_END;
         //fbreak;
         throw new System.NotImplementedException();
@@ -155,6 +157,7 @@ REGEXP_END := |*
 #pragma warning disable 162
 
 using Mint.Parse;
+using static Mint.Lex.RegexpFlags;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Lex.States
