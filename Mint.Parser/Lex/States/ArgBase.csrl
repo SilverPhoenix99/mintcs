@@ -22,7 +22,7 @@ main := |*
     };
 
     [''""] => {
-        Lexer.EmitLabelableStringBeginToken(ts, te);
+        Lexer.EmitStringBeginToken(ts, te, canLabel: true);
         fbreak;
     };
 

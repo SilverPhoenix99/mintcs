@@ -8,14 +8,8 @@ include "definitions.csrl";
 main := |*
 
     [''""] => {
-        if(Lexer.CommandStart)
-        {
-            Lexer.EmitStringBeginToken(ts, te);
-        }
-        else
-        {
-            Lexer.EmitLabelableStringBeginToken(ts, te);
-        }
+        var canLabel = !Lexer.CommandStart;
+        Lexer.EmitStringBeginToken(ts, te, canLabel);
         fbreak;
     };
 

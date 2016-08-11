@@ -4,12 +4,14 @@ using System.Collections.ObjectModel;
 using Mint.Lex.States.Delimiters;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
+using static Mint.Lex.States.LiteralFeatures;
 
 namespace Mint.Lex.States
 {
     [Flags]
     internal enum LiteralFeatures
     {
+        None          = 0x0,
         Label         = 0x1,
         Interpolation = 0x2,
         Words         = 0x4,
@@ -62,16 +64,22 @@ namespace Mint.Lex.States
 
         protected Delimiter Delimiter { get; }
 
-        protected State EndState
-        {
-            get { throw new System.NotImplementedException(nameof(EndState)); }
-        }
+        public State EndState { get; }
 
-        public StringLiteral(Lexer lexer, string delimiter, int contentStart, LiteralFeatures features) : base(lexer)
+        public StringLiteral(
+                Lexer lexer, string delimiter, int contentStart, bool canLabel = false, State endState = null)
+            : base(lexer)
         {
             this.delimiter = delimiter;
             this.contentStart = contentStart;
-            this.features = features;
+            EndState = endState ?? lexer.EndState;
+
+            this.features = CalculateFeatures();
+            if(canLabel)
+            {
+                this.features |= LiteralFeatures.Label;
+            }
+
             Delimiter = CreateDelimiter(OpenDelimiter);
         }
 
@@ -99,6 +107,38 @@ namespace Mint.Lex.States
         protected void EmitDVar(TokenType type)
         {
             throw new NotImplementedException(nameof(EmitDVar));
+        }
+
+        private LiteralFeatures CalculateFeatures()
+        {
+            char effectiveDelimiter = delimiter[0];
+
+            if(effectiveDelimiter == '%')
+            {
+                switch(delimiter[1])
+                {
+                    case 'q': return None;
+                    case 'r': return Regexp;
+                    case 'w': return Words;
+                    case 'i': return Words;
+                    case 'W': return Words | Interpolation;
+                    case 'I': return Words | Interpolation;
+                    default:  return Interpolation;
+                }
+            }
+
+            if(effectiveDelimiter == ':')
+            {
+                effectiveDelimiter = delimiter[1];
+            }
+
+            switch(effectiveDelimiter)
+            {
+                case '/': return Regexp;
+                case '"': return Interpolation;
+                case '`': return Interpolation;
+                default:  return None;
+            }
         }
     }
 }

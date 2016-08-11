@@ -227,14 +227,9 @@ namespace Mint.Lex
             return line < 0 ? -line : line;
         }
 
-        public void EmitStringBeginToken(int ts, int te)
+        public void EmitStringBeginToken(int ts, int te, bool canLabel = false, State endState = null)
         {
             throw new NotImplementedException(nameof(EmitStringBeginToken));
-        }
-
-        public void EmitLabelableStringBeginToken(int ts, int te)
-        {
-            throw new NotImplementedException(nameof(EmitLabelableStringBeginToken));
         }
 
         public void EmitHeredocToken(int ts, int te)

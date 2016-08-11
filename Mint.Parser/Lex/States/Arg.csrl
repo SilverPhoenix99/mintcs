@@ -29,8 +29,7 @@ main := |*
     };
 
     esc_ws_nl+ '%s' percent_string_delimiter => {
-        Lexer.EmitStringBeginToken(te - 3, te);
-        Lexer.CurrentState = Lexer.FnameFitemState;
+        Lexer.EmitStringBeginToken(te - 3, te, endState: Lexer.FnameFitemState);
         fbreak;
     };
 

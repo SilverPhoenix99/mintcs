@@ -214,15 +214,9 @@ main := |*
         fbreak;
     };
 
-    [''""``] => {
-        if(Lexer.CanLabel && !Lexer.CommandStart)
-        {
-            Lexer.EmitLabelableStringBeginToken(ts, te);
-        }
-        else
-        {
-            Lexer.EmitStringBeginToken(ts, te);
-        }
+    [''""] => {
+        var canLabel = Lexer.CanLabel && !Lexer.CommandStart;
+        Lexer.EmitStringBeginToken(ts, te, canLabel);
         fbreak;
     };
 

@@ -1,6 +1,6 @@
 ﻿namespace Mint.Lex.States
 {
-    internal interface State
+    public interface State
     {
         void Advance();
     }
