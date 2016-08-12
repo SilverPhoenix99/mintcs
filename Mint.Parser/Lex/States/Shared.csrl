@@ -412,10 +412,10 @@ main := |*
     };
 
     '}' => {
-        if(currentLiteral != null && --currentLiteral.BraceCount == 0)
+        if(currentLiteral != null && currentLiteral.BraceCount-- == 0)
         {
             Lexer.EmitToken(tSTRING_DEND, ts, te);
-            Lexer.CurrentState = currentLiteral;
+            currentLiteral.Resume(te);
         }
         else
         {

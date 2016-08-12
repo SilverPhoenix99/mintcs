@@ -44,6 +44,7 @@ namespace Mint.Lex
             {
                 currentState = value;
                 CanLabel = false;
+                CommandStart = false;
             }
         }
 
@@ -186,8 +187,6 @@ namespace Mint.Lex
 
         private void Advance()
         {
-            CommandStart = false;
-
             do
             {
                 Retry = false;
@@ -204,6 +203,7 @@ namespace Mint.Lex
             var location = LocationFor(ts, length);
             var token = new Token(type, text, location);
             tokens.Enqueue(token);
+            Console.WriteLine($"Token {type} '{text}' @ {location.StartColumn}");
             return token;
         }
 
@@ -244,8 +244,6 @@ namespace Mint.Lex
 
         public Token EmitStringContentToken(int ts, int te) => EmitToken(tSTRING_CONTENT, ts, te);
 
-        public Token EmitStringEndToken(int ts, int te) => EmitToken(CurrentLiteral.EndTokenType, ts, te);
-
         public Token EmitHeredocToken(int ts, int te)
         {
             throw new NotImplementedException(nameof(EmitHeredocToken));
@@ -272,12 +270,10 @@ namespace Mint.Lex
 
         internal void IncrementBraceCount()
         {
-            if(literals.Count == 0)
+            if(literals.Count > 0)
             {
-                return;
+                literals.Peek().BraceCount++;
             }
-
-            literals.Peek().BraceCount++;
         }
 
         internal void PushClosedScope()

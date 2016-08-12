@@ -15,7 +15,7 @@ namespace Mint.Lex.States.Delimiters
             }
         }
 
-        protected abstract char CloseDelimiter { get; }
+        public abstract char CloseDelimiter { get; }
 
         public virtual bool IsNested => false;
 

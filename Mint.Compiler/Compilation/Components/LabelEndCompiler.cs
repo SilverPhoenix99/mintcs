@@ -12,9 +12,17 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var right = Pop();
 
-            left = AsConcat(left);
+            left = ConvertToSymbol(left);
+            return CompilerUtils.NewArray(left.Cast<iObject>(), right);
+        }
 
-            return CompilerUtils.NewArray(left, right);
+        private static Expression ConvertToSymbol(Expression expression)
+        {
+            expression = AsConcat(expression);
+            expression = expression.StripConversions();
+            expression = expression.Cast<String>();
+            expression = expression.Cast<string>();
+            return Expression.New(CompilerUtils.SYMBOL_CTOR, expression);
         }
 
         private static Expression AsConcat(Expression expression)

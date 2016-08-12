@@ -24,10 +24,10 @@ namespace Mint.Lex.States
 
         public abstract Token BeginToken { get; }
 
-        public abstract TokenType EndTokenType { get; }
-
         public Literal(Lexer lexer) : base(lexer)
         { }
+
+        public abstract void Resume(int te);
     }
 
     internal partial class StringLiteral : Literal
@@ -78,9 +78,11 @@ namespace Mint.Lex.States
 
         private char OpenDelimiter => DelimiterString[DelimiterString.Length - 1];
 
-        public override TokenType EndTokenType => IsRegexp ? tREGEXP_END : tSTRING_END;
+        private TokenType EndTokenType => IsRegexp ? tREGEXP_END : tSTRING_END;
 
         public override Token BeginToken { get; }
+
+        protected bool IsDelimiter => Lexer.CurrentChar == Delimiter.CloseDelimiter;
 
         public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null) : base(lexer)
         {
@@ -97,6 +99,8 @@ namespace Mint.Lex.States
                 features |= Label;
             }
 
+            BeginToken.Properties["has_interpolation"] = HasInterpolation;
+
             Delimiter = CreateDelimiter(OpenDelimiter);
         }
 
@@ -106,29 +110,6 @@ namespace Mint.Lex.States
             var key = delimiter.Substring(0, length);
             TokenType type;
             return OPEN_DELIMITERS.TryGetValue(key, out type) ? type : tSTRING_BEG;
-        }
-
-        private Delimiter CreateDelimiter(char openDelimiter)
-        {
-            if(openDelimiter == '\n')
-            {
-                return new NewLineDelimiter(this);
-            }
-
-            char closeDelimiter;
-            return NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter)
-                ? new NestingDelimiter(this, openDelimiter, closeDelimiter)
-                : new SimpleDelimiter(this, openDelimiter);
-        }
-
-        protected void EmitDBeg()
-        {
-            throw new NotImplementedException(nameof(EmitDBeg));
-        }
-
-        protected void EmitDVar(TokenType type)
-        {
-            throw new NotImplementedException(nameof(EmitDVar));
         }
 
         private LiteralFeatures CalculateFeatures()
@@ -161,6 +142,55 @@ namespace Mint.Lex.States
                 case '`': return Interpolation;
                 default:  return None;
             }
+        }
+
+        private Delimiter CreateDelimiter(char openDelimiter)
+        {
+            if(openDelimiter == '\n')
+            {
+                return new NewLineDelimiter(this);
+            }
+
+            char closeDelimiter;
+            return NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter)
+                ? new NestingDelimiter(this, openDelimiter, closeDelimiter)
+                : new SimpleDelimiter(this, openDelimiter);
+        }
+
+        public override void Resume(int te)
+        {
+            Lexer.CurrentState = this;
+            contentStart = te;
+        }
+
+        protected void EmitContentToken(int te)
+        {
+            Lexer.EmitStringContentToken(contentStart, te);
+        }
+
+        protected void EmitEndToken(int ts, int te)
+        {
+            var type = Lexer.Data[te - 1] == ':' ? tLABEL_END
+                     : IsRegexp ? tREGEXP_END
+                     : tSTRING_END;
+
+            Lexer.EmitToken(type, ts, te);
+        }
+
+        protected void EmitDBeg()
+        {
+            EmitContentToken(ts);
+            Lexer.EmitToken(tSTRING_DBEG, ts, te);
+            Lexer.CurrentState = Lexer.BegState;
+            Lexer.CommandStart = true;
+        }
+
+        protected void EmitDVar(TokenType type)
+        {
+            EmitContentToken(ts);
+            Lexer.EmitToken(tSTRING_DVAR, ts, ts + 1);
+            Lexer.EmitToken(type, ts + 1, te);
+            contentStart = te;
         }
     }
 }

@@ -1062,8 +1062,7 @@ xstring :
 ;
 
 regexp :
-    tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $3.Append($2.List); }
-        // properties are always at tREGEXP_END if they exist
+    tREGEXP_BEG regexp_contents tREGEXP_END { $$ = $1.Append($2.List); }
 ;
 
 words :

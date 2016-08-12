@@ -10,77 +10,63 @@ action EofLiteralError
     throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
 }
 
+action IsDelimiter { IsDelimiter }
+
 action IsNested { Delimiter.IsNested }
 action CanLabel { CanLabel }
 action HasInterpolation { HasInterpolation }
 action IsWords { IsWords }
 
+
+action NewLine
+{
+    if(Lexer.LineJump > Lexer.Position)
+    {
+        EmitContentToken(te);
+        fexec te = Lexer.LineJump;
+        contentStart = ts = Lexer.Position;
+    }
+}
+
 action LabelDelimiter
 {
     //# only ', " and ` can be used for labels
 
-    Lexer.EmitStringContentToken(contentStart, te - 3);
-    Lexer.EmitStringEndToken(te - 3, te - 1);
-    Lexer.CurrentState = EndState;
+    EmitContentToken(te - 3);
+    EmitEndToken(te - 3, te - 1);
+    Lexer.CurrentState = Lexer.BegState;
+    Lexer.CanLabel = true;
     fhold;
     fbreak;
 }
 
 action Delimiter
 {
-    Lexer.EmitStringContentToken(contentStart, te - 1);
-    Lexer.EmitStringEndToken(te - 1, te);
-    Lexer.CurrentState = EndState;
-
-    if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
-    {
-        fexec te = Lexer.LineJump;
-        ts = Lexer.Position;
-    }
+    EmitContentToken(te - 1);
 
     if(IsRegexp)
     {
+        contentStart = te - 1;
         fgoto REGEXP_END;
     }
-    else
-    {
-		Lexer.PopLiteral();
-        fbreak;
-    }
+
+    EmitEndToken(te - 1, te);
+    Lexer.PopLiteral();
+    Lexer.CurrentState = EndState;
+    fbreak;
+
 }
 
-action DelimiterEscape
+action WordSpace
 {
-    if(Delimiter.CanJump && Lexer.LineJump > Lexer.Position)
-    {
-        Lexer.EmitStringContentToken(ts, te);
-        fexec te = Lexer.LineJump;
-        ts = Lexer.Position;
-    }
+    throw new System.NotImplementedException("action WordSpace");
 }
 
-action NewLine
-{
-    if(Lexer.LineJump > Lexer.Position)
-    {
-        Lexer.EmitStringContentToken(ts, te);
-        fexec te = Lexer.LineJump;
-        ts = Lexer.Position;
-    }
-}
 
-action NewLineEscape { throw new System.NotImplementedException("action NewLineEscape"); }
-
-action WordSpace { throw new System.NotImplementedException("action WordSpace"); }
-
-
-# ^D (0x4) isn't used by the lexer.
-# The real string delimiter is replaced by ^D to generalize string content.
-
-string_delimiter = 0x4;
-
-word_space = space | '\n' @NewLine;
-
+string_nl = '\n' @NewLine;
+string_any = any | string_nl;
+string_delimiter = string_any when IsDelimiter;
+string_space = space | string_nl;
 interpolation_escape = '\\' when HasInterpolation any+;
 
 
@@ -93,33 +79,31 @@ main := |*
 
 	string_delimiter when !IsNested => Delimiter;
 
-	string_delimiter when IsNested => { Delimiter.DecrementNesting(); };
+    string_delimiter when IsNested => { Delimiter.DecrementNesting(); };
 
-	[\[{(<] => { Delimiter.IncrementNesting(); };
+    [\[{(<] => { Delimiter.IncrementNesting(); };
 
-	word_space when IsWords word_space* => WordSpace;
+	string_space when IsWords string_space* => WordSpace;
 
-	'\\' string_delimiter => DelimiterEscape;
-
-	'\\' '\r'? '\n' => NewLineEscape;
-
+    # accepted escapes even without interpolation
+	'\\' string_delimiter;
+	'\\' '\r'? string_nl;
 	'\\\\';
 
-	interpolation_escape & (char_escape - '\\' (string_delimiter | '\n' | '\\'));
-
+	interpolation_escape & (char_escape - '\\\\' - '\\\n');
     interpolation_escape & octal_escape;
     interpolation_escape & hex_escape;
     interpolation_escape & multi_unicode_escape;
     interpolation_escape & control_escape;
 
 	'#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
-	'#' when HasInterpolation '@@' name => { EmitDVar(tCVAR); };
-	'#' when HasInterpolation '@' name => { EmitDVar(tIVAR); };
-	'#' when HasInterpolation '$' ( gvar_char | name | '0' name_char* | '-' name_char ) => { EmitDVar(tGVAR); };
-	'#' when HasInterpolation '$' [1-9] digit* => { EmitDVar(tNTH_REF); };
-	'#' when HasInterpolation '$' back_ref_char => { EmitDVar(tBACK_REF); };
+	'#' when HasInterpolation '@@' name => { EmitDVar(tCVAR); fbreak; };
+	'#' when HasInterpolation '@' name => { EmitDVar(tIVAR); fbreak; };
+	'#' when HasInterpolation '$' ( gvar_char | name | '0' name_char* | '-' name_char ) => { EmitDVar(tGVAR); fbreak; };
+	'#' when HasInterpolation '$' [1-9] digit* => { EmitDVar(tNTH_REF); fbreak; };
+	'#' when HasInterpolation '$' back_ref_char => { EmitDVar(tBACK_REF); fbreak; };
 
-	any;
+	string_any;
 
 *|;
 
@@ -137,19 +121,19 @@ REGEXP_END := |*
     )+;
 
     ( alpha - [eimnosux] )+ => {
-        //var tok = CurrentToken();
-        //var opt = tok.Length == 1 ? "" : "s";
-        //throw new SyntaxError(Filename, Location(p).Item1, $"unknown regexp option{opt} - {tok}");
-        throw new System.NotImplementedException();
+        var line = Lexer.LineAt(ts);
+        var text = Lexer.TextAt(ts, te);
+        var options = text.Length == 1 ? "option" : "options";
+        throw new SyntaxError(Lexer.Filename, line, $"unknown regexp {options} - {text}");
     };
 
     ^alpha => {
-        //fexec --this.te;
-        //GenStringEndToken(ts: regexp_delim, regexpOptions: regexpOptions);
-		//Lexer.PopLiteral();
-        //fnext EXPR_END;
-        //fbreak;
-        throw new System.NotImplementedException();
+        BeginToken.Properties["regexp_options"] = regexpOptions;
+        EmitEndToken(contentStart, te - 1);
+		Lexer.PopLiteral();
+        Lexer.CurrentState = EndState;
+        fhold;
+        fbreak;
     };
 *|;
 

@@ -7,7 +7,7 @@ include "definitions.csrl";
 
 main := |*
 
-    beg_expressions;
+    beg_expressions => { fbreak; };
 
     any => CallBaseState;
 

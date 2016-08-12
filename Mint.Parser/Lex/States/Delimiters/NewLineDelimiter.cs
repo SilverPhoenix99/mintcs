@@ -4,7 +4,7 @@ namespace Mint.Lex.States.Delimiters
     {
         public override bool CanJump => true;
 
-        protected override char CloseDelimiter => '\n';
+        public override char CloseDelimiter => '\n';
 
         public NewLineDelimiter(StringLiteral literal) : base(literal)
         { }

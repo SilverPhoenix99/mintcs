@@ -8,6 +8,8 @@
 
         bool CanJump { get; }
 
+        char CloseDelimiter { get; }
+
         void IncrementNesting();
 
         void DecrementNesting();

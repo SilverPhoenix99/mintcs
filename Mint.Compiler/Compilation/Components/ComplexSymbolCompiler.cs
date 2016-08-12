@@ -8,11 +8,9 @@ namespace Mint.Compilation.Components
 {
     internal class ComplexSymbolCompiler : StringCompiler
     {
-        private static readonly ConstructorInfo SYMBOL_CTOR = Reflector.Ctor<Symbol>(typeof(string));
-
         public ComplexSymbolCompiler(Compiler compiler) : base(compiler)
         { }
-        
+
         public override Expression Reduce()
         {
             var count = Node.List.Count;
@@ -22,7 +20,7 @@ namespace Mint.Compilation.Components
             var body = CompilerUtils.StringConcat(first, contents);
             body = ((UnaryExpression) body).Operand;
             body = body.Cast<string>();
-            var symbol = New(SYMBOL_CTOR, body);
+            var symbol = New(CompilerUtils.SYMBOL_CTOR, body);
             return symbol.Cast<iObject>();
         }
     }
