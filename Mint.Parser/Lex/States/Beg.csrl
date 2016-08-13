@@ -7,7 +7,70 @@ include "definitions.csrl";
 
 main := |*
 
-    beg_expressions => { fbreak; };
+    heredoc_identifier => {
+        Lexer.EmitHeredocToken(ts, Lexer.Position);
+		fbreak;
+    };
+
+    '+' integer_number => {
+        Lexer.EmitIntegerToken(ts, Lexer.Position, numBase, isRational, isImaginary);
+        Lexer.CurrentState = Lexer.BegState;
+		fbreak;
+    };
+
+    '+' float_number => {
+        Lexer.EmitFloatToken(ts, Lexer.Position, isRational, isImaginary);
+        Lexer.CurrentState = Lexer.BegState;
+		fbreak;
+    };
+
+    '-' digit => {
+        Lexer.EmitToken(kUMINUS_NUM, ts, ts + 1);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+		fbreak;
+    };
+
+    '-' ^(ws_nl | digit | [=>]) => {
+        Lexer.EmitToken(kUMINUS, ts, ts + 1);
+        Lexer.CurrentState = Lexer.BegState;
+        fhold;
+		fbreak;
+    };
+
+    '::' => {
+        Lexer.EmitToken(kCOLON3, ts, ts + 2);
+        Lexer.CurrentState = Lexer.BegState;
+		fbreak;
+    };
+
+    '%' [Qqxr] percent_string_delimiter => {
+        Lexer.EmitStringBeginToken(ts, ts + 3);
+		fbreak;
+    };
+
+    '%s' percent_string_delimiter => {
+        Lexer.EmitStringBeginToken(ts, ts + 3, endState: Lexer.FnameFitemState);
+		fbreak;
+    };
+
+    '%' [WwIi] percent_string_delimiter ws_nl* => {
+        Lexer.EmitStringBeginToken(ts, ts + 3);
+		fbreak;
+    };
+
+    '%' percent_string_delimiter => {
+        Lexer.EmitStringBeginToken(ts, ts + 2);
+		fbreak;
+    };
+
+    '%' [QqWwIixrs]? c_eof => {
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated quoted string meets end of file");
+    };
+
+    '%' [QqWwIixrs]? (unicode | alnum) => {
+        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unknown type of %string");
+    };
 
     any => CallBaseState;
 

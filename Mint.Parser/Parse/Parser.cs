@@ -47,12 +47,13 @@ namespace Mint.Parse
 
         public new Ast<Token> Parse()
         {
-            if(!((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
+            if(((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
             {
-                var token = Scanner.yylval.Value;
-                throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
+                return Result;
             }
-            return Result;
+
+            var token = Scanner.yylval.Value;
+            throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
         }
 
         // TODO: Assigns (kASSIGN and tOP_ASGN) will have to know if they are calling into a kASET ('[]=').

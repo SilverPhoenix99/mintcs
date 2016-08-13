@@ -22,9 +22,17 @@ action NewLine
 {
     if(Lexer.LineJump > Lexer.Position)
     {
-        EmitContentToken(te);
+        EmitContent(te);
         fexec te = Lexer.LineJump;
         contentStart = ts = Lexer.Position;
+    }
+}
+
+action WordNewLine
+{
+	if(Lexer.LineJump > Lexer.Position)
+    {
+        fexec te = Lexer.LineJump;
     }
 }
 
@@ -32,8 +40,9 @@ action LabelDelimiter
 {
     //# only ', " and ` can be used for labels
 
-    EmitContentToken(te - 3);
+    EmitContent(te - 3);
     EmitEndToken(te - 3, te - 1);
+	Lexer.PopLiteral();
     Lexer.CurrentState = Lexer.BegState;
     Lexer.CanLabel = true;
     fhold;
@@ -42,7 +51,7 @@ action LabelDelimiter
 
 action Delimiter
 {
-    EmitContentToken(te - 1);
+    EmitContent(te - 1);
 
     if(IsRegexp)
     {
@@ -57,16 +66,12 @@ action Delimiter
 
 }
 
-action WordSpace
-{
-    throw new System.NotImplementedException("action WordSpace");
-}
-
-
 string_nl = '\n' @NewLine;
 string_any = any | string_nl;
 string_delimiter = string_any when IsDelimiter;
 string_space = space | string_nl;
+word_nl = '\n' @WordNewLine;
+word_space = space | word_nl;
 interpolation_escape = '\\' when HasInterpolation any+;
 
 
@@ -83,7 +88,11 @@ main := |*
 
     [\[{(<] => { Delimiter.IncrementNesting(); };
 
-	string_space when IsWords string_space* => WordSpace;
+	word_space when IsWords word_space* => {
+		EmitContent(ts);
+		EmitSpace();
+		fbreak;
+	};
 
     # accepted escapes even without interpolation
 	'\\' string_delimiter;
@@ -140,7 +149,6 @@ REGEXP_END := |*
 }%%
 #pragma warning disable 162
 
-using Mint.Parse;
 using static Mint.Lex.RegexpFlags;
 using static Mint.Parse.TokenType;
 

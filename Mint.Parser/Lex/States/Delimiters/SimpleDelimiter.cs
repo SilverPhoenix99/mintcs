@@ -1,12 +1,23 @@
 namespace Mint.Lex.States.Delimiters
 {
-    internal class SimpleDelimiter : DelimiterBase
+    internal class SimpleDelimiter : Delimiter
     {
-        public override char CloseDelimiter { get; }
+        public char CloseDelimiter { get; }
 
-        public SimpleDelimiter(StringLiteral literal, char closeDelimiter) : base(literal)
+        public virtual bool IsNested => false;
+
+        protected StringLiteral Literal { get; }
+
+        public SimpleDelimiter(StringLiteral literal, char closeDelimiter)
         {
+            Literal = literal;
             CloseDelimiter = closeDelimiter;
         }
+
+        public virtual void IncrementNesting()
+        { }
+
+        public virtual void DecrementNesting()
+        { }
     }
 }

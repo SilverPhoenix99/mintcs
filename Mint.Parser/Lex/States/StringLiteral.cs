@@ -22,9 +22,7 @@ namespace Mint.Lex.States
     {
         public uint BraceCount { get; set; }
 
-        public abstract Token BeginToken { get; }
-
-        public Literal(Lexer lexer) : base(lexer)
+        protected Literal(Lexer lexer) : base(lexer)
         { }
 
         public abstract void Resume(int te);
@@ -59,30 +57,30 @@ namespace Mint.Lex.States
         private readonly LiteralFeatures features;
         private int contentStart;
         private RegexpFlags regexpOptions = RegexpFlags.None;
+        private bool emittedSpace;
 
-        protected Delimiter Delimiter { get; }
+        private Delimiter Delimiter { get; }
 
-        public State EndState { get; }
+        private State EndState { get; }
 
-        protected override char CurrentChar => Delimiter.CurrentChar;
+        //protected override char CurrentChar => Delimiter.CurrentChar;
+        protected override char CurrentChar => Lexer.CurrentChar;
 
         protected override bool CanLabel => features.HasFlag(Label);
 
-        protected bool HasInterpolation => features.HasFlag(Interpolation);
+        private bool HasInterpolation => features.HasFlag(Interpolation);
 
-        protected bool IsWords => features.HasFlag(Words);
+        private bool IsWords => features.HasFlag(Words);
 
-        protected bool IsRegexp => features.HasFlag(Regexp);
+        private bool IsRegexp => features.HasFlag(Regexp);
 
         private string DelimiterString => BeginToken.Value;
 
         private char OpenDelimiter => DelimiterString[DelimiterString.Length - 1];
+        
+        public Token BeginToken { get; }
 
-        private TokenType EndTokenType => IsRegexp ? tREGEXP_END : tSTRING_END;
-
-        public override Token BeginToken { get; }
-
-        protected bool IsDelimiter => Lexer.CurrentChar == Delimiter.CloseDelimiter;
+        private bool IsDelimiter => Lexer.CurrentChar == Delimiter.CloseDelimiter;
 
         public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null) : base(lexer)
         {
@@ -90,7 +88,7 @@ namespace Mint.Lex.States
             var type = CalculateBeginTokenType(text);
             BeginToken = lexer.EmitToken(type, ts, te);
 
-            contentStart = te;
+            contentStart = lexer.Position + 1;
             EndState = endState ?? lexer.EndState;
 
             features = CalculateFeatures();
@@ -146,11 +144,6 @@ namespace Mint.Lex.States
 
         private Delimiter CreateDelimiter(char openDelimiter)
         {
-            if(openDelimiter == '\n')
-            {
-                return new NewLineDelimiter(this);
-            }
-
             char closeDelimiter;
             return NESTING_DELIMITERS.TryGetValue(openDelimiter, out closeDelimiter)
                 ? new NestingDelimiter(this, openDelimiter, closeDelimiter)
@@ -163,13 +156,19 @@ namespace Mint.Lex.States
             contentStart = te;
         }
 
-        protected void EmitContentToken(int te)
+        private void EmitContent(int te)
         {
+            emittedSpace = false;
             Lexer.EmitStringContentToken(contentStart, te);
         }
 
-        protected void EmitEndToken(int ts, int te)
+        private void EmitEndToken(int ts, int te)
         {
+            if(!emittedSpace)
+            {
+                EmitSpace();
+            }
+
             var type = Lexer.Data[te - 1] == ':' ? tLABEL_END
                      : IsRegexp ? tREGEXP_END
                      : tSTRING_END;
@@ -177,19 +176,31 @@ namespace Mint.Lex.States
             Lexer.EmitToken(type, ts, te);
         }
 
-        protected void EmitDBeg()
+        private void EmitDBeg()
         {
-            EmitContentToken(ts);
+            EmitContent(ts);
             Lexer.EmitToken(tSTRING_DBEG, ts, te);
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
         }
 
-        protected void EmitDVar(TokenType type)
+        private void EmitDVar(TokenType type)
         {
-            EmitContentToken(ts);
+            EmitContent(ts);
             Lexer.EmitToken(tSTRING_DVAR, ts, ts + 1);
             Lexer.EmitToken(type, ts + 1, te);
+            contentStart = te;
+        }
+
+        private void EmitSpace()
+        {
+            if(emittedSpace)
+            {
+                return;
+            }
+
+            emittedSpace = true;
+            Lexer.EmitToken(tSPACE, ts, ts + 1);
             contentStart = te;
         }
     }

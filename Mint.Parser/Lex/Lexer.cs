@@ -297,9 +297,9 @@ namespace Mint.Lex
             Variables.Peek().Pop();
         }
 
-        internal States.Literal PopLiteral() => literals.Pop();
+        internal void PopLiteral() => literals.Pop();
 
-        internal void DefineVariable(Token token)
+        private void DefineVariable(Token token)
         {
             var name = token.Value;
             if(token.Type == tLABEL)
@@ -332,7 +332,7 @@ namespace Mint.Lex
             Variables.Peek().Peek().Add(name);
         }
 
-        internal bool IsVariableName(string name) => "$@ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) < 0;
+        private static bool IsVariableName(string name) => "$@ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) < 0;
 
         internal bool IsVariableDefined(string name) => Variables.Peek().Any(_ => _.Contains(name));
 
@@ -350,7 +350,7 @@ namespace Mint.Lex
             }
         }
 
-        internal void DefineArgument(Token token)
+        private void DefineArgument(Token token)
         {
             var isDefined = Variables.Peek().Peek().Contains(token.Value);
 
