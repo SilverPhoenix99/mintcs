@@ -1,0 +1,82 @@
+%%{
+
+machine Lexer;
+
+include "definitions.csrl";
+
+action IsDelimiter { IsEndDelimiter() }
+action HasInterpolation { delimiter.HasInterpolation }
+
+action EofLiteralError
+{
+    var message = $"can't find string {delimiter.Identifier} anywhere before EOF";
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), message);
+}
+
+action NewLine
+{
+    if(Lexer.LineJump > Lexer.Position)
+    {
+        EmitContent(te);
+        fexec te = Lexer.LineJump;
+        contentStart = ts = Lexer.Position;
+    }
+}
+
+action Delimiter
+{
+    throw new System.NotImplementedException("action Delimiter");
+}
+
+string_nl = '\n' @NewLine;
+string_any = any | string_nl;
+string_delimiter = '\r'? string_nl when IsDelimiter;
+interpolation_escape = '\\' when HasInterpolation any+;
+
+
+main := |*
+
+    c_eof => EofLiteralError;
+
+    string_delimiter => Delimiter;
+
+    # accepted escapes even without interpolation
+    '\\' '\r'? string_nl;
+	'\\\\';
+
+	interpolation_escape & (char_escape - '\\\n' - '\\\\');
+    interpolation_escape & octal_escape;
+    interpolation_escape & hex_escape;
+    interpolation_escape & multi_unicode_escape;
+    interpolation_escape & control_escape;
+
+    '#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
+	'#' when HasInterpolation class_variable => { EmitDVar(tCVAR); fbreak; };
+	'#' when HasInterpolation instance_variable => { EmitDVar(tIVAR); fbreak; };
+	'#' when HasInterpolation global_variable => { EmitDVar(tGVAR); fbreak; };
+	'#' when HasInterpolation nth_ref_variable => { EmitDVar(tNTH_REF); fbreak; };
+	'#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
+
+    string_any;
+
+*|;
+
+}%%
+#pragma warning disable 162
+
+using static Mint.Parse.TokenType;
+
+namespace Mint.Lex.States
+{
+    internal partial class Heredoc
+    {
+        public override void Advance()
+        {
+            Reset(%%{ write start; }%%);
+
+            %% write exec noend;
+        }
+
+        %% write data nofinal noerror;
+    }
+}

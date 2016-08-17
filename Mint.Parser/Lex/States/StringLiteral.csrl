@@ -1,14 +1,8 @@
 %%{
-# String literals with no interpolation.
 
 machine Lexer;
 
 include "definitions.csrl";
-
-action EofLiteralError
-{
-    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
-}
 
 action IsDelimiter { IsDelimiter }
 
@@ -17,6 +11,10 @@ action CanLabel { CanLabel }
 action HasInterpolation { HasInterpolation }
 action IsWords { IsWords }
 
+action EofLiteralError
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated string meets end of file");
+}
 
 action NewLine
 {
@@ -63,13 +61,11 @@ action Delimiter
     Lexer.PopLiteral();
     Lexer.CurrentState = EndState;
     fbreak;
-
 }
 
 string_nl = '\n' @NewLine;
 string_any = any | string_nl;
 string_delimiter = string_any when IsDelimiter;
-string_space = space | string_nl;
 word_nl = '\n' @WordNewLine;
 word_space = space | word_nl;
 interpolation_escape = '\\' when HasInterpolation any+;
@@ -99,18 +95,18 @@ main := |*
 	'\\' '\r'? string_nl;
 	'\\\\';
 
-	interpolation_escape & (char_escape - '\\\\' - '\\\n');
+	interpolation_escape & (char_escape - '\\\n' - '\\\\');
     interpolation_escape & octal_escape;
     interpolation_escape & hex_escape;
     interpolation_escape & multi_unicode_escape;
     interpolation_escape & control_escape;
 
 	'#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
-	'#' when HasInterpolation '@@' name => { EmitDVar(tCVAR); fbreak; };
-	'#' when HasInterpolation '@' name => { EmitDVar(tIVAR); fbreak; };
-	'#' when HasInterpolation '$' ( gvar_char | name | '0' name_char* | '-' name_char ) => { EmitDVar(tGVAR); fbreak; };
-	'#' when HasInterpolation '$' [1-9] digit* => { EmitDVar(tNTH_REF); fbreak; };
-	'#' when HasInterpolation '$' back_ref_char => { EmitDVar(tBACK_REF); fbreak; };
+	'#' when HasInterpolation class_variable => { EmitDVar(tCVAR); fbreak; };
+	'#' when HasInterpolation instance_variable => { EmitDVar(tIVAR); fbreak; };
+	'#' when HasInterpolation global_variable => { EmitDVar(tGVAR); fbreak; };
+	'#' when HasInterpolation nth_ref_variable => { EmitDVar(tNTH_REF); fbreak; };
+	'#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
 
 	string_any;
 

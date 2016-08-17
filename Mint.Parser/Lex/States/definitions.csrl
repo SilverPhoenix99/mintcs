@@ -33,6 +33,7 @@ action CallBaseState
 }
 
 c_eof = 0;
+unicode = ^ascii;
 nl = '\n' @LineJump;
 nl_eof = nl | c_eof;
 
@@ -41,11 +42,11 @@ ws_nl = ws | nl;
 esc_ws = ws | '\\' nl;
 esc_ws_nl = esc_ws | nl;
 
-unicode = ^ascii;
 name_prefix = alpha | '_' | unicode;
 name_char = name_prefix | digit;
 back_ref_char = [&`''+];
 gvar_char = [~*$?!@/\\;,.=:<>""];
+
 comment = '#' ^nl_eof*;
 
 
@@ -187,6 +188,12 @@ control_escape = control_prefix (
 name = name_prefix name_char*;
 constant = upper name_char*;
 identifier = name - constant;
+
+class_variable    = '@@' name;
+instance_variable = '@' name;
+global_variable   = '$' ( gvar_char | name | '0' name_char* | '-' name_char );
+nth_ref_variable  = '$' [1-9] digit*;
+back_ref_variable = '$' back_ref_char;
 
 percent_string_delimiter = ascii - alnum - c_eof;
 

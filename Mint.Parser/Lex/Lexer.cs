@@ -198,14 +198,21 @@ namespace Mint.Lex
 
         public Token EmitToken(TokenType type, int ts, int te)
         {
+            var token = GenerateToken(type, ts, te);
+            EmitToken(token);
+            Console.WriteLine($"Token {token.Type} '{token.Value}' @ {token.Location.StartColumn}");
+            return token;
+        }
+
+        public Token GenerateToken(TokenType type, int ts, int te)
+        {
             var text = TextAt(ts, te);
             var length = te - ts;
             var location = LocationFor(ts, length);
-            var token = new Token(type, text, location);
-            tokens.Enqueue(token);
-            Console.WriteLine($"Token {type} '{text}' @ {location.StartColumn}");
-            return token;
+            return new Token(type, text, location);
         }
+
+        public void EmitToken(Token token) => tokens.Enqueue(token);
 
         internal string TextAt(int ts, int te)
         {
@@ -236,17 +243,25 @@ namespace Mint.Lex
         public Token EmitStringBeginToken(int ts, int te, bool canLabel = false, State endState = null)
         {
             var literal = new StringLiteral(this, ts, te, canLabel, endState);
-            literals.Push(literal);
-            CurrentState = literal;
-
-            return literal.BeginToken;
+            return EmitLiteralBeginToken(literal);
         }
 
         public Token EmitStringContentToken(int ts, int te) => EmitToken(tSTRING_CONTENT, ts, te);
 
         public Token EmitHeredocToken(int ts, int te)
         {
-            throw new NotImplementedException(nameof(EmitHeredocToken));
+            var literal = new Heredoc(this, ts, te);
+            Position = NextLinePosition();
+            return EmitLiteralBeginToken(literal);
+        }
+
+        private Token EmitLiteralBeginToken(Literal literal)
+        {
+            literals.Push(literal);
+            CurrentState = literal;
+
+            EmitToken(literal.BeginToken);
+            return literal.BeginToken;
         }
 
         public void EmitIntegerToken(int ts, int te, int numBase, bool isRational, bool isImaginary)
@@ -266,6 +281,23 @@ namespace Mint.Lex
                      : tFLOAT;
 
             EmitToken(type, ts, te);
+        }
+
+        public int NextLinePosition()
+        {
+            if(LineJump > Position)
+            {
+                return LineJump;
+            }
+
+            int line = Array.BinarySearch(lines, Position);
+
+            if(line < 0)
+            {
+                line = ~line;
+            }
+
+            return line < lines.Length ? lines[line] : DataLength;
         }
 
         internal void IncrementBraceCount()

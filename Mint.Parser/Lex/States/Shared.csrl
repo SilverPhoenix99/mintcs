@@ -427,7 +427,7 @@ main := |*
         fbreak;
     };
 
-    '@@' name => {
+    class_variable => {
         Lexer.EmitToken(tCVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
@@ -445,7 +445,7 @@ main := |*
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@@{c}' is not allowed as a class variable name");
     };
 
-    '@' name => {
+    instance_variable => {
         Lexer.EmitToken(tIVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
@@ -463,24 +463,19 @@ main := |*
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@{c}' is not allowed as an instance variable name");
     };
 
-    '$' (
-          gvar_char
-        | name
-        | '0' name_char*
-        | '-' name_char
-    ) => {
+    global_variable => {
         Lexer.EmitToken(tGVAR, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
 
-    '$' [1-9] digit* => {
+    nth_ref_variable => {
         Lexer.EmitToken(NthRefTokenType, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;
     };
 
-    '$' back_ref_char => {
+    back_ref_variable => {
         Lexer.EmitToken(BackRefTokenType, ts, te);
         Lexer.CurrentState = Lexer.EndState;
         fbreak;

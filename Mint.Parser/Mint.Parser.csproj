@@ -60,12 +60,14 @@
     <Compile Include="gen\Lex\States\Endfn.cs" />
     <Compile Include="gen\Lex\States\Fname.cs" />
     <Compile Include="gen\Lex\States\FnameFitem.cs" />
+    <Compile Include="gen\Lex\States\Heredoc.cs" />
     <Compile Include="gen\Lex\States\Main.cs" />
     <Compile Include="gen\Lex\States\Mid.cs" />
     <Compile Include="gen\Lex\States\Shared.cs" />
     <Compile Include="gen\Lex\States\StringLiteral.cs" />
     <Compile Include="gen\Parse\Parser.cs" />
     <Compile Include="Lex\Lexer.cs" />
+    <Compile Include="Lex\RegexpFlags.cs" />
     <Compile Include="Lex\States\Arg.cs" />
     <Compile Include="Lex\States\ArgBase.cs" />
     <Compile Include="Lex\States\ArgLabeled.cs" />
@@ -80,6 +82,9 @@
     <Compile Include="Lex\States\Endarg.cs" />
     <Compile Include="Lex\States\Endfn.cs" />
     <Compile Include="Lex\States\Fname.cs" />
+    <Compile Include="Lex\States\Heredoc.cs" />
+    <Compile Include="Lex\States\Literal.cs" />
+    <Compile Include="Lex\States\LiteralFeatures.cs" />
     <Compile Include="Lex\States\Mid.cs" />
     <Compile Include="Lex\States\Shared.cs" />
     <Compile Include="Lex\States\State.cs" />
@@ -88,12 +93,8 @@
     <Compile Include="Parse\Ast.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
-    <Compile Include="Lex\Heredoc.cs" />
-    <Compile Include="Lex\Literal.cs" />
     <Compile Include="Parse\Parser.cs" />
-    <Compile Include="Lex\RegexpFlags.cs" />
     <Compile Include="Parse\Token.cs" />
-    <Compile Include="Lex\iLiteral.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyntaxError.cs" />
     <Compile Include="vendor\ShiftReduceParserCode.cs" />
@@ -111,6 +112,7 @@
     <Ragel Include="Lex\States\Endfn.csrl" />
     <Ragel Include="Lex\States\Fname.csrl" />
     <Ragel Include="Lex\States\FnameFitem.csrl" />
+    <Ragel Include="Lex\States\Heredoc.csrl" />
     <Ragel Include="Lex\States\Mid.csrl" />
     <Ragel Include="Lex\States\Beg.csrl" />
     <Ragel Include="Lex\States\Main.csrl" />

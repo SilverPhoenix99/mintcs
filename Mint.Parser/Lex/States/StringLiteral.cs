@@ -8,26 +8,6 @@ using static Mint.Lex.States.LiteralFeatures;
 
 namespace Mint.Lex.States
 {
-    [Flags]
-    internal enum LiteralFeatures
-    {
-        None          = 0x0,
-        Label         = 0x1,
-        Interpolation = 0x2,
-        Words         = 0x4,
-        Regexp        = 0x8 | Interpolation
-    }
-
-    internal abstract class Literal : StateBase
-    {
-        public uint BraceCount { get; set; }
-
-        protected Literal(Lexer lexer) : base(lexer)
-        { }
-
-        public abstract void Resume(int te);
-    }
-
     internal partial class StringLiteral : Literal
     {
         private static readonly IReadOnlyDictionary<char, char> NESTING_DELIMITERS =
@@ -54,8 +34,8 @@ namespace Mint.Lex.States
                 { ":'",  tSYMBEG },
                 { ":\"", tSYMBEG },
             });
+
         private readonly LiteralFeatures features;
-        private int contentStart;
         private RegexpFlags regexpOptions = RegexpFlags.None;
         private bool emittedSpace;
 
@@ -63,7 +43,6 @@ namespace Mint.Lex.States
 
         private State EndState { get; }
 
-        //protected override char CurrentChar => Delimiter.CurrentChar;
         protected override char CurrentChar => Lexer.CurrentChar;
 
         protected override bool CanLabel => features.HasFlag(Label);
@@ -77,18 +56,16 @@ namespace Mint.Lex.States
         private string DelimiterString => BeginToken.Value;
 
         private char OpenDelimiter => DelimiterString[DelimiterString.Length - 1];
-        
-        public Token BeginToken { get; }
 
         private bool IsDelimiter => Lexer.CurrentChar == Delimiter.CloseDelimiter;
 
-        public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null) : base(lexer)
+        public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null)
+            : base(lexer, lexer.Position + 1)
         {
             var text = lexer.TextAt(ts, te);
             var type = CalculateBeginTokenType(text);
-            BeginToken = lexer.EmitToken(type, ts, te);
+            BeginToken = lexer.GenerateToken(type, ts, te);
 
-            contentStart = lexer.Position + 1;
             EndState = endState ?? lexer.EndState;
 
             features = CalculateFeatures();
@@ -150,16 +127,10 @@ namespace Mint.Lex.States
                 : new SimpleDelimiter(this, openDelimiter);
         }
 
-        public override void Resume(int te)
-        {
-            Lexer.CurrentState = this;
-            contentStart = te;
-        }
-
-        private void EmitContent(int te)
+        protected override void EmitContent(int te)
         {
             emittedSpace = false;
-            Lexer.EmitStringContentToken(contentStart, te);
+            base.EmitContent(te);
         }
 
         private void EmitEndToken(int ts, int te)
@@ -174,22 +145,6 @@ namespace Mint.Lex.States
                      : tSTRING_END;
 
             Lexer.EmitToken(type, ts, te);
-        }
-
-        private void EmitDBeg()
-        {
-            EmitContent(ts);
-            Lexer.EmitToken(tSTRING_DBEG, ts, te);
-            Lexer.CurrentState = Lexer.BegState;
-            Lexer.CommandStart = true;
-        }
-
-        private void EmitDVar(TokenType type)
-        {
-            EmitContent(ts);
-            Lexer.EmitToken(tSTRING_DVAR, ts, ts + 1);
-            Lexer.EmitToken(type, ts + 1, te);
-            contentStart = te;
         }
 
         private void EmitSpace()
