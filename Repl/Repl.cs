@@ -53,7 +53,7 @@ namespace Mint
             return Console.ReadLine();
         }
 
-        private static void DumpAst(Ast<Token> ast)
+        internal static void DumpAst(Ast<Token> ast)
         {
             var doc = AstXmlSerializer.ToXml(ast);
             Console.WriteLine(doc.ToString());

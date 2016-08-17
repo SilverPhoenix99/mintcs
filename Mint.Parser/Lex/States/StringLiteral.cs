@@ -160,6 +160,8 @@ namespace Mint.Lex.States
                      : tSTRING_END;
 
             Lexer.EmitToken(type, ts, te);
+            Lexer.PopLiteral();
+            Lexer.CurrentState = EndState;
         }
 
         private void EmitSpace(int ts, int te)

@@ -8,18 +8,18 @@ include "definitions.csrl";
 main := |*
 
     heredoc_identifier => {
-        Lexer.EmitHeredocToken(ts, Lexer.Position);
+        Lexer.EmitHeredocToken(ts, te);
 		fbreak;
     };
 
     '+' integer_number => {
-        Lexer.EmitIntegerToken(ts, Lexer.Position, numBase, isRational, isImaginary);
+        Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
 		fbreak;
     };
 
     '+' float_number => {
-        Lexer.EmitFloatToken(ts, Lexer.Position, isRational, isImaginary);
+        Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
 		fbreak;
     };

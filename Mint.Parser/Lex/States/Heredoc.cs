@@ -79,6 +79,14 @@ namespace Mint.Lex.States
             BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;
         }
 
-        protected bool IsEndDelimiter() => delimiter.EndMatcher.IsMatch(Lexer.Data, Lexer.Position);
+        protected bool IsEndDelimiter() => delimiter.EndMatcher.IsMatch(Lexer.Data, Lexer.Position + 1);
+
+        private void EmitEndToken()
+        {
+            Lexer.EmitToken(tSTRING_END, te, te + delimiter.Identifier.Length);
+            Lexer.CurrentState = Lexer.EndState;
+            Lexer.Position = te + delimiter.Identifier.Length;
+            Lexer.LineJump = Lexer.NextLinePosition();
+        }
     }
 }

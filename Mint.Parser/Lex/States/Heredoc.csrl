@@ -25,7 +25,10 @@ action NewLine
 
 action Delimiter
 {
-    throw new System.NotImplementedException("action Delimiter");
+    EmitContent(ts);
+    EmitEndToken();
+    fexec restorePosition;
+    fbreak;
 }
 
 string_nl = '\n' @NewLine;

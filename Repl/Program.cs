@@ -18,6 +18,11 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum))     <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
 
+            //const string name = "(DedentedHeredocTests)";
+            //var fragment = $"<<~eos\nxyz\neos\n";
+            //var ast = Mint.Parse.Parser.Parse(name, fragment);
+            //Repl.DumpAst(ast);
+
             Repl.Run();
         }
 

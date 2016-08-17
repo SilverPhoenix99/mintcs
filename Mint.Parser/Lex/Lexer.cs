@@ -200,7 +200,7 @@ namespace Mint.Lex
         {
             var token = GenerateToken(type, ts, te);
             EmitToken(token);
-            Console.WriteLine($"Token {token.Type} '{token.Value}' @ {token.Location.StartColumn}");
+            //Console.WriteLine($"Token {token.Type} '{token.Value}' @ {token.Location.StartColumn}");
             return token;
         }
 

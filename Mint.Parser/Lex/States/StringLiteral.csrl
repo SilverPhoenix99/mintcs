@@ -40,8 +40,6 @@ action LabelDelimiter
 
     EmitContent(te - 3);
     EmitEndToken(te - 3, te - 1);
-	Lexer.PopLiteral();
-    Lexer.CurrentState = Lexer.BegState;
     Lexer.CanLabel = true;
     fhold;
     fbreak;
@@ -58,8 +56,6 @@ action Delimiter
     }
 
     EmitEndToken(te - 1, te);
-    Lexer.PopLiteral();
-    Lexer.CurrentState = EndState;
     fbreak;
 }
 
@@ -135,8 +131,6 @@ REGEXP_END := |*
     ^alpha => {
         BeginToken.Properties["regexp_options"] = regexpOptions;
         EmitEndToken(contentStart, te - 1);
-		Lexer.PopLiteral();
-        Lexer.CurrentState = EndState;
         fhold;
         fbreak;
     };
