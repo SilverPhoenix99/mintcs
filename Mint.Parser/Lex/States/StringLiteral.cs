@@ -149,7 +149,7 @@ namespace Mint.Lex.States
 
         private void EmitSpace()
         {
-            if(emittedSpace)
+            if(!IsWords || emittedSpace)
             {
                 return;
             }
