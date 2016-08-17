@@ -32,7 +32,7 @@ namespace Mint.Lex.States
             Lexer.EmitStringContentToken(contentStart, te);
         }
 
-        protected void EmitDBeg()
+        protected virtual void EmitDBeg()
         {
             EmitContent(ts);
             Lexer.EmitToken(tSTRING_DBEG, ts, te);
@@ -40,7 +40,7 @@ namespace Mint.Lex.States
             Lexer.CommandStart = true;
         }
 
-        protected void EmitDVar(TokenType type)
+        protected virtual void EmitDVar(TokenType type)
         {
             EmitContent(ts);
             Lexer.EmitToken(tSTRING_DVAR, ts, ts + 1);

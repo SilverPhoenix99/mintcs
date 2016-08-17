@@ -129,16 +129,31 @@ namespace Mint.Lex.States
 
         protected override void EmitContent(int te)
         {
-            emittedSpace = false;
+
+            if(contentStart == te)
+            {
+                return;
+            }
+
             base.EmitContent(te);
+            emittedSpace = false;
+        }
+
+        protected override void EmitDBeg()
+        {
+            base.EmitDBeg();
+            emittedSpace = false;
+        }
+
+        protected override void EmitDVar(TokenType type)
+        {
+            base.EmitDVar(type);
+            emittedSpace = false;
         }
 
         private void EmitEndToken(int ts, int te)
         {
-            if(!emittedSpace)
-            {
-                EmitSpace();
-            }
+            EmitSpace(ts, ts);
 
             var type = Lexer.Data[te - 1] == ':' ? tLABEL_END
                      : IsRegexp ? tREGEXP_END
@@ -147,16 +162,16 @@ namespace Mint.Lex.States
             Lexer.EmitToken(type, ts, te);
         }
 
-        private void EmitSpace()
+        private void EmitSpace(int ts, int te)
         {
             if(!IsWords || emittedSpace)
             {
                 return;
             }
 
+            Lexer.EmitToken(tSPACE, ts, te);
             emittedSpace = true;
-            Lexer.EmitToken(tSPACE, ts, ts + 1);
-            contentStart = te;
+            contentStart = this.te;
         }
     }
 }

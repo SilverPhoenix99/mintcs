@@ -86,7 +86,7 @@ main := |*
 
 	word_space when IsWords word_space* => {
 		EmitContent(ts);
-		EmitSpace();
+		EmitSpace(ts, ts + 1);
 		fbreak;
 	};
 
