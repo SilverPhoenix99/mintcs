@@ -17,9 +17,13 @@ namespace Mint.Parse
         private readonly Stack<int> leftParenCounterStack = new Stack<int>();
         private BitStack inKwargStack = new BitStack();
 
-        public Parser(Lexer lexer) : base(new LexerAdapter(lexer)) { }
+        public Parser(Lexer lexer)
+            : base(new LexerAdapter(lexer))
+        { }
 
-        public Parser(string filename, string data) : this(new Lexer(filename, data)) { }
+        public Parser(string filename, string data, bool isFile = false)
+            : this(new Lexer(filename, data, isFile))
+        { }
 
         public Lexer Lexer => ((LexerAdapter) Scanner).Lexer;
 
@@ -69,9 +73,14 @@ namespace Mint.Parse
 
         private static Ast<Token> sexp(params Ast<Token>[] nodes) => new Ast<Token>(null, nodes);
 
-        public static Ast<Token> Parse(string filename, string data)
+        public static Ast<Token> ParseFile(string filename, string data)
         {
-            return new Parser(filename, data).Parse();
+            return new Parser(filename, data, isFile: true).Parse();
+        }
+
+        public static Ast<Token> ParseString(string filename, string data)
+        {
+            return new Parser(filename, data, isFile: false).Parse();
         }
 
         private void VerifyFormalArgument(Token token)

@@ -13,6 +13,7 @@ namespace Mint.Lex
     {
         private static readonly char[] EOF_CHARS = { '\0', '\x4', '\x1a' };
 
+        private readonly State initialState;
         private State currentState;
         private string data;
         private int[] lines;
@@ -93,9 +94,10 @@ namespace Mint.Lex
             }
         }
 
-        public Lexer(string filename, string data = "") : this()
+        public Lexer(string filename, string data = "", bool isFile = false) : this()
         {
             Filename = filename;
+            initialState = isFile ? MainState : BegState;
             Data = data;
         }
 
@@ -123,7 +125,7 @@ namespace Mint.Lex
         {
             Position = 0;
             tokens.Clear();
-            CurrentState = MainState;
+            CurrentState = initialState;
             LineJump = -1;
             InKwarg = false;
             Cond = new BitStack();

@@ -26,7 +26,7 @@ namespace Mint
 
                 try
                 {
-                    var ast = Parser.Parse("(imt)", fragment);
+                    var ast = Parser.ParseString("(imt)", fragment);
 
                     if(ast.List.Count == 0)
                     {

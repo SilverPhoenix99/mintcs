@@ -14,7 +14,7 @@ namespace Mint.UnitTests
         {
             name = $"(CompilationTests.{name})";
             binding = binding ?? new Closure(new Object());
-            var ast = Parser.Parse(name, fragment);
+            var ast = Parser.ParseString(name, fragment);
             return new Compiler(name, binding, ast);
         }
 

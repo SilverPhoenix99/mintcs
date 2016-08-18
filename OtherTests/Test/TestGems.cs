@@ -42,7 +42,7 @@ namespace Mint.Test
                     continue;
                 }
 
-                var ast = Parser.Parse("(test gems)", fileText);
+                var ast = Parser.ParseFile("(test gems)", fileText);
                 //var doc = AstXmlSerializer.ToXml(ast);
                 //Console.WriteLine(doc.ToString());
                 ++count;
