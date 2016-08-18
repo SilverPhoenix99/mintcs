@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
+using Mint.Lex;
 
 namespace Mint.Compilation.Components
 {
@@ -55,7 +56,7 @@ namespace Mint.Compilation.Components
                         break;
 
                     case '\t':
-                        width = (width / Compiler.TabWidth + 1) * Compiler.TabWidth;
+                        width = (width / Lexer.TabWidth + 1) * Lexer.TabWidth;
                         if(width > dedent)
                         {
                             return line.Substring(i);

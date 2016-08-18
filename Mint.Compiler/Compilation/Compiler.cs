@@ -21,7 +21,6 @@ namespace Mint.Compilation
         public Scope CurrentScope { get; set; }
         public CompilerComponent ListComponent { get; set; }
         public Ast<Token> CurrentNode { get; private set; }
-        public int TabWidth { get; set; }
 
         public Compiler(string filename, Closure binding, Ast<Token> root)
         {
@@ -32,7 +31,6 @@ namespace Mint.Compilation
 
             Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
-            TabWidth = 8;
 
             shifting.Push(new ShiftState(root));
 

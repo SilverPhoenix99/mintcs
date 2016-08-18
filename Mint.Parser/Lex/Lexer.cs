@@ -13,6 +13,8 @@ namespace Mint.Lex
     {
         private static readonly char[] EOF_CHARS = { '\0', '\x4', '\x1a' };
 
+        public static int TabWidth = 8;
+
         private readonly State initialState;
         private State currentState;
         private string data;

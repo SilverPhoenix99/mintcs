@@ -68,6 +68,9 @@ namespace Mint.Lex.States
         private readonly HeredocDelimiter delimiter;
         private readonly int restorePosition;
 
+        private int indentation = -1;
+        private int lineIndentation;
+
         public Heredoc(Lexer lexer, int ts, int te)
             : base(lexer, lexer.NextLinePosition())
         {
@@ -77,17 +80,64 @@ namespace Mint.Lex.States
 
             BeginToken = lexer.GenerateToken(delimiter.BeginType, ts, te);
             BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;
-            BeginToken.Properties["dedents"] = delimiter.Dedents;
         }
 
         protected bool IsEndDelimiter() => delimiter.EndMatcher.IsMatch(Lexer.Data, Lexer.Position + 1);
 
         private void EmitEndToken()
         {
+            if(delimiter.Dedents)
+            {
+                BeginToken.Properties["dedent"] = indentation;
+            }
+
             Lexer.EmitToken(tSTRING_END, te, te + delimiter.Identifier.Length);
             Lexer.CurrentState = Lexer.EndState;
             Lexer.Position = te + delimiter.Identifier.Length;
             Lexer.LineJump = Lexer.NextLinePosition();
+        }
+
+        protected override void EmitDBeg()
+        {
+            CommitIndentation();
+            base.EmitDBeg();
+        }
+
+        protected override void EmitDVar(TokenType type)
+        {
+            CommitIndentation();
+            base.EmitDVar(type);
+        }
+
+        private void CommitIndentation()
+        {
+            if(!delimiter.Dedents)
+            {
+                return;
+            }
+
+            if(indentation == -1 || (0 <= lineIndentation && lineIndentation < indentation))
+            {
+                indentation = lineIndentation;
+            }
+            lineIndentation = -1;
+        }
+
+        private void IndentSpace()
+        {
+            if(delimiter.Dedents && lineIndentation >= 0)
+            {
+                lineIndentation++;
+            }
+        }
+
+        private void IndentTab()
+        {
+            if(delimiter.Dedents && lineIndentation >= 0)
+            {
+                var numTabs = 1 + lineIndentation / Lex.Lexer.TabWidth;
+                lineIndentation = numTabs * Lex.Lexer.TabWidth;
+            }
         }
     }
 }
