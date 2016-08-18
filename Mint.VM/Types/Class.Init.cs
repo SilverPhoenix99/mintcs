@@ -143,7 +143,7 @@ namespace Mint
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrAccessor("[]", _ => _[default(int)])
                 .DefMethod("clear", _ => _.Clear())
-                .DefMethod("join", _ => _.Join(default(string)))
+                .DefMethod("join", _ => _.Join(default(String)))
                 .DefMethod("replace", _ => _.Replace(default(Array)))
                 .DefMethod("compact", _ => _.Compact())
                 .DefMethod("compact!", _ => _.CompactSelf())
@@ -154,7 +154,7 @@ namespace Mint
                 .DefMethod("uniq", _ => _.Uniq())
                 .DefMethod("uniq!", _ => _.UniqSelf())
                 .DefMethod("<<", _ => _.Add(default(iObject)))
-            // .DefMethod("+", () => default(Array) + default(Array))
+                .DefMethod("&", _ => _.AndAlso(default(Array)))
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()

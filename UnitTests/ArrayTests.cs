@@ -25,12 +25,11 @@ namespace Mint.UnitTests
         [Test]
         public void TestDefaultValue()
         {
-            var fixnum3 = new Fixnum(3);
-            var hash = new Hash();
-            var array = new Array(fixnum3, hash);
-            Assert.That(array[0], Is.EqualTo(hash));
-            Assert.That(array[1], Is.EqualTo(hash));
-            Assert.That(array[2], Is.EqualTo(hash));
+            var sym = new Symbol("x");
+            var array = new Array(3, sym);
+            Assert.That(array[0], Is.EqualTo(sym));
+            Assert.That(array[1], Is.EqualTo(sym));
+            Assert.That(array[2], Is.EqualTo(sym));
         }
 
         [Test] //count length size
@@ -120,7 +119,7 @@ namespace Mint.UnitTests
             var otherArray = new Array(fixnum1, new Fixnum(2), fixnum3);
             var expectedResult = new Array(fixnum1, fixnum3);
             var result = array.AndAlso(otherArray);
-            Assert.That(array.Count, Is.EqualTo(2));
+            Assert.That(result.Count, Is.EqualTo(2));
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
@@ -134,18 +133,18 @@ namespace Mint.UnitTests
             var array = new Array(fixnum1, fixnum2, fixnum3);
             var result = array * fixnum3;
             var expectedResult = new Array(fixnum1, fixnum2, fixnum3, fixnum1, fixnum2, fixnum3, fixnum1, fixnum2, fixnum3);
-            Assert.That(array.Count, Is.EqualTo(9));
+            Assert.That(result.Count, Is.EqualTo(9));
             Assert.That(result, Is.EqualTo(expectedResult));
-            
+
             // [1, 2, 3] * "," = "1,2,3"
-            var result2 = array * ",";
+            var result2 = array * new String(",");
             Assert.That(result2, Is.EqualTo(new String("1,2,3")));
 
             result2 = array.Join();
             Assert.That(result2, Is.EqualTo(new String("123")));
 
             // [1, 2, 3].join(",") = "1,2,3"
-            result2 = array.Join(",");
+            result2 = array.Join(new String(","));
             Assert.That(result2, Is.EqualTo(new String("1,2,3")));
 
             // TODO move to fixnum 1 * [1, 2, 3] = TypeError
@@ -176,7 +175,7 @@ namespace Mint.UnitTests
             result = otherArray + array;
             Assert.That(result, Is.EqualTo(expectedResult));
 
-            
+
             Assert.Throws<TypeError>(() => { var a = array + (Array) null; }); // [1, 2, 3] + nil
             Assert.Throws<TypeError>(() => { var a = (Array) null + array; }); // nil + [1, 2, 3]
         }
@@ -292,7 +291,7 @@ namespace Mint.UnitTests
         [Test] // delete TODO
         public void TestDelete()
         {
-
+            Assert.Fail("Test Not Implemented Yet");
         }
 
         [Test] // [] [start, length] [range] first last slice slice!
@@ -304,7 +303,7 @@ namespace Mint.UnitTests
             var emptyArray = new Array();
             Assert.That(emptyArray[0], Is.EqualTo(nil));
             var array = new Array(fixnum0, str);         // a = [0, "string"]
-            
+
             // []
             Assert.That(array[0], Is.EqualTo(fixnum0));  //  a[0] => 0
             Assert.That(array[1], Is.EqualTo(str));      //  a[1] => "string"

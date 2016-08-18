@@ -343,7 +343,7 @@ main := |*
     };
 
     ',' => {
-        Lexer.EmitToken(kCOLON, ts, te);
+        Lexer.EmitToken(kCOMMA, ts, te);
         Lexer.CurrentState = OperatorState;
         Lexer.CanLabel = true;
         fbreak;

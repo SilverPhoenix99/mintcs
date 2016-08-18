@@ -212,7 +212,11 @@ namespace Mint.Lex
             return new Token(type, text, location);
         }
 
-        public void EmitToken(Token token) => tokens.Enqueue(token);
+        public void EmitToken(Token token)
+        {
+            //System.Console.WriteLine($"Token:{token.Location.StartColumn} {token.Type} \"{token.Value}\"");
+            tokens.Enqueue(token);
+        }
 
         internal string TextAt(int ts, int te)
         {

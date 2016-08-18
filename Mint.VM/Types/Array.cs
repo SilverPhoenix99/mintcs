@@ -108,13 +108,13 @@ namespace Mint
 
         public Array Compact() => new Array(list).CompactSelf();
 
-        public string Join([Optional] string str = "")
+        public String Join([Optional] String str = null)
         {
             if(str == null)
             {
-                str = "";
+                str = new String("");
             }
-            return string.Join(str, list);
+            return new String(string.Join(str.ToString(), list));
         }
 
         public Array Replace(Array other)
@@ -171,7 +171,7 @@ namespace Mint
             return result;
         }
 
-        public static string operator *(Array left, string right) => left.Join(right);
+        public static String operator *(Array left, String right) => left.Join(right);
 
         public static Array operator -(Array left, Array right)
         {

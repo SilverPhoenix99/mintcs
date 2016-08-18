@@ -77,6 +77,7 @@ namespace Mint.Lex.States
 
             BeginToken = lexer.GenerateToken(delimiter.BeginType, ts, te);
             BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;
+            BeginToken.Properties["dedents"] = delimiter.Dedents;
         }
 
         protected bool IsEndDelimiter() => delimiter.EndMatcher.IsMatch(Lexer.Data, Lexer.Position + 1);

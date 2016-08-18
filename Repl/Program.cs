@@ -18,52 +18,7 @@ namespace Test
             Debug.Assert(Marshal.SizeOf(typeof(Fixnum))     <= sizeof(long));
             Debug.Assert(Marshal.SizeOf(typeof(Symbol))     <= IntPtr.Size);
 
-            //const string name = "(DedentedHeredocTests)";
-            //var fragment = $"<<~eos\nxyz\neos\n";
-            //var ast = Mint.Parse.Parser.Parse(name, fragment);
-            //Repl.DumpAst(ast);
-
             Repl.Run();
         }
-
-        /*
-        static void OtherTests()
-        {
-            //TestGems.Test();
-            //TestSymbolGC.Test();
-            //InvokeDynamicMethods.Test();
-            //TestRoslyn.TestLambdaCompilation();
-            //TestExtensionReflection.MainTest();
-
-            //if(InVisualStudio)
-            //{
-            //    TestInterpreter.Test("<<A", "blah", "A");
-            //}
-            //else
-            //{
-            //    TestInterpreter.Test(args);
-            //}
-
-            //if(InVisualStudio)
-            //{
-            //    TestCompiler.Test(":a?");
-            //
-            //    Console.WriteLine("------------------------------------------------------");
-            //    Console.WriteLine();
-            //
-            //    TestCompiler.Test(":\"a#{:c;'b'}\"");
-            //}
-            //else
-            //{
-            //    TestCompiler.Test(args);
-            //}
-
-            //var fragment = File.ReadAllText(@"C:\Programming\Ruby\ruby22\lib\ruby\gems\2.2.0\gems\parser-2.3.0.1\lib\parser\lexer.rb");
-            //var tokens = new Lexer(fragment).ToArray();
-
-            //var ast = Parser.Parse(fragment);
-            //AstPrinter<Token>.Print(ast, indent_size: 4);
-        }
-        */
     }
 }
