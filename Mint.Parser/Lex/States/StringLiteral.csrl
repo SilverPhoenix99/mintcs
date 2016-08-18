@@ -7,9 +7,9 @@ include "definitions.csrl";
 action IsDelimiter { IsDelimiter }
 
 action IsNested { Delimiter.IsNested }
-action CanLabel { CanLabel }
-action HasInterpolation { HasInterpolation }
-action IsWords { IsWords }
+action CanLabel { Delimiter.CanLabel }
+action HasInterpolation { Delimiter.HasInterpolation }
+action IsWords { Delimiter.IsWords }
 
 action EofLiteralError
 {
@@ -49,7 +49,7 @@ action Delimiter
 {
     EmitContent(te - 1);
 
-    if(IsRegexp)
+    if(Delimiter.IsRegexp)
     {
         contentStart = te - 1;
         fgoto REGEXP_END;
