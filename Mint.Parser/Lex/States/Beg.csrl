@@ -9,6 +9,7 @@ main := |*
 
     heredoc_identifier => {
         Lexer.EmitHeredocToken(ts, te);
+        fexec Lexer.NextLinePosition();
 		fbreak;
     };
 

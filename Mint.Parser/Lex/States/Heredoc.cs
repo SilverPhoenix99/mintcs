@@ -88,6 +88,7 @@ namespace Mint.Lex.States
         {
             if(delimiter.Dedents)
             {
+                CommitIndentation();
                 BeginToken.Properties["dedent"] = indentation;
             }
 

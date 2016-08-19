@@ -20,6 +20,7 @@ main := |*
 
     esc_ws_nl+ %TokStart heredoc_identifier => {
         Lexer.EmitHeredocToken(tokStart, te);
+        fexec Lexer.NextLinePosition();
         fbreak;
     };
 

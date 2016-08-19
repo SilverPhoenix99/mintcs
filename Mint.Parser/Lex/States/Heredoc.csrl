@@ -6,7 +6,6 @@ include "definitions.csrl";
 
 action IsDelimiter { IsEndDelimiter() }
 action HasInterpolation { delimiter.HasInterpolation }
-action Dedents { delimiter.Dedents }
 
 action EofLiteralError
 {
@@ -63,9 +62,9 @@ main := |*
 	'#' when HasInterpolation nth_ref_variable => { EmitDVar(tNTH_REF); fbreak; };
 	'#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
 
-    ' ' when Dedents => { IndentSpace(); };
+    ' ' => { IndentSpace(); };
 
-    '\t' when Dedents => { IndentTab(); };
+    '\t' => { IndentTab(); };
 
     string_any => { CommitIndentation(); };
 

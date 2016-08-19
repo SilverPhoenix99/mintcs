@@ -204,7 +204,6 @@ namespace Mint.Lex
         {
             var token = GenerateToken(type, ts, te);
             EmitToken(token);
-            //Console.WriteLine($"Token {token.Type} '{token.Value}' @ {token.Location.StartColumn}");
             return token;
         }
 
@@ -259,7 +258,6 @@ namespace Mint.Lex
         public Token EmitHeredocToken(int ts, int te)
         {
             var literal = new Heredoc(this, ts, te);
-            Position = NextLinePosition();
             return EmitLiteralBeginToken(literal);
         }
 
