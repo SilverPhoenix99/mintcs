@@ -47,7 +47,7 @@ namespace Mint
         {
             Object.ValidateInstanceVariableName(name.Name);
             iObject ivar;
-            return variables.TryGetValue(name, out ivar) ? ivar : null;
+            return variables.TryGetValue(name, out ivar) ? ivar : new NilClass();
         }
 
         public override iObject InstanceVariableSet(Symbol name, iObject obj)

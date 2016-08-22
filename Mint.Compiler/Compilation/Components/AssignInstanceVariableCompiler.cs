@@ -9,8 +9,8 @@ namespace Mint.Compilation.Components
     internal class AssignInstanceVariableCompiler : AssignVariableCompiler
     {
         private Expression instance;
-        
-        private Expression Instance => instance ?? (instance = Constant(Compiler.CurrentScope.Closure.Self));
+
+        private Expression Instance => instance ?? (instance = Compiler.CurrentScope.Closure.Self);
 
         public AssignInstanceVariableCompiler(Compiler compiler, AssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)

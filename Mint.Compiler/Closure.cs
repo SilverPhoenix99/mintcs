@@ -13,12 +13,12 @@ namespace Mint
         private readonly Dictionary<Symbol, int> indexes = new Dictionary<Symbol, int>();
         private readonly Array values = new Array();
 
-        public Closure(iObject self)
+        public Closure(Expression self)
         {
             Self = self;
         }
 
-        public iObject Self { get; }
+        public Expression Self { get; }
 
         public iObject this[Symbol sym]
         {

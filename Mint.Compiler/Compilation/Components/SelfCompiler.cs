@@ -7,6 +7,6 @@ namespace Mint.Compilation.Components
         public SelfCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => Expression.Constant(Compiler.CurrentScope.Closure.Self);
+        public override Expression Reduce() => Compiler.CurrentScope.Closure.Self.Cast<iObject>();
     }
 }

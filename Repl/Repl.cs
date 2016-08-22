@@ -14,7 +14,8 @@ namespace Mint
 
         public static void Run()
         {
-            var binding = new Closure(new Object());
+            var self = Expression.Constant(new Object(), typeof(iObject));
+            var binding = new Closure(self);
             for(var i = 1L; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");

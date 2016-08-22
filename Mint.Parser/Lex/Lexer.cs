@@ -339,6 +339,16 @@ namespace Mint.Lex
 
         private void DefineVariable(Token token)
         {
+            if(token.Type == tIVAR
+            || token.Type == tCVAR
+            || token.Type == tGVAR
+            || token.Type == tNTH_REF
+            || token.Type == tBACK_REF
+            || token.Type == tCONSTANT)
+            {
+                return;
+            }
+
             var name = token.Value;
             if(token.Type == tLABEL)
             {
@@ -350,6 +360,20 @@ namespace Mint.Lex
                 throw new ArgumentException($"{name} is not a valid local variable name.");
             }
 
+            CheckAssignable(token, name);
+
+            if(IsVariableDefined(name))
+            {
+                return;
+            }
+
+            Variables.Peek().Peek().Add(name);
+        }
+
+        private static bool IsVariableName(string name) => "$@ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) < 0;
+
+        private void CheckAssignable(Token token, string name)
+        {
             switch(name)
             {
                 case "nil": goto case "self";
@@ -361,16 +385,7 @@ namespace Mint.Lex
                 case "self":
                     throw new SyntaxError(Filename, token.Location.StartLine, $"Can't assign to {name}");
             }
-
-            if(IsVariableDefined(name))
-            {
-                return;
-            }
-
-            Variables.Peek().Peek().Add(name);
         }
-
-        private static bool IsVariableName(string name) => "$@ABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(name[0]) < 0;
 
         internal bool IsVariableDefined(string name) => Variables.Peek().Any(_ => _.Contains(name));
 
