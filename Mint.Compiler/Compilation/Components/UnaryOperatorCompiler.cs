@@ -6,6 +6,7 @@ namespace Mint.Compilation.Components
     internal abstract class UnaryOperatorCompiler : CompilerComponentBase
     {
         protected abstract Symbol Operator { get; }
+
         private Ast<Token> Operand => Node[0];
 
         protected UnaryOperatorCompiler(Compiler compiler) : base(compiler)

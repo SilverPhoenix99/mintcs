@@ -9,20 +9,19 @@ namespace Mint.Compilation.Components.Operators
         {
             var getter = Variable(typeof(iObject), "getter");
             var setter = component.Setter(component.Right);
+            var condition = CompilerUtils.ToBool(getter);
 
             return Block(
                 typeof(iObject),
                 new[] { getter },
                 Assign(getter, component.Getter),
-                Condition(
-                    CompilerUtils.ToBool(getter),
-                    TrueOption(getter, setter),
-                    FalseOption(getter, setter)
-                )
+                MakeCondition(condition, getter, setter)
             );
         }
 
-        protected virtual Expression TrueOption(Expression left, Expression right) => left;
-        protected virtual Expression FalseOption(Expression left, Expression right) => right;
+        protected virtual Expression MakeCondition(Expression condition, Expression left, Expression right)
+        {
+            return Condition(condition, left, right);
+        }
     }
 }

@@ -7,8 +7,14 @@ namespace Mint.Compilation.Components
         public AndCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression ChooseLeft(Expression left, Expression right) => right;
+        protected override Expression SelectBody(bool condition, Expression left, Expression right)
+        {
+            return condition ? right : left;
+        }
 
-        protected override Expression ChooseRight(Expression left, Expression right) => left;
+        protected override Expression MakeCondition(Expression condition, Expression left, Expression right)
+        {
+            return Expression.Condition(condition, right, left, typeof(iObject));
+        }
     }
 }

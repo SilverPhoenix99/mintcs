@@ -13,25 +13,35 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var right = Pop();
 
-            if(left is ConstantExpression || left is ParameterExpression)
+            if(left.NodeType == ExpressionType.Constant)
             {
-                var leftResult = ChooseLeft(left, right);
-                right = ChooseRight(left, right);
-                return Condition(CompilerUtils.ToBool(left), leftResult, right, typeof(iObject));
+                var value = (iObject) ((ConstantExpression) left).Value;
+                return SelectBody(Object.ToBool(value), left, right);
+            }
+
+            if(left.NodeType == ExpressionType.Parameter)
+            {
+                return MakeCondition(CompilerUtils.ToBool(left), left, right);
             }
 
             var leftVar = Variable(typeof(iObject));
-            var assignLeft = Assign(leftVar, left);
 
-            left = ChooseLeft(leftVar, right);
-            right = ChooseLeft(leftVar, right);
-            var condition = Condition(CompilerUtils.ToBool(leftVar), left, right, typeof(iObject));
-
-            return Block(typeof(iObject), new[] { leftVar }, assignLeft, condition);
+            return Block(
+                typeof(iObject),
+                new[] { leftVar },
+                Assign(leftVar, left),
+                MakeCondition(CompilerUtils.ToBool(leftVar), leftVar, right)
+            );
         }
 
-        protected virtual Expression ChooseLeft(Expression left, Expression right) => left;
+        protected virtual Expression SelectBody(bool condition, Expression left, Expression right)
+        {
+            return condition ? left : right;
+        }
 
-        protected virtual Expression ChooseRight(Expression left, Expression right) => right;
+        protected virtual Expression MakeCondition(Expression condition, Expression left, Expression right)
+        {
+            return Condition(condition, left, right, typeof(iObject));
+        }
     }
 }

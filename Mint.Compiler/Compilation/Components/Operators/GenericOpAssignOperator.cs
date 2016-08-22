@@ -7,8 +7,10 @@ namespace Mint.Compilation.Components.Operators
     {
         public Expression Reduce(AssignCompiler component)
         {
+            var instance = component.Getter;
+            var methodName = component.Operator;
             var argument = new InvocationArgument(ArgumentKind.Simple, component.Right);
-            var call = CompilerUtils.Call(component.Getter, component.Operator, component.Visibility, argument);
+            var call = CompilerUtils.Call(instance, methodName, component.Visibility, argument);
             return component.Setter(call);
         }
     }

@@ -11,6 +11,13 @@ namespace Mint.Compilation.Components
         public override Expression Reduce()
         {
             var condition = Pop();
+
+            if(condition.NodeType == ExpressionType.Constant)
+            {
+                var conditionValue = (iObject) ((ConstantExpression) condition).Value;
+                return Object.ToBool(conditionValue) ? CompilerUtils.FALSE : CompilerUtils.TRUE;
+            }
+
             condition = CompilerUtils.ToBool(condition);
             return Condition(condition, CompilerUtils.FALSE, CompilerUtils.TRUE, typeof(iObject));
         }

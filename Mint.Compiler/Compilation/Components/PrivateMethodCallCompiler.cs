@@ -22,7 +22,7 @@ namespace Mint.Compilation.Components
                 _ => _.Value.Type == kDO || _.Value.Type == kLBRACE2
             );
 
-            if(ArgumentsNode.Any(_ => _.Value.Type == kAMPER) && blockNode != null)
+            if(blockNode != null && ArgumentsNode.Any(_ => _.Value.Type == kAMPER))
             {
                 var line = blockNode.Value.Location.StartLine;
                 throw new SyntaxError(Compiler.Filename, line, "both block arg and actual block given");

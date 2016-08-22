@@ -7,7 +7,7 @@ namespace Mint.Compilation.Selectors
 {
     internal class AssignSelector : ComponentSelectorBase
     {
-        private const string OP_OP = "||";
+        private const string OR_OP = "||";
         private const string AND_OP = "&&";
 
         private Ast<Token> LeftNode => Node[0];
@@ -49,8 +49,7 @@ namespace Mint.Compilation.Selectors
                 throw new System.NotImplementedException();
             }
 
-            return token.Type == kASSIGN ? new SimpleAssignOperator()
-                 : token.Value == OP_OP ? new OrAssignOperator()
+            return token.Value == OR_OP ? new OrAssignOperator()
                  : token.Value == AND_OP ? new AndAssignOperator()
                  : (AssignOperator) new GenericOpAssignOperator();
         }

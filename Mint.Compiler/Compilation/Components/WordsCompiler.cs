@@ -35,16 +35,21 @@ namespace Mint.Compilation.Components
                     continue;
                 }
 
-                var word = CompilerUtils.NewString();
-                word = CompilerUtils.StringConcat(word, contents);
-                word = word.StripConversions();
-                word = Wrap(word);
-                word = word.Cast<iObject>();
+                var word = CreateWord(contents);
                 words.Add(word);
                 contents = new List<Expression>();
             }
 
             return CompilerUtils.NewArray(words.ToArray());
+        }
+
+        private Expression CreateWord(List<Expression> contents)
+        {
+            var word = CompilerUtils.NewString();
+            word = CompilerUtils.StringConcat(word, contents);
+            word = word.StripConversions();
+            word = Wrap(word);
+            return word.Cast<iObject>();
         }
 
         protected virtual Expression Wrap(Expression word) => word;
