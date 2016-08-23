@@ -265,16 +265,8 @@ mlhs_post :
 ;
 
 mlhs_node :
-    user_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
-  | keyword_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
+    user_variable { Lexer.DefineVariable($1); }
+  | keyword_variable { Lexer.DefineVariable($1); }
   | primary kLBRACK2 opt_call_args rbracket  { $$ = $2 + $1 + $3; }
   | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tIDENTIFIER { $$ = $2 + $1 + $3; }
@@ -306,16 +298,8 @@ mlhs_node :
 ;
 
 lhs :
-    user_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
-  | keyword_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
+    user_variable { Lexer.DefineVariable($1); }
+  | keyword_variable { Lexer.DefineVariable($1); }
   | primary kLBRACK2 opt_call_args rbracket { $$ = $2 + $1 + $3; }
   | primary call_op tIDENTIFIER { $$ = $2 + $1 + $3; }
   | primary kCOLON2 tIDENTIFIER { $$ = $2 + $1 + $3; }
@@ -1199,26 +1183,16 @@ var_ref :
     user_variable
     {
       // gettable($1);
-      //gettable("var_ref > user_variable", val);
     }
   | keyword_variable
     {
       // gettable($1);
-      //gettable("var_ref > keyword_variable", val);
     }
 ;
 
 var_lhs :
-    user_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
-  | keyword_variable
-    {
-        $$ = $1;
-        Lexer.DefineVariable($$);
-    }
+    user_variable { Lexer.DefineVariable($1); }
+  | keyword_variable { Lexer.DefineVariable($1); }
 ;
 
 backref :

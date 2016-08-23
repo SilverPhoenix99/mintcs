@@ -6,38 +6,35 @@ namespace Mint.Lex.States
 {
     internal partial class StringLiteral : Literal
     {
+        private readonly Delimiter delimiter;
         private RegexpFlags regexpOptions = RegexpFlags.None;
         private bool emittedSpace;
-
-        private Delimiter Delimiter { get; }
-
-        private State EndState { get; }
+        private State endState;
 
         protected override char CurrentChar => Lexer.CurrentChar;
 
-        private bool IsDelimiter => Lexer.CurrentChar == Delimiter.CloseDelimiter;
+        private bool IsDelimiter => Lexer.CurrentChar == delimiter.CloseDelimiter;
 
         public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null)
             : base(lexer, lexer.Position + 1)
         {
             var text = lexer.TextAt(ts, te);
-            Delimiter = DelimiterFactory.CreateDelimiter(this, text);
+            delimiter = DelimiterFactory.CreateDelimiter(this, text);
 
             if(canLabel)
             {
-                Delimiter.Features |= LiteralFeatures.Label;
+                delimiter.Features |= LiteralFeatures.Label;
             }
 
-            EndState = endState ?? lexer.EndState;
+            this.endState = endState ?? lexer.EndState;
 
-            BeginToken = lexer.GenerateToken(Delimiter.BeginType, ts, te);
-            BeginToken.Properties["has_interpolation"] = Delimiter.HasInterpolation;
+            BeginToken = lexer.GenerateToken(delimiter.BeginType, ts, te);
+            BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;
         }
 
         protected override void EmitContent(int te)
         {
-
-            if(contentStart == te)
+            if(delimiter.IsWords && contentStart == te)
             {
                 return;
             }
@@ -63,17 +60,17 @@ namespace Mint.Lex.States
             EmitSpace(ts, ts);
 
             var type = Lexer.Data[te - 1] == ':' ? tLABEL_END
-                     : Delimiter.IsRegexp ? tREGEXP_END
+                     : delimiter.IsRegexp ? tREGEXP_END
                      : tSTRING_END;
 
             Lexer.EmitToken(type, ts, te);
             Lexer.PopLiteral();
-            Lexer.CurrentState = EndState;
+            Lexer.CurrentState = endState;
         }
 
         private void EmitSpace(int ts, int te)
         {
-            if(!Delimiter.IsWords || emittedSpace)
+            if(!delimiter.IsWords || emittedSpace)
             {
                 return;
             }

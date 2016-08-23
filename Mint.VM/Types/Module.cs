@@ -1,12 +1,20 @@
 ﻿using Mint.Binding.Methods;
+using Mint.Reflection.Parameters.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Mint
 {
     public class Module : BaseObject
     {
+        private static readonly Regex CONSTANT_NAME =
+            new Regex("^[A-Z](?:[A-Za-z0-9_]|[^\x00-\x7F])*$", RegexOptions.Compiled);
+
+        private static readonly Regex NAME_PATH =
+            new Regex("^(?:::)?([^:]+)(?:::([^:]+))*$", RegexOptions.Compiled);
+
         public Module(Symbol? name = null, Module container = null)
             : this(Class.MODULE, name, container)
         { }
@@ -125,6 +133,32 @@ namespace Mint
             }
 
             return null;
+        }
+
+        public bool IsConstantDefined(Symbol name, [Optional] bool inherit = true)
+        {
+            // If constant found, then name is valid
+            if(Constants.ContainsKey(name))
+            {
+                return true;
+            }
+
+            // Only check name if not found
+            ValidateConstantName(name.Name);
+            return false;
+        }
+
+        private static void ValidateConstantName(string name)
+        {
+            if(!CONSTANT_NAME.IsMatch(name))
+            {
+                throw new NameError($"wrong constant name {name}");
+            }
+        }
+
+        public bool IsConstDefined(String name, [Optional] bool inherit = true)
+        {
+            throw new System.NotImplementedException(nameof(IsConstDefined));
         }
     }
 }

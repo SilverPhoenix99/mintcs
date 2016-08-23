@@ -16,9 +16,6 @@ namespace Mint.Compilation.Components
             // otherwise the compiler assumes it is a variable or a method call.
         }
 
-        public override Expression Reduce()
-        {
-            return Constant(new Symbol(Identifier), typeof(iObject));
-        }
+        public override Expression Reduce() => Constant(new Symbol(Identifier), typeof(iObject));
     }
 }

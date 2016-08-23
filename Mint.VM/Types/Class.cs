@@ -38,9 +38,9 @@ namespace Mint
             }
         }
 
-        public Class         Superclass  { get; }
-        public bool          IsSingleton { get; }
-        public override bool IsModule    => false;
+        public Class Superclass { get; }
+        public bool IsSingleton { get; }
+        public override bool IsModule => false;
 
         public override IEnumerable<Module> Ancestors =>
             Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
@@ -54,7 +54,7 @@ namespace Mint
         {
             Prepended = AppendModule(Prepended, module, Superclass);
         }
-        
+
         #region Static
 
         public static bool IsA(iObject o, Class c)

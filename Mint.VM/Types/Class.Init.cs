@@ -63,12 +63,18 @@ namespace Mint
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
+                //.DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
             ;
 
-            CLASS = ModuleBuilder<Class>.DescribeClass(MODULE);
+            CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
+                .AttrReader("superclass", _ => _.Superclass)
+            ;
 
             // required hack
-            // otherwise CLASS.effectiveClass will be null
+            // otherwise effectiveClass will be null
+            BASIC_OBJECT.effectiveClass = CLASS;
+            OBJECT.effectiveClass = CLASS;
+            MODULE.effectiveClass = CLASS;
             CLASS.effectiveClass = CLASS;
 
             #pragma warning disable 1720

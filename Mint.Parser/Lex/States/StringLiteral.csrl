@@ -6,10 +6,10 @@ include "definitions.csrl";
 
 action IsDelimiter { IsDelimiter }
 
-action IsNested { Delimiter.IsNested }
-action CanLabel { Delimiter.CanLabel }
-action HasInterpolation { Delimiter.HasInterpolation }
-action IsWords { Delimiter.IsWords }
+action IsNested { delimiter.IsNested }
+action CanLabel { delimiter.CanLabel }
+action HasInterpolation { delimiter.HasInterpolation }
+action IsWords { delimiter.IsWords }
 
 action EofLiteralError
 {
@@ -49,7 +49,7 @@ action Delimiter
 {
     EmitContent(te - 1);
 
-    if(Delimiter.IsRegexp)
+    if(delimiter.IsRegexp)
     {
         contentStart = te - 1;
         fgoto REGEXP_END;
@@ -76,9 +76,9 @@ main := |*
 
 	string_delimiter when !IsNested => Delimiter;
 
-    string_delimiter when IsNested => { Delimiter.DecrementNesting(); };
+    string_delimiter when IsNested => { delimiter.DecrementNesting(); };
 
-    [\[{(<] => { Delimiter.IncrementNesting(); };
+    [\[{(<] => { delimiter.IncrementNesting(); };
 
 	word_space when IsWords word_space* => {
 		EmitContent(ts);
