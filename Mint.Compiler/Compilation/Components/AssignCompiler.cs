@@ -1,4 +1,4 @@
-using Mint.Binding;
+using Mint.MethodBinding;
 using Mint.Compilation.Components.Operators;
 using Mint.Parse;
 using System.Linq.Expressions;

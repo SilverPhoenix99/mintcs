@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mint.Binding;
-using Mint.Binding.Arguments;
+using Mint.MethodBinding;
+using Mint.MethodBinding.Arguments;
 using Mint.Parse;
 using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
-using static Mint.Binding.Visibility;
+using static Mint.MethodBinding.Visibility;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation

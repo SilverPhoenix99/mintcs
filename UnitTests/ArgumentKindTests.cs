@@ -1,4 +1,4 @@
-using Mint.Binding.Arguments;
+using Mint.MethodBinding.Arguments;
 using NUnit.Framework;
 
 namespace Mint.UnitTests

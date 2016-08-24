@@ -1,4 +1,4 @@
-using Mint.Binding.Arguments;
+using Mint.MethodBinding.Arguments;
 using System.Linq.Expressions;
 
 namespace Mint.Compilation

@@ -1,5 +1,5 @@
-using Mint.Binding;
-using Mint.Binding.Arguments;
+using Mint.MethodBinding;
+using Mint.MethodBinding.Arguments;
 using System;
 
 namespace Mint
@@ -10,22 +10,23 @@ namespace Mint
         public static readonly Class OBJECT;
         public static readonly Class MODULE;
         public static readonly Class CLASS;
-        public static readonly Class NUMERIC;
-        public static readonly Class FLOAT;
-        public static readonly Class COMPLEX;
-        public static readonly Class RATIONAL;
-        public static readonly Class INTEGER;
-        public static readonly Class FIXNUM;
-        public static readonly Class BIGNUM;
-        public static readonly Class NIL;
-        public static readonly Class FALSE;
-        public static readonly Class TRUE;
         public static readonly Class ARRAY;
+        public static readonly Class BIGNUM;
+        public static readonly Class BINDING;
+        public static readonly Class COMPLEX;
+        public static readonly Class FALSE;
+        public static readonly Class FIXNUM;
+        public static readonly Class FLOAT;
         public static readonly Class HASH;
+        public static readonly Class INTEGER;
+        public static readonly Class NIL;
+        public static readonly Class NUMERIC;
         public static readonly Class RANGE;
+        public static readonly Class RATIONAL;
         public static readonly Class REGEXP;
         public static readonly Class STRING;
         public static readonly Class SYMBOL;
+        public static readonly Class TRUE;
 
         public static readonly Module KERNEL;
 
@@ -124,6 +125,9 @@ namespace Mint
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
             ;
 
+            BINDING = ModuleBuilder<Binding>.DescribeClass()
+            ;
+
             NIL = ModuleBuilder<NilClass>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
@@ -197,12 +201,12 @@ namespace Mint
             Object.DefineModule(ARRAY);
             Object.DefineModule(COMPLEX);
             Object.DefineModule(FALSE);
-            Object.DefineModule(NUMERIC);
-            Object.DefineModule(INTEGER);
             Object.DefineModule(FIXNUM);
             Object.DefineModule(FLOAT);
             Object.DefineModule(HASH);
+            Object.DefineModule(INTEGER);
             Object.DefineModule(NIL);
+            Object.DefineModule(NUMERIC);
             Object.DefineModule(RANGE);
             Object.DefineModule(RATIONAL);
             Object.DefineModule(REGEXP);

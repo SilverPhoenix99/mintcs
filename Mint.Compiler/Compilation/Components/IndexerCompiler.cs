@@ -1,4 +1,4 @@
-﻿using Mint.Binding.Arguments;
+﻿using Mint.MethodBinding.Arguments;
 using Mint.Parse;
 using System;
 using System.Collections.Generic;

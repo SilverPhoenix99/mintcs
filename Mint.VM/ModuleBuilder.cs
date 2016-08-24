@@ -1,4 +1,4 @@
-﻿using Mint.Binding.Methods;
+﻿using Mint.MethodBinding.Methods;
 using Mint.Reflection;
 using System;
 using System.Linq.Expressions;
@@ -79,7 +79,7 @@ namespace Mint
         }
 
         #endregion
-        
+
         #region DefLambda
 
         public ModuleBuilder<T> DefLambda(string name, Delegate lambda) => DefLambda(new Symbol(name), lambda);

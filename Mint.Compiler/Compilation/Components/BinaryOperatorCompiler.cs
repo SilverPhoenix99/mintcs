@@ -1,4 +1,4 @@
-using Mint.Binding.Arguments;
+using Mint.MethodBinding.Arguments;
 using System.Linq.Expressions;
 using Mint.Parse;
 
@@ -16,7 +16,7 @@ namespace Mint.Compilation.Components
         {
             var left = Pop();
             var right = Pop();
-            
+
             var visibility = CompilerUtils.GetVisibility(LeftNode);
             var argument = new InvocationArgument(ArgumentKind.Simple, right);
             return CompilerUtils.Call(left, Operator, visibility, argument);

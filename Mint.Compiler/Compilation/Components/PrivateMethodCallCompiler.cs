@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Linq.Expressions;
-using Mint.Binding;
-using Mint.Binding.Arguments;
+using Mint.MethodBinding;
+using Mint.MethodBinding.Arguments;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;

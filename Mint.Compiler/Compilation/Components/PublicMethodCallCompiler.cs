@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Mint.Binding;
+using Mint.MethodBinding;
 using Mint.Parse;
 
 namespace Mint.Compilation.Components

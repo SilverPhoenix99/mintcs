@@ -1,4 +1,4 @@
-﻿using Mint.Binding.Methods;
+﻿using Mint.MethodBinding.Methods;
 using Mint.Reflection.Parameters.Attributes;
 using System;
 using System.Collections.Generic;

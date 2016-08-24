@@ -1,6 +1,6 @@
-﻿using Mint.Binding;
-using Mint.Binding.Arguments;
-using Mint.Binding.Compilation;
+﻿using Mint.MethodBinding;
+using Mint.MethodBinding.Arguments;
+using Mint.MethodBinding.Compilation;
 using System.Linq;
 
 namespace Mint

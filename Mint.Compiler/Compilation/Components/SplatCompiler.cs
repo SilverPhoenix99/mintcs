@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Mint.Binding;
+using Mint.MethodBinding;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
