@@ -38,6 +38,7 @@
     <Compile Include="Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Compiler.ReduceState.cs" />
+    <Compile Include="Compilation\Compiler.ShiftState.cs" />
     <Compile Include="Compilation\CompilerException.cs" />
     <Compile Include="Compilation\CompilerUtils.cs" />
     <Compile Include="Compilation\Components\AdditionCompiler.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Compilation\Components\AssignIndexerCompiler.cs" />
     <Compile Include="Compilation\Components\AssignPropertyCompiler.cs" />
     <Compile Include="Compilation\Components\AssignLocalVariableCompiler.cs" />
+    <Compile Include="Compilation\Components\ModuleCompiler.cs" />
     <Compile Include="Compilation\Components\Operators\SimpleAssignOperator.cs" />
     <Compile Include="Compilation\Components\OrCompiler.cs" />
     <Compile Include="Compilation\Components\PosfixWhileCompiler.cs" />
@@ -142,9 +144,6 @@
       <Name>Mint.VM</Name>
       <Private>False</Private>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Compilation\Compiler.ShiftState.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
