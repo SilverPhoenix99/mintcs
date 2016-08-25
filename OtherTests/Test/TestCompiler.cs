@@ -21,7 +21,7 @@ namespace Mint.Test
 
                 var expr = ast.Accept(new Compiler("(TestCompiler)", new Closure(new Object())));
 
-                Console.WriteLine(Repl.DEBUGVIEW_INFO.Invoke(expr, new object[0]));
+                Console.WriteLine(Repl.DEBUGVIEW_INFO.Invoke(expr, System.Array.Empty<object>()));
                 Console.WriteLine();
 
                 var lambda = Expression.Lambda(expr).Compile();

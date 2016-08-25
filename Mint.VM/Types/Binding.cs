@@ -8,7 +8,9 @@ namespace Mint
 
         private Array locals;
 
-        public iObject Receiver { get; }
+        public readonly iObject Receiver;
+
+        public Module Module => Receiver as Module ?? Receiver.Class;
 
         public Binding(iObject receiver) : base(Class.BINDING)
         {

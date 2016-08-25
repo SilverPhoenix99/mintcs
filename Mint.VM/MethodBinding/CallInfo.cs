@@ -18,7 +18,7 @@ namespace Mint.MethodBinding
         {
             MethodName = methodName;
             Visibility = visibility;
-            Arguments = arguments?.ToArray() ?? new ArgumentKind[0];
+            Arguments = arguments?.ToArray() ?? System.Array.Empty<ArgumentKind>();
         }
 
         public override string ToString()

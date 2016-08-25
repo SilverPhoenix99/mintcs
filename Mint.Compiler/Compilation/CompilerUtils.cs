@@ -43,7 +43,7 @@ namespace Mint.Compilation
         internal static readonly Expression NIL = Constant(new NilClass(), typeof(iObject));
         internal static readonly Expression FALSE = Constant(new FalseClass(), typeof(iObject));
         internal static readonly Expression TRUE = Constant(new TrueClass(), typeof(iObject));
-        private static readonly Expression EMPTY_ARRAY = Constant(new iObject[0]);
+        private static readonly Expression EMPTY_ARRAY = Constant(System.Array.Empty<iObject>());
 
         public static Expression ToBool(Expression expr)
         {

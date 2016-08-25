@@ -70,7 +70,7 @@ namespace Mint
 
         internal static void DumpExpression(Expression expr)
         {
-            Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, new object[0]));
+            Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, System.Array.Empty<object>()));
             Console.WriteLine();
         }
 
