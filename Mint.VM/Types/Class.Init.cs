@@ -34,7 +34,7 @@ namespace Mint
 
         static Class()
         {
-            EqOp = CallSite.Create(Symbol.EQ, Visibility.Private, ArgumentKind.Simple);
+            EqOp = new CallInfo(Symbol.EQ, Visibility.Private, ArgumentKind.Simple).CreateSite();
 
             // ==       |   iObject#Equals(iObject) (by default equal?)
             // equal?   |   object::ReferenceEquals(object, object)

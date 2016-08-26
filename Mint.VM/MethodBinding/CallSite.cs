@@ -28,15 +28,6 @@ namespace Mint.MethodBinding
             return Call(instance, arguments);
         }
 
-        public static CallSite Create(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> arguments) =>
-            new CallSite(new CallInfo(methodName, visibility, arguments));
-
-        public static CallSite Create(Symbol methodName, Visibility visibility, params ArgumentKind[] arguments) =>
-            Create(methodName, visibility, (IEnumerable<ArgumentKind>) arguments);
-
-        public static CallSite Create(Symbol methodName, params ArgumentKind[] arguments) =>
-            Create(methodName, Visibility.Public, arguments);
-
         public override string ToString() => $"CallSite<{CallInfo}>";
     }
 }

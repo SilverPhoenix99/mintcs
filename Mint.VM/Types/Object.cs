@@ -47,7 +47,7 @@ namespace Mint
         {
             var methodNameAsSymbol = MethodNameAsSymbol(methodName);
             var argumentKinds = Enumerable.Range(0, arguments.Length).Select(_ => ArgumentKind.Simple);
-            var callSite = CallSite.Create(methodNameAsSymbol, Visibility.Private, argumentKinds);
+            var callSite = new CallInfo(methodNameAsSymbol, Visibility.Private, argumentKinds).CreateSite();
             callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return callSite.Call(instance, arguments);
         }

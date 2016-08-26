@@ -23,7 +23,7 @@ namespace Mint.UnitTests
 
         private static CallSite GetClassCallSite()
         {
-            return CallSite.Create(new Symbol("class"));
+            return new CallInfo(new Symbol("class")).CreateSite();
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestResultBoxing()
         {
-            var callSite = CallSite.Create(new Symbol("to_s"));
+            var callSite = new CallInfo(new Symbol("to_s")).CreateSite();
 
             const int integer = 100;
             var fixnum = new Fixnum(integer);

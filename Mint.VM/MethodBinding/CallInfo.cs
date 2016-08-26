@@ -14,12 +14,22 @@ namespace Mint.MethodBinding
         public ArgumentKind[] Arguments { get; }
         public int Arity => Arguments.Length;
 
-        public CallInfo(Symbol methodName, Visibility visibility = Visibility.Public, IEnumerable<ArgumentKind> arguments = null)
+        public CallInfo(Symbol methodName, Visibility visibility, params ArgumentKind[] arguments)
         {
             MethodName = methodName;
             Visibility = visibility;
-            Arguments = arguments?.ToArray() ?? System.Array.Empty<ArgumentKind>();
+            Arguments = arguments;
         }
+
+        public CallInfo(Symbol methodName, params ArgumentKind[] arguments)
+            : this(methodName, Visibility.Public, arguments)
+        { }
+
+        public CallInfo(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> arguments = null)
+            : this(methodName, visibility, arguments?.ToArray() ?? System.Array.Empty<ArgumentKind>())
+        { }
+
+        public CallSite CreateSite() => new CallSite(this);
 
         public override string ToString()
         {
