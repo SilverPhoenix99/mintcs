@@ -17,13 +17,13 @@ namespace Mint.UnitTests
 
             Assert.That(callSite.Call(new Fixnum()), Is.EqualTo(Class.FIXNUM));
 
-            Assert.That(callSite.CallInfo.Visibility, Is.EqualTo(Visibility.Public));
+            Assert.That(callSite.Visibility, Is.EqualTo(Visibility.Public));
             Assert.That(callSite.ToString(), Is.Not.Null);
         }
 
         private static CallSite GetClassCallSite()
         {
-            return new CallInfo(new Symbol("class")).CreateSite();
+            return new CallSite(new Symbol("class"));
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestResultBoxing()
         {
-            var callSite = new CallInfo(new Symbol("to_s")).CreateSite();
+            var callSite = new CallSite(new Symbol("to_s"));
 
             const int integer = 100;
             var fixnum = new Fixnum(integer);

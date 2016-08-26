@@ -15,8 +15,8 @@ namespace Mint.MethodBinding.Methods
             () => InvalidConversionMessage(default(MethodInformation[]), default(iObject[]))
         );
 
-        private static readonly MethodInfo METHOD_BUNDLE = Reflector<CallInfo>.Method(
-        _ => _.Bundle(default(iObject[]))
+        private static readonly MethodInfo METHOD_BUNDLE = Reflector<CallSite>.Method(
+        _ => _.CreateBundle(default(iObject[]))
         );
 
         private static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
@@ -61,7 +61,7 @@ namespace Mint.MethodBinding.Methods
 
         public override Expression Bind(Invocation invocation)
         {
-            var length = invocation.CallSite.CallInfo.Arity;
+            var length = invocation.CallSite.Arity;
             var methods = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
 
             if(methods.Length == 0)
@@ -76,7 +76,7 @@ namespace Mint.MethodBinding.Methods
 
             var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind());
 
-            var createBundleExpression = Call(Constant(invocation.CallSite.CallInfo), METHOD_BUNDLE, invocation.Arguments);
+            var createBundleExpression = Call(Constant(invocation.CallSite), METHOD_BUNDLE, invocation.Arguments);
 
             var bundleAssignExpression = Assign(bundle, createBundleExpression);
             var throwExpression = ThrowTypeExpression(invocation.Arguments, methods);

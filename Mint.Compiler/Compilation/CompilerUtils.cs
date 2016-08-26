@@ -129,7 +129,7 @@ namespace Mint.Compilation
             params InvocationArgument[] arguments
         )
         {
-            var site = new CallInfo(methodName, visibility, arguments.Select(_ => _.Kind)).CreateSite();
+            var site = new CallSite(methodName, visibility, arguments.Select(_ => _.Kind));
             var call = Constant(site).Property(MEMBER_CALLSITE_CALL);
             var argList = arguments.Length == 0
                         ? EMPTY_ARRAY

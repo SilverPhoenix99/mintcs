@@ -45,7 +45,6 @@
     <Compile Include="MethodBinding\Arguments\RestArgumentKind.cs" />
     <Compile Include="MethodBinding\Arguments\SimpleArgumentKind.cs" />
     <Compile Include="MethodBinding\BindingUtils.cs" />
-    <Compile Include="MethodBinding\CallInfo.cs" />
     <Compile Include="MethodBinding\CallSite.cs" />
     <Compile Include="MethodBinding\Compilation\BaseCallCompiler.cs" />
     <Compile Include="MethodBinding\Compilation\CachedMethod.cs" />

@@ -15,10 +15,10 @@ namespace Mint.MethodBinding.Compilation
 
         protected MethodBinder TryFindMethodBinder(iObject instance)
         {
-            var binder = instance.EffectiveClass.FindMethod(CallSite.CallInfo.MethodName);
+            var binder = instance.EffectiveClass.FindMethod(CallSite.MethodName);
             if(binder == null)
             {
-                var methodName = CallSite.CallInfo.MethodName.ToString();
+                var methodName = CallSite.MethodName.ToString();
                 var instanceInspect = instance.Inspect();
                 var className = instance.EffectiveClass.FullName;
 

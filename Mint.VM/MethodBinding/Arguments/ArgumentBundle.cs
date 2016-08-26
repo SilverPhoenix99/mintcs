@@ -1,4 +1,5 @@
 using Mint.MethodBinding.Parameters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,6 +34,21 @@ namespace Mint.MethodBinding.Arguments
         public ArgumentBundle(IList<ArgumentKind> kinds)
             : this(kinds, new List<iObject>(), new LinkedDictionary<iObject, iObject>(), null)
         { }
+
+        public void AddAll(iObject[] arguments)
+        {
+            if(arguments.Length != ArgumentKinds.Count)
+            {
+                throw new ArgumentException("number of arguments does not match.");
+            }
+
+            var zippedArgs = ArgumentKinds.Zip(arguments, (kind, value) => new { Kind = kind, Value = value });
+
+            foreach(var argument in zippedArgs)
+            {
+                argument.Kind.Bundle(argument.Value, this);
+            }
+        }
 
         public iObject[] Unbundle(IEnumerable<ParameterBinder> binders) =>
             binders.Select(binder => binder.Bind(this)).ToArray();

@@ -33,7 +33,7 @@ namespace Mint.MethodBinding.Methods
 
         public Expression Bind()
         {
-            if(BundleInfo.CallSite.CallInfo.Arity == 0)
+            if(BundleInfo.CallSite.Arity == 0)
             {
                 return MakeCallWithReturn();
             }
@@ -52,7 +52,7 @@ namespace Mint.MethodBinding.Methods
         }
 
         private Expression MakeArgumentTypeCheck() =>
-            Enumerable.Range(0, BundleInfo.CallSite.CallInfo.Arity)
+            Enumerable.Range(0, BundleInfo.CallSite.Arity)
             .Select(MakeArgumentTypeCheck).Aggregate(AndAlso);
 
         private Expression MakeArgumentTypeCheck(int position)
