@@ -56,7 +56,7 @@
     <Compile Include="MethodBinding\CallFrameBinder.cs" />
     <Compile Include="MethodBinding\Methods\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodBinder.cs" />
-    <Compile Include="MethodBinding\Methods\ClrMethodInvocationEmitter.cs" />
+    <Compile Include="MethodBinding\Methods\ClrMethodBinder.CallEmitter.cs" />
     <Compile Include="MethodBinding\Methods\DelegateMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\MethodBinder.cs" />
     <Compile Include="MethodBinding\Parameters\BlockParameterBinder.cs" />

@@ -9,7 +9,7 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Methods
 {
-    public sealed class ClrMethodBinder : BaseMethodBinder
+    public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
         private static readonly MethodInfo INVALID_CONVERSION_METHOD = Reflector.Method(
             () => InvalidConversionMessage(default(MethodInformation[]), default(iObject[]))
@@ -74,7 +74,7 @@ namespace Mint.MethodBinding.Methods
 
             var bundledFrame = new CallFrameBinder(frame.CallSite, frame.Instance, bundle);
 
-            var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundledFrame, returnTarget).Bind());
+            var body = methods.Select(info => new CallEmitter(info, bundledFrame, returnTarget).Bind());
 
             var createBundleExpression = Call(Constant(frame.CallSite), METHOD_BUNDLE, frame.Arguments);
 
