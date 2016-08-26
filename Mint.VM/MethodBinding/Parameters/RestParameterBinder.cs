@@ -23,7 +23,7 @@ namespace Mint.MethodBinding.Parameters
                 result.Add(bundle.Splat[i]);
             }
 
-            var hasKeyArguments = bundle.CallInfo.Arguments.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest);
+            var hasKeyArguments = bundle.ArgumentKinds.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest);
             var hasKeyRestParameter = ParameterCounter.HasKeyRest;
             var restIncludesKeyRest = hasKeyArguments != hasKeyRestParameter;
 

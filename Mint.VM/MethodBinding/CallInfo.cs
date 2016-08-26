@@ -11,14 +11,14 @@ namespace Mint.MethodBinding
     {
         public Visibility Visibility { get; }
         public Symbol MethodName { get; }
-        public ArgumentKind[] Arguments { get; }
-        public int Arity => Arguments.Length;
+        public IList<ArgumentKind> Arguments { get; }
+        public int Arity => Arguments.Count;
 
         public CallInfo(Symbol methodName, Visibility visibility, params ArgumentKind[] arguments)
         {
             MethodName = methodName;
             Visibility = visibility;
-            Arguments = arguments;
+            Arguments = System.Array.AsReadOnly(arguments);
         }
 
         public CallInfo(Symbol methodName, params ArgumentKind[] arguments)
@@ -39,9 +39,9 @@ namespace Mint.MethodBinding
 
         public ArgumentBundle Bundle(params iObject[] arguments)
         {
-            if(arguments.Length != Arguments.Length) throw new ArgumentException();
+            if(arguments.Length != Arguments.Count) throw new ArgumentException();
 
-            var bundle = new ArgumentBundle(this);
+            var bundle = new ArgumentBundle(Arguments);
 
             for(var i = 0; i < arguments.Length; i++)
             {
