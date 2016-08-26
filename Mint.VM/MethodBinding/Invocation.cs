@@ -4,13 +4,13 @@ namespace Mint.MethodBinding
 {
     public class Invocation
     {
-        public CallInfo CallInfo { get; }
+        public CallSite CallSite { get; }
         public Expression Instance { get; }
         public Expression Arguments { get; }
 
-        public Invocation(CallInfo callInfo, Expression instance, Expression arguments)
+        public Invocation(CallSite callSite, Expression instance, Expression arguments)
         {
-            CallInfo = callInfo;
+            CallSite = callSite;
             Instance = instance;
             Arguments = arguments;
         }

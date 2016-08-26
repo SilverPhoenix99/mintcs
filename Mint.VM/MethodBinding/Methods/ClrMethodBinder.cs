@@ -61,7 +61,7 @@ namespace Mint.MethodBinding.Methods
 
         public override Expression Bind(Invocation invocation)
         {
-            var length = invocation.CallInfo.Arity;
+            var length = invocation.CallSite.CallInfo.Arity;
             var methods = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
 
             if(methods.Length == 0)
@@ -72,11 +72,11 @@ namespace Mint.MethodBinding.Methods
             var bundle = Variable(typeof(ArgumentBundle), "bundle");
             var returnTarget = Label(typeof(iObject), "return");
 
-            var bundleInfo = new Invocation(invocation.CallInfo, invocation.Instance, bundle);
+            var bundleInfo = new Invocation(invocation.CallSite, invocation.Instance, bundle);
 
             var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind());
 
-            var createBundleExpression = Call(Constant(invocation.CallInfo), METHOD_BUNDLE, invocation.Arguments);
+            var createBundleExpression = Call(Constant(invocation.CallSite.CallInfo), METHOD_BUNDLE, invocation.Arguments);
 
             var bundleAssignExpression = Assign(bundle, createBundleExpression);
             var throwExpression = ThrowTypeExpression(invocation.Arguments, methods);

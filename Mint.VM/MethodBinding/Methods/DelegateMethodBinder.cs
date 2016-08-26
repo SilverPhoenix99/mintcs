@@ -34,7 +34,7 @@ namespace Mint.MethodBinding.Methods
         {
             // TODO parameter check
 
-            var length = invocation.CallInfo.Arguments.Count;
+            var length = invocation.CallSite.CallInfo.Arguments.Count;
             var parameterTypes = function.Method.GetParameters().Select(_ => _.ParameterType);
 
             var unsplatArgs = new[] { invocation.Instance }.Concat(
