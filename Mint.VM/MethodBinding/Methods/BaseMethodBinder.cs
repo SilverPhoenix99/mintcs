@@ -47,7 +47,7 @@ namespace Mint.MethodBinding.Methods
             Arity = other.Arity;
         }
 
-        public abstract Expression Bind(Invocation invocation);
+        public abstract Expression Bind(CallFrameBinder frame);
 
         public abstract MethodBinder Duplicate(Symbol newName);
 

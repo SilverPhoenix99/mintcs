@@ -11,7 +11,7 @@ namespace Mint.MethodBinding.Methods
         Arity Arity { get; }
         Visibility Visibility { get; }
 
-        Expression Bind(Invocation invocation);
+        Expression Bind(CallFrameBinder frame);
 
         MethodBinder Duplicate();
 

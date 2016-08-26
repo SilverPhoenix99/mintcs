@@ -59,9 +59,9 @@ namespace Mint.MethodBinding.Methods
 
         public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
-        public override Expression Bind(Invocation invocation)
+        public override Expression Bind(CallFrameBinder frame)
         {
-            var length = invocation.CallSite.Arity;
+            var length = frame.CallSite.Arity;
             var methods = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
 
             if(methods.Length == 0)
@@ -72,14 +72,14 @@ namespace Mint.MethodBinding.Methods
             var bundle = Variable(typeof(ArgumentBundle), "bundle");
             var returnTarget = Label(typeof(iObject), "return");
 
-            var bundleInfo = new Invocation(invocation.CallSite, invocation.Instance, bundle);
+            var bundledFrame = new CallFrameBinder(frame.CallSite, frame.Instance, bundle);
 
-            var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundleInfo, returnTarget).Bind());
+            var body = methods.Select(info => new ClrMethodInvocationEmitter(info, bundledFrame, returnTarget).Bind());
 
-            var createBundleExpression = Call(Constant(invocation.CallSite), METHOD_BUNDLE, invocation.Arguments);
+            var createBundleExpression = Call(Constant(frame.CallSite), METHOD_BUNDLE, frame.Arguments);
 
             var bundleAssignExpression = Assign(bundle, createBundleExpression);
-            var throwExpression = ThrowTypeExpression(invocation.Arguments, methods);
+            var throwExpression = ThrowTypeExpression(frame.Arguments, methods);
             var returnExpression = Label(returnTarget, throwExpression);
 
             return Block(typeof(iObject), new[] { bundle },

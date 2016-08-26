@@ -53,7 +53,7 @@
     <Compile Include="MethodBinding\Compilation\MegamorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\Compilation\MonomorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\Compilation\PolymorphicCallCompiler.cs" />
-    <Compile Include="MethodBinding\Invocation.cs" />
+    <Compile Include="MethodBinding\CallFrameBinder.cs" />
     <Compile Include="MethodBinding\Methods\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodInvocationEmitter.cs" />

@@ -36,8 +36,8 @@ namespace Mint.MethodBinding.Compilation
         {
             var instance = Parameter(typeof(iObject), "instance");
             var arguments = Parameter(typeof(iObject[]), "arguments");
-            var invocation = new Invocation(CallSite, instance, arguments);
-            var body = binder.Bind(invocation);
+            var frame = new CallFrameBinder(CallSite, instance, arguments);
+            var body = binder.Bind(frame);
             var lambda = Lambda<Function>(body, instance, arguments);
             return lambda.Compile();
         }
