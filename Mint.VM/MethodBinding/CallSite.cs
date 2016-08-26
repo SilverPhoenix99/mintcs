@@ -11,29 +11,29 @@ namespace Mint.MethodBinding
     {
         public Visibility Visibility { get; }
         public Symbol MethodName { get; }
-        public IList<ArgumentKind> Arguments { get; }
-        public int Arity => Arguments.Count;
+        public IList<ArgumentKind> ArgumentKinds { get; }
+        public int Arity => ArgumentKinds.Count;
         public CallCompiler CallCompiler { get; set; }
         public Function Call { get; set; }
 
-        public CallSite(Symbol methodName, Visibility visibility, params ArgumentKind[] arguments)
+        public CallSite(Symbol methodName, Visibility visibility, params ArgumentKind[] argumentKinds)
         {
             MethodName = methodName;
             Visibility = visibility;
-            Arguments = System.Array.AsReadOnly(arguments);
+            ArgumentKinds = System.Array.AsReadOnly(argumentKinds);
             Call = DefaultCall;
         }
 
-        public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> arguments)
-            : this(methodName, visibility, arguments?.ToArray() ?? System.Array.Empty<ArgumentKind>())
+        public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> argumentKinds)
+            : this(methodName, visibility, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
 
-        public CallSite(Symbol methodName, params ArgumentKind[] arguments)
-            : this(methodName, Visibility.Public, arguments)
+        public CallSite(Symbol methodName, params ArgumentKind[] argumentKinds)
+            : this(methodName, Visibility.Public, argumentKinds)
         { }
 
-        public CallSite(Symbol methodName, IEnumerable<ArgumentKind> arguments)
-            : this(methodName, arguments?.ToArray() ?? System.Array.Empty<ArgumentKind>())
+        public CallSite(Symbol methodName, IEnumerable<ArgumentKind> argumentKinds)
+            : this(methodName, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
 
         private iObject DefaultCall(iObject instance, iObject[] arguments)
@@ -48,13 +48,13 @@ namespace Mint.MethodBinding
 
         public override string ToString()
         {
-            var parameters = string.Join(", ", Arguments.Select(_ => _.Description));
-            return $"CallSite<\"{MethodName}\"<{Arity}>({parameters})>";
+            var argumentKinds = string.Join(", ", ArgumentKinds.Select(_ => _.Description));
+            return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
         }
 
         public ArgumentBundle CreateBundle(params iObject[] arguments)
         {
-            var bundle = new ArgumentBundle(Arguments);
+            var bundle = new ArgumentBundle(ArgumentKinds);
             bundle.AddAll(arguments);
             return bundle;
         }
