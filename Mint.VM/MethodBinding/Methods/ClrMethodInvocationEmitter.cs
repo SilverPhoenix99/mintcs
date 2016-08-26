@@ -39,8 +39,7 @@ namespace Mint.MethodBinding.Methods
             }
 
             var parameterBinders = Call(METHOD_GETPARAMETERBINDERS, Constant(Method));
-            var unbundleExpression = ArgumentBundle.UnbundleCallExpression(
-                BundleInfo.Arguments, parameterBinders);
+            var unbundleExpression = ArgumentBundle.Expressions.CallUnbundle(BundleInfo.Arguments, parameterBinders);
 
             var argumentsAssign = Assign(ArgumentArray, unbundleExpression);
 
