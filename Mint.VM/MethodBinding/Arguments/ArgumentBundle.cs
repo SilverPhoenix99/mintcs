@@ -31,12 +31,14 @@ namespace Mint.MethodBinding.Arguments
             Block = block;
         }
 
-        public ArgumentBundle(IList<ArgumentKind> kinds)
+        public ArgumentBundle(IList<ArgumentKind> kinds, params iObject[] arguments)
             : this(kinds, new List<iObject>(), new LinkedDictionary<iObject, iObject>(), null)
-        { }
-
-        public void AddAll(iObject[] arguments)
         {
+            if(arguments.Length == 0)
+            {
+                return;
+            }
+
             if(arguments.Length != ArgumentKinds.Count)
             {
                 throw new ArgumentException("number of arguments does not match.");

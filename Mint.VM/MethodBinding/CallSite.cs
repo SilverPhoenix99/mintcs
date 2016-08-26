@@ -52,11 +52,6 @@ namespace Mint.MethodBinding
             return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
         }
 
-        public ArgumentBundle CreateBundle(params iObject[] arguments)
-        {
-            var bundle = new ArgumentBundle(ArgumentKinds);
-            bundle.AddAll(arguments);
-            return bundle;
-        }
+        public ArgumentBundle CreateBundle(params iObject[] arguments) => new ArgumentBundle(ArgumentKinds, arguments);
     }
 }
