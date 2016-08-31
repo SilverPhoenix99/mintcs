@@ -42,7 +42,9 @@ namespace Mint.Compilation
             ListComponent = new ListCompiler(this);
 
             Register(ListComponent, kBEGIN, kELSE, tSTRING_DBEG);
-            Register(new ConstantCompiler(this), kFALSE, kNIL, kTRUE);
+            Register(new NilCompiler(this), kNIL);
+            Register(new TrueCompiler(this), kTRUE);
+            Register(new FalseCompiler(this), kFALSE);
             Register(new IntegerCompiler(this), tINTEGER);
             Register(new FloatCompiler(this), tFLOAT);
             Register(new StringContentCompiler(this), tSTRING_CONTENT);

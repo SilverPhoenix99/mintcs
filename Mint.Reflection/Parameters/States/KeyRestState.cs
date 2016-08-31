@@ -2,11 +2,11 @@ using System.Reflection;
 
 namespace Mint.Reflection.Parameters
 {
-    public partial class ParameterInformation
+    public partial class ParameterCounter
     {
         internal class KeyRestState : BaseParameterState
         {
-            public KeyRestState(ParameterInformation parameterInformation) : base(parameterInformation) { }
+            public KeyRestState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
             public override ParameterState Parse(ParameterInfo info)
             {
@@ -21,12 +21,12 @@ namespace Mint.Reflection.Parameters
 
             private void UpdateWith(ParameterInfo info)
             {
-                if(ParameterInformation.HasKeyRest)
+                if(ParameterCounter.HasKeyRest)
                 {
                     DuplicateParameterError("keywords", info);
                 }
 
-                ParameterInformation.HasKeyRest = true;
+                ParameterCounter.HasKeyRest = true;
             }
         }
     }

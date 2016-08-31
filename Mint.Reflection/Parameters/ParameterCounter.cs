@@ -1,9 +1,10 @@
-using System.Collections.Generic;
+using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Mint.Reflection.Parameters
 {
-    public partial class ParameterInformation
+    public partial class ParameterCounter : Attribute
     {
         // parameters, if specified, will follow this order:
         // Required, Optional, Rest, Required, (KeyRequired | KeyOptional), KeyRest, Block
@@ -17,27 +18,23 @@ namespace Mint.Reflection.Parameters
         public bool HasKeyRest { get; private set; }
         public bool HasBlock { get; private set; }
 
+        public bool HasKeywords => KeyRequired > 0 || KeyOptional > 0 || HasKeyRest;
+
         public Arity Arity
         {
             get
             {
-                var min = PrefixRequired + SuffixRequired + KeyRequired;
-                var max = HasRest || HasKeyRest
-                        ? int.MaxValue
-                        : min + Optional + KeyOptional + (HasBlock ? 1 : 0);
-
+                var min = PrefixRequired + SuffixRequired;
+                var max = HasRest ? int.MaxValue : min + Optional;
                 return new Arity(min, max);
             }
         }
 
-        public ParameterInformation(IEnumerable<ParameterInfo> parameterInfos)
+        public ParameterCounter(MethodInfo methodInfo)
         {
-            ParameterState state = new RequiredPrefixState(this);
-
-            foreach(var parameterInfo in parameterInfos)
-            {
-                state = state.Parse(parameterInfo);
-            }
+            var parameterInfos = methodInfo.GetParameters();
+            ParameterState initialState = new RequiredPrefixState(this);
+            parameterInfos.Aggregate(initialState, (state, paramInfo) => state.Parse(paramInfo));
         }
     }
 }

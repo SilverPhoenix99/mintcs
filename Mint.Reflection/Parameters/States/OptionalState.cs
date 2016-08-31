@@ -2,18 +2,18 @@
 
 namespace Mint.Reflection.Parameters
 {
-    public partial class ParameterInformation
+    public partial class ParameterCounter
     {
         private class OptionalState : BaseParameterState
         {
-            public OptionalState(ParameterInformation parameterInformation) : base(parameterInformation) { }
+            public OptionalState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
             public override ParameterState Parse(ParameterInfo info)
             {
                 switch(info.GetParameterKind())
                 {
                     case ParameterKind.Required:    return ParseInfoWith<RequiredSuffixState>(info);
-                    case ParameterKind.Optional:    ParameterInformation.Optional++; return this;
+                    case ParameterKind.Optional:    ParameterCounter.Optional++; return this;
                     case ParameterKind.Rest:        return ParseInfoWith<RestState>(info);
                     case ParameterKind.KeyRequired: goto case ParameterKind.KeyOptional;
                     case ParameterKind.KeyOptional: return ParseInfoWith<KeyState>(info);

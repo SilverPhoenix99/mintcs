@@ -6,7 +6,7 @@ namespace Mint.MethodBinding.Parameters
 {
     internal class BlockParameterBinder : ParameterBinder
     {
-        public BlockParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public BlockParameterBinder(ParameterInfo parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 

@@ -53,19 +53,11 @@ namespace Mint.MethodBinding.Methods
 
         public MethodBinder Duplicate() => Duplicate(Name);
 
-        protected internal static Expression Box(Expression expression)
+        protected static Expression Box(Expression expression)
         {
-            if(expression.Type == typeof(void))
-            {
-                return Block(expression, BindingUtils.NIL);
-            }
-
-            if(!typeof(iObject).IsAssignableFrom(expression.Type))
-            {
-                return Call(BindingUtils.OBJECT_BOX, expression.Cast<object>());
-            }
-
-            return expression.Type == typeof(iObject) ? expression : expression.Cast<iObject>();
+            return expression.Type == typeof(void)
+                ? (Expression) Block(expression, BindingUtils.NIL)
+                : Call(BindingUtils.OBJECT_BOX, expression.Cast<object>());
         }
 
         protected internal static Expression TypeIs(Expression expression, Type type)

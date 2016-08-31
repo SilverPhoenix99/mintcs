@@ -2,11 +2,11 @@
 
 namespace Mint.Reflection.Parameters
 {
-    public partial class ParameterInformation
+    public partial class ParameterCounter
     {
         private class BlockState : BaseParameterState
         {
-            public BlockState(ParameterInformation parameterInformation) : base(parameterInformation) { }
+            public BlockState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
             public override ParameterState Parse(ParameterInfo info)
             {
@@ -20,12 +20,12 @@ namespace Mint.Reflection.Parameters
 
             private void UpdateWith(ParameterInfo info)
             {
-                if(ParameterInformation.HasBlock)
+                if(ParameterCounter.HasBlock)
                 {
                     DuplicateParameterError("block", info);
                 }
 
-                ParameterInformation.HasBlock = true;
+                ParameterCounter.HasBlock = true;
             }
         }
     }

@@ -1,4 +1,3 @@
-using System.CodeDom.Compiler;
 using Mint.MethodBinding.Arguments;
 using Mint.Reflection;
 using System.Collections.Generic;
@@ -11,26 +10,42 @@ namespace Mint.MethodBinding.Methods
 {
     public sealed partial class ClrMethodBinder
     {
+        /*
+         * Stub:
+         *
+         * (iObject $instance, ArgumentBundle $bundle) => {
+         *
+         *     var $arguments = $bundle.Unbundle(@__MethodInformation.GetParameterBinders());
+         *     
+         *     if(<type check all arguments>)
+         *     {
+         *         // e.g., when instance method and requires boxing:
+         *         return Object.Box(<instance>.<method>($arguments[0], ..., $arguments[@n]));
+         *         
+         *         // e.g., when static method and doesn't requires boxing:
+         *         return <class>.<method>($instance, $arguments[0], ..., $arguments[@n]);
+         *     }
+         * }
+         */
         private class CallEmitter
         {
-            private static readonly MethodInfo METHOD_GETPARAMETERBINDERS = Reflector<MethodInformation>.Method(
+            private static readonly MethodInfo METHOD_GETPARAMETERBINDERS = Reflector<MethodInfo>.Method(
                 _ => _.GetParameterBinders()
             );
 
-            private MethodInformation Method { get; }
-            private MethodInfo MethodInfo => Method.MethodInfo;
+            private MethodInfo Method { get; }
             private CallFrameBinder BundledFrame { get; }
             private LabelTarget Return { get; }
             private ParameterExpression ArgumentArray { get; }
             private ParameterInfo[] ParameterInfos { get; }
 
-            public CallEmitter(MethodInformation method, CallFrameBinder bundledFrame, LabelTarget returnTarget)
+            public CallEmitter(MethodInfo method, CallFrameBinder bundledFrame, LabelTarget returnTarget)
             {
                 Method = method;
                 BundledFrame = bundledFrame;
                 Return = returnTarget;
                 ArgumentArray = Variable(typeof(iObject[]), "arguments");
-                ParameterInfos = MethodInfo.GetParameters();
+                ParameterInfos = Method.GetParameters();
             }
 
             public Expression Bind()
@@ -60,21 +75,21 @@ namespace Mint.MethodBinding.Methods
             {
                 var argument = ArrayIndex(ArgumentArray, Constant(position));
                 var parameter = ParameterInfos[position];
-                return BaseMethodBinder.TypeIs(argument, parameter.ParameterType);
+                return TypeIs(argument, parameter.ParameterType);
             }
 
             private Expression MakeCallWithReturn()
             {
                 var instance = BundledFrame.Instance;
 
-                if(MethodInfo.DeclaringType != null)
+                if(Method.DeclaringType != null)
                 {
-                    instance = instance.Cast(MethodInfo.DeclaringType);
+                    instance = instance.Cast(Method.DeclaringType);
                 }
 
-                var parameters = MethodInfo.GetParameters();
+                var parameters = Method.GetParameters();
                 IEnumerable<Expression> arguments;
-                if(MethodInfo.IsStatic)
+                if(Method.IsStatic)
                 {
                     var convertedArgs = parameters.Skip(1).Select(ConvertArgument);
                     arguments = new[] { instance }.Concat(convertedArgs);
@@ -85,26 +100,14 @@ namespace Mint.MethodBinding.Methods
                     arguments = parameters.Select(ConvertArgument);
                 }
 
-                var callExpression = Box(Call(instance, MethodInfo, arguments));
+                var callExpression = Box(Call(instance, Method, arguments));
                 return Return(Return, callExpression);
             }
 
             private Expression ConvertArgument(ParameterInfo parameter)
             {
                 var argument = ArrayIndex(ArgumentArray, Constant(parameter.Position));
-                return BaseMethodBinder.TryConvert(argument, parameter.ParameterType);
-            }
-
-            private static Expression Box(Expression expression)
-            {
-                expression = BaseMethodBinder.Box(expression);
-                var result = Variable(typeof(iObject), "result");
-                return Block(
-                    typeof(iObject),
-                    new[] { result },
-                    Assign(result, expression),
-                    Condition(Equal(result, Constant(null)), BindingUtils.NIL, result)
-                );
+                return TryConvert(argument, parameter.ParameterType);
             }
         }
     }

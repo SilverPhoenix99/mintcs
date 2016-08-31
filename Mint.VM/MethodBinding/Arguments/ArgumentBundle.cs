@@ -11,15 +11,28 @@ namespace Mint.MethodBinding.Arguments
     public class ArgumentBundle
     {
         public IList<ArgumentKind> ArgumentKinds { get; }
+
         public IList<iObject> Splat { get; set; }
-        public IDictionary<iObject, iObject> Keys { get; set; }
+
+        private Hash keywords;
+        public Hash Keywords
+        {
+            get { return keywords ?? (keywords = GetOrCreateKeysArgument()); }
+            set { keywords = value; }
+        }
+
         public iObject Block { get; set; }
+
+        public int Arity => Splat.Count;
+
+        public bool HasKeyArguments =>
+            ArgumentKinds.Any(kind => kind == ArgumentKind.Key || kind == ArgumentKind.KeyRest);
 
         public ArgumentBundle(IList<ArgumentKind> kinds, params iObject[] arguments)
         {
             ArgumentKinds = kinds;
             Splat = new List<iObject>();
-            Keys = new LinkedDictionary<iObject, iObject>();
+            Keywords = new Hash();
             Block = null;
 
             if(arguments.Length == 0)
@@ -40,10 +53,26 @@ namespace Mint.MethodBinding.Arguments
             }
         }
 
+        private Hash GetOrCreateKeysArgument()
+        {
+            if(!HasKeyArguments)
+            {
+                // create empty stub if needed,
+                // but don't add it to Splat, since it affects Arity.
+                return Splat.LastOrDefault() as Hash ?? new Hash();
+            }
+
+            var keys = new Hash();
+            Splat.Add(keys);
+            return keys;
+        }
+
         public iObject[] Unbundle(IEnumerable<ParameterBinder> binders) =>
             binders.Select(binder => binder.Bind(this)).ToArray();
 
-        public class Expressions
+        public void ValidateArity(MethodInfo methodInfo) => new ArityValidator(this, methodInfo).Validate();
+
+        public static class Expressions
         {
             private static readonly MethodInfo METHOD_UNBUNDLE = Reflector<ArgumentBundle>.Method(
                 _ => _.Unbundle(default(IEnumerable<ParameterBinder>))

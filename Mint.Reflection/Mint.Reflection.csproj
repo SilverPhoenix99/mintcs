@@ -36,7 +36,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Arity.cs" />
-    <Compile Include="MethodInformation.cs" />
     <Compile Include="Parameters\Attributes\BlockAttribute.cs" />
     <Compile Include="Parameters\Attributes\KeyAttribute.cs" />
     <Compile Include="Parameters\Attributes\OptionalAttribute.cs" />
@@ -48,7 +47,7 @@
     <Compile Include="Parameters\States\KeyRestState.cs" />
     <Compile Include="Parameters\States\KeyState.cs" />
     <Compile Include="Parameters\States\OptionalState.cs" />
-    <Compile Include="Parameters\ParameterInformation.cs" />
+    <Compile Include="Parameters\ParameterCounter.cs" />
     <Compile Include="Parameters\ParameterKind.cs" />
     <Compile Include="Parameters\States\ParameterState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

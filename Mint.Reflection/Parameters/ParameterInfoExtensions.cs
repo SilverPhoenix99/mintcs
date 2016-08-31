@@ -12,6 +12,12 @@ namespace Mint.Reflection.Parameters
 
         public static bool IsKey(this ParameterInfo parameterInfo) => parameterInfo.HasAttribute<KeyAttribute>();
 
+        public static bool IsKeyRequired(this ParameterInfo parameterInfo) =>
+            parameterInfo.IsKey() && !parameterInfo.IsOptional() && !parameterInfo.IsRest();
+
+        public static bool IsKeyOptional(this ParameterInfo parameterInfo) =>
+            parameterInfo.IsKey() && parameterInfo.IsOptional();
+
         public static bool IsBlock(this ParameterInfo parameterInfo) => parameterInfo.HasAttribute<BlockAttribute>();
 
         public static bool IsKeyRest(this ParameterInfo parameterInfo) =>

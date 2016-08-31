@@ -2,11 +2,11 @@
 
 namespace Mint.Reflection.Parameters
 {
-    public partial class ParameterInformation
+    public partial class ParameterCounter
     {
         private class RestState : BaseParameterState
         {
-            public RestState(ParameterInformation parameterInformation) : base(parameterInformation) { }
+            public RestState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
             public override ParameterState Parse(ParameterInfo info)
             {
@@ -25,12 +25,12 @@ namespace Mint.Reflection.Parameters
 
             private void UpdateWith(ParameterInfo info)
             {
-                if(ParameterInformation.HasRest)
+                if(ParameterCounter.HasRest)
                 {
                     DuplicateParameterError("rest", info);
                 }
 
-                ParameterInformation.HasRest = true;
+                ParameterCounter.HasRest = true;
             }
         }
     }

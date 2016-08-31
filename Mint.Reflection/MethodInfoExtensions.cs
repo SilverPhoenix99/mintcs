@@ -1,6 +1,7 @@
 ﻿using Mint.Reflection.Parameters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,30 +10,7 @@ namespace Mint.Reflection
 {
     public static class MethodInfoExtensions
     {
-        public static Tuple<long, long> CalculateArity(this MethodInfo methodInfo)
-        {
-            var parameters = methodInfo.GetParameters();
-            var numOptionalParameters = parameters.Count(p => p.IsOptional());
-            var numVarArgs = parameters.Count(p => p.IsRest() || p.IsKeyRest());
-
-            var min = parameters.LongLength - numOptionalParameters - numVarArgs;
-            var max = parameters.LongLength;
-
-            if(methodInfo.IsStatic)
-            {
-                min--;
-                max--;
-            }
-
-            if(numVarArgs != 0)
-            {
-                max = long.MaxValue;
-            }
-
-            return new Tuple<long, long>(min, max);
-        }
-
-        public static IEnumerable<MethodInfo> GetExtensionOverloads(this MethodInfo method)
+        public static IEnumerable<MethodInfo> GetExtensionOverloads(this MethodInfo methodInfo)
         {
             return
                 from assembly in AppDomain.CurrentDomain.GetAssemblies()
@@ -43,8 +21,8 @@ namespace Mint.Reflection
                    && type.IsDefined(typeof(ExtensionAttribute), false)
                 from m in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
                 where m.IsDefined(typeof(ExtensionAttribute), false)
-                   && m.Name == method.Name
-                   && Matches(m.GetParameters()[0], method.DeclaringType)
+                   && m.Name == methodInfo.Name
+                   && Matches(m.GetParameters()[0], methodInfo.DeclaringType)
                 select m
             ;
         }
@@ -60,6 +38,18 @@ namespace Mint.Reflection
 
             var constraints = info.ParameterType.GetGenericParameterConstraints();
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
+        }
+
+        public static ParameterCounter GetParameterCounter(this MethodInfo methodInfo)
+        {
+            var counter = TypeDescriptor.GetAttributes(methodInfo)[typeof(ParameterCounter)] as ParameterCounter;
+            if(counter == null)
+            {
+                counter = new ParameterCounter(methodInfo);
+                TypeDescriptor.AddAttributes(methodInfo, counter);
+            }
+
+            return counter;
         }
     }
 }

@@ -7,9 +7,9 @@ namespace Mint.MethodBinding.Parameters
     public abstract class ParameterBinder
     {
         public ParameterInfo Parameter { get; }
-        public ParameterInformation ParameterCounter { get; }
+        public ParameterCounter ParameterCounter { get; }
 
-        public ParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public ParameterBinder(ParameterInfo parameter, ParameterCounter counter)
         {
             Parameter = parameter;
             ParameterCounter = counter;

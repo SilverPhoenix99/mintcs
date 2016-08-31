@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,9 @@ namespace Mint
                 this[pair.Key] = pair.Value;
             }
         }
+
+        internal Hash(Hash other) : this(other.map)
+        { }
 
         public iObject this[iObject key]
         {
@@ -72,5 +76,9 @@ namespace Mint
         }
 
         public Hash Merge(Hash otherHash) => new Hash(map).MergeSelf(otherHash);
+
+        public bool HasKey(iObject key) => map.ContainsKey(key);
+
+        public Hash Duplicate() => new Hash(this);
     }
 }

@@ -10,7 +10,7 @@ namespace Mint.MethodBinding.Arguments
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {
                 var labeledArg = (Array) argument;
-                bundle.Keys[labeledArg[0]] = labeledArg[1];
+                bundle.Keywords[labeledArg[0]] = labeledArg[1];
             }
         }
 	}

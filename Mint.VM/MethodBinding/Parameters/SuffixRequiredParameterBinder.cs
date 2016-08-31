@@ -6,7 +6,7 @@ namespace Mint.MethodBinding.Parameters
 {
     internal class SuffixRequiredParameterBinder : ParameterBinder
     {
-        public SuffixRequiredParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public SuffixRequiredParameterBinder(ParameterInfo parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 

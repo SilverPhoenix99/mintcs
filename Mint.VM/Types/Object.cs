@@ -18,6 +18,7 @@ namespace Mint
 
         public static iObject Box(object value)
         {
+            if(value == null) return new NilClass();
             if(value is iObject) return (iObject) value;
             if(value is string) return Box((string) value);
             if(value is bool) return Box((bool) value);

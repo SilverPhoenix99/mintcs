@@ -57,9 +57,9 @@
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\ComplexSymbolCompiler.cs" />
-    <Compile Include="Compilation\Components\ConstantCompiler.cs" />
     <Compile Include="Compilation\Components\DivisionCompiler.cs" />
     <Compile Include="Compilation\Components\EqualCompiler.cs" />
+    <Compile Include="Compilation\Components\FalseCompiler.cs" />
     <Compile Include="Compilation\Components\FileNameCompiler.cs" />
     <Compile Include="Compilation\Components\FloatCompiler.cs" />
     <Compile Include="Compilation\Components\GreaterOrEqualCompiler.cs" />
@@ -81,6 +81,7 @@
     <Compile Include="Compilation\Components\ModulusCompiler.cs" />
     <Compile Include="Compilation\Components\MultiplationCompiler.cs" />
     <Compile Include="Compilation\Components\NegationCompiler.cs" />
+    <Compile Include="Compilation\Components\NilCompiler.cs" />
     <Compile Include="Compilation\Components\NotCompiler.cs" />
     <Compile Include="Compilation\Components\NotEqualCompiler.cs" />
     <Compile Include="Compilation\Components\NotOperatorCompiler.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Compilation\Components\StringContentCompiler.cs" />
     <Compile Include="Compilation\Components\SubtractionCompiler.cs" />
     <Compile Include="Compilation\Components\SymbolWordsCompiler.cs" />
+    <Compile Include="Compilation\Components\TrueCompiler.cs" />
     <Compile Include="Compilation\Components\UMinusNumCompiler.cs" />
     <Compile Include="Compilation\Components\UnaryMinusCompiler.cs" />
     <Compile Include="Compilation\Components\UnaryOperatorCompiler.cs" />

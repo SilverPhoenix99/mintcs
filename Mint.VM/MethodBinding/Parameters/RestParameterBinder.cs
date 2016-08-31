@@ -7,7 +7,7 @@ namespace Mint.MethodBinding.Parameters
 {
     internal class RestParameterBinder : ParameterBinder
     {
-        public RestParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public RestParameterBinder(ParameterInfo parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 
@@ -29,7 +29,7 @@ namespace Mint.MethodBinding.Parameters
 
             if(restIncludesKeyRest)
             {
-                result.Add(new Hash(bundle.Keys));
+                result.Add(bundle.Keywords.Duplicate());
             }
 
             return result;

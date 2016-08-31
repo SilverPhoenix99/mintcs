@@ -6,6 +6,7 @@ using System.Linq;
 namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, params iObject[] arguments);
+    // public delegate iObject Function(iObject instance, ArgumentBundle bundle, CallFrame frame);
 
     public sealed class CallSite
     {

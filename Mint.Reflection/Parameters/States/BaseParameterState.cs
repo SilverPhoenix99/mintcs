@@ -5,17 +5,17 @@ namespace Mint.Reflection.Parameters
 {
     internal abstract class BaseParameterState : ParameterState
     {
-        protected readonly ParameterInformation ParameterInformation;
+        protected readonly ParameterCounter ParameterCounter;
 
-        protected BaseParameterState(ParameterInformation parameterInformation)
+        protected BaseParameterState(ParameterCounter parameterCounter)
         {
-            ParameterInformation = parameterInformation;
+            ParameterCounter = parameterCounter;
         }
 
         public abstract ParameterState Parse(ParameterInfo info);
 
         protected ParameterState ParseInfoWith<T>(ParameterInfo info) where T : ParameterState =>
-            ((ParameterState) Activator.CreateInstance(typeof(T), ParameterInformation)).Parse(info);
+            ((ParameterState) Activator.CreateInstance(typeof(T), ParameterCounter)).Parse(info);
 
         protected static ParameterState InvalidParameterError(ParameterInfo info)
         {

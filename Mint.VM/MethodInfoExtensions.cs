@@ -1,20 +1,33 @@
 ﻿using Mint.MethodBinding.Parameters;
 using Mint.Reflection;
 using Mint.Reflection.Parameters;
-using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Mint
 {
     internal static class MethodInfoExtensions
     {
-        public static IEnumerable<ParameterBinder> GetParameterBinders(this MethodInformation methodInformation)
+        public static IEnumerable<ParameterBinder> GetParameterBinders(this MethodInfo methodInfo)
         {
-            var parameterInfos = methodInformation.MethodInfo.GetParameterEnumerator();
-            var parameterInformation = methodInformation.ParameterInformation;
+            var descriptor = TypeDescriptor.GetAttributes(methodInfo);
+            var binders = descriptor[typeof(ParameterBinderCollection)] as ParameterBinderCollection;
+
+            if(binders == null)
+            {
+                binders = new ParameterBinderCollection(CreateParameterBinders(methodInfo).ToArray());
+                TypeDescriptor.AddAttributes(methodInfo, binders);
+            }
+
+            return binders.Binders;
+        }
+
+        private static IEnumerable<ParameterBinder> CreateParameterBinders(MethodInfo methodInfo)
+        {
+            var parameterInfos = methodInfo.GetParameterEnumerator();
+            var parameterInformation = methodInfo.GetParameterCounter();
             for(var i = 0; i < parameterInformation.PrefixRequired; i++)
             {
                 var parameterInfo = parameterInfos.Next();

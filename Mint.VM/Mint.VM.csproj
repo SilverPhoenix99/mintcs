@@ -39,6 +39,7 @@
     <Compile Include="ArgumentError.cs" />
     <Compile Include="MethodBinding\Arguments\ArgumentBundle.cs" />
     <Compile Include="MethodBinding\Arguments\ArgumentKind.cs" />
+    <Compile Include="MethodBinding\Arguments\ArityValidator.cs" />
     <Compile Include="MethodBinding\Arguments\BlockArgumentKind.cs" />
     <Compile Include="MethodBinding\Arguments\KeyArgumentKind.cs" />
     <Compile Include="MethodBinding\Arguments\KeyRestArgumentKind.cs" />
@@ -55,9 +56,11 @@
     <Compile Include="MethodBinding\Compilation\PolymorphicCallCompiler.cs" />
     <Compile Include="MethodBinding\CallFrameBinder.cs" />
     <Compile Include="MethodBinding\Methods\BaseMethodBinder.cs" />
+    <Compile Include="MethodBinding\Methods\CallFrame.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodBinder.CallEmitter.cs" />
     <Compile Include="MethodBinding\Methods\DelegateMethodBinder.cs" />
+    <Compile Include="MethodBinding\Methods\LocalVariable.cs" />
     <Compile Include="MethodBinding\Methods\MethodBinder.cs" />
     <Compile Include="MethodBinding\Parameters\BlockParameterBinder.cs" />
     <Compile Include="MethodBinding\Parameters\KeyOptionalParameterBinder.cs" />
@@ -77,6 +80,7 @@
     <Compile Include="ModuleBuilder.cs" />
     <Compile Include="NameError.cs" />
     <Compile Include="NoMethodError.cs" />
+    <Compile Include="ParameterBinderCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeError.cs" />
     <Compile Include="TypeError.cs" />

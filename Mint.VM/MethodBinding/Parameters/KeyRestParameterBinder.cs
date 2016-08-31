@@ -6,7 +6,7 @@ namespace Mint.MethodBinding.Parameters
 {
     internal class KeyRestParameterBinder : ParameterBinder
     {
-        public KeyRestParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public KeyRestParameterBinder(ParameterInfo parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 

@@ -12,33 +12,33 @@ namespace Mint.MethodBinding.Methods
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
         private static readonly MethodInfo INVALID_CONVERSION_METHOD = Reflector.Method(
-            () => InvalidConversionMessage(default(MethodInformation[]), default(iObject[]))
+            () => InvalidConversionMessage(default(MethodInfo[]), default(iObject[]))
         );
 
         private static readonly MethodInfo METHOD_BUNDLE = Reflector<CallSite>.Method(
-        _ => _.CreateBundle(default(iObject[]))
+            _ => _.CreateBundle(default(iObject[]))
         );
 
         private static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
         private static readonly ConstructorInfo CTOR_TYPEERROR = Reflector.Ctor<TypeError>(typeof(string));
 
-        private readonly MethodInformation[] methodInformations;
+        private readonly MethodInfo[] methodInfos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method, Visibility visibility = Visibility.Public)
             : base(name, owner, visibility)
         {
-            methodInformations = GetOverloads(method);
-            Debug.Assert(methodInformations.Length != 0);
+            methodInfos = GetOverloads(method);
+            Debug.Assert(methodInfos.Length != 0);
             Arity = CalculateArity();
         }
 
         private ClrMethodBinder(Symbol newName, ClrMethodBinder other)
             : base(newName, other)
         {
-            methodInformations = (MethodInformation[]) other.methodInformations.Clone();
+            methodInfos = (MethodInfo[]) other.methodInfos.Clone();
         }
 
-        private static MethodInformation[] GetOverloads(MethodInfo method)
+        private static MethodInfo[] GetOverloads(MethodInfo method)
         {
             var methods =
                 from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
@@ -51,18 +51,18 @@ namespace Mint.MethodBinding.Methods
                 methods = methods.Concat(new[] { method });
             }
 
-            return methods.Concat(method.GetExtensionOverloads()).Select(_ => new MethodInformation(_)).ToArray();
+            return methods.Concat(method.GetExtensionOverloads()).ToArray();
         }
 
         private Arity CalculateArity() =>
-            methodInformations.Select(_ => _.ParameterInformation.Arity).Aggregate((left, right) => left.Merge(right));
+            methodInfos.Select(_ => _.GetParameterCounter().Arity).Aggregate((left, right) => left.Merge(right));
 
         public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(CallFrameBinder frame)
         {
             var length = frame.CallSite.Arity;
-            var methods = methodInformations.Where(_ => _.ParameterInformation.Arity.Include(length)).ToArray();
+            var methods = methodInfos.Where(_ => _.GetParameterCounter().Arity.Include(length)).ToArray();
 
             if(methods.Length == 0)
             {
@@ -95,12 +95,12 @@ namespace Mint.MethodBinding.Methods
                 New(
                     CTOR_ARGERROR,
                     Constant($"wrong number of arguments (given {length}, expected {Arity})")
-                    ),
+                ),
                 typeof(iObject)
-                );
+            );
         }
 
-        private static Expression ThrowTypeExpression(Expression arguments, MethodInformation[] methods)
+        private static Expression ThrowTypeExpression(Expression arguments, MethodInfo[] methods)
         {
             return Throw(
                 New(
@@ -110,7 +110,7 @@ namespace Mint.MethodBinding.Methods
                 );
         }
 
-        private static string InvalidConversionMessage(MethodInformation[] methods, iObject[] arguments)
+        private static string InvalidConversionMessage(MethodInfo[] methods, iObject[] arguments)
         {
             // TODO
 

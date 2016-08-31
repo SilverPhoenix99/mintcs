@@ -12,7 +12,7 @@ namespace Mint.MethodBinding.Arguments
                 foreach(var pair in (Hash) argument)
                 {
                     var array = (Array) pair;
-                    bundle.Keys[array[0]] = array[1];
+                    bundle.Keywords[array[0]] = array[1];
                 }
             }
         }

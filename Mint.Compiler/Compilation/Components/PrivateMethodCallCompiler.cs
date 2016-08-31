@@ -1,26 +1,29 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Mint.MethodBinding;
-using Mint.MethodBinding.Arguments;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
     internal class PrivateMethodCallCompiler : CompilerComponentBase
     {
         protected string MethodName => Node[1].Value.Value;
+
         private Ast<Token> ArgumentsNode => Node[2];
+
+        // remove empty double splats: `**{}`
+        private IEnumerable<Ast<Token>> Arguments => ArgumentsNode.Where(
+            arg => arg.Value.Type != kDSTAR || arg[0].Value.Type != kLBRACE || arg[0].List.Count != 0
+        );
 
         public PrivateMethodCallCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override void Shift()
         {
-            var blockNode = ArgumentsNode.FirstOrDefault(
-                _ => _.Value.Type == kDO || _.Value.Type == kLBRACE2
-            );
+            var blockNode = ArgumentsNode.FirstOrDefault(_ => _.Value.Type == kDO || _.Value.Type == kLBRACE2);
 
             if(blockNode != null && ArgumentsNode.Any(_ => _.Value.Type == kAMPER))
             {
@@ -28,7 +31,7 @@ namespace Mint.Compilation.Components
                 throw new SyntaxError(Compiler.Filename, line, "both block arg and actual block given");
             }
 
-            foreach(var argument in ArgumentsNode)
+            foreach(var argument in Arguments)
             {
                 Push(argument);
             }
@@ -50,16 +53,14 @@ namespace Mint.Compilation.Components
 
         protected InvocationArgument[] PopArguments()
         {
-            var count = ArgumentsNode.List.Count;
+            var count = Arguments.Count();
             var arguments = Enumerable.Range(0, count).Select(_ => Pop());
-            var types = ArgumentsNode.Select(_ => _.Value.Type);
+            var types = Arguments.Select(_ => _.Value.Type);
 
             return types.Zip(arguments, CreateInvocationArgument).ToArray();
         }
 
         private static InvocationArgument CreateInvocationArgument(TokenType type, Expression argument) =>
             new InvocationArgument(CompilerUtils.GetArgumentKind(type), argument);
-
-
     }
 }

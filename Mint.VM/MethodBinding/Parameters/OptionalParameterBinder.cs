@@ -6,7 +6,7 @@ namespace Mint.MethodBinding.Parameters
 {
     internal class OptionalParameterBinder : ParameterBinder
     {
-        public OptionalParameterBinder(ParameterInfo parameter, ParameterInformation counter)
+        public OptionalParameterBinder(ParameterInfo parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 

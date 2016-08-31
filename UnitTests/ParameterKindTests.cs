@@ -138,9 +138,9 @@ namespace Mint.UnitTests
         [Test]
         public void TestParameterInformation()
         {
-            ParameterInformation parameters = null;
+            ParameterCounter parameters = null;
 
-            Assert.DoesNotThrow(() => { parameters = new ParameterInformation(DUMMYMETHOD_INFO.GetParameters()); });
+            Assert.DoesNotThrow(() => { parameters = new ParameterCounter(DUMMYMETHOD_INFO); });
 
             Assert.That(parameters.PrefixRequired, Is.EqualTo(1));
             Assert.That(parameters.Optional, Is.EqualTo(1));
