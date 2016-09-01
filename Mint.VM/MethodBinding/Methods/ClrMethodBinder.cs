@@ -61,7 +61,7 @@ namespace Mint.MethodBinding.Methods
 
         public override Expression Bind(CallFrameBinder frame)
         {
-            var length = frame.CallSite.Arity;
+            var length = frame.CallSite.ArgumentKinds.Count;
             var methods = methodInfos.Where(_ => _.GetParameterCounter().Arity.Include(length)).ToArray();
 
             if(methods.Length == 0)

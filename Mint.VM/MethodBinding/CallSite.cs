@@ -1,19 +1,40 @@
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Compilation;
+using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Mint.MethodBinding
 {
     public delegate iObject Function(iObject instance, params iObject[] arguments);
-    // public delegate iObject Function(iObject instance, ArgumentBundle bundle, CallFrame frame);
 
     public sealed class CallSite
     {
+        public delegate iObject Stub(iObject instance, ArgumentBundle bundle);
+
         public Visibility Visibility { get; }
         public Symbol MethodName { get; }
         public IList<ArgumentKind> ArgumentKinds { get; }
-        public int Arity => ArgumentKinds.Count;
+
+        private Arity arity;
+        public Arity Arity
+        {
+            get
+            {
+                if(arity == null)
+                {
+                    var min = ArgumentKinds.Count(a => a == ArgumentKind.Simple);
+                    if(ArgumentKinds.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest))
+                    {
+                        min++;
+                    }
+                    var max = ArgumentKinds.Any(a => a == ArgumentKind.Rest) ? int.MaxValue : min;
+                    arity = new Arity(min, max);
+                }
+                return arity;
+            }
+        }
+
         public CallCompiler CallCompiler { get; set; }
         public Function Call { get; set; }
 

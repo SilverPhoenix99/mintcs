@@ -16,12 +16,12 @@ namespace Mint.MethodBinding.Methods
          * (iObject $instance, ArgumentBundle $bundle) => {
          *
          *     var $arguments = $bundle.Unbundle(@__MethodInformation.GetParameterBinders());
-         *     
+         *
          *     if(<type check all arguments>)
          *     {
          *         // e.g., when instance method and requires boxing:
          *         return Object.Box(<instance>.<method>($arguments[0], ..., $arguments[@n]));
-         *         
+         *
          *         // e.g., when static method and doesn't requires boxing:
          *         return <class>.<method>($instance, $arguments[0], ..., $arguments[@n]);
          *     }
@@ -29,10 +29,6 @@ namespace Mint.MethodBinding.Methods
          */
         private class CallEmitter
         {
-            private static readonly MethodInfo METHOD_GETPARAMETERBINDERS = Reflector<MethodInfo>.Method(
-                _ => _.GetParameterBinders()
-            );
-
             private MethodInfo Method { get; }
             private CallFrameBinder BundledFrame { get; }
             private LabelTarget Return { get; }
@@ -50,13 +46,12 @@ namespace Mint.MethodBinding.Methods
 
             public Expression Bind()
             {
-                if(BundledFrame.CallSite.Arity == 0)
+                if(BundledFrame.CallSite.Arity.Maximum == 0)
                 {
                     return MakeCallWithReturn();
                 }
 
-                var parameterBinders = Call(METHOD_GETPARAMETERBINDERS, Constant(Method));
-                var unbundleExpression = ArgumentBundle.Expressions.CallUnbundle(BundledFrame.Arguments, parameterBinders);
+                var unbundleExpression = ArgumentBundle.Expressions.CallUnbundle(BundledFrame.Arguments, Constant(Method));
 
                 var argumentsAssign = Assign(ArgumentArray, unbundleExpression);
 
@@ -68,7 +63,7 @@ namespace Mint.MethodBinding.Methods
             }
 
             private Expression MakeArgumentTypeCheck() =>
-                Enumerable.Range(0, BundledFrame.CallSite.Arity)
+                Enumerable.Range(0, BundledFrame.CallSite.ArgumentKinds.Count)
                 .Select(MakeArgumentTypeCheck).Aggregate(AndAlso);
 
             private Expression MakeArgumentTypeCheck(int position)

@@ -67,19 +67,26 @@ namespace Mint.MethodBinding.Arguments
             return keys;
         }
 
-        public iObject[] Unbundle(IEnumerable<ParameterBinder> binders) =>
-            binders.Select(binder => binder.Bind(this)).ToArray();
+        public iObject[] Unbundle(MethodInfo methodInfo)
+        {
+            var validator = new ArityValidator(this, methodInfo);
+            if(!validator.IsValid())
+            {
+                return null;
+            }
 
-        public void ValidateArity(MethodInfo methodInfo) => new ArityValidator(this, methodInfo).Validate();
+            var binders = methodInfo.GetParameterBinders();
+            return binders.Select(binder => binder.Bind(this)).ToArray();
+        }
 
         public static class Expressions
         {
             private static readonly MethodInfo METHOD_UNBUNDLE = Reflector<ArgumentBundle>.Method(
-                _ => _.Unbundle(default(IEnumerable<ParameterBinder>))
+                _ => _.Unbundle(default(MethodInfo))
             );
 
-            public static Expression CallUnbundle(Expression argumentBundle, Expression parameterBinders) =>
-                Expression.Call(argumentBundle, METHOD_UNBUNDLE, parameterBinders);
+            public static Expression CallUnbundle(Expression argumentBundle, Expression methodInfo) =>
+                Expression.Call(argumentBundle, METHOD_UNBUNDLE, methodInfo);
         }
     }
 }

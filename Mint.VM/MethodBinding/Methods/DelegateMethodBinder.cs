@@ -34,7 +34,7 @@ namespace Mint.MethodBinding.Methods
         {
             // TODO parameter check
 
-            var length = frame.CallSite.Arity;
+            var length = frame.CallSite.ArgumentKinds.Count;
             var parameterTypes = function.Method.GetParameters().Select(_ => _.ParameterType);
 
             var unsplatArgs = new[] { frame.Instance }.Concat(

@@ -4,12 +4,12 @@
     {
         public Symbol Name { get; }
 
-        public iObject Value { get; }
+        public iObject Value { get; set; }
 
         public LocalVariable(Symbol name, iObject value = null)
         {
             Name = name;
-            Value = value ?? new NilClass();
+            Value = value;
         }
     }
 }
