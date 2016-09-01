@@ -22,10 +22,20 @@ namespace Mint.MethodBinding.Arguments
 
         public void Validate()
         {
+            var message = ValidateInternal();
+            if(message != null)
+            {
+                throw new ArgumentError(message);
+            }
+        }
+
+        public bool IsValid() => ValidateInternal() != null;
+
+        private string ValidateInternal()
+        {
             if(!Counter.HasKeywords)
             {
-                ValidateInclusiveArity();
-                return;
+                return ValidateInclusiveArity();
             }
 
             if(Arguments.HasKeyArguments || Arguments.Splat.LastOrDefault() is Hash)
@@ -35,41 +45,30 @@ namespace Mint.MethodBinding.Arguments
                 // only after all required parameters are bound, is the last argument regarded as keywords,
                 // and thus, excluded for arity purposes.
 
-                ValidateExclusiveArity();
-                ValidateMissingKeywords();
-                ValidateUnknownKeywords();
-                return;
+                return ValidateExclusiveArity()
+                    ?? ValidateMissingKeywords()
+                    ?? ValidateUnknownKeywords();
             }
 
-            ValidateInclusiveArity();
-            ValidateMissingKeywords();
-
+            return ValidateInclusiveArity()
+                ?? ValidateMissingKeywords();
         }
 
-        private void ValidateInclusiveArity()
-        {
-            if(!Counter.Arity.Include(Arguments.Arity))
-            {
-                ThrowWrongArityError(Arguments.Arity);
-            }
-        }
+        private string ValidateInclusiveArity() =>
+            Counter.Arity.Include(Arguments.Arity) ? null : WrongArityMessage(Arguments.Arity);
 
-        private void ValidateExclusiveArity()
+        private string ValidateExclusiveArity()
         {
             var arity = Arguments.Arity;
-            if(arity < Counter.Arity.Minimum || --arity > Counter.Arity.Maximum)
-            {
-                ThrowWrongArityError(arity);
-            }
+            return Counter.Arity.Minimum <= arity && --arity <= Counter.Arity.Maximum
+                 ? null
+                 : WrongArityMessage(arity);
         }
 
-        private void ThrowWrongArityError(int arity)
-        {
-            var message = $"wrong number of arguments (given {arity}, expected {Counter.Arity})";
-            throw new ArgumentError(message);
-        }
+        private string WrongArityMessage(int arity) =>
+            $"wrong number of arguments (given {arity}, expected {Counter.Arity})";
 
-        private void ValidateMissingKeywords()
+        private string ValidateMissingKeywords()
         {
             var parameters = Method.GetParameters();
             var requiredKeys = (
@@ -81,19 +80,19 @@ namespace Mint.MethodBinding.Arguments
 
             if(requiredKeys.Length == 0)
             {
-                return;
+                return null;
             }
 
             var plural = requiredKeys.Length == 1 ? "" : "s";
             var keywords = string.Join(", ", requiredKeys);
-            throw new ArgumentError($"missing keyword{plural}: {keywords}");
+            return $"missing keyword{plural}: {keywords}";
         }
 
-        private void ValidateUnknownKeywords()
+        private string ValidateUnknownKeywords()
         {
             if(Counter.HasKeyRest)
             {
-                return;
+                return null;
             }
 
             var parameters = Method.GetParameters();
@@ -108,12 +107,12 @@ namespace Mint.MethodBinding.Arguments
 
             if(unknownKeys.Length == 0)
             {
-                return;
+                return null;
             }
 
             var plural = unknownKeys.Length == 1 ? "" : "s";
             var keywords = string.Join(", ", unknownKeys);
-            throw new ArgumentError($"unknown keyword{plural}: {keywords}");
+            return $"unknown keyword{plural}: {keywords}";
         }
     }
 }
