@@ -9,9 +9,6 @@ namespace Mint
 {
     internal static class Repl
     {
-        private static readonly MethodInfo DEBUGVIEW_INFO =
-            typeof(Expression).GetProperty("DebugView", Instance | NonPublic).GetMethod;
-
         public static void Run()
         {
             var self = Expression.Constant(new Object(), typeof(iObject));
@@ -70,7 +67,7 @@ namespace Mint
 
         internal static void DumpExpression(Expression expr)
         {
-            Console.WriteLine(DEBUGVIEW_INFO.Invoke(expr, System.Array.Empty<object>()));
+            Console.WriteLine(expr.Inspect());
             Console.WriteLine();
         }
 

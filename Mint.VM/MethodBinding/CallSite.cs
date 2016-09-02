@@ -3,6 +3,8 @@ using Mint.MethodBinding.Compilation;
 using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mint.MethodBinding
 {
@@ -13,30 +15,17 @@ namespace Mint.MethodBinding
         public delegate iObject Stub(iObject instance, ArgumentBundle bundle);
 
         public Visibility Visibility { get; }
+
         public Symbol MethodName { get; }
+
         public IList<ArgumentKind> ArgumentKinds { get; }
 
-        private Arity arity;
-        public Arity Arity
-        {
-            get
-            {
-                if(arity == null)
-                {
-                    var min = ArgumentKinds.Count(a => a == ArgumentKind.Simple);
-                    if(ArgumentKinds.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest))
-                    {
-                        min++;
-                    }
-                    var max = ArgumentKinds.Any(a => a == ArgumentKind.Rest) ? int.MaxValue : min;
-                    arity = new Arity(min, max);
-                }
-                return arity;
-            }
-        }
-
         public CallCompiler CallCompiler { get; set; }
+
         public Function Call { get; set; }
+
+        private Arity arity;
+        public Arity Arity => arity ?? (arity = CalculateArity());
 
         public CallSite(Symbol methodName, Visibility visibility, params ArgumentKind[] argumentKinds)
         {
@@ -58,6 +47,17 @@ namespace Mint.MethodBinding
             : this(methodName, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
 
+        private Arity CalculateArity()
+        {
+            var min = ArgumentKinds.Count(a => a == ArgumentKind.Simple);
+            if(ArgumentKinds.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest))
+            {
+                min++;
+            }
+            var max = ArgumentKinds.Any(a => a == ArgumentKind.Rest) ? int.MaxValue : min;
+            return new Arity(min, max);
+        }
+
         private iObject DefaultCall(iObject instance, iObject[] arguments)
         {
             if(CallCompiler == null)
@@ -75,5 +75,18 @@ namespace Mint.MethodBinding
         }
 
         public ArgumentBundle CreateBundle(params iObject[] arguments) => new ArgumentBundle(ArgumentKinds, arguments);
+
+        public static class Reflection
+        {
+            public static readonly MethodInfo CreateBundle = Reflector<CallSite>.Method(
+                _ => _.CreateBundle(default(iObject[]))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression CreateBundle(Expression callSite, Expression arguments) =>
+                Expression.Call(callSite, Reflection.CreateBundle, arguments);
+        }
     }
 }

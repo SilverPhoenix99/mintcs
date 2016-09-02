@@ -15,15 +15,15 @@ namespace Mint.MethodBinding.Methods
          *
          * (iObject $instance, ArgumentBundle $bundle) => {
          *
-         *     var $arguments = $bundle.Unbundle(@__MethodInformation.GetParameterBinders());
+         *     var $arguments = $bundle.Bind(@MethodInformation.GetParameterBinders());
          *
          *     if(<type check all arguments>)
          *     {
-         *         // e.g., when instance method and requires boxing:
+         *         // e.g., when instance method:
          *         return Object.Box(<instance>.<method>($arguments[0], ..., $arguments[@n]));
          *
-         *         // e.g., when static method and doesn't requires boxing:
-         *         return <class>.<method>($instance, $arguments[0], ..., $arguments[@n]);
+         *         // e.g., when static method:
+         *         return Object.Box(<class>.<method>($instance, $arguments[0], ..., $arguments[@n]));
          *     }
          * }
          */
@@ -51,9 +51,9 @@ namespace Mint.MethodBinding.Methods
                     return MakeCallWithReturn();
                 }
 
-                var unbundleExpression = ArgumentBundle.Expressions.CallUnbundle(BundledFrame.Arguments, Constant(Method));
+                var bindExpression = ArgumentBundle.Expressions.Bind(BundledFrame.Arguments, Constant(Method));
 
-                var argumentsAssign = Assign(ArgumentArray, unbundleExpression);
+                var argumentsAssign = Assign(ArgumentArray, bindExpression);
 
                 var argumentTypeCheck = MakeArgumentTypeCheck();
                 var callWithReturn = MakeCallWithReturn();

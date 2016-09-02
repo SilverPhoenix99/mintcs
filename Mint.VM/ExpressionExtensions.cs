@@ -2,11 +2,15 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
+using static System.Reflection.BindingFlags;
 
 namespace Mint
 {
     public static class ExpressionExtensions
     {
+        private static readonly MethodInfo DEBUGVIEW_INFO =
+            typeof(Expression).GetProperty("DebugView", Instance | NonPublic).GetMethod;
+
         public static Expression Cast<T>(this Expression expression) => Cast(expression, typeof(T));
 
         public static Expression Cast(this Expression expression, Type type) =>
@@ -31,5 +35,8 @@ namespace Mint
 
             return expression;
         }
+
+        public static string Inspect(this Expression expr) =>
+            (string) DEBUGVIEW_INFO.Invoke(expr, System.Array.Empty<object>());
     }
 }

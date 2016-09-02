@@ -6,22 +6,28 @@ using System.Reflection;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using static System.Linq.Expressions.Expression;
+using static System.Reflection.BindingFlags;
 
 namespace Mint.MethodBinding.Methods
 {
+    /*
+     * Generated Stub:
+     *
+     * (iObject $instance, ArgumentBundle $bundle) => {
+     *
+     *     if(@Condition.Valid)
+     *     {
+     *         <CallEmitter code>
+     *     }
+     *     else
+     *     {
+     *         @CallSite.BundledCall = @CallSite.CallCompiler.Compile();
+     *         return @CallSite.BundledCall($instance, $bundle);
+     *     }
+     * }
+     */
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private static readonly MethodInfo INVALID_CONVERSION_METHOD = Reflector.Method(
-            () => InvalidConversionMessage(default(MethodInfo[]), default(iObject[]))
-        );
-
-        private static readonly MethodInfo METHOD_BUNDLE = Reflector<CallSite>.Method(
-            _ => _.CreateBundle(default(iObject[]))
-        );
-
-        private static readonly ConstructorInfo CTOR_ARGERROR = Reflector.Ctor<ArgumentError>(typeof(string));
-        private static readonly ConstructorInfo CTOR_TYPEERROR = Reflector.Ctor<TypeError>(typeof(string));
-
         private readonly MethodInfo[] methodInfos;
 
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method, Visibility visibility = Visibility.Public)
@@ -41,7 +47,7 @@ namespace Mint.MethodBinding.Methods
         private static MethodInfo[] GetOverloads(MethodInfo method)
         {
             var methods =
-                from m in method.DeclaringType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                from m in method.DeclaringType.GetMethods(Instance | NonPublic | Public)
                 where m.Name == method.Name
                 select m
             ;
@@ -76,24 +82,32 @@ namespace Mint.MethodBinding.Methods
 
             var body = methods.Select(info => new CallEmitter(info, bundledFrame, returnTarget).Bind());
 
-            var createBundleExpression = Call(Constant(frame.CallSite), METHOD_BUNDLE, frame.Arguments);
+            var createBundleExpression = CallSite.Expressions.CreateBundle(Constant(frame.CallSite), frame.Arguments);
 
             var bundleAssignExpression = Assign(bundle, createBundleExpression);
             var throwExpression = ThrowTypeExpression(frame.Arguments, methods);
             var returnExpression = Label(returnTarget, throwExpression);
 
-            return Block(typeof(iObject), new[] { bundle },
+            var result = Block(typeof(iObject), new[] { bundle },
                 new[] { bundleAssignExpression }
                 .Concat(body)
                 .Concat(new[] { returnExpression })
             );
+
+            System.Console.WriteLine("--------");
+            System.Console.WriteLine();
+            System.Console.WriteLine(result.Inspect());
+            System.Console.WriteLine();
+            System.Console.WriteLine("--------");
+            System.Console.WriteLine();
+
+            return result;
         }
 
         private UnaryExpression ThrowArgumentErrorExpression(int length)
         {
             return Throw(
-                New(
-                    CTOR_ARGERROR,
+                ArgumentError.Expressions.New(
                     Constant($"wrong number of arguments (given {length}, expected {Arity})")
                 ),
                 typeof(iObject)
@@ -103,11 +117,11 @@ namespace Mint.MethodBinding.Methods
         private static Expression ThrowTypeExpression(Expression arguments, MethodInfo[] methods)
         {
             return Throw(
-                New(
-                    CTOR_TYPEERROR,
-                    Call(INVALID_CONVERSION_METHOD, Constant(methods), arguments)
-                    ), typeof(iObject)
-                );
+                TypeError.Expressions.New(
+                    Expressions.InvalidConversionMessage(Constant(methods), arguments)
+                ),
+                typeof(iObject)
+            );
         }
 
         private static string InvalidConversionMessage(MethodInfo[] methods, iObject[] arguments)
@@ -122,6 +136,19 @@ namespace Mint.MethodBinding.Methods
 
             //msg = "argument {index}: no implicit conversion of {type} to {string.Join(" or ", types)}";
             return "no implicit conversion exists";
+        }
+
+        public static class Reflection
+        {
+            public static readonly MethodInfo InvalidConversionMessage = Reflector.Method(
+                () => InvalidConversionMessage(default(MethodInfo[]), default(iObject[]))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression InvalidConversionMessage(Expression methods, Expression arguments) =>
+                Expression.Call(Reflection.InvalidConversionMessage, methods, arguments);
         }
     }
 }

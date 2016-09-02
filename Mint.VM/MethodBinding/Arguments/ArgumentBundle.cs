@@ -67,7 +67,7 @@ namespace Mint.MethodBinding.Arguments
             return keys;
         }
 
-        public iObject[] Unbundle(MethodInfo methodInfo)
+        public iObject[] Bind(MethodInfo methodInfo)
         {
             var validator = new ArityValidator(this, methodInfo);
             if(!validator.IsValid())
@@ -79,14 +79,17 @@ namespace Mint.MethodBinding.Arguments
             return binders.Select(binder => binder.Bind(this)).ToArray();
         }
 
+        public static class Reflection
+        {
+            public static readonly MethodInfo Bind = Reflector<ArgumentBundle>.Method(
+                _ => _.Bind(default(MethodInfo))
+            );
+        }
+
         public static class Expressions
         {
-            private static readonly MethodInfo METHOD_UNBUNDLE = Reflector<ArgumentBundle>.Method(
-                _ => _.Unbundle(default(MethodInfo))
-            );
-
-            public static Expression CallUnbundle(Expression argumentBundle, Expression methodInfo) =>
-                Expression.Call(argumentBundle, METHOD_UNBUNDLE, methodInfo);
+            public static MethodCallExpression Bind(Expression argumentBundle, Expression methodInfo) =>
+                Expression.Call(argumentBundle, Reflection.Bind, methodInfo);
         }
     }
 }
