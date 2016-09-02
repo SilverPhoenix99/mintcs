@@ -1,3 +1,4 @@
+using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Methods;
 using System.Collections.Generic;
 using static System.Linq.Expressions.Expression;
@@ -6,12 +7,12 @@ namespace Mint.MethodBinding.Compilation
 {
     public sealed class MegamorphicCallCompiler : BaseCallCompiler
     {
-        private readonly CallCompilerCache<Function> cache;
+        private readonly CallCompilerCache<CallSite.Stub> cache;
 
         public MegamorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
-            cache = new CallCompilerCache<Function>();
+            cache = new CallCompilerCache<CallSite.Stub>();
         }
 
         internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<KeyValuePair<long, MethodBinder>> cache)
@@ -26,25 +27,25 @@ namespace Mint.MethodBinding.Compilation
             }
         }
 
-        private CachedMethod<Function> CreateCachedMethod(long classId, MethodBinder binder)
+        private CachedMethod<CallSite.Stub> CreateCachedMethod(long classId, MethodBinder binder)
         {
-            var function = CompileMethod(binder);
-            return new CachedMethod<Function>(classId, binder, function);
+            var stub = CompileMethod(binder);
+            return new CachedMethod<CallSite.Stub>(classId, binder, stub);
         }
 
-        private Function CompileMethod(MethodBinder binder)
+        private CallSite.Stub CompileMethod(MethodBinder binder)
         {
             var instance = Parameter(typeof(iObject), "instance");
-            var arguments = Parameter(typeof(iObject[]), "arguments");
-            var frame = new CallFrameBinder(CallSite, instance, arguments);
+            var bundle = Parameter(typeof(ArgumentBundle), "bundle");
+            var frame = new CallFrameBinder(CallSite, instance, bundle);
             var body = binder.Bind(frame);
-            var lambda = Lambda<Function>(body, instance, arguments);
+            var lambda = Lambda<CallSite.Stub>(body, instance, bundle);
             return lambda.Compile();
         }
 
-        public override Function Compile() => Call;
+        public override CallSite.Stub Compile() => Call;
 
-        private iObject Call(iObject instance, iObject[] arguments)
+        private iObject Call(iObject instance, ArgumentBundle bundle)
         {
             var classId = instance.EffectiveClass.Id;
             var cachedMethod = cache[classId];
@@ -57,7 +58,7 @@ namespace Mint.MethodBinding.Compilation
                 cache.Put(cachedMethod);
             }
 
-            return cachedMethod.CachedCall(instance, arguments);
+            return cachedMethod.CachedCall(instance, bundle);
         }
     }
 }

@@ -13,67 +13,73 @@ namespace Mint.MethodBinding.Methods
         /*
          * Stub:
          *
-         * (iObject $instance, ArgumentBundle $bundle) => {
+         * extern iObject[] $arguments;
          *
-         *     var $arguments = $bundle.Bind(@MethodInformation.GetParameterBinders());
+         * case {
+         *     $arguments = $bundle.Bind(@methodInfo);
+         *     $arguments != null && $arguments[0] is <Type> && ...
+         * }:
+         * {
+         *     // instance methods:
+         *     return Object.Box($instance.<Method>((<cast>) $arguments[0], ...));
          *
-         *     if(<type check all arguments>)
-         *     {
-         *         // e.g., when instance method:
-         *         return Object.Box(<instance>.<method>($arguments[0], ..., $arguments[@n]));
-         *
-         *         // e.g., when static method:
-         *         return Object.Box(<class>.<method>($instance, $arguments[0], ..., $arguments[@n]));
-         *     }
+         *     // static methods:
+         *     return Object.Box(<Type>.<Method>($instance, (<cast>) $arguments[0], ...));
          * }
          */
         private class CallEmitter
         {
             private MethodInfo Method { get; }
+
             private CallFrameBinder BundledFrame { get; }
-            private LabelTarget Return { get; }
+
             private ParameterExpression ArgumentArray { get; }
+
             private ParameterInfo[] ParameterInfos { get; }
 
-            public CallEmitter(MethodInfo method, CallFrameBinder bundledFrame, LabelTarget returnTarget)
+            public CallEmitter(MethodInfo method, CallFrameBinder bundledFrame, ParameterExpression argumentsArray)
             {
                 Method = method;
                 BundledFrame = bundledFrame;
-                Return = returnTarget;
-                ArgumentArray = Variable(typeof(iObject[]), "arguments");
+                ArgumentArray = argumentsArray;
                 ParameterInfos = Method.GetParameters();
             }
 
-            public Expression Bind()
+            public SwitchCase Bind()
             {
-                if(BundledFrame.CallSite.Arity.Maximum == 0)
-                {
-                    return MakeCallWithReturn();
-                }
-
-                var bindExpression = ArgumentBundle.Expressions.Bind(BundledFrame.Arguments, Constant(Method));
-
-                var argumentsAssign = Assign(ArgumentArray, bindExpression);
-
-                var argumentTypeCheck = MakeArgumentTypeCheck();
-                var callWithReturn = MakeCallWithReturn();
-                var conditionalCall = IfThen(argumentTypeCheck, callWithReturn);
-
-                return Block(new[] { ArgumentArray }, argumentsAssign, conditionalCall);
+                var condition = CreateCondition();
+                var body = CreateBody();
+                return SwitchCase(body, condition);
             }
 
-            private Expression MakeArgumentTypeCheck() =>
-                Enumerable.Range(0, BundledFrame.CallSite.ArgumentKinds.Count)
-                .Select(MakeArgumentTypeCheck).Aggregate(AndAlso);
+            private Expression CreateCondition()
+            {
+                var bindExpression = ArgumentBundle.Expressions.Bind(BundledFrame.Arguments, Constant(Method));
+                Expression argumentCheck = NotEqual(ArgumentArray, Constant(null));
 
-            private Expression MakeArgumentTypeCheck(int position)
+                if(BundledFrame.CallSite.ArgumentKinds.Count != 0)
+                {
+                    argumentCheck = AndAlso(argumentCheck, TypeCheckArgumentsExpression());
+                }
+
+                return Block(
+                    Assign(ArgumentArray, bindExpression),
+                    argumentCheck
+                );
+            }
+
+            private Expression TypeCheckArgumentsExpression() =>
+                Enumerable.Range(0, BundledFrame.CallSite.ArgumentKinds.Count)
+                .Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
+
+            private Expression TypeCheckArgumentExpression(int position)
             {
                 var argument = ArrayIndex(ArgumentArray, Constant(position));
                 var parameter = ParameterInfos[position];
                 return TypeIs(argument, parameter.ParameterType);
             }
 
-            private Expression MakeCallWithReturn()
+            private Expression CreateBody()
             {
                 var instance = BundledFrame.Instance;
 
@@ -95,8 +101,7 @@ namespace Mint.MethodBinding.Methods
                     arguments = parameters.Select(ConvertArgument);
                 }
 
-                var callExpression = Box(Call(instance, Method, arguments));
-                return Return(Return, callExpression);
+                return Box(Call(instance, Method, arguments));
             }
 
             private Expression ConvertArgument(ParameterInfo parameter)

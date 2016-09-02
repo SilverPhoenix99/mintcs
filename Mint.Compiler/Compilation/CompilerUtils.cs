@@ -30,7 +30,10 @@ namespace Mint.Compilation
             Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
         private static readonly ConstructorInfo HASH_CTOR = Reflector.Ctor<Hash>();
         private static readonly PropertyInfo MEMBER_HASH_ITEM = Reflector<Hash>.Property(_ => _[default(iObject)]);
-        private static readonly PropertyInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Property(_ => _.Call);
+
+        private static readonly MethodInfo MEMBER_CALLSITE_CALL = Reflector<CallSite>.Method(
+            _ => _.Call(default(iObject), default(iObject[]))
+        );
 
         internal static readonly MethodInfo INSTANCE_VARIABLE_GET = Reflector<iObject>.Method(
             _ => _.InstanceVariableGet(default(Symbol))
@@ -130,11 +133,10 @@ namespace Mint.Compilation
         )
         {
             var site = new CallSite(methodName, visibility, arguments.Select(_ => _.Kind));
-            var call = Constant(site).Property(MEMBER_CALLSITE_CALL);
             var argList = arguments.Length == 0
                         ? EMPTY_ARRAY
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
-            return Invoke(call, instance, argList);
+            return Expression.Call(Constant(site), MEMBER_CALLSITE_CALL, instance, argList);
         }
 
         public static Expression StringConcat(Expression first, IEnumerable<Expression> contents)

@@ -11,7 +11,7 @@ namespace Mint.MethodBinding.Compilation
             CallSite = callSite;
         }
 
-        public abstract Function Compile();
+        public abstract CallSite.Stub Compile();
 
         protected MethodBinder TryFindMethodBinder(iObject instance)
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mint.MethodBinding.Arguments;
+using System;
 using System.Linq.Expressions;
 
 namespace Mint.MethodBinding.Compilation
@@ -9,15 +10,15 @@ namespace Mint.MethodBinding.Compilation
             : base(callSite)
         { }
 
-        public override Function Compile() => DefaultCall;
+        public override CallSite.Stub Compile() => DefaultCall;
 
-        private iObject DefaultCall(iObject instance, iObject[] arguments)
+        private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {
             var binder = TryFindMethodBinder(instance);
             var instanceExpression = Expression.Constant(instance);
-            var argumentsExpression = Expression.Constant(arguments);
+            var bundleExpression = Expression.Constant(bundle);
 
-            var frame = new CallFrameBinder(CallSite, instanceExpression, argumentsExpression);
+            var frame = new CallFrameBinder(CallSite, instanceExpression, bundleExpression);
             var body = binder.Bind(frame);
             var lambda = Expression.Lambda<Func<iObject>>(body).Compile();
             return lambda();

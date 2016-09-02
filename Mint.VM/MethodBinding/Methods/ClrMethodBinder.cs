@@ -67,31 +67,18 @@ namespace Mint.MethodBinding.Methods
 
         public override Expression Bind(CallFrameBinder frame)
         {
-            var length = frame.CallSite.ArgumentKinds.Count;
-            var methods = methodInfos.Where(_ => _.GetParameterCounter().Arity.Include(length)).ToArray();
+            var argumentsArray = Variable(typeof(iObject[]), "arguments");
+            var cases = methodInfos.Select(info => new CallEmitter(info, frame, argumentsArray).Bind());
 
-            if(methods.Length == 0)
-            {
-                return ThrowArgumentErrorExpression(length);
-            }
+            var defaultCase = Throw(
+                TypeError.Expressions.New(Expressions.InvalidConversionMessage()),
+                typeof(iObject)
+            );
 
-            var bundle = Variable(typeof(ArgumentBundle), "bundle");
-            var returnTarget = Label(typeof(iObject), "return");
-
-            var bundledFrame = new CallFrameBinder(frame.CallSite, frame.Instance, bundle);
-
-            var body = methods.Select(info => new CallEmitter(info, bundledFrame, returnTarget).Bind());
-
-            var createBundleExpression = CallSite.Expressions.CreateBundle(Constant(frame.CallSite), frame.Arguments);
-
-            var bundleAssignExpression = Assign(bundle, createBundleExpression);
-            var throwExpression = ThrowTypeExpression(frame.Arguments, methods);
-            var returnExpression = Label(returnTarget, throwExpression);
-
-            var result = Block(typeof(iObject), new[] { bundle },
-                new[] { bundleAssignExpression }
-                .Concat(body)
-                .Concat(new[] { returnExpression })
+            var result = Block(
+                typeof(iObject),
+                new[] { argumentsArray },
+                Switch(typeof(iObject), null, defaultCase, null, cases)
             );
 
             System.Console.WriteLine("--------");
@@ -114,17 +101,7 @@ namespace Mint.MethodBinding.Methods
             );
         }
 
-        private static Expression ThrowTypeExpression(Expression arguments, MethodInfo[] methods)
-        {
-            return Throw(
-                TypeError.Expressions.New(
-                    Expressions.InvalidConversionMessage(Constant(methods), arguments)
-                ),
-                typeof(iObject)
-            );
-        }
-
-        private static string InvalidConversionMessage(MethodInfo[] methods, iObject[] arguments)
+        private static string InvalidConversionMessage()
         {
             // TODO
 
@@ -141,14 +118,14 @@ namespace Mint.MethodBinding.Methods
         public static class Reflection
         {
             public static readonly MethodInfo InvalidConversionMessage = Reflector.Method(
-                () => InvalidConversionMessage(default(MethodInfo[]), default(iObject[]))
+                () => InvalidConversionMessage()
             );
         }
 
         public static class Expressions
         {
-            public static MethodCallExpression InvalidConversionMessage(Expression methods, Expression arguments) =>
-                Expression.Call(Reflection.InvalidConversionMessage, methods, arguments);
+            public static MethodCallExpression InvalidConversionMessage() =>
+                Expression.Call(Reflection.InvalidConversionMessage);
         }
     }
 }

@@ -8,8 +8,6 @@ using System.Reflection;
 
 namespace Mint.MethodBinding
 {
-    public delegate iObject Function(iObject instance, params iObject[] arguments);
-
     public sealed class CallSite
     {
         public delegate iObject Stub(iObject instance, ArgumentBundle bundle);
@@ -22,7 +20,7 @@ namespace Mint.MethodBinding
 
         public CallCompiler CallCompiler { get; set; }
 
-        public Function Call { get; set; }
+        public Stub BundledCall { get; set; }
 
         private Arity arity;
         public Arity Arity => arity ?? (arity = CalculateArity());
@@ -32,7 +30,7 @@ namespace Mint.MethodBinding
             MethodName = methodName;
             Visibility = visibility;
             ArgumentKinds = System.Array.AsReadOnly(argumentKinds);
-            Call = DefaultCall;
+            BundledCall = DefaultCall;
         }
 
         public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> argumentKinds)
@@ -47,6 +45,22 @@ namespace Mint.MethodBinding
             : this(methodName, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
 
+        private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
+        {
+            if(CallCompiler == null)
+            {
+                CallCompiler = new PolymorphicCallCompiler(this);
+            }
+            BundledCall = CallCompiler.Compile();
+            return BundledCall(instance, bundle);
+        }
+
+        public iObject Call(iObject instance, params iObject[] arguments)
+        {
+            var bundle = new ArgumentBundle(ArgumentKinds, arguments);
+            return BundledCall(instance, bundle);
+        }
+
         private Arity CalculateArity()
         {
             var min = ArgumentKinds.Count(a => a == ArgumentKind.Simple);
@@ -58,35 +72,10 @@ namespace Mint.MethodBinding
             return new Arity(min, max);
         }
 
-        private iObject DefaultCall(iObject instance, iObject[] arguments)
-        {
-            if(CallCompiler == null)
-            {
-                CallCompiler = new PolymorphicCallCompiler(this);
-            }
-            Call = CallCompiler.Compile();
-            return Call(instance, arguments);
-        }
-
         public override string ToString()
         {
             var argumentKinds = string.Join(", ", ArgumentKinds.Select(_ => _.Description));
             return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
-        }
-
-        public ArgumentBundle CreateBundle(params iObject[] arguments) => new ArgumentBundle(ArgumentKinds, arguments);
-
-        public static class Reflection
-        {
-            public static readonly MethodInfo CreateBundle = Reflector<CallSite>.Method(
-                _ => _.CreateBundle(default(iObject[]))
-            );
-        }
-
-        public static class Expressions
-        {
-            public static MethodCallExpression CreateBundle(Expression callSite, Expression arguments) =>
-                Expression.Call(callSite, Reflection.CreateBundle, arguments);
         }
     }
 }
