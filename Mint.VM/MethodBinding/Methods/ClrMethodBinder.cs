@@ -78,7 +78,7 @@ namespace Mint.MethodBinding.Methods
             var result = Block(
                 typeof(iObject),
                 new[] { argumentsArray },
-                Switch(typeof(iObject), null, defaultCase, null, cases)
+                Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
 
             System.Console.WriteLine("--------");
@@ -90,17 +90,7 @@ namespace Mint.MethodBinding.Methods
 
             return result;
         }
-
-        private UnaryExpression ThrowArgumentErrorExpression(int length)
-        {
-            return Throw(
-                ArgumentError.Expressions.New(
-                    Constant($"wrong number of arguments (given {length}, expected {Arity})")
-                ),
-                typeof(iObject)
-            );
-        }
-
+        
         private static string InvalidConversionMessage()
         {
             // TODO

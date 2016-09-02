@@ -1,5 +1,4 @@
 using Mint.MethodBinding.Arguments;
-using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -57,7 +56,7 @@ namespace Mint.MethodBinding.Methods
                 var bindExpression = ArgumentBundle.Expressions.Bind(BundledFrame.Arguments, Constant(Method));
                 Expression argumentCheck = NotEqual(ArgumentArray, Constant(null));
 
-                if(BundledFrame.CallSite.ArgumentKinds.Count != 0)
+                if(ParameterInfos.Length != 0)
                 {
                     argumentCheck = AndAlso(argumentCheck, TypeCheckArgumentsExpression());
                 }
@@ -69,7 +68,7 @@ namespace Mint.MethodBinding.Methods
             }
 
             private Expression TypeCheckArgumentsExpression() =>
-                Enumerable.Range(0, BundledFrame.CallSite.ArgumentKinds.Count)
+                Enumerable.Range(0, ParameterInfos.Length)
                 .Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
 
             private Expression TypeCheckArgumentExpression(int position)

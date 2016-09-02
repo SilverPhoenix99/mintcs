@@ -25,9 +25,12 @@ namespace Mint.MethodBinding.Compilation
         );
 
         private readonly CallCompilerCache<Expression> cache;
+
         private readonly ParameterExpression instanceExpression = Parameter(typeof(iObject), "instance");
+
         private readonly ParameterExpression bundleExpression = Parameter(typeof(ArgumentBundle), "bundle");
-        private readonly GotoExpression gotoExpression = Goto(Label(typeof(iObject), "default"), typeof(iObject));
+
+        private readonly GotoExpression gotoExpression = Goto(Label("default"), typeof(iObject));
 
         public PolymorphicCallCompiler(CallSite callSite)
             : base(callSite)
@@ -52,6 +55,7 @@ namespace Mint.MethodBinding.Compilation
             }
 
             var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), instanceExpression, bundleExpression);
+
             return lambda.Compile();
         }
 
@@ -107,8 +111,8 @@ namespace Mint.MethodBinding.Compilation
              *     DefaultCall($instance, $bundle);
              */
 
-            return Label(
-                gotoExpression.Target,
+            return Block(
+                Label(gotoExpression.Target),
                 Call(
                     Constant(this),
                     METHOD_DEFAULTCALL,

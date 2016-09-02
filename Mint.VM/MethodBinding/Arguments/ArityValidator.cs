@@ -29,7 +29,7 @@ namespace Mint.MethodBinding.Arguments
             }
         }
 
-        public bool IsValid() => ValidateInternal() != null;
+        public bool IsValid() => ValidateInternal() == null;
 
         private string ValidateInternal()
         {
