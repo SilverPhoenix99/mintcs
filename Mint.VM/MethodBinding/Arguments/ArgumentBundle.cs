@@ -32,7 +32,6 @@ namespace Mint.MethodBinding.Arguments
         {
             ArgumentKinds = kinds;
             Splat = new List<iObject>();
-            Keywords = new Hash();
             Block = null;
 
             if(arguments.Length == 0)

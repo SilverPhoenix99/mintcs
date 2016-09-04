@@ -15,7 +15,7 @@ namespace Mint.MethodBinding.Parameters
             if(Parameter.Position >= bundle.Splat.Count)
             {
                 throw new ArgumentError(
-                    "required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
+                    $"required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
             }
 
             return bundle.Splat[Parameter.Position];

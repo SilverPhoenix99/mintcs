@@ -12,8 +12,10 @@ namespace Mint.MethodBinding.Methods
         /*
          * Stub:
          *
-         * extern iObject[] $arguments;
-         *
+         * global iObject $instance;
+         * global ArgumentBundle $bundle;
+         * global iObject[] $arguments;
+         *     
          * case {
          *     $arguments = $bundle.Bind(@methodInfo);
          *     $arguments != null && $arguments[0] is <Type> && ...
@@ -21,7 +23,7 @@ namespace Mint.MethodBinding.Methods
          * {
          *     // instance methods:
          *     return Object.Box($instance.<Method>((<cast>) $arguments[0], ...));
-         *
+         * 
          *     // static methods:
          *     return Object.Box(<Type>.<Method>($instance, (<cast>) $arguments[0], ...));
          * }
@@ -68,8 +70,7 @@ namespace Mint.MethodBinding.Methods
             }
 
             private Expression TypeCheckArgumentsExpression() =>
-                Enumerable.Range(0, ParameterInfos.Length)
-                .Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
+                Enumerable.Range(0, ParameterInfos.Length).Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
 
             private Expression TypeCheckArgumentExpression(int position)
             {

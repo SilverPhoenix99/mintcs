@@ -1,4 +1,3 @@
-using Mint.MethodBinding.Arguments;
 using Mint.Reflection;
 using System.Diagnostics;
 using System.Linq;
@@ -75,20 +74,11 @@ namespace Mint.MethodBinding.Methods
                 typeof(iObject)
             );
 
-            var result = Block(
+            return Block(
                 typeof(iObject),
                 new[] { argumentsArray },
                 Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
-
-            System.Console.WriteLine("--------");
-            System.Console.WriteLine();
-            System.Console.WriteLine(result.Inspect());
-            System.Console.WriteLine();
-            System.Console.WriteLine("--------");
-            System.Console.WriteLine();
-
-            return result;
         }
         
         private static string InvalidConversionMessage()
