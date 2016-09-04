@@ -1,7 +1,5 @@
 ﻿using Mint.MethodBinding.Arguments;
 using Mint.Parse;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using static Mint.Parse.TokenType;
@@ -37,7 +35,7 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var arguments = PopArguments();
 
-            var visibility = CompilerUtils.GetVisibility(LeftNode);
+            var visibility = LeftNode.GetVisibility();
             return CompilerUtils.Call(left, Symbol.AREF, visibility, arguments);
         }
 

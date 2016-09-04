@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
     public class Binding : BaseObject
     {
-        private Dictionary<Symbol, int> localsIndexes;
+        private readonly Dictionary<Symbol, int> localsIndexes;
 
-        private Array locals;
+        private readonly Array locals;
 
-        public readonly iObject Receiver;
+        public iObject Receiver { get; }
 
         public Module Module => Receiver as Module ?? Receiver.Class;
 
@@ -57,6 +60,19 @@ namespace Mint
         public void SetLocal(int index, iObject value)
         {
             locals[index] = value ?? new NilClass();
+        }
+
+        public static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Binding>(typeof(iObject));
+
+            public static readonly MethodInfo SetLocal =
+                Reflector<Binding>.Method(_ => _.SetLocal(default(Symbol), default(iObject)));
+        }
+
+        public static class Expressions
+        {
+            public static NewExpression New(Expression receiver) => Expression.New(Reflection.Ctor, receiver);
         }
     }
 }

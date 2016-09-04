@@ -22,7 +22,7 @@ namespace Mint.Compilation.Components
             expression = expression.StripConversions();
             expression = expression.Cast<String>();
             expression = expression.Cast<string>();
-            return Expression.New(CompilerUtils.SYMBOL_CTOR, expression);
+            return Symbol.Expressions.New(expression);
         }
 
         private static Expression AsConcat(Expression expression)
@@ -31,7 +31,7 @@ namespace Mint.Compilation.Components
 
             return block == null
                 ? expression
-                : CompilerUtils.StringConcat(CompilerUtils.NewString(), block.Expressions);
+                : CompilerUtils.StringConcat(String.Expressions.New(), block.Expressions);
         }
     }
 }

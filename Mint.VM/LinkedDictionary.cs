@@ -12,35 +12,15 @@ namespace Mint
         private readonly Dictionary<TKey, Node> map;
         private Node head;
 
-        public LinkedDictionary()
-        {
-            map = new Dictionary<TKey, Node>();
-        }
+        public int Count => map.Count;
 
-        public LinkedDictionary(int capacity)
-        {
-            map = new Dictionary<TKey, Node>(capacity);
-        }
+        public bool IsReadOnly => false;
 
-        public LinkedDictionary(IEqualityComparer<TKey> comparer)
-        {
-            map = new Dictionary<TKey, Node>(comparer);
-        }
+        public bool IsFixedSize => false;
 
-        public LinkedDictionary(LinkedDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer = null)
-            : this(comparer)
-        {
-            foreach(var item in dictionary)
-            {
-                Add(item);
-            }
-        }
+        public object SyncRoot => this;
 
-        public int    Count          => map.Count;
-        public bool   IsReadOnly     => false;
-        public bool   IsFixedSize    => false;
-        public object SyncRoot       => this;
-        public bool   IsSynchronized => false;
+        public bool IsSynchronized => false;
 
         public ICollection<TKey> Keys => new KeyCollection(this);
 
@@ -64,6 +44,30 @@ namespace Mint
         {
             get { return ((Node) ((IDictionary) map)[key]).Value.Value; }
             set { Add(key, value); }
+        }
+
+        public LinkedDictionary()
+        {
+            map = new Dictionary<TKey, Node>();
+        }
+
+        public LinkedDictionary(int capacity)
+        {
+            map = new Dictionary<TKey, Node>(capacity);
+        }
+
+        public LinkedDictionary(IEqualityComparer<TKey> comparer)
+        {
+            map = new Dictionary<TKey, Node>(comparer);
+        }
+
+        public LinkedDictionary(LinkedDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer = null)
+            : this(comparer)
+        {
+            foreach(var item in dictionary)
+            {
+                Add(item);
+            }
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()

@@ -13,19 +13,17 @@ namespace Mint.MethodBinding.Parameters
 
         public override iObject Bind(ArgumentBundle bundle)
         {
-            var beginPosition = ParameterCounter.PrefixRequired + ParameterCounter.Optional;
-            var endPosition = bundle.Splat.Count - ParameterCounter.SuffixRequired;
+            var begin = ParameterCounter.PrefixRequired + ParameterCounter.Optional;
+            var end = bundle.Splat.Count - ParameterCounter.SuffixRequired;
+            var count = end - begin;
 
-            var result = new Array();
+            var values = from i in Enumerable.Range(begin, count)
+                         select bundle.Splat[i];
 
-            for(var i = beginPosition; i < endPosition; i++)
-            {
-                result.Add(bundle.Splat[i]);
-            }
+            var result = new Array(values);
 
-            var hasKeyArguments = bundle.ArgumentKinds.Any(a => a == ArgumentKind.Key || a == ArgumentKind.KeyRest);
             var hasKeyRestParameter = ParameterCounter.HasKeyRest;
-            var restIncludesKeyRest = hasKeyArguments != hasKeyRestParameter;
+            var restIncludesKeyRest = bundle.HasKeyArguments != hasKeyRestParameter;
 
             if(restIncludesKeyRest)
             {

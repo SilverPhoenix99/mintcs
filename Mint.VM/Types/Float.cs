@@ -4,13 +4,14 @@ namespace Mint
 {
     public class Float : FrozenObject
     {
+        public override Class  Class => Class.FLOAT;
+
+        public double Value { get; }
+
         public Float(double value)
         {
             Value = value;
         }
-
-        public override Class  Class => Class.FLOAT;
-        public          double Value { get; }
 
         public override string ToString() => Value.ToString("0.0###############", CultureInfo.InvariantCulture);
 

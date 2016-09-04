@@ -61,6 +61,6 @@ namespace Mint.Compilation.Components
         }
 
         private static InvocationArgument CreateInvocationArgument(TokenType type, Expression argument) =>
-            new InvocationArgument(CompilerUtils.GetArgumentKind(type), argument);
+            new InvocationArgument(type.GetArgumentKind(), argument);
     }
 }

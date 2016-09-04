@@ -80,7 +80,7 @@ namespace Mint.Compilation.Components
                         Goto(scope.NextLabel)
                     )
                 ),
-                Label(scope.BreakLabel, CompilerUtils.NIL)
+                Label(scope.BreakLabel, NilClass.Expressions.Instance)
             );
         }
     }

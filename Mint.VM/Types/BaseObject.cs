@@ -17,8 +17,21 @@ namespace Mint
             $"^\\$(?:-{IDENT_CHAR}|(?:{VAR_START}|0){IDENT_CHAR}*|[~*$?!@/\\;,.=:<>\"])$",
             RegexOptions.Compiled);
 
-        protected Class effectiveClass;
         protected readonly IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
+
+        public override Class Class => HasSingletonClass ? EffectiveClass.Superclass : EffectiveClass;
+
+        protected Class effectiveClass;
+        public override Class EffectiveClass => effectiveClass;
+
+        public override bool  HasSingletonClass => EffectiveClass.IsSingleton;
+
+        public override bool  Frozen { get; protected set; }
+
+        public override Class SingletonClass =>
+            !EffectiveClass.IsSingleton
+                ? effectiveClass = new Class(EffectiveClass, isSingleton: true)
+                : EffectiveClass;
 
         protected BaseObject(Class klass)
         {
@@ -26,16 +39,6 @@ namespace Mint
         }
 
         protected BaseObject() : this(Class.OBJECT) { }
-
-        public override Class Class             => HasSingletonClass ? EffectiveClass.Superclass : EffectiveClass;
-        public override Class EffectiveClass    => effectiveClass;
-        public override bool  HasSingletonClass => EffectiveClass.IsSingleton;
-        public override bool  Frozen            { get; protected set; }
-
-        public override Class SingletonClass =>
-            !EffectiveClass.IsSingleton
-                ? effectiveClass = new Class(EffectiveClass, isSingleton: true)
-                : EffectiveClass;
 
         public override iObject Freeze()
         {

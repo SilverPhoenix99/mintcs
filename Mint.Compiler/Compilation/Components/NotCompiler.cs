@@ -15,11 +15,18 @@ namespace Mint.Compilation.Components
             if(condition.NodeType == ExpressionType.Constant)
             {
                 var conditionValue = (iObject) ((ConstantExpression) condition).Value;
-                return Object.ToBool(conditionValue) ? CompilerUtils.FALSE : CompilerUtils.TRUE;
+                return Object.ToBool(conditionValue)
+                     ? FalseClass.Expressions.Instance
+                     : TrueClass.Expressions.Instance;
             }
 
             condition = CompilerUtils.ToBool(condition);
-            return Condition(condition, CompilerUtils.FALSE, CompilerUtils.TRUE, typeof(iObject));
+            return Condition(
+                condition,
+                FalseClass.Expressions.Instance,
+                TrueClass.Expressions.Instance,
+                typeof(iObject)
+            );
         }
     }
 }

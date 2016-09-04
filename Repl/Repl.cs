@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using Mint.Compilation;
 using Mint.Parse;
-using static System.Reflection.BindingFlags;
 
 namespace Mint
 {

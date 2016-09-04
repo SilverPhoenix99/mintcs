@@ -31,7 +31,7 @@ namespace Mint.Compilation.Components
 
             var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
-            return CompilerUtils.StringConcat(CompilerUtils.NewString(), contents);
+            return CompilerUtils.StringConcat(String.Expressions.New(), contents);
         }
 
         private bool IsSimpleContent()

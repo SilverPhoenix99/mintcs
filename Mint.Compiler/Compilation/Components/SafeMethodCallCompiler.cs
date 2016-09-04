@@ -16,9 +16,9 @@ namespace Mint.Compilation.Components
             var visibility = GetVisibility();
 
             var instance = Variable(typeof(iObject), "instance");
-            var checkNilInstance = Call(CompilerUtils.IS_NIL, instance.Cast<object>());
+            var checkNilInstance = NilClass.Expressions.IsNil(instance.Cast<object>());
             var call = CompilerUtils.Call(instance, methodName, visibility, arguments);
-            var conditionalCall = Condition(checkNilInstance, CompilerUtils.NIL, call, typeof(iObject));
+            var conditionalCall = Condition(checkNilInstance, NilClass.Expressions.Instance, call, typeof(iObject));
 
             return Block(
                 typeof(iObject),

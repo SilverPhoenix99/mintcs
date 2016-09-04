@@ -15,7 +15,7 @@ namespace Mint.Compilation.Components
         public override Expression Reduce()
         {
             var operand = Pop();
-            var visibility = CompilerUtils.GetVisibility(Operand);
+            var visibility = Operand.GetVisibility();
             return CompilerUtils.Call(operand, Operator, visibility);
         }
     }

@@ -43,9 +43,9 @@ namespace Mint.Compilation.Components
             return CompilerUtils.NewArray(words.ToArray());
         }
 
-        private Expression CreateWord(List<Expression> contents)
+        private Expression CreateWord(IEnumerable<Expression> contents)
         {
-            var word = CompilerUtils.NewString();
+            Expression word = String.Expressions.New();
             word = CompilerUtils.StringConcat(word, contents);
             word = word.StripConversions();
             word = Wrap(word);

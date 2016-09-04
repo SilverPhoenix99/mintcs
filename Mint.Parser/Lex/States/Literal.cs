@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Mint.Lex.States.Delimiters;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
-using static Mint.Lex.States.LiteralFeatures;
 
 namespace Mint.Lex.States
 {

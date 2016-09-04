@@ -53,7 +53,7 @@ namespace Mint.Compilation.Components
 
             argumentVars = CreateArgumentVariables();
 
-            var argumentKinds = ArgumentsNode.Select(node => CompilerUtils.GetArgumentKind(node.Value.Type));
+            var argumentKinds = ArgumentsNode.Select(node => node.Value.Type.GetArgumentKind());
 
             invocationArguments =
                 argumentKinds.Zip(argumentVars, (kind, arg) => new InvocationArgument(kind, arg)).ToArray();

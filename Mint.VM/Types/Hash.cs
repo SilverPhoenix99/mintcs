@@ -1,7 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
@@ -80,5 +82,15 @@ namespace Mint
         public bool HasKey(iObject key) => map.ContainsKey(key);
 
         public Hash Duplicate() => new Hash(this);
+
+        public static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Hash>();
+        }
+
+        public static class Expressions
+        {
+            public static NewExpression New() => Expression.New(Reflection.Ctor);
+        }
     }
 }

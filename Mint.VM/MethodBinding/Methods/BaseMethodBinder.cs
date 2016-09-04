@@ -25,9 +25,13 @@ namespace Mint.MethodBinding.Methods
         };
 
         public Symbol Name { get; }
+
         public Module Owner { get; }
+
         public Condition Condition { get; }
+
         public Arity Arity { get; protected set; }
+
         public Visibility Visibility { get; }
 
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
@@ -35,9 +39,9 @@ namespace Mint.MethodBinding.Methods
             if(name == null) throw new ArgumentNullException(nameof(name));
             if(owner == null) throw new ArgumentNullException(nameof(owner));
 
-            Name       = name;
-            Owner      = owner;
-            Condition  = new Condition();
+            Name = name;
+            Owner = owner;
+            Condition = new Condition();
             Visibility = visibility;
         }
 
@@ -56,8 +60,8 @@ namespace Mint.MethodBinding.Methods
         protected static Expression Box(Expression expression)
         {
             return expression.Type == typeof(void)
-                ? (Expression) Block(expression, BindingUtils.NIL)
-                : Call(BindingUtils.OBJECT_BOX, expression.Cast<object>());
+                ? (Expression) Block(expression, NilClass.Expressions.Instance)
+                : Object.Expressions.Box(expression.Cast<object>());
         }
 
         protected internal static Expression TypeIs(Expression expression, Type type)

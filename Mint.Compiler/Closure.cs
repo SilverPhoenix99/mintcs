@@ -8,8 +8,6 @@ namespace Mint
 {
     public class Closure
     {
-        private static readonly PropertyInfo INDEXER = Reflector<Closure>.Property(_ => _[default(int)]);
-
         private readonly Dictionary<Symbol, int> indexes = new Dictionary<Symbol, int>();
         private readonly Array values = new Array();
 
@@ -45,7 +43,17 @@ namespace Mint
 
         public bool IsDefined(Symbol name) => indexes.ContainsKey(name);
 
-        public Expression Variable(Symbol name) => Constant(this).Indexer(INDEXER, Constant(IndexOf(name)));
+        public Expression Variable(Symbol name) => Expressions.Indexer(Constant(this), Constant(IndexOf(name)));
 
+        public static class Reflection
+        {
+            public static readonly PropertyInfo Indexer = Reflector<Closure>.Property(_ => _[default(int)]);
+        }
+
+        public static class Expressions
+        {
+            public static IndexExpression Indexer(Expression closure, Expression index) =>
+                closure.Indexer(Reflection.Indexer, index);
+        }
     }
 }

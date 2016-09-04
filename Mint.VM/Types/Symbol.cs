@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
+using Mint.Reflection;
 
 namespace Mint
 {
@@ -8,18 +11,24 @@ namespace Mint
     {
         private readonly Sym sym;
 
+        public long Id => sym.Id;
+
+        public string Name => sym.Name;
+
+        public Class Class => Class.SYMBOL;
+
+        public Class SingletonClass { get { throw new TypeError("can't define singleton"); } }
+
+        public Class EffectiveClass => Class.SYMBOL;
+
+        public bool HasSingletonClass => false;
+
+        public bool Frozen => true;
+
         public Symbol(string name)
         {
             sym = Sym.New(name);
         }
-
-        public long   Id                => sym.Id;
-        public string Name              => sym.Name;
-        public Class  Class             => Class.SYMBOL;
-        public Class  SingletonClass    { get { throw new TypeError("can't define singleton"); } }
-        public Class  EffectiveClass   => Class.SYMBOL;
-        public bool   HasSingletonClass => false;
-        public bool   Frozen            => true;
 
         public iObject Freeze() => this;
 
@@ -173,6 +182,16 @@ namespace Mint
                     return sym;
                 }
             }
+        }
+
+        public static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Symbol>(typeof(string));
+        }
+
+        public static class Expressions
+        {
+            public static NewExpression New(Expression name) => Expression.New(Reflection.Ctor, name);
         }
     }
 }

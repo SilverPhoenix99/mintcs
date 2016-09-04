@@ -7,12 +7,12 @@ namespace Mint.MethodBinding.Compilation
 {
     public sealed class MegamorphicCallCompiler : BaseCallCompiler
     {
-        private readonly CallCompilerCache<CallSite.Stub> cache;
+        private CallCompilerCache<CallSite.Stub> Cache { get; }
 
         public MegamorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
-            cache = new CallCompilerCache<CallSite.Stub>();
+            Cache = new CallCompilerCache<CallSite.Stub>();
         }
 
         internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<KeyValuePair<long, MethodBinder>> cache)
@@ -22,7 +22,7 @@ namespace Mint.MethodBinding.Compilation
             {
                 if(pair.Value.Condition.Valid)
                 {
-                    this.cache.Put(CreateCachedMethod(pair.Key, pair.Value));
+                    this.Cache.Put(CreateCachedMethod(pair.Key, pair.Value));
                 }
             }
         }
@@ -48,14 +48,14 @@ namespace Mint.MethodBinding.Compilation
         private iObject Call(iObject instance, ArgumentBundle bundle)
         {
             var classId = instance.EffectiveClass.Id;
-            var cachedMethod = cache[classId];
+            var cachedMethod = Cache[classId];
 
             if(cachedMethod == null || !cachedMethod.Binder.Condition.Valid)
             {
-                cache.RemoveInvalidCachedMethods();
+                Cache.RemoveInvalidCachedMethods();
                 var binder = TryFindMethodBinder(instance);
                 cachedMethod = CreateCachedMethod(instance.EffectiveClass.Id, binder);
-                cache.Put(cachedMethod);
+                Cache.Put(cachedMethod);
             }
 
             return cachedMethod.CachedCall(instance, bundle);

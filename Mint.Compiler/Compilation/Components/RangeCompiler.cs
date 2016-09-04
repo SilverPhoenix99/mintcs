@@ -14,7 +14,7 @@ namespace Mint.Compilation.Components
             var left = Pop();
             var right = Pop();
             var exclude = Constant(Node.Value.Type == TokenType.kDOT3);
-            var range = New(CompilerUtils.RANGE_CTOR, left, right, exclude);
+            var range = Range.Expressions.New(left, right, exclude);
             return range.Cast<iObject>();
         }
     }

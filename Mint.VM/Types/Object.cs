@@ -2,6 +2,9 @@
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Compilation;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
@@ -76,6 +79,38 @@ namespace Mint
             }
 
             throw new NameError($"`{name}' is not allowed as an instance variable name");
+        }
+
+        public static class Reflection
+        {
+            public static readonly PropertyInfo Id = Reflector<iObject>.Property(_ => _.Id);
+
+            public static readonly PropertyInfo EffectiveClass = Reflector<iObject>.Property(_ => _.EffectiveClass);
+
+            public static readonly MethodInfo Box = Reflector.Method(
+                () => Box(default(object))
+            );
+
+            public static readonly MethodInfo InstanceVariableGet = Reflector<iObject>.Method(
+                _ => _.InstanceVariableGet(default(Symbol))
+            );
+
+            public static readonly MethodInfo InstanceVariableSet = Reflector<iObject>.Method(
+                _ => _.InstanceVariableSet(default(Symbol), default(iObject))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression Box(Expression value) => Expression.Call(Reflection.Box, value);
+
+            public static MethodCallExpression InstanceVariableGet(Expression instance, Expression variableName) =>
+                Expression.Call(instance, Reflection.InstanceVariableGet, variableName);
+
+            public static MethodCallExpression InstanceVariableSet(Expression instance,
+                                                                   Expression variableName,
+                                                                   Expression value) =>
+                Expression.Call(instance, Reflection.InstanceVariableSet, variableName, value);
         }
     }
 }

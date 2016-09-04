@@ -1,10 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
     public class Range : BaseObject
     {
+        public iObject Begin { get; }
+
+        public iObject End { get; }
+
+        public bool ExcludeEnd { get; }
+
         public Range(iObject begin, iObject end, bool excludeEnd = false) : base(Class.RANGE)
         {
             Debug.Assert(begin != null);
@@ -18,10 +27,6 @@ namespace Mint
         public Range(Fixnum begin, Fixnum end, bool excludeEnd = false)
             : this((iObject) begin, end, excludeEnd)
         { }
-
-        public iObject Begin      { get; }
-        public iObject End        { get; }
-        public bool    ExcludeEnd { get; }
 
         public bool Include(iObject value)
         {
@@ -58,6 +63,18 @@ namespace Mint
             var hash = 23;
             hash = hash * 31 + Begin.GetHashCode();
             return hash * 31 + End.GetHashCode();
+        }
+
+        public static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor =
+                Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+        }
+
+        public static class Expressions
+        {
+            public static NewExpression New(Expression begin, Expression end, Expression excludeEnd) =>
+                Expression.New(Reflection.Ctor, begin, end, excludeEnd);
         }
     }
 }

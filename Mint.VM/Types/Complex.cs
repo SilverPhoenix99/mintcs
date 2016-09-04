@@ -5,6 +5,7 @@ namespace Mint
     public class Complex : BaseObject
     {
         public iObject Real { get; }
+
         public iObject Imag { get; }
 
         // TODO accept string

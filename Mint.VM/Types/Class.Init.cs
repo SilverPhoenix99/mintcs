@@ -1,6 +1,7 @@
 using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using System;
+using System.Diagnostics;
 
 namespace Mint
 {
@@ -36,10 +37,6 @@ namespace Mint
         {
             EqOp = new CallSite(Symbol.EQ, Visibility.Private, ArgumentKind.Simple);
 
-            // ==       |   iObject#Equals(iObject) (by default equal?)
-            // equal?   |   object::ReferenceEquals(object, object)
-            // eql?     |   (iObject i, iObject a) => i.hash == a.hash
-
             #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .DefMethod( "equal?", () => default(iObject).Equal(default(object)) )
@@ -50,6 +47,7 @@ namespace Mint
             ;
             #pragma warning restore 1720
 
+            Debug.Assert(BASIC_OBJECT.Name != null, "BASIC_OBJECT.Name != null");
             BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
 
             #pragma warning disable 1720

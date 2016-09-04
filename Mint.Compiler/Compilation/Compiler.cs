@@ -10,28 +10,28 @@ namespace Mint.Compilation
 {
     public partial class Compiler
     {
-        private readonly Stack<ShiftState> shifting;
-        private readonly Stack<ReduceState> reducing;
-        private readonly Queue<Expression> outputs;
-        private readonly IDictionary<TokenType, ComponentSelector> selectors;
+        private readonly Stack<ShiftState> shifting = new Stack<ShiftState>();
+        private readonly Stack<ReduceState> reducing = new Stack<ReduceState>();
+        private readonly Queue<Expression> outputs = new Queue<Expression>();
+
+        private readonly IDictionary<TokenType, ComponentSelector> selectors
+            = new Dictionary<TokenType, ComponentSelector>();
+
         private ShiftState currentShifting;
         private ReduceState currentReducing;
 
         public string Filename { get; }
+
         public Scope CurrentScope { get; set; }
+
         public CompilerComponent ListComponent { get; set; }
+
         public Ast<Token> CurrentNode { get; private set; }
 
         public Compiler(string filename, Closure binding, Ast<Token> root)
         {
-            shifting = new Stack<ShiftState>();
-            reducing = new Stack<ReduceState>();
-            outputs = new Queue<Expression>();
-            selectors = new Dictionary<TokenType, ComponentSelector>();
-
             Filename = filename;
             CurrentScope = new Scope(ScopeType.Method, binding);
-
             shifting.Push(new ShiftState(root));
 
             InitializeComponents();
@@ -156,7 +156,7 @@ namespace Mint.Compilation
                 throw new IncompleteCompilationError("Compilation finished but some nodes were not reduced.");
             }
 
-            return outputs.Count == 0 ? CompilerUtils.NIL
+            return outputs.Count == 0 ? NilClass.Expressions.Instance
                  : outputs.Count > 1 ? Block(outputs)
                  : outputs.Dequeue();
         }

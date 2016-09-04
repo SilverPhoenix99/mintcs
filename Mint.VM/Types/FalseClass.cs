@@ -1,13 +1,20 @@
-﻿namespace Mint
+﻿using System.Linq.Expressions;
+
+namespace Mint
 {
     public struct FalseClass : iObject
     {
-        public long  Id                => 0x0;
-        public Class Class             => Class.FALSE;
-        public Class SingletonClass    => Class.FALSE;
-        public Class EffectiveClass   => Class.FALSE;
-        public bool  HasSingletonClass => false;
-        public bool  Frozen            => true;
+        public long Id => 0x0;
+
+        public Class Class => Class.FALSE;
+
+        public Class SingletonClass => Class.FALSE;
+
+        public Class EffectiveClass => Class.FALSE;
+
+        public bool HasSingletonClass => false;
+
+        public bool Frozen => true;
 
         public iObject Freeze() => this;
 
@@ -46,5 +53,15 @@
         public static bool operator ==(FalseClass self, object other) => self.Equals(other);
 
         public static bool operator !=(FalseClass self, object other) => !self.Equals(other);
+
+        public static class Expressions
+        {
+            public static readonly Expression Instance;
+
+            static Expressions()
+            {
+                Instance = Expression.Constant(new FalseClass(), typeof(iObject));
+            }
+        }
     }
 }

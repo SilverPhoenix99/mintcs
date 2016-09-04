@@ -28,7 +28,7 @@ namespace Mint
 
         #endregion
 
-        #region DescribeModule
+        #region DescribeClass
 
         public static ModuleBuilder<T> DescribeClass(Class superclass, string name, Module container = null, bool isSingleton = false) =>
             new ModuleBuilder<T>(new Class(superclass, new Symbol(name), container, isSingleton));

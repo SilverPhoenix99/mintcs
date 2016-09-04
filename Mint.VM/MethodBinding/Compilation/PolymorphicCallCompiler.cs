@@ -13,34 +13,23 @@ namespace Mint.MethodBinding.Compilation
     {
         private const int CACHE_FULL_THRESHOLD = 32;
 
-        private static readonly PropertyInfo PROPERTY_EFFECTIVE_CLASS =
-            Reflector<iObject>.Property(_ => _.EffectiveClass);
+        private CallCompilerCache<Expression> Cache { get; }
 
-        private static readonly PropertyInfo PROPERTY_ID = Reflector<iObject>.Property(_ => _.Id);
+        private ParameterExpression Instance { get; } = Parameter(typeof(iObject), "instance");
 
-        private static readonly PropertyInfo PROPERTY_VALID = Reflector<Condition>.Property(_ => _.Valid);
+        private ParameterExpression Bundle { get; } = Parameter(typeof(ArgumentBundle), "bundle");
 
-        private static readonly MethodInfo METHOD_DEFAULTCALL = Reflector<PolymorphicCallCompiler>.Method(
-            _ => _.DefaultCall(default(iObject), default(ArgumentBundle))
-        );
-
-        private readonly CallCompilerCache<Expression> cache;
-
-        private readonly ParameterExpression instanceExpression = Parameter(typeof(iObject), "instance");
-
-        private readonly ParameterExpression bundleExpression = Parameter(typeof(ArgumentBundle), "bundle");
-
-        private readonly GotoExpression gotoExpression = Goto(Label("default"), typeof(iObject));
+        private GotoExpression GotoExpression { get; } = Goto(Label("default"), typeof(iObject));
 
         public PolymorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
-            cache = new CallCompilerCache<Expression>();
+            Cache = new CallCompilerCache<Expression>();
         }
 
         public override CallSite.Stub Compile()
         {
-            cache.RemoveInvalidCachedMethods();
+            Cache.RemoveInvalidCachedMethods();
 
             if(IsCacheEmpty())
             {
@@ -49,43 +38,47 @@ namespace Mint.MethodBinding.Compilation
 
             if(IsCacheFull())
             {
-                var binderCache = cache.Select(_ => new KeyValuePair<long, MethodBinder>(_.Key, _.Value.Binder));
-                CallSite.CallCompiler = new MegamorphicCallCompiler(CallSite, binderCache);
-                return CallSite.CallCompiler.Compile();
+                return UpgradeCompiler();
             }
 
-            var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), instanceExpression, bundleExpression);
-
+            var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), Instance, Bundle);
             return lambda.Compile();
         }
 
-        private bool IsCacheEmpty() => cache.Count == 0;
+        private bool IsCacheEmpty() => Cache.Count == 0;
 
-        private bool IsCacheFull() => cache.Count > CACHE_FULL_THRESHOLD;
+        private bool IsCacheFull() => Cache.Count > CACHE_FULL_THRESHOLD;
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {
             var classId = instance.EffectiveClass.Id;
             var binder = TryFindMethodBinder(instance);
             var cachedMethod = CreateCachedMethod(classId, binder);
-            cache.Put(cachedMethod);
+            Cache.Put(cachedMethod);
             CallSite.BundledCall = Compile();
             return CallSite.BundledCall(instance, bundle);
         }
 
+        private CallSite.Stub UpgradeCompiler()
+        {
+            var binderCache = Cache.Select(_ => new KeyValuePair<long, MethodBinder>(_.Key, _.Value.Binder));
+            CallSite.CallCompiler = new MegamorphicCallCompiler(CallSite, binderCache);
+            return CallSite.CallCompiler.Compile();
+        }
+
         private CachedMethod<Expression> CreateCachedMethod(long classId, MethodBinder binder)
         {
-            var frame = new CallFrameBinder(CallSite, instanceExpression, bundleExpression);
+            var frame = new CallFrameBinder(CallSite, Instance, Bundle);
             var siteExpression = binder.Bind(frame);
             return new CachedMethod<Expression>(classId, binder, siteExpression);
         }
 
         private Expression BuildBodyExpression()
         {
-            var effectiveClassPropertyExpression = instanceExpression.Property(PROPERTY_EFFECTIVE_CLASS);
-            var idPropertyExpression = effectiveClassPropertyExpression.Property(PROPERTY_ID);
+            var effectiveClassPropertyExpression = Instance.Property(Object.Reflection.EffectiveClass);
+            var idPropertyExpression = effectiveClassPropertyExpression.Property(Object.Reflection.Id);
             var defaultCase = CreateDefaultCase();
-            var switchCases = cache.Select(_ => CreateSwitchCases(_.Value));
+            var switchCases = Cache.Select(_ => CreateSwitchCases(_.Value));
 
             return Switch(idPropertyExpression, defaultCase, null, switchCases);
         }
@@ -98,8 +91,8 @@ namespace Mint.MethodBinding.Compilation
              */
 
             var condition = Constant(method.ClassId);
-            var validPropertyExpression = Constant(method.Binder.Condition).Property(PROPERTY_VALID);
-            var body = Condition(validPropertyExpression, method.CachedCall, gotoExpression);
+            var validPropertyExpression = Constant(method.Binder.Condition).Property(Condition.Reflection.Valid);
+            var body = Condition(validPropertyExpression, method.CachedCall, GotoExpression);
 
             return SwitchCase(body, condition);
         }
@@ -112,14 +105,24 @@ namespace Mint.MethodBinding.Compilation
              */
 
             return Block(
-                Label(gotoExpression.Target),
-                Call(
-                    Constant(this),
-                    METHOD_DEFAULTCALL,
-                    instanceExpression,
-                    bundleExpression
-                )
+                Label(GotoExpression.Target),
+                Expressions.DefaultCall(Constant(this), Instance, Bundle)
             );
+        }
+
+        public static class Reflection
+        {
+            public static readonly MethodInfo DefaultCall = Reflector<PolymorphicCallCompiler>.Method(
+                _ => _.DefaultCall(default(iObject), default(ArgumentBundle))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression DefaultCall(Expression callCompiler,
+                                                           Expression instance,
+                                                           Expression bundle) =>
+                Call(callCompiler, Reflection.DefaultCall, instance, bundle);
         }
     }
 }

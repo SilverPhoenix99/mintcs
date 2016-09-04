@@ -2,11 +2,11 @@
 
 namespace Mint.Compilation.Components
 {
-    class TrueCompiler : CompilerComponentBase
+    internal class TrueCompiler : CompilerComponentBase
     {
         public TrueCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => CompilerUtils.TRUE;
+        public override Expression Reduce() => TrueClass.Expressions.Instance;
     }
 }

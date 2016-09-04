@@ -18,7 +18,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            return Node.List.Count == 0 ? CompilerUtils.NewHash() : ReduceElements();
+            return Node.List.Count == 0 ? Hash.Expressions.New().Cast<iObject>() : ReduceElements();
         }
 
         private Expression ReduceElements()
@@ -27,7 +27,7 @@ namespace Mint.Compilation.Components
 
             var blockExpressions = new List<Expression>
             {
-                Assign(hash, CompilerUtils.NewHash().StripConversions())
+                Assign(hash, Hash.Expressions.New())
             };
 
             var insertions = GetInsertions(hash);

@@ -77,5 +77,18 @@ namespace Mint.MethodBinding
             var argumentKinds = string.Join(", ", ArgumentKinds.Select(_ => _.Description));
             return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
         }
+
+        public static class Reflection
+        {
+            public static readonly MethodInfo Call = Reflector<CallSite>.Method(
+                _ => _.Call(default(iObject), default(iObject[]))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression Call(Expression callSite, Expression instance, Expression arguments) =>
+                Expression.Call(callSite, Reflection.Call, instance, arguments);
+        }
     }
 }

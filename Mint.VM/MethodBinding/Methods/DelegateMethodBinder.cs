@@ -9,22 +9,23 @@ namespace Mint.MethodBinding.Methods
 {
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
-        private readonly Delegate function;
-        private readonly IReadOnlyList<IReadOnlyList<Attribute>> parameterAttributes; // TODO
+        private Delegate Lambda { get; }
 
-        public DelegateMethodBinder(Symbol name, Module owner, Delegate function/*, IReadOnlyList<IReadOnlyList<Attribute>> parameterAttributes*/)
+        private readonly IReadOnlyList<Attribute> parameterAttributes; // TODO
+
+        public DelegateMethodBinder(Symbol name, Module owner, Delegate lambda/*, IReadOnlyList<Attribute> parameterAttributes*/)
             : base(name, owner)
         {
-            this.function = function;
+            Lambda = lambda;
+
             //this.parameterAttributes = parameterAttributes;
-            var numParameters = function.Method.GetParameters().Length;
-            Arity = new Arity(numParameters, numParameters); // TODO - 1, due to instance?
+            Arity = Lambda.Method.GetParameterCounter().Arity;
         }
 
         private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)
             : base(newName, other)
         {
-            function = other.function;
+            Lambda = other.Lambda;
             parameterAttributes = other.parameterAttributes;
         }
 
@@ -35,13 +36,13 @@ namespace Mint.MethodBinding.Methods
             // TODO parameter check
 
             var length = frame.CallSite.ArgumentKinds.Count;
-            var parameterTypes = function.Method.GetParameters().Select(_ => _.ParameterType);
+            var parameterTypes = Lambda.Method.GetParameters().Select(_ => _.ParameterType);
 
             var unsplatArgs = new[] { frame.Instance }.Concat(
                 Enumerable.Range(0, length).Select(i => (Expression) ArrayIndex(frame.Arguments, Constant(i)))
             ).Zip(parameterTypes, TryConvert);
 
-            return Box(Invoke(Constant(function), unsplatArgs));
+            return Box(Invoke(Constant(Lambda), unsplatArgs));
         }
     }
 }

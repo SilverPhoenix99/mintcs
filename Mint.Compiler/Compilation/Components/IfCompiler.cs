@@ -15,7 +15,7 @@ namespace Mint.Compilation.Components
         {
             var condition = Pop();
             var trueBody = Pop();
-            var elseBody = HasElse ? Pop() : CompilerUtils.NIL;
+            var elseBody = HasElse ? Pop() : NilClass.Expressions.Instance;
 
             if(condition.NodeType == ExpressionType.Constant)
             {

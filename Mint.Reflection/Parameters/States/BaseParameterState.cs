@@ -5,7 +5,7 @@ namespace Mint.Reflection.Parameters
 {
     internal abstract class BaseParameterState : ParameterState
     {
-        protected readonly ParameterCounter ParameterCounter;
+        protected ParameterCounter ParameterCounter { get; }
 
         protected BaseParameterState(ParameterCounter parameterCounter)
         {

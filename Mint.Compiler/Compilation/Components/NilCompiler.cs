@@ -2,11 +2,11 @@
 
 namespace Mint.Compilation.Components
 {
-    class NilCompiler : CompilerComponentBase
+    internal class NilCompiler : CompilerComponentBase
     {
         public NilCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => CompilerUtils.NIL;
+        public override Expression Reduce() => NilClass.Expressions.Instance;
     }
 }

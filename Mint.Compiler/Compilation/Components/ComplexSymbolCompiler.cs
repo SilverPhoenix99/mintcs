@@ -1,8 +1,5 @@
 ﻿using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using Mint.Reflection;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
@@ -16,11 +13,11 @@ namespace Mint.Compilation.Components
             var count = Node.List.Count;
             var contents = Enumerable.Range(0, count).Select(_ => Pop());
 
-            var first = CompilerUtils.NewString();
+            var first = String.Expressions.New();
             var body = CompilerUtils.StringConcat(first, contents);
             body = ((UnaryExpression) body).Operand;
             body = body.Cast<string>();
-            var symbol = New(CompilerUtils.SYMBOL_CTOR, body);
+            var symbol = Symbol.Expressions.New(body);
             return symbol.Cast<iObject>();
         }
     }

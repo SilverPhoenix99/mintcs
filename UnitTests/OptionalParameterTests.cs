@@ -2,7 +2,6 @@
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Compilation;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 using NUnit.Framework;
 
 namespace Mint.UnitTests

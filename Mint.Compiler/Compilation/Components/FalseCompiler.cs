@@ -2,11 +2,11 @@
 
 namespace Mint.Compilation.Components
 {
-    class FalseCompiler : CompilerComponentBase
+    internal class FalseCompiler : CompilerComponentBase
     {
         public FalseCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => CompilerUtils.FALSE;
+        public override Expression Reduce() => FalseClass.Expressions.Instance;
     }
 }

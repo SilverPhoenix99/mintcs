@@ -15,7 +15,7 @@ namespace Mint.Compilation.Components
 
         public abstract Expression Getter { get; }
         public Expression Right { get; protected set; }
-        public Visibility Visibility => CompilerUtils.GetVisibility(LeftNode);
+        public Visibility Visibility => LeftNode.GetVisibility();
 
         protected AssignCompiler(Compiler compiler, AssignOperator operatorCompiler) : base(compiler)
         {

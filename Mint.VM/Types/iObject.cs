@@ -34,5 +34,7 @@
 
         iObject InstanceVariableSet(Symbol name, iObject obj);
         iObject InstanceVariableSet(string name, iObject obj);
+
+        // Reflection and Expressions members are defined in Object class.
     }
 }

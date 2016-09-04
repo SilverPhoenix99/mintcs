@@ -38,6 +38,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\AstExtensions.cs" />
     <Compile Include="Closure.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Compiler.ReduceState.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Compilation\Selectors\WhileModSelector.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Compilation\TokenTypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mint.Parser\Mint.Parser.csproj">

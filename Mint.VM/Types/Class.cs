@@ -5,6 +5,15 @@ namespace Mint
 {
     public partial class Class : Module
     {
+        public Class Superclass { get; }
+
+        public bool IsSingleton { get; }
+
+        public override bool IsModule => false;
+
+        public override IEnumerable<Module> Ancestors =>
+            Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
+
         public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
             : base(CLASS, name, container)
         {
@@ -38,13 +47,6 @@ namespace Mint
             }
         }
 
-        public Class Superclass { get; }
-        public bool IsSingleton { get; }
-        public override bool IsModule => false;
-
-        public override IEnumerable<Module> Ancestors =>
-            Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
-
         public override void Include(Module module)
         {
             Included = AppendModule(Included, module, Superclass);
@@ -54,9 +56,7 @@ namespace Mint
         {
             Prepended = AppendModule(Prepended, module, Superclass);
         }
-
-        #region Static
-
+        
         public static bool IsA(iObject o, Class c)
         {
             if(NilClass.IsNil(c))
@@ -74,7 +74,5 @@ namespace Mint
 
             return false;
         }
-
-        #endregion
     }
 }

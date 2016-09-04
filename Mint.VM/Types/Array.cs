@@ -2,6 +2,9 @@ using Mint.Reflection.Parameters.Attributes;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
@@ -19,7 +22,7 @@ namespace Mint
 
         public Array(int count, iObject obj) : this()
         {
-            for(int i = 0; i < count; i++)
+            for(var i = 0; i < count; i++)
             {
                 list.Add(obj);
             }
@@ -180,10 +183,20 @@ namespace Mint
                 throw new TypeError("no implicit conversion of nil into Array");
             }
             var result = new Array(left.list);
-            result.list.RemoveAll(item => right.Contains(item));
+            result.list.RemoveAll(right.Contains);
             return result;
         }
 
         public static explicit operator Array(iObject[] objects) => new Array(objects);
+
+        public static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
+        }
+
+        public static class Expressions
+        {
+            public static NewExpression New(Expression values) => Expression.New(Reflection.Ctor, values);
+        }
     }
 }

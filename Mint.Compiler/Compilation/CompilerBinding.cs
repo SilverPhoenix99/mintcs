@@ -1,22 +1,11 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
-using Mint;
-using Mint.Reflection;
 
 namespace Mint.Compilation
 {
     internal class CompilerBinding
     {
-        private static readonly ConstructorInfo CTOR = Reflector.Ctor<Binding>(typeof(iObject));
-
-        private static readonly MethodInfo GET_OR_CREATE_LOCAL =
-            Reflector<Binding>.Method(_ => _.SetLocal(default(Symbol), default(iObject)));
-
-        private static readonly MethodInfo SET_LOCAL =
-            Reflector<Binding>.Method(_ => _.SetLocal(default(Symbol), default(iObject)));
-
-        private Dictionary<string, int> localsIndexes;
+        private readonly Dictionary<string, int> localsIndexes;
 
         public Expression Binding { get; }
 
@@ -37,6 +26,6 @@ namespace Mint.Compilation
             return index;
         }
 
-        public Expression NewBinding(Expression receiver) => Expression.New(CTOR, receiver);
+        public Expression NewBinding(Expression receiver) => Mint.Binding.Expressions.New(receiver);
     }
 }

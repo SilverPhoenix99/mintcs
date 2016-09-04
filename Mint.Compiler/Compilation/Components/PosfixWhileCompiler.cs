@@ -29,7 +29,7 @@ namespace Mint.Compilation.Components
                 body,
                 Label(scope.NextLabel),
                 IfThen(condition, Goto(scope.RedoLabel)),
-                Label(scope.BreakLabel, CompilerUtils.NIL)
+                Label(scope.BreakLabel, NilClass.Expressions.Instance)
             );
         }
     }

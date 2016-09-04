@@ -1,7 +1,5 @@
 ﻿using System.Linq.Expressions;
-using System.Reflection;
 using Mint.Compilation.Components.Operators;
-using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
@@ -19,13 +17,13 @@ namespace Mint.Compilation.Components
         public override Expression Setter(Expression rightHandSide)
         {
             var variableName = Constant(VariableName);
-            return Call(Instance, CompilerUtils.INSTANCE_VARIABLE_SET, variableName, rightHandSide);
+            return Object.Expressions.InstanceVariableSet(Instance, variableName, rightHandSide);
         }
 
         protected override Expression CreateGetter()
         {
             var variableName = Constant(VariableName);
-            return Call(Instance, CompilerUtils.INSTANCE_VARIABLE_GET, variableName);
+            return Object.Expressions.InstanceVariableGet(Instance, variableName);
         }
     }
 }

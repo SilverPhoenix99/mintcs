@@ -6,12 +6,17 @@ namespace Mint
     {
         private static long nextId;
 
-        public virtual  long  Id { get; } = Interlocked.Increment(ref nextId) << 2;
+        public virtual long Id { get; } = Interlocked.Increment(ref nextId) << 2;
+
         public abstract Class Class { get; }
-        public virtual  Class SingletonClass { get { throw new TypeError("can't define singleton"); } }
-        public virtual  Class EffectiveClass => Class;
-        public virtual  bool  HasSingletonClass => false;
-        public virtual  bool  Frozen { get { return true; } protected set { /* noop */ } }
+
+        public virtual Class SingletonClass { get { throw new TypeError("can't define singleton"); } }
+
+        public virtual Class EffectiveClass => Class;
+
+        public virtual bool HasSingletonClass => false;
+
+        public virtual bool Frozen { get { return true; } protected set { /* noop */ } }
 
         public virtual iObject Freeze() => this;
 

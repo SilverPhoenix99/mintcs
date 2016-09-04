@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
@@ -13,7 +12,7 @@ namespace Mint.Compilation.Components
         {
             var instance = Compiler.CurrentScope.Closure.Self;
             var variableName = Constant(new Symbol(Node.Value.Value));
-            return Call(instance, CompilerUtils.INSTANCE_VARIABLE_GET, variableName);
+            return Object.Expressions.InstanceVariableGet(instance, variableName);
         }
     }
 }
