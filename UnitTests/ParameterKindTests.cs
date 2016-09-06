@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Mint.Reflection;
 using Mint.Reflection.Parameters;
 using Mint.Reflection.Parameters.Attributes;
@@ -10,6 +11,7 @@ namespace Mint.UnitTests
     public class ParameterKindTests
     {
         private static void DummyMethod(
+                             iObject instance,
                              iObject prefixRequired,
             [Optional]       iObject optional,
             [Rest]           iObject rest,
@@ -21,16 +23,28 @@ namespace Mint.UnitTests
             [Key] [Rest]     iObject keyRest,
             [Block]          iObject block
         )
-        { }
+        {
+            Console.WriteLine(instance);
+            Console.WriteLine(prefixRequired);
+            Console.WriteLine(optional);
+            Console.WriteLine(rest);
+            Console.WriteLine(suffixRequired);
+            Console.WriteLine(keyRequired1);
+            Console.WriteLine(keyOptional1);
+            Console.WriteLine(keyRequired2);
+            Console.WriteLine(keyOptional2);
+            Console.WriteLine(keyRest);
+            Console.WriteLine(block);
+        }
 
         private static readonly MethodInfo DUMMYMETHOD_INFO = Reflector.Method(
-            () => DummyMethod(null, null, null, null, null, null, null, null, null, null)
+            () => DummyMethod(null, null, null, null, null, null, null, null, null, null, null)
         );
 
         [Test]
         public void TestRequiredParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[0];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[1];
 
             Assert.IsFalse(parameter.IsOptional());
             Assert.IsFalse(parameter.IsRest());
@@ -43,7 +57,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestOptionalParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[1];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[2];
 
             Assert.IsTrue(parameter.IsOptional());
             Assert.IsFalse(parameter.IsRest());
@@ -56,7 +70,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestRestParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[2];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[3];
 
             Assert.IsFalse(parameter.IsOptional());
             Assert.IsTrue(parameter.IsRest());
@@ -69,7 +83,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestKeyRequiredParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[4];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[5];
 
             Assert.IsFalse(parameter.IsOptional());
             Assert.IsFalse(parameter.IsRest());
@@ -82,7 +96,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestKeyOptionalParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[5];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[6];
 
             Assert.IsTrue(parameter.IsOptional());
             Assert.IsFalse(parameter.IsRest());
@@ -95,7 +109,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestKeyRestParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[8];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[9];
 
             Assert.IsFalse(parameter.IsOptional());
             Assert.IsTrue(parameter.IsRest());
@@ -108,7 +122,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestBlockParameter()
         {
-            var parameter = DUMMYMETHOD_INFO.GetParameters()[9];
+            var parameter = DUMMYMETHOD_INFO.GetParameters()[10];
 
             Assert.IsFalse(parameter.IsOptional());
             Assert.IsFalse(parameter.IsRest());
@@ -123,16 +137,16 @@ namespace Mint.UnitTests
         {
             var parameters = DUMMYMETHOD_INFO.GetParameters();
 
-            Assert.That(parameters[0].GetParameterKind(), Is.EqualTo(ParameterKind.Required));
-            Assert.That(parameters[1].GetParameterKind(), Is.EqualTo(ParameterKind.Optional));
-            Assert.That(parameters[2].GetParameterKind(), Is.EqualTo(ParameterKind.Rest));
-            Assert.That(parameters[3].GetParameterKind(), Is.EqualTo(ParameterKind.Required));
-            Assert.That(parameters[4].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRequired));
-            Assert.That(parameters[5].GetParameterKind(), Is.EqualTo(ParameterKind.KeyOptional));
-            Assert.That(parameters[6].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRequired));
-            Assert.That(parameters[7].GetParameterKind(), Is.EqualTo(ParameterKind.KeyOptional));
-            Assert.That(parameters[8].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRest));
-            Assert.That(parameters[9].GetParameterKind(), Is.EqualTo(ParameterKind.Block));
+            Assert.That(parameters[1].GetParameterKind(), Is.EqualTo(ParameterKind.Required));
+            Assert.That(parameters[2].GetParameterKind(), Is.EqualTo(ParameterKind.Optional));
+            Assert.That(parameters[3].GetParameterKind(), Is.EqualTo(ParameterKind.Rest));
+            Assert.That(parameters[4].GetParameterKind(), Is.EqualTo(ParameterKind.Required));
+            Assert.That(parameters[5].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRequired));
+            Assert.That(parameters[6].GetParameterKind(), Is.EqualTo(ParameterKind.KeyOptional));
+            Assert.That(parameters[7].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRequired));
+            Assert.That(parameters[8].GetParameterKind(), Is.EqualTo(ParameterKind.KeyOptional));
+            Assert.That(parameters[9].GetParameterKind(), Is.EqualTo(ParameterKind.KeyRest));
+            Assert.That(parameters[10].GetParameterKind(), Is.EqualTo(ParameterKind.Block));
         }
 
         [Test]

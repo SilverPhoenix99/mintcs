@@ -59,9 +59,12 @@ namespace Mint.MethodBinding.Methods
 
         protected static Expression Box(Expression expression)
         {
-            return expression.Type == typeof(void)
-                ? (Expression) Block(expression, NilClass.Expressions.Instance)
-                : Object.Expressions.Box(expression.Cast<object>());
+            if(expression.Type == typeof(void))
+            {
+                return Block(expression, NilClass.Expressions.Instance);
+            }
+
+            return Object.Expressions.Box(expression);
         }
 
         protected internal static Expression TypeIs(Expression expression, Type type)

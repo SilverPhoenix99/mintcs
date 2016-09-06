@@ -9,6 +9,22 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Compilation
 {
+    /*
+     * Generated Stub:
+     *
+     * (iObject $instance, ArgumentBundle $bundle) => {
+     *
+     *     if(@Condition.Valid)
+     *     {
+     *         <MethodBinder code>;
+     *     }
+     *     else
+     *     {
+     *         @CallSite.BundledCall = @CallSite.CallCompiler.Compile();
+     *         return @CallSite.BundledCall($instance, $bundle);
+     *     }
+     * }
+     */
     public sealed class PolymorphicCallCompiler : BaseCallCompiler
     {
         private const int CACHE_FULL_THRESHOLD = 32;

@@ -60,7 +60,8 @@
     <Compile Include="MethodBinding\Methods\BaseMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\CallFrame.cs" />
     <Compile Include="MethodBinding\Methods\ClrMethodBinder.cs" />
-    <Compile Include="MethodBinding\Methods\ClrMethodBinder.CallEmitter.cs" />
+    <Compile Include="MethodBinding\Methods\ClrMethodBinder.InstanceCallEmitter.cs" />
+    <Compile Include="MethodBinding\Methods\ClrMethodBinder.StaticCallEmitter.cs" />
     <Compile Include="MethodBinding\Methods\DelegateMethodBinder.cs" />
     <Compile Include="MethodBinding\Methods\LocalVariable.cs" />
     <Compile Include="MethodBinding\Methods\MethodBinder.cs" />

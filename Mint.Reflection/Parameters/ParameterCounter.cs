@@ -30,9 +30,15 @@ namespace Mint.Reflection.Parameters
             }
         }
 
-        public ParameterCounter(MethodInfo methodInfo)
+        public ParameterCounter(MethodBase methodInfo)
         {
             var parameterInfos = methodInfo.GetParameters();
+
+            if(methodInfo.IsStatic || methodInfo.IsDynamicallyGenerated())
+            {
+                parameterInfos = parameterInfos.Skip(1).ToArray();
+            }
+
             ParameterState initialState = new RequiredPrefixState(this);
             parameterInfos.Aggregate(initialState, (state, paramInfo) => state.Parse(paramInfo));
         }

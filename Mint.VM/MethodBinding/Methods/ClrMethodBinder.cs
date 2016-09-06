@@ -15,14 +15,12 @@ namespace Mint.MethodBinding.Methods
      *
      * (iObject $instance, ArgumentBundle $bundle) => {
      *
-     *     if(@Condition.Valid)
+     *     switch
      *     {
-     *         <CallEmitter code>
-     *     }
-     *     else
-     *     {
-     *         @CallSite.BundledCall = @CallSite.CallCompiler.Compile();
-     *         return @CallSite.BundledCall($instance, $bundle);
+     *         case <InstanceCallEmitter code>;
+     *         
+     *         default:
+     *             new TypeError("no implicit conversion exists");
      *     }
      * }
      */
@@ -33,6 +31,11 @@ namespace Mint.MethodBinding.Methods
         public ClrMethodBinder(Symbol name, Module owner, MethodInfo method, Visibility visibility = Visibility.Public)
             : base(name, owner, visibility)
         {
+            if(method.IsDynamicallyGenerated())
+            {
+                throw new ArgumentException("Method cannot be dynamically generated. Use DelegateMethodBinder instead.");
+            }
+
             MethodInfos = GetOverloads(method);
             Debug.Assert(MethodInfos.Length != 0);
             Arity = CalculateArity();
@@ -46,10 +49,10 @@ namespace Mint.MethodBinding.Methods
 
         private static MethodInfo[] GetOverloads(MethodInfo method)
         {
-            Debug.Assert(method.DeclaringType != null, "method.DeclaringType != null");
+            Debug.Assert(method.ReflectedType != null, "method.ReflectedType != null");
 
             var methods =
-                from m in method.DeclaringType.GetMethods(Instance | NonPublic | Public)
+                from m in method.ReflectedType.GetMethods(Instance | NonPublic | Public)
                 where m.Name == method.Name
                 select m
             ;
@@ -70,7 +73,7 @@ namespace Mint.MethodBinding.Methods
         public override Expression Bind(CallFrameBinder frame)
         {
             var argumentsArray = Variable(typeof(iObject[]), "arguments");
-            var cases = MethodInfos.Select(info => new CallEmitter(info, frame, argumentsArray).Bind());
+            var cases = MethodInfos.Select(info => CreateCallEmitter(info, frame, argumentsArray).Bind());
 
             var defaultCase = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
 
@@ -80,6 +83,14 @@ namespace Mint.MethodBinding.Methods
                 Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
         }
+
+        private static CallEmitter CreateCallEmitter(
+            MethodInfo info,
+            CallFrameBinder frame,
+            ParameterExpression argumentsArray
+        ) =>
+            info.IsStatic ? new StaticCallEmitter(info, frame, argumentsArray)
+                          : new InstanceCallEmitter(info, frame, argumentsArray);
         
         private static Exception ThrowInvalidConversion()
         {

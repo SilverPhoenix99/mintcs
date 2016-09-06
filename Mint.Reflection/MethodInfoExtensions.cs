@@ -51,5 +51,8 @@ namespace Mint.Reflection
 
             return counter;
         }
+
+        public static bool IsDynamicallyGenerated(this MethodBase methodInfo) =>
+            methodInfo.ReflectedType.IsDefined(typeof(CompilerGeneratedAttribute), false);
     }
 }

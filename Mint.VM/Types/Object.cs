@@ -4,17 +4,20 @@ using Mint.MethodBinding.Compilation;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using Mint.Reflection;
 
 namespace Mint
 {
     public class Object : BaseObject
     {
+        public static iObject Box(iObject obj) => obj ?? new NilClass();
         public static iObject Box(string obj) => new String(obj);
-        public static iObject Box(short obj)  => new Fixnum(obj);
-        public static iObject Box(int obj)    => new Fixnum(obj);
-        public static iObject Box(long obj)   => new Fixnum(obj);
-        public static iObject Box(float obj)  => new Float(obj);
+        public static iObject Box(StringBuilder obj) => new String(obj);
+        public static iObject Box(short obj) => new Fixnum(obj);
+        public static iObject Box(int obj) => new Fixnum(obj);
+        public static iObject Box(long obj) => new Fixnum(obj);
+        public static iObject Box(float obj) => new Float(obj);
         public static iObject Box(double obj) => new Float(obj);
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
@@ -24,6 +27,7 @@ namespace Mint
             if(value == null) return new NilClass();
             if(value is iObject) return (iObject) value;
             if(value is string) return Box((string) value);
+            if(value is StringBuilder) return Box((StringBuilder) value);
             if(value is bool) return Box((bool) value);
             if(value is short) return Box((short) value);
             if(value is int) return Box((int) value);
@@ -63,9 +67,10 @@ namespace Mint
                 return (Symbol) methodName;
             }
 
-            if(methodName is String)
+            var name = methodName as String;
+            if(name != null)
             {
-                return new Symbol(((String) methodName).Value);
+                return new Symbol(name.Value);
             }
 
             throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
@@ -90,7 +95,7 @@ namespace Mint
             public static readonly MethodInfo Box = Reflector.Method(
                 () => Box(default(object))
             );
-
+            
             public static readonly MethodInfo InstanceVariableGet = Reflector<iObject>.Method(
                 _ => _.InstanceVariableGet(default(Symbol))
             );
@@ -102,8 +107,21 @@ namespace Mint
 
         public static class Expressions
         {
-            public static MethodCallExpression Box(Expression value) => Expression.Call(Reflection.Box, value);
+            public static MethodCallExpression Box(Expression value)
+            {
+                value = value.StripConversions();
+                var method = typeof(Object).GetMethod(nameof(Box), new[] { value.Type }) ?? Reflection.Box;
 
+                var parameterType = method.GetParameters()[0].ParameterType;
+                if(value.Type != parameterType)
+                {
+                    value = value.Cast(parameterType);
+                }
+
+
+                return Expression.Call(method, value);
+            }
+            
             public static MethodCallExpression InstanceVariableGet(Expression instance, Expression variableName) =>
                 Expression.Call(instance, Reflection.InstanceVariableGet, variableName);
 

@@ -29,8 +29,6 @@ namespace Mint
         public static readonly Class SYMBOL;
         public static readonly Class TRUE;
 
-        public static readonly Module KERNEL;
-
         private static readonly CallSite EqOp;
 
         static Class()
@@ -77,7 +75,7 @@ namespace Mint
             CLASS.effectiveClass = CLASS;
 
             #pragma warning disable 1720
-            KERNEL = ModuleBuilder<iObject>.DescribeModule("Kernel")
+            Module kernel = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
                 .DefMethod("to_s", () => default(FrozenObject).ToString() )
                 .DefMethod("inspect", () => default(FrozenObject).Inspect() )
@@ -87,11 +85,12 @@ namespace Mint
                 .DefMethod("hash", () => default(iObject).GetHashCode() )
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", () => default(iObject).Id )
+                //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
             ;
             #pragma warning restore 1720
 
-            OBJECT.Include(KERNEL);
-            Object.DefineModule(KERNEL);
+            OBJECT.Include(kernel);
+            Object.DefineModule(kernel);
 
             NUMERIC = new Class(new Symbol("Numeric"));
 
