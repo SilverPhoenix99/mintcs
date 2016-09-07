@@ -1,73 +1,76 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mint.MethodBinding.Methods;
 using Mint.Reflection;
 
 namespace Mint
 {
     public class Binding : BaseObject
     {
-        private readonly Dictionary<Symbol, int> localsIndexes;
+        private readonly CallFrame frame;
+        private readonly IList<LocalVariable> dynamicLocals;
 
-        private readonly Array locals;
+        public iObject Receiver => frame.Instance;
 
-        public iObject Receiver { get; }
+        private IEnumerable<LocalVariable> Locals =>
+            frame.Arguments.Concat(frame.Locals).Concat(dynamicLocals);
 
-        public Module Module => Receiver as Module ?? Receiver.Class;
+        public Array LocalVariables => new Array(Locals.Select(_ => _.Name).Cast<iObject>());
 
-        public Binding(iObject receiver) : base(Class.BINDING)
+        private Binding(CallFrame frame, IList<LocalVariable> dynamicLocals)
+            : base(Class.BINDING)
         {
-            Receiver = receiver;
-            localsIndexes = new Dictionary<Symbol, int>();
-            locals = new Array();
-        }
-
-        public bool IsLocalDefined(Symbol local) => localsIndexes.ContainsKey(local);
-
-        public iObject GetLocal(Symbol local)
-        {
-            var index = GetLocalIndexOrThrow(local);
-            return locals[index];
-        }
-
-        public int GetLocalIndexOrThrow(Symbol local)
-        {
-            int index;
-            if(localsIndexes.TryGetValue(local, out index))
+            if(frame == null)
             {
-                return index;
+                throw new ArgumentNullException(nameof(frame));
             }
-            throw new NameError($"local variable `{local.Name}' not defined for {this}");
+
+            this.frame = frame;
+            this.dynamicLocals = dynamicLocals;
         }
 
-        public void SetLocal(Symbol local, iObject value)
-        {
-            var index = GetOrCreateLocalIndex(local);
-            SetLocal(index, value);
-        }
+        private Binding(Binding other) : this(other.frame, new List<LocalVariable>(other.dynamicLocals))
+        { }
 
-        public int GetOrCreateLocalIndex(Symbol local)
+        internal Binding(CallFrame frame) : this(frame, new List<LocalVariable>())
+        { }
+
+        public Binding() : this(CallFrame.CurrentFrame)
+        { }
+
+        public bool IsLocalDefined(Symbol local) => Locals.Any(_ => _.Name == local);
+
+        internal LocalVariable GetLocal(Symbol local) => Locals.FirstOrDefault(_ => _.Name == local);
+
+        public iObject GetLocalValue(Symbol local) => GetLocal(local)?.Value;
+
+        public iObject SetLocalValue(Symbol local, iObject value)
         {
-            int index;
-            if(!localsIndexes.TryGetValue(local, out index))
+            var variable = Locals.FirstOrDefault(_ => _.Name == local);
+
+            if(variable != null)
             {
-                localsIndexes[local] = index = locals.Count;
-                locals[index] = new NilClass();
+                variable.Value = value;
             }
-            return index;
+            else
+            {
+                dynamicLocals.Add(new LocalVariable(local, value));
+            }
+
+            return value;
         }
 
-        public void SetLocal(int index, iObject value)
-        {
-            locals[index] = value ?? new NilClass();
-        }
+        public Binding Duplicate() => new Binding(this);
 
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor = Reflector.Ctor<Binding>(typeof(iObject));
 
-            public static readonly MethodInfo SetLocal =
-                Reflector<Binding>.Method(_ => _.SetLocal(default(Symbol), default(iObject)));
+            public static readonly MethodInfo SetLocalValue =
+                Reflector<Binding>.Method(_ => _.SetLocalValue(default(Symbol), default(iObject)));
         }
 
         public static class Expressions

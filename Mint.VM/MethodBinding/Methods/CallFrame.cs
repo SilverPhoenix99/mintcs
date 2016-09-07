@@ -6,7 +6,7 @@ namespace Mint.MethodBinding.Methods
     public class CallFrame
     {
         [ThreadStatic]
-	    public static CallFrame CurrentFrame = null;
+	    public static CallFrame CurrentFrame;
 
         public iObject Instance { get; }
 
@@ -15,6 +15,8 @@ namespace Mint.MethodBinding.Methods
         public IList<LocalVariable> Locals { get; }
 
         public CallFrame Caller { get; }
+
+        public Module Module => Instance as Module ?? Instance.Class;
 
         public CallFrame(iObject instance,
                          IList<LocalVariable> arguments,
@@ -31,14 +33,9 @@ namespace Mint.MethodBinding.Methods
                 throw new ArgumentNullException(nameof(arguments));
             }
 
-            if(locals == null)
-            {
-                locals = System.Array.Empty<LocalVariable>();
-            }
-
             Instance = instance;
             Arguments = arguments;
-            Locals = locals;
+            Locals = locals ?? System.Array.Empty<LocalVariable>();
             Caller = caller;
         }
 
@@ -47,12 +44,6 @@ namespace Mint.MethodBinding.Methods
                                              IList<LocalVariable> locals) =>
             CurrentFrame = new CallFrame(instance, arguments, locals, CurrentFrame);
 
-        public static void PopFrame()
-        {
-            if(CurrentFrame != null)
-            {
-                CurrentFrame = CurrentFrame.Caller;
-            }
-        }
+        public static void PopFrame() => CurrentFrame = CurrentFrame?.Caller;
     }
 }

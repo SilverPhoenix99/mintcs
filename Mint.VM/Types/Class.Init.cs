@@ -123,6 +123,14 @@ namespace Mint
             ;
 
             BINDING = ModuleBuilder<Binding>.DescribeClass()
+                // TODO: eval
+                .DefMethod("clone", _ => _.Duplicate())
+                .Alias("dup", "clone")
+                .DefMethod("local_variable_defined?", _ => _.IsLocalDefined(default(Symbol)))
+                .DefMethod("local_variable_get", _ => _.GetLocalValue(default(Symbol)))
+                .DefMethod("local_variable_set", _ => _.SetLocalValue(default(Symbol), default(iObject)))
+                .AttrReader("local_variables", _ => _.LocalVariables)
+                .AttrReader("receiver", _ => _.Receiver)
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()
