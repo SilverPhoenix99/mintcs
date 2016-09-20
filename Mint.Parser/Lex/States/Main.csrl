@@ -5,7 +5,7 @@ machine Lexer;
 include "definitions.csrl";
 
 bom_marker = '\xef\xbb\xbf';
-shebang = '#!' ^nl_eof*;
+shebang = '#!' ^nl*;
 
 main := |*
 
@@ -53,7 +53,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;

@@ -69,8 +69,6 @@ interpolation_escape = '\\' when HasInterpolation any+;
 
 main := |*
 
-	c_eof => EofLiteralError;
-
     # only ', " and ` can be used for labels
 	string_delimiter when !IsNested ':' when CanLabel ^':' => LabelDelimiter;
 
@@ -105,6 +103,8 @@ main := |*
 	'#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
 
 	string_any;
+
+    zlen %eof(EofLiteralError);
 
 *|;
 
@@ -150,7 +150,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;

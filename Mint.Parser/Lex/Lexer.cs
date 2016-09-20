@@ -86,8 +86,7 @@ namespace Mint.Lex
         {
             get
             {
-                // discount 1 char from length (the virtual eof char)
-                if(Position < 0 || Position >= DataLength - 1)
+                if(Position < 0 || Position >= DataLength)
                 {
                     return '\0';
                 }
@@ -152,7 +151,7 @@ namespace Mint.Lex
             for(var i = 0; i < dataLength; i++)
             {
                 var c = data[i];
-                if(c == 0 || c == 0x4 || c == 0x1a)
+                if(Array.IndexOf(EOF_CHARS, c) >= 0)
                 {
                     break;
                 }
@@ -175,8 +174,7 @@ namespace Mint.Lex
                 return index;
             }
 
-            // 1 char offset to virtually append a '\0' (eof char)
-            return data.Length + 1;
+            return data.Length;
         }
 
         public Token NextToken()

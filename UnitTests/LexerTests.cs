@@ -21,7 +21,7 @@ namespace Mint.UnitTests
         {
             var source = "some random text";
             var lexer = CreateLexer(source, isFile: false);
-            Assert.That(lexer.DataLength, Is.EqualTo(source.Length + 1));
+            Assert.That(lexer.DataLength, Is.EqualTo(source.Length));
 
             source = " a b c \x4 ";
             lexer.Data = source;

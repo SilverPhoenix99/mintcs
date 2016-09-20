@@ -55,13 +55,10 @@ main := |*
 		fbreak;
     };
 
-    '%' [Qqxr] percent_string_delimiter => {
-        Lexer.EmitStringBeginToken(ts, ts + 3);
-		fbreak;
-    };
+    '%' [QqWwIixrs]? %eof(UnterminatedQuotedString);
 
     '%s' percent_string_delimiter => {
-        Lexer.EmitStringBeginToken(ts, ts + 3, endState: Lexer.FnameFitemState);
+        Lexer.EmitStringBeginToken(ts, te, endState: Lexer.FnameFitemState);
 		fbreak;
     };
 
@@ -70,13 +67,9 @@ main := |*
 		fbreak;
     };
 
-    '%' percent_string_delimiter => {
-        Lexer.EmitStringBeginToken(ts, ts + 2);
+    '%' [Qqxr]? percent_string_delimiter => {
+        Lexer.EmitStringBeginToken(ts, te);
 		fbreak;
-    };
-
-    '%' [QqWwIixrs]? c_eof => {
-        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "unterminated quoted string meets end of file");
     };
 
     '%' [QqWwIixrs]? (unicode | alnum) => {
@@ -100,7 +93,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;

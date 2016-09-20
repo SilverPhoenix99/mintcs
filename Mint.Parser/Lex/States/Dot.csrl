@@ -89,7 +89,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;

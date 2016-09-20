@@ -39,8 +39,6 @@ interpolation_escape = '\\' when HasInterpolation any+;
 
 main := |*
 
-    c_eof => EofLiteralError;
-
     string_delimiter => Delimiter;
 
     # accepted escapes even without interpolation
@@ -68,6 +66,8 @@ main := |*
 
     string_any => { CommitIndentation(); };
 
+    zlen %eof(EofLiteralError);
+
 *|;
 
 }%%
@@ -83,7 +83,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;

@@ -5,6 +5,35 @@ machine Lexer;
 
 include "definitions.csrl";
 
+### Actions
+
+action EndToken
+{
+    Lexer.DataLength = ts;
+    Lexer.EmitToken(EOF, ts + 1, ts + 8);
+    fbreak;
+}
+
+action InvalidClassVariableName
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "`@@' without identifiers is not allowed as a class variable name");
+}
+
+action InvalidInstanceVariableName
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "`@' without identifiers is not allowed as an instance variable name");
+}
+
+action InvalidGlobalVariableName
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "`$' without identifiers is not allowed as a global variable name");
+}
+
+action IncompleteCharacter
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "incomplete character syntax");
+}
+
 
 ### Embedded documentation
 
@@ -15,11 +44,10 @@ action EmbeddedDocEof
 
 embedded_doc =
     '=begin' (ws ^nl*)? nl
-    (
-        (any* nl)*
-        :>>
-        '=end' (ws ^nl_eof*)? nl_eof
-    ) @err(EmbeddedDocEof)
+	(
+		(any* nl)*
+		'=end' ( (ws ^nl*)? nl ) @eof { fbreak; }
+	) @err(EmbeddedDocEof)
 ;
 
 
@@ -69,8 +97,6 @@ reserved =
 
 
 main := |*
-
-	c_eof => { fbreak; };
 
     esc_ws+ => {
         Lexer.Retry = true;
@@ -355,11 +381,7 @@ main := |*
         fbreak;
     };
 
-    nl '__END__' nl_eof => {
-        Lexer.DataLength = ts;
-        Lexer.EmitToken(EOF, ts + 1, te - 1);
-        fbreak;
-    };
+    nl '__END__' nl >eof(EndToken) => EndToken;
 
     integer_number => {
         Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
@@ -433,14 +455,9 @@ main := |*
         fbreak;
     };
 
-    '@@' (c_eof | ws_nl) => {
-        throw new SyntaxError(
-            Lexer.Filename,
-            Lexer.LineAt(ts),
-            "`@@' without identifiers is not allowed as a class variable name");
-    };
+    '@@' ws_nl >eof(InvalidClassVariableName) => InvalidClassVariableName;
 
-    '@@' ^(c_eof | ws_nl | name_prefix) => {
+    '@@' ^(ws_nl | name_prefix) => {
         var c = Lexer.Data[ts + 2];
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@@{c}' is not allowed as a class variable name");
     };
@@ -451,14 +468,9 @@ main := |*
         fbreak;
     };
 
-    '@' (c_eof | ws_nl) => {
-        throw new SyntaxError(
-            Lexer.Filename,
-            Lexer.LineAt(ts),
-            "`@' without identifiers is not allowed as an instance variable name");
-    };
+    '@' ws_nl >eof(InvalidInstanceVariableName) => InvalidInstanceVariableName;
 
-    '@' ^('@' | c_eof | ws_nl | name_prefix) => {
+    '@' ^('@' | ws_nl | name_prefix) => {
         var c = Lexer.Data[ts + 1];
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`@{c}' is not allowed as an instance variable name");
     };
@@ -485,14 +497,9 @@ main := |*
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "syntax error, unexpected $undefined");
     };
 
-    '$' (c_eof | ws_nl) => {
-        throw new SyntaxError(
-            Lexer.Filename,
-            Lexer.LineAt(ts),
-            "`$' without identifiers is not allowed as a global variable name");
-    };
+    '$' ws_nl >eof(InvalidGlobalVariableName) => InvalidGlobalVariableName;
 
-    '$' ^(c_eof | ws_nl | back_ref_char | gvar_char | name_char | '-') => {
+    '$' ^(ws_nl | back_ref_char | gvar_char | name_char | '-') => {
         var c = Lexer.Data[ts + 1];
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), $"`${c}' is not allowed as a global variable name");
     };
@@ -503,15 +510,13 @@ main := |*
         fbreak;
     };
 
+    '?' %eof(IncompleteCharacter);
+
     '?' (alnum | '_') name_char => {
         Lexer.EmitToken(kQMARK, ts, te - 2);
         Lexer.CurrentState = Lexer.BegState;
         fexec ts + 1;
         fbreak;
-    };
-
-    '?' c_eof => {
-        throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "incomplete character syntax");
     };
 
     '?' ws_nl => {
@@ -528,7 +533,7 @@ main := |*
         | hex_escape
         | char_escape
         | control_escape
-        | ^(c_eof | ws_nl)
+        | ^ws_nl
     ) => {
         Lexer.EmitToken(tCHAR, ts + 1, te);
         Lexer.CurrentState = Lexer.EndState;
@@ -807,7 +812,7 @@ namespace Mint.Lex.States
         {
             Reset(%%{ write start; }%%);
 
-            %% write exec noend;
+            %% write exec;
         }
 
         %% write data nofinal noerror;
