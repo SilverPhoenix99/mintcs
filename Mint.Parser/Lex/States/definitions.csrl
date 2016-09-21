@@ -85,6 +85,11 @@ action TrailError
     throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "trailing `_' in number");
 }
 
+action NoDigitsError
+{
+    throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "numeric literal without digits");
+}
+
 bdigit = [01];
 odigit = [0-7];
 
@@ -94,13 +99,11 @@ uodigits = odigit ( '_'? odigit )* ('_' %TrailError)? ;
 uddigits =  digit ( '_'?  digit )* ('_' %TrailError)? ;
 uxdigits = xdigit ( '_'? xdigit )* ('_' %TrailError)? ;
 
-bin_number  =   '0' [bB]   ubdigits % { numBase =  2; };
-oct_number  =   '0' [oO_]? uodigits % { numBase =  8; };
-dec_number  =   '0' [dD]   uddigits % { numBase = 10; };
-hex_number  =   '0' [xX]   uxdigits % { numBase = 16; };
+bin_number  =   '0' [bB]   (ubdigits % { numBase =  2; } | zlen %NoDigitsError);
+oct_number  =   '0' ([oO_] (uodigits % { numBase =  8; } | zlen %NoDigitsError) | uodigits % { numBase =  8; });
+dec_number  =   '0' [dD]   (uddigits % { numBase = 10; } | zlen %NoDigitsError);
+hex_number  =   '0' [xX]   (uxdigits % { numBase = 16; } | zlen %NoDigitsError);
 int_number  = ( '0' | [1-9] ( '_'? digit )* ) ('_' %TrailError)? % { numBase = 10; };
-
-# TODO: error => numeric literal without digits
 
 integer_number = (
       bin_number
