@@ -19,7 +19,7 @@ namespace Mint.MethodBinding.Methods
         public Module Module => Instance as Module ?? Instance.Class;
 
         public CallFrame(iObject instance,
-                         IList<LocalVariable> arguments,
+                         IList<LocalVariable> arguments = null,
                          IList<LocalVariable> locals = null,
                          CallFrame caller = null)
         {
@@ -28,22 +28,17 @@ namespace Mint.MethodBinding.Methods
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            if(arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-
             Instance = instance;
-            Arguments = arguments;
+            Arguments = arguments ?? System.Array.Empty<LocalVariable>();
             Locals = locals ?? System.Array.Empty<LocalVariable>();
             Caller = caller;
         }
 
-        public static CallFrame PushNewFrame(iObject instance,
-                                             IList<LocalVariable> arguments,
-                                             IList<LocalVariable> locals) =>
+        public static CallFrame Push(iObject instance,
+                                     IList<LocalVariable> arguments,
+                                     IList<LocalVariable> locals) =>
             CurrentFrame = new CallFrame(instance, arguments, locals, CurrentFrame);
 
-        public static void PopFrame() => CurrentFrame = CurrentFrame?.Caller;
+        public static void Pop() => CurrentFrame = CurrentFrame?.Caller;
     }
 }
