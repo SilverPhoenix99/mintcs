@@ -60,7 +60,9 @@ namespace Mint
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
-                //.DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
+                .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
+                .DefMethod("const_get", _ => _.GetConstant(default(Symbol)))
+                .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)

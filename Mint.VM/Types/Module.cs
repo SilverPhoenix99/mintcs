@@ -19,7 +19,8 @@ namespace Mint
 
         public string FullName { get; }
 
-        public Module Container { get; }
+        private Module container;
+        public Module Container => container ?? (container = Class.OBJECT);
 
         public virtual bool IsModule => true;
 
@@ -47,13 +48,13 @@ namespace Mint
             // Called by subclasses to prepare Class property. See class Class.
 
             Name = name;
-            Container = container;
+            this.container = container ?? Class.OBJECT;
 
             FullName = name?.ToString() ?? base.ToString();
 
-            if(container != null)
+            if(this.container != Class.OBJECT)
             {
-                FullName = string.Concat(container.FullName, "::", FullName);
+                FullName = $"{this.container.FullName}::{FullName}";
             }
         }
 
@@ -157,6 +158,53 @@ namespace Mint
             return false;
         }
 
+        public bool IsConstantDefined(String name, [Optional] bool inherit = true)
+        {
+            throw new System.NotImplementedException(nameof(IsConstantDefined));
+        }
+
+        public Module GetModuleOrThrow(Symbol name, IList<Module> nesting = null)
+        {
+            var module = GetModule(name, nesting);
+            if(module == null)
+            {
+                throw new TypeError($"{name} is not a module");
+            }
+
+            return module;
+        }
+
+        public Module GetOrCreateModule(Symbol name, IList<Module> nesting = null) =>
+            GetModule(name, nesting) ?? SetConstant(name, new Module(name, this)) as Module;
+
+        private Module GetModule(Symbol name, IList<Module> nesting)
+        {
+            var constant = GetConstant(name, nesting);
+            if(constant == null)
+            {
+                var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
+                throw new NameError($"uninitialized constant {fullName}");
+            }
+
+            return constant as Module;
+        }
+
+        public iObject GetConstant(Symbol name) => GetConstant(name, null);
+
+        private iObject GetConstant(Symbol name, IList<Module> nesting)
+        {
+            ValidateConstantName(name.Name);
+
+            IEnumerable<Module> modules = Ancestors;
+            if(nesting != null)
+            {
+                modules = nesting.Concat(modules).Distinct();
+            }
+
+            var module = modules.FirstOrDefault(_ => _.IsConstantDefined(name, false));
+            return module?.Constants[name];
+        }
+
         private static void ValidateConstantName(string name)
         {
             if(!CONSTANT_NAME.IsMatch(name))
@@ -165,9 +213,17 @@ namespace Mint
             }
         }
 
-        public bool IsConstDefined(String name, [Optional] bool inherit = true)
+        public iObject SetConstant(Symbol name, iObject value)
         {
-            throw new System.NotImplementedException(nameof(IsConstDefined));
+            if(IsConstantDefined(name, false))
+            {
+                var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
+                Console.Error.WriteLine($"warning: already initialized constant {fullName}");
+            }
+
+            ValidateConstantName(name.Name);
+            Constants[name] = value;
+            return value;
         }
     }
 }
