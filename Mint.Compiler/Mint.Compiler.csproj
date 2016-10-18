@@ -125,6 +125,7 @@
     <Compile Include="Compilation\IncompleteCompilationError.cs" />
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scope.cs" />
+    <Compile Include="Compilation\Scopes\Scope.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
     <Compile Include="Compilation\Selectors\MethodCallSelector.cs" />
