@@ -10,7 +10,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var instance = Compiler.CurrentScope.Closure.Self;
+            var instance = Compiler.CurrentScope.Self;
             var variableName = Constant(new Symbol(Node.Value.Value));
             return Object.Expressions.InstanceVariableGet(instance, variableName);
         }

@@ -12,12 +12,12 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            var closure = Compiler.CurrentScope.Closure;
+            var scope = Compiler.CurrentScope;
             var name = new Symbol(Identifier);
 
-            if(closure.IsDefined(name))
+            if(scope.IsDefined(name))
             {
-                return closure.Variable(name);
+                return scope.Variable(name);
             }
 
             throw new NotImplementedException("variable not found. methods not implemented.");

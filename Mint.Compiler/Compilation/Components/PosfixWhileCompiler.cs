@@ -23,14 +23,16 @@ namespace Mint.Compilation.Components
              * break: nil;
              */
 
-            return Block(
+             throw new System.NotImplementedException();
+
+            /*return Block(
                 typeof(iObject),
                 Label(scope.RedoLabel),
                 body,
                 Label(scope.NextLabel),
                 IfThen(condition, Goto(scope.RedoLabel)),
                 Label(scope.BreakLabel, NilClass.Expressions.Instance)
-            );
+            );*/
         }
     }
 }

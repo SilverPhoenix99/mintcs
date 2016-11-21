@@ -12,6 +12,6 @@ namespace Mint.Compilation.Components
 
         public override Expression Setter(Expression rightHandSide) => Assign(Getter, rightHandSide);
 
-        protected override Expression CreateGetter() => Compiler.CurrentScope.Closure.Variable(VariableName);
+        protected override Expression CreateGetter() => Compiler.CurrentScope.Variable(VariableName);
     }
 }

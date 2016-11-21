@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 using Mint.Compilation.Components;
+using Mint.Compilation.Scopes;
 using Mint.Compilation.Selectors;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
@@ -28,13 +29,24 @@ namespace Mint.Compilation
 
         public Ast<Token> CurrentNode { get; private set; }
 
-        public Compiler(string filename, Closure binding, Ast<Token> root)
+        private Compiler(string filename, Ast<Token> root)
         {
             Filename = filename;
-            CurrentScope = new Scope(ScopeType.Method, binding);
             shifting.Push(new ShiftState(root));
 
             InitializeComponents();
+        }
+
+        public Compiler(string filename, Ast<Token> root, Scope scope)
+            : this(filename, root)
+        {
+            CurrentScope = scope;
+        }
+
+        public Compiler(string filename, Ast<Token> root, Expression self)
+            : this(filename, root)
+        {
+            CurrentScope = new TopLevelScope(this, self);
         }
 
         private void InitializeComponents()
@@ -254,5 +266,7 @@ namespace Mint.Compilation
         public void Push(Ast<Token> node) => currentShifting.Children.Push(node);
 
         public Expression Pop() => currentReducing.Children.Dequeue();
+
+        public Scopes.Scope EndScope() => CurrentScope = CurrentScope.Parent;
     }
 }

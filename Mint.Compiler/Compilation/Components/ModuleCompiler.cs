@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Mint.Compilation.Scopes;
 using Mint.Compilation.Selectors;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
@@ -13,7 +14,7 @@ namespace Mint.Compilation.Components
 		private ModuleCompiler absoluteName;
 
         private Ast<Token> Name => Node[0];
-		
+
 		private ModuleCompiler SimpleName => simpleName ?? (simpleName = new SimpleNameModuleCompiler(Compiler));
 
         private ModuleCompiler AbsoluteName =>
@@ -46,6 +47,9 @@ namespace Mint.Compilation.Components
         public override void Shift()
         {
             Push(Body);
+
+            var self = Expression.Variable(typeof(Module), "module");
+            Compiler.CurrentScope = new ModuleScope(Compiler, self);
         }
     }
 
@@ -56,11 +60,18 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
 	    {
-			var body = Pop();
+            try
+            {
+                var body = Pop();
 
-            // TODO
+                // TODO
+            }
+            finally
+            {
+                Compiler.EndScope();
+            }
 
-	        throw new NotImplementedException();
+            throw new NotImplementedException();
 	    }
 	}
 
@@ -71,7 +82,14 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            // TODO
+            try
+            {
+                // TODO
+            }
+            finally
+            {
+                Compiler.EndScope();
+            }
 
             throw new NotImplementedException();
         }
@@ -90,7 +108,14 @@ namespace Mint.Compilation.Components
 
         public override Expression Reduce()
         {
-            // TODO
+            try
+            {
+                // TODO
+            }
+            finally
+            {
+                Compiler.EndScope();
+            }
 
             throw new NotImplementedException();
         }

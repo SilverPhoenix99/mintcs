@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Mint.Compilation.Scopes;
 using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
 
@@ -23,24 +24,18 @@ namespace Mint.Compilation.Components
                 var body = Pop();
 
                 condition = ToBool(condition);
-                
+
                 return Reduce(condition, body);
             }
             finally
             {
-                EndScope();
+                Compiler.EndScope();
             }
         }
 
         private void BeginScope()
         {
-            var closure = Compiler.CurrentScope.Closure;
-            Compiler.CurrentScope = Compiler.CurrentScope.Enter(ScopeType.While, closure);
-        }
-
-        private void EndScope()
-        {
-            Compiler.CurrentScope = Compiler.CurrentScope.Previous;
+            Compiler.CurrentScope = new WhileScope(Compiler);
         }
 
         private Expression ToBool(Expression condition)
@@ -69,7 +64,9 @@ namespace Mint.Compilation.Components
              * break: nil;
              */
 
-            return Block(
+             throw new System.NotImplementedException();
+
+            /*return Block(
                 typeof(iObject),
                 Label(scope.NextLabel),
                 IfThen(
@@ -81,7 +78,7 @@ namespace Mint.Compilation.Components
                     )
                 ),
                 Label(scope.BreakLabel, NilClass.Expressions.Instance)
-            );
+            );*/
         }
     }
 }

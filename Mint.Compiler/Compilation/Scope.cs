@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
-namespace Mint.Compilation
+namespace Mint.Compilation.OldScope
 {
     public enum ScopeType
     {
