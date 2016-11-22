@@ -12,10 +12,13 @@ namespace Mint
     {
         private readonly List<iObject> list;
 
-        public Array(IEnumerable<iObject> objs = null) : base(Class.ARRAY)
+        public Array(IEnumerable<iObject> objs) : base(Class.ARRAY)
         {
             list = objs == null ? new List<iObject>() : new List<iObject>(objs);
         }
+
+        public Array() : this((IEnumerable<iObject>) null)
+        { }
 
         public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)
         { }
@@ -191,12 +194,16 @@ namespace Mint
 
         public static class Reflection
         {
+            public static readonly ConstructorInfo CtorDefault = Reflector.Ctor<Array>();
+
             public static readonly ConstructorInfo Ctor = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
         }
 
         public static class Expressions
         {
             public static NewExpression New(Expression values) => Expression.New(Reflection.Ctor, values);
+
+            public static NewExpression New() => Expression.New(Reflection.CtorDefault);
         }
     }
 }

@@ -32,21 +32,21 @@ namespace Mint.Compilation
         private Compiler(string filename, Ast<Token> root)
         {
             Filename = filename;
+            CurrentScope = new TopLevelScope(this);
             shifting.Push(new ShiftState(root));
 
             InitializeComponents();
         }
 
-        public Compiler(string filename, Ast<Token> root, Scope scope)
+        public Compiler(string filename, Ast<Token> root, Closure binding)
             : this(filename, root)
         {
-            CurrentScope = scope;
-        }
-
-        public Compiler(string filename, Ast<Token> root, Expression self)
-            : this(filename, root)
-        {
-            CurrentScope = new TopLevelScope(this, self);
+            var compilerClosure = CurrentScope.Closure;
+            compilerClosure.Closure = Expression.Constant(binding);
+            foreach(var name in binding.Names)
+            {
+                compilerClosure.AddLocal(name);
+            }
         }
 
         private void InitializeComponents()

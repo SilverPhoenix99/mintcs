@@ -10,8 +10,19 @@ namespace Mint.Compilation.Components
             : base(compiler, operatorCompiler)
         { }
 
-        public override Expression Setter(Expression rightHandSide) => Assign(Getter, rightHandSide);
+        public override Expression Setter(Expression rightHandSide)
+        {
+            var compilerClosure = Compiler.CurrentScope.Closure;
 
-        protected override Expression CreateGetter() => Compiler.CurrentScope.Variable(VariableName);
+            if(compilerClosure.IsDefined(VariableName))
+            {
+                return Assign(Getter, rightHandSide);
+            }
+
+            compilerClosure.AddLocal(VariableName);
+            return Mint.Closure.Expressions.AddLocal(compilerClosure.Closure, Constant(VariableName), rightHandSide);
+        }
+
+        protected override Expression CreateGetter() => Compiler.CurrentScope.Closure.Variable(VariableName);
     }
 }

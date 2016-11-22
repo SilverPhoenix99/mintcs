@@ -9,8 +9,8 @@ namespace Mint.Compilation.Scopes
 
         Scope Parent { get; }
 
-        Expression Self  { get; }
+        CompilerClosure Closure { get; }
 
-        ParameterExpression Nesting { get; }
+        Expression Nesting { get; }
     }
 }

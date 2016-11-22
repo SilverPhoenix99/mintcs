@@ -1,17 +1,15 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Mint.Compilation.Scopes
 {
-    public class ModuleScope : BaseScope
+    public class ModuleScope : MethodScope
     {
-        public override Scope Parent { get; }
+        public override Expression Nesting { get; }
 
-        public override ParameterExpression Nesting { get; }
-
-        public ModuleScope(Compiler compiler, Expression self) : base(compiler, self)
+        public ModuleScope(Compiler compiler) : base(compiler)
         {
-            Parent = compiler.CurrentScope;
-            Nesting = CreateNestingVariable();
+            Nesting = Expression.Variable(typeof(IList<Module>), "nesting");
         }
     }
 }

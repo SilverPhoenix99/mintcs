@@ -47,9 +47,7 @@ namespace Mint.Compilation.Components
         public override void Shift()
         {
             Push(Body);
-
-            var self = Expression.Variable(typeof(Module), "module");
-            Compiler.CurrentScope = new ModuleScope(Compiler, self);
+            Compiler.CurrentScope = new ModuleScope(Compiler);
         }
     }
 

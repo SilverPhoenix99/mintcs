@@ -13,9 +13,9 @@ namespace Mint.UnitTests
         public static Compiler CreateCompiler(string name, string fragment, Closure binding = null)
         {
             name = $"(CompilationTests.{name})";
-            binding = binding ?? new Closure(Expression.Constant(new Object(), typeof(iObject)));
+            binding = binding ?? new Closure(new Object());
             var ast = Parser.ParseString(name, fragment);
-            return new Compiler(name, binding, ast);
+            return new Compiler(name, ast, binding);
         }
 
         public static iObject Eval(string code, Closure binding = null, [CallerMemberName] string name = "(eval)")
@@ -241,7 +241,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestIndexer()
         {
-            var binding = new Closure(Expression.Constant(new Object(), typeof(iObject)));
+            var binding = new Closure(new Object());
             Eval("a = []", binding);
             var array = binding[new Symbol("a")] as Array;
 

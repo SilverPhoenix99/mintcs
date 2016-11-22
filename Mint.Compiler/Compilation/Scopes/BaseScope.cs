@@ -9,16 +9,13 @@ namespace Mint.Compilation.Scopes
 
         public abstract Scope Parent { get; }
 
-        public Expression Self { get; }
+        public abstract CompilerClosure Closure { get; }
 
-        public abstract ParameterExpression Nesting { get; }
+        public abstract Expression Nesting { get; }
 
-        protected BaseScope(Compiler compiler, Expression self)
+        protected BaseScope(Compiler compiler)
         {
             Compiler = compiler;
-            Self = self;
         }
-
-        protected ParameterExpression CreateNestingVariable() => Expression.Variable(typeof(IList<Module>), "nesting");
     }
 }

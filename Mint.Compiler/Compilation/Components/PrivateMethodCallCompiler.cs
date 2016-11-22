@@ -47,7 +47,7 @@ namespace Mint.Compilation.Components
             return CompilerUtils.Call(instance, methodName, visibility, arguments);
         }
 
-        protected virtual Expression GetLeftExpression() => Compiler.CurrentScope.Self.Cast<iObject>();
+        protected virtual Expression GetLeftExpression() => Compiler.CurrentScope.Closure.Self.Cast<iObject>();
 
         protected virtual Visibility GetVisibility() => Visibility.Private;
 

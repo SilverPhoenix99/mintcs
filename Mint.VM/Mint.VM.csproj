@@ -75,6 +75,7 @@
     <Compile Include="MethodBinding\Parameters\RestParameterBinder.cs" />
     <Compile Include="MethodBinding\Parameters\SuffixRequiredParameterBinder.cs" />
     <Compile Include="MethodBinding\Visibility.cs" />
+    <Compile Include="Closure.cs" />
     <Compile Include="Condition.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="IndexError.cs" />

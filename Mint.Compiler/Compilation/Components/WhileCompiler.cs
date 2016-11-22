@@ -35,7 +35,7 @@ namespace Mint.Compilation.Components
 
         private void BeginScope()
         {
-            Compiler.CurrentScope = new WhileScope(Compiler);
+            Compiler.CurrentScope = new LoopScope(Compiler);
         }
 
         private Expression ToBool(Expression condition)
