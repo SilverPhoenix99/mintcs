@@ -14,7 +14,7 @@ namespace Mint.UnitTests
         public static Compiler CreateCompiler(string name, string fragment, CallFrame frame = null)
         {
             name = $"(CompilationTests.{name})";
-            frame = frame ?? new CallFrame(new Object(), 0);
+            frame = frame ?? new CallFrame(new Object());
             var ast = Parser.ParseString(name, fragment);
             return new Compiler(name, ast, frame);
         }
@@ -242,9 +242,9 @@ namespace Mint.UnitTests
         [Test]
         public void TestIndexer()
         {
-            var frame = new CallFrame(new Object(), 0);
+            var frame = new CallFrame(new Object());
             Eval("a = []", frame);
-            var array = frame.Variables[0].Value as Array;
+            var array = frame.Locals[0].Value as Array;
 
             Assert.That(array, Is.Not.Null);
             Assert.That(Eval("a[0] = 1", frame), Is.EqualTo(array[0]));

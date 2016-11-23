@@ -1,7 +1,8 @@
+.idea
 .vs
+.vscode
 bin
 obj
 Mint.Parser/gen
 /*.user
 *.DotSettings
-.vscode

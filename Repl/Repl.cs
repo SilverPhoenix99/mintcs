@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Mint.Compilation;
-using Mint.Compilation.Scopes;
 using Mint.MethodBinding.Methods;
 using Mint.Parse;
 
@@ -11,7 +10,7 @@ namespace Mint
     {
         public static void Run()
         {
-            var binding = new CallFrame(new Object(), 0);
+            var binding = new CallFrame(new Object());
             for(var i = 1L; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");

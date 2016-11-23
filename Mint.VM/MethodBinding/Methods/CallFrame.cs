@@ -12,43 +12,26 @@ namespace Mint.MethodBinding.Methods
         [ThreadStatic]
 	    public static CallFrame CurrentFrame;
 
-        private LocalVariable[] variables;
-
         public CallFrame Caller { get; }
 
         public iObject Instance { get; }
 
-        public int NumArguments { get; }
+        public IList<LocalVariable> Arguments { get; }
 
-        public IList<LocalVariable> Variables => variables;
+        public IList<LocalVariable> Locals { get; }
 
-        public IList<LocalVariable> Arguments => new ArraySegment<LocalVariable>(variables, 0, NumArguments);
+        public IEnumerable<Symbol> VariableNames => Arguments.Concat(Locals).Select(v => v.Name);
 
-        public int NumLocals => variables.Length - NumArguments;
-
-        public IList<LocalVariable> Locals => new ArraySegment<LocalVariable>(variables, NumArguments, NumLocals);
-
-        public IEnumerable<Symbol> VariableNames => variables.Select(v => v.Name);
-
-        public CallFrame(iObject instance, int numArguments, CallFrame caller = null, params LocalVariable[] variables)
+        public CallFrame(iObject instance, CallFrame caller = null, params LocalVariable[] arguments)
         {
-            if(numArguments > variables.Length)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(numArguments),
-                    numArguments,
-                    $"{nameof(numArguments)} ({numArguments}) cannot be larger than total number of variables ({variables.Length})"
-                );
-            }
-
             Instance = instance;
-            NumArguments = numArguments;
             Caller = caller;
-            this.variables = variables;
+            Arguments = new List<LocalVariable>(arguments);
+            Locals = new List<LocalVariable>();
         }
 
-        public static CallFrame Push(iObject instance, int numArguments, params LocalVariable[] variables) =>
-            CurrentFrame = new CallFrame(instance, numArguments, CurrentFrame, variables);
+        public static CallFrame Push(iObject instance, params LocalVariable[] arguments) =>
+            CurrentFrame = new CallFrame(instance, CurrentFrame, arguments);
 
         public static void Pop() => CurrentFrame = CurrentFrame?.Caller;
 
