@@ -1,38 +1,56 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Mint.MethodBinding.Methods;
 
 namespace Mint
 {
     public class CompilerClosure
     {
-        private readonly List<Symbol> locals;
+        private class Variable
+        {
+            public readonly Symbol Name;
+            public readonly int Index;
+            public readonly ParameterExpression Local;
+            public readonly Expression InitialValue;
 
-        public Expression Closure { get; set; }
+            public Variable(Symbol name, int index, ParameterExpression local, Expression initialValue)
+            {
+                Name = name;
+                Index = index;
+                Local = local;
+                InitialValue = initialValue;
+            }
+        }
 
-        public MemberExpression Self => Mint.Closure.Expressions.Self(Closure);
+        private readonly IDictionary<Symbol, Variable> variables;
 
-        public MemberExpression Parent => Mint.Closure.Expressions.Parent(Closure);
+        public Expression CallFrame { get; set; }
+
+        public MemberExpression Self => Mint.MethodBinding.Methods.CallFrame.Expressions.Instance(CallFrame);
 
         public CompilerClosure()
         {
-            Closure = Expression.Variable(typeof(Closure), "closure");
-            locals = new List<Symbol>();
-            AddLocal(Symbol.SELF);
+            CallFrame = Expression.Variable(typeof(CallFrame), "frame");
+            variables = new LinkedDictionary<Symbol, Variable>();
         }
 
-        public int AddLocal(Symbol name)
+        public void AddVariable(Symbol name, ParameterExpression local = null, Expression initialValue = null)
         {
-            locals.Add(name);
-            return locals.Count - 1;
+            if(local == null)
+            {
+                local = Expression.Variable(typeof(LocalVariable), name.Name);
+            }
+
+            var index = variables.Count;
+            var variable = new Variable(name, index, local, initialValue);
+            variables.Add(name, variable);
         }
 
-        public Expression Variable(Symbol name)
-        {
-            var index = locals.IndexOf(name);
-            return Mint.Closure.Expressions.Indexer(Closure, Expression.Constant(index));
-        }
+        public ParameterExpression GetLocal(Symbol name) => variables[name].Local;
 
-        public bool IsDefined(Symbol name) => locals.IndexOf(name) > -1;
+        public int IndexOf(Symbol name) => variables[name].Index;
+
+        public bool IsDefined(Symbol name) => variables.ContainsKey(name);
     }
 }

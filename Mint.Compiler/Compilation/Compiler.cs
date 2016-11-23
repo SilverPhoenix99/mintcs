@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Mint.Compilation.Components;
 using Mint.Compilation.Scopes;
 using Mint.Compilation.Selectors;
+using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
@@ -38,14 +39,14 @@ namespace Mint.Compilation
             InitializeComponents();
         }
 
-        public Compiler(string filename, Ast<Token> root, Closure binding)
+        public Compiler(string filename, Ast<Token> root, CallFrame topLevelFrame)
             : this(filename, root)
         {
             var compilerClosure = CurrentScope.Closure;
-            compilerClosure.Closure = Expression.Constant(binding);
-            foreach(var name in binding.Names)
+            compilerClosure.CallFrame = Expression.Constant(topLevelFrame);
+            foreach(var name in topLevelFrame.VariableNames)
             {
-                compilerClosure.AddLocal(name);
+                compilerClosure.AddVariable(name);
             }
         }
 

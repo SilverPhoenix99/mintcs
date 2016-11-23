@@ -1,3 +1,4 @@
+using Mint.MethodBinding.Methods;
 using System;
 using System.Linq.Expressions;
 
@@ -17,7 +18,7 @@ namespace Mint.Compilation.Components
 
             if(scope.Closure.IsDefined(name))
             {
-                return scope.Closure.Variable(name);
+                return LocalVariable.Expressions.Value(scope.Closure.GetLocal(name));
             }
 
             throw new NotImplementedException("variable not found. methods not implemented.");

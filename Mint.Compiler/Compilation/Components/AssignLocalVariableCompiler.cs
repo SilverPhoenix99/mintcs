@@ -1,4 +1,5 @@
 using Mint.Compilation.Components.Operators;
+using Mint.MethodBinding.Methods;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 
@@ -14,15 +15,15 @@ namespace Mint.Compilation.Components
         {
             var compilerClosure = Compiler.CurrentScope.Closure;
 
-            if(compilerClosure.IsDefined(VariableName))
+            if(!compilerClosure.IsDefined(VariableName))
             {
-                return Assign(Getter, rightHandSide);
+                compilerClosure.AddVariable(VariableName);
             }
 
-            compilerClosure.AddLocal(VariableName);
-            return Mint.Closure.Expressions.AddLocal(compilerClosure.Closure, Constant(VariableName), rightHandSide);
+            return Assign(Getter, rightHandSide);
         }
 
-        protected override Expression CreateGetter() => Compiler.CurrentScope.Closure.Variable(VariableName);
+        protected override Expression CreateGetter() =>
+            LocalVariable.Expressions.Value(Compiler.CurrentScope.Closure.GetLocal(VariableName));
     }
 }

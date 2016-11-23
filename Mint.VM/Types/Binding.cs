@@ -15,8 +15,7 @@ namespace Mint
 
         public iObject Receiver => frame.Instance;
 
-        private IEnumerable<LocalVariable> Locals =>
-            frame.Arguments.Concat(frame.Locals).Concat(dynamicLocals);
+        private IEnumerable<LocalVariable> Locals => frame.Variables.Concat(dynamicLocals);
 
         public Array LocalVariables => new Array(Locals.Select(_ => _.Name).Cast<iObject>());
 

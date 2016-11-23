@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Linq.Expressions;
 using Mint.Compilation;
+using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using NUnit.Framework;
 
@@ -10,17 +11,17 @@ namespace Mint.UnitTests
     [TestFixture]
     internal class CompilationTests
     {
-        public static Compiler CreateCompiler(string name, string fragment, Closure binding = null)
+        public static Compiler CreateCompiler(string name, string fragment, CallFrame frame = null)
         {
             name = $"(CompilationTests.{name})";
-            binding = binding ?? new Closure(new Object());
+            frame = frame ?? new CallFrame(new Object(), 0);
             var ast = Parser.ParseString(name, fragment);
-            return new Compiler(name, ast, binding);
+            return new Compiler(name, ast, frame);
         }
 
-        public static iObject Eval(string code, Closure binding = null, [CallerMemberName] string name = "(eval)")
+        public static iObject Eval(string code, CallFrame frame = null, [CallerMemberName] string name = "(eval)")
         {
-            var compiler = CreateCompiler(name, code, binding);
+            var compiler = CreateCompiler(name, code, frame);
             var body = compiler.Compile();
             var lambda = Expression.Lambda<Func<iObject>>(body);
             var function = lambda.Compile();
@@ -241,13 +242,13 @@ namespace Mint.UnitTests
         [Test]
         public void TestIndexer()
         {
-            var binding = new Closure(new Object());
-            Eval("a = []", binding);
-            var array = binding[new Symbol("a")] as Array;
+            var frame = new CallFrame(new Object(), 0);
+            Eval("a = []", frame);
+            var array = frame.Variables[0].Value as Array;
 
             Assert.That(array, Is.Not.Null);
-            Assert.That(Eval("a[0] = 1", binding), Is.EqualTo(array[0]));
-            Assert.That(Eval("a[0]", binding), Is.EqualTo(array[0]));
+            Assert.That(Eval("a[0] = 1", frame), Is.EqualTo(array[0]));
+            Assert.That(Eval("a[0]", frame), Is.EqualTo(array[0]));
         }
     }
 }

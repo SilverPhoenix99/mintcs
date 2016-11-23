@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Mint.Compilation;
 using Mint.Compilation.Scopes;
+using Mint.MethodBinding.Methods;
 using Mint.Parse;
 
 namespace Mint
@@ -10,7 +11,7 @@ namespace Mint
     {
         public static void Run()
         {
-            var binding = new Closure(new Object());
+            var binding = new CallFrame(new Object(), 0);
             for(var i = 1L; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");
@@ -56,9 +57,9 @@ namespace Mint
             Console.WriteLine();
         }
 
-        private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, Closure binding)
+        private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, CallFrame topLevelFrame)
         {
-            var compiler = new Compiler("(imt)", ast, binding);
+            var compiler = new Compiler("(imt)", ast, topLevelFrame);
             var body = compiler.Compile();
             return Expression.Lambda<Func<iObject>>(body);
         }
