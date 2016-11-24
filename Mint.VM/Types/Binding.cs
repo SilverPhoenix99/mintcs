@@ -37,7 +37,7 @@ namespace Mint
         internal Binding(CallFrame frame) : this(frame, new List<LocalVariable>())
         { }
 
-        public Binding() : this(CallFrame.CurrentFrame)
+        public Binding() : this(CallFrame.Current)
         { }
 
         public bool IsLocalDefined(Symbol local) => Locals.Any(_ => _.Name == local);

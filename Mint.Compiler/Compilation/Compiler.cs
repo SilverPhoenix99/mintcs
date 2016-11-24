@@ -143,6 +143,12 @@ namespace Mint.Compilation
             }
         }
 
+        public void Push(Ast<Token> node) => currentShifting.Children.Push(node);
+
+        public Expression Pop() => currentReducing.Children.Dequeue();
+
+        public Scopes.Scope EndScope() => CurrentScope = CurrentScope.Parent;
+
         public Expression Compile()
         {
             if(ListComponent == null)
@@ -170,9 +176,7 @@ namespace Mint.Compilation
                 throw new IncompleteCompilationError("Compilation finished but some nodes were not reduced.");
             }
 
-            return outputs.Count == 0 ? NilClass.Expressions.Instance
-                 : outputs.Count > 1 ? Block(outputs)
-                 : outputs.Dequeue();
+            return BuildOutputExpression();
         }
 
         private bool Reduce()
@@ -265,10 +269,26 @@ namespace Mint.Compilation
             }
         }
 
-        public void Push(Ast<Token> node) => currentShifting.Children.Push(node);
+        private Expression BuildOutputExpression()
+        {
+            var preamble = CurrentScope.CompileCallFrameInitialization();
 
-        public Expression Pop() => currentReducing.Children.Dequeue();
+            // TODO: CallFrame compilation
+            return Block(
+                typeof(iObject),
+                CurrentScope.Variables.Select(v => v.Value.Local),
+                preamble,
+                BuildBodyExpression()
+            );
+        }
 
-        public Scopes.Scope EndScope() => CurrentScope = CurrentScope.Parent;
+        private Expression BuildBodyExpression()
+        {
+            var body = outputs.Count == 0 ? NilClass.Expressions.Instance
+                 : outputs.Count > 1 ? Block(outputs)
+                 : outputs.Peek();
+            outputs.Clear();
+            return body;
+        }
     }
 }

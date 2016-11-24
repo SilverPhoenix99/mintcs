@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace Mint.Compilation.Scopes
 {
     public class MethodScope : LoopScope

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
-using Mint.MethodBinding.Methods;
 
 namespace Mint.Compilation.Scopes
 {
@@ -12,24 +11,16 @@ namespace Mint.Compilation.Scopes
 
         Expression CallFrame { get; set; }
 
-        MemberExpression Self { get; }
+        ParameterExpression Locals { get; }
+
+        MemberExpression Instance { get; }
 
         IDictionary<Symbol, ScopeVariable> Variables { get; }
-    }
 
-    public class ScopeVariable
-    {
-        public readonly Symbol Name;
-        public readonly int Index;
-        public readonly ParameterExpression Local;
-        public readonly Expression InitialValue;
+        Expression LocalsAdd(Symbol variableName, ParameterExpression variable);
 
-        public ScopeVariable(Symbol name, int index, ParameterExpression local = null, Expression initialValue = null)
-        {
-            Name = name;
-            Index = index;
-            Local = local ?? Expression.Variable(typeof(LocalVariable), name.Name);
-            InitialValue = initialValue;
-        }
+        Expression LocalsIndex(ParameterExpression variable, int index);
+
+        Expression CompileCallFrameInitialization();
     }
 }

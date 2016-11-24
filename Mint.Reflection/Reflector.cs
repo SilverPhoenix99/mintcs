@@ -30,6 +30,9 @@ namespace Mint.Reflection
         public static MethodInfo Setter<TResult>(Expression<Func<TResult>> lambda) =>
             Setter((LambdaExpression) lambda);
 
+        public static FieldInfo Field<TResult>(Expression<Func<TResult>> lambda) =>
+            Field((LambdaExpression) lambda);
+
         public static MethodInfo Method(LambdaExpression lambda)
         {
             var body = (MethodCallExpression) Body(lambda);
@@ -93,12 +96,19 @@ namespace Mint.Reflection
 
         public static MethodInfo Setter(LambdaExpression lambda) => Property(lambda).SetMethod;
 
+        public static FieldInfo Field(LambdaExpression lambda)
+        {
+            var body = Body(lambda);
+
+            var member = body as MemberExpression;
+            return member?.Member as FieldInfo;
+        }
+
         private static Expression Body(LambdaExpression lambda)
         {
             var body = lambda.Body;
-            var convert = body as UnaryExpression;
-            return convert?.NodeType == ExpressionType.Convert
-                ? convert.Operand
+            return body.NodeType == ExpressionType.Convert
+                ? ((UnaryExpression) body).Operand
                 : body;
         }
 
@@ -138,5 +148,7 @@ namespace Mint.Reflection
         public static MethodInfo Getter<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Getter(lambda);
 
         public static MethodInfo Setter<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Setter(lambda);
+
+        public static FieldInfo Field<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Field(lambda);
     }
 }

@@ -128,6 +128,7 @@
     <Compile Include="Compilation\Scopes\MethodScope.cs" />
     <Compile Include="Compilation\Scopes\ModuleScope.cs" />
     <Compile Include="Compilation\Scopes\Scope.cs" />
+    <Compile Include="Compilation\Scopes\ScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\TopLevelScope.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />

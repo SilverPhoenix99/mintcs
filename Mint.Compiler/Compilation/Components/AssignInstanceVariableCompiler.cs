@@ -8,7 +8,7 @@ namespace Mint.Compilation.Components
     {
         private Expression instance;
 
-        private Expression Instance => instance ?? (instance = Compiler.CurrentScope.Self);
+        private Expression Instance => instance ?? (instance = Compiler.CurrentScope.Instance);
 
         public AssignInstanceVariableCompiler(Compiler compiler, AssignOperator operatorCompiler)
             : base(compiler, operatorCompiler)
