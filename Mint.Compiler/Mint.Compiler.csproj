@@ -43,7 +43,6 @@
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\Compiler.ReduceState.cs" />
     <Compile Include="Compilation\Compiler.ShiftState.cs" />
-    <Compile Include="Compilation\CompilerClosure.cs" />
     <Compile Include="Compilation\CompilerException.cs" />
     <Compile Include="Compilation\CompilerUtils.cs" />
     <Compile Include="Compilation\Components\AdditionCompiler.cs" />

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Components;
 using Mint.Compilation.Scopes;
@@ -42,11 +43,11 @@ namespace Mint.Compilation
         public Compiler(string filename, Ast<Token> root, CallFrame topLevelFrame)
             : this(filename, root)
         {
-            var compilerClosure = CurrentScope.Closure;
-            compilerClosure.CallFrame = Expression.Constant(topLevelFrame);
+            CurrentScope.CallFrame = Expression.Constant(topLevelFrame);
             foreach(var name in topLevelFrame.VariableNames)
             {
-                compilerClosure.AddVariable(name);
+                var variable = new ScopeVariable(name, CurrentScope.Variables.Count);
+                CurrentScope.Variables.Add(name, variable);
             }
         }
 

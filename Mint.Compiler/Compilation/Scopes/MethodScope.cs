@@ -4,11 +4,7 @@ namespace Mint.Compilation.Scopes
 {
     public class MethodScope : LoopScope
     {
-        public override CompilerClosure Closure { get; }
-
-        public MethodScope(Compiler compiler) : base(compiler)
-        {
-            Closure = new CompilerClosure();
-        }
+        public MethodScope(Compiler compiler) : base(compiler, null)
+        { }
     }
 }

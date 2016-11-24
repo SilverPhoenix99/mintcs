@@ -6,14 +6,9 @@ namespace Mint.Compilation.Scopes
     {
         public override Scope Parent => this;
 
-        public override CompilerClosure Closure { get; }
-
-        public override Expression Nesting { get; }
+        public override Expression Nesting => Array.Expressions.New();
 
         public TopLevelScope(Compiler compiler) : base(compiler)
-        {
-            Closure = new CompilerClosure();
-            Nesting = Array.Expressions.New();
-        }
+        { }
     }
 }

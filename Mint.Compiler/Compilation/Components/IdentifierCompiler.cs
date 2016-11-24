@@ -16,9 +16,9 @@ namespace Mint.Compilation.Components
             var scope = Compiler.CurrentScope;
             var name = new Symbol(Identifier);
 
-            if(scope.Closure.IsDefined(name))
+            if(scope.Variables.ContainsKey(name))
             {
-                return LocalVariable.Expressions.Value(scope.Closure.GetLocal(name));
+                return LocalVariable.Expressions.Value(scope.Variables[name].Local);
             }
 
             throw new NotImplementedException("variable not found. methods not implemented.");

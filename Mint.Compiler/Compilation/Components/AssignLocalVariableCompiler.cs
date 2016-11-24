@@ -1,4 +1,5 @@
 using Mint.Compilation.Components.Operators;
+using Mint.Compilation.Scopes;
 using Mint.MethodBinding.Methods;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
@@ -13,17 +14,18 @@ namespace Mint.Compilation.Components
 
         public override Expression Setter(Expression rightHandSide)
         {
-            var compilerClosure = Compiler.CurrentScope.Closure;
+            var scope = Compiler.CurrentScope;
 
-            if(!compilerClosure.IsDefined(VariableName))
+            if(!scope.Variables.ContainsKey(VariableName))
             {
-                compilerClosure.AddVariable(VariableName);
+                var variable = new ScopeVariable(VariableName, scope.Variables.Count);
+                scope.Variables.Add(VariableName, variable);
             }
 
             return Assign(Getter, rightHandSide);
         }
 
         protected override Expression CreateGetter() =>
-            LocalVariable.Expressions.Value(Compiler.CurrentScope.Closure.GetLocal(VariableName));
+            LocalVariable.Expressions.Value(Compiler.CurrentScope.Variables[VariableName].Local);
     }
 }
