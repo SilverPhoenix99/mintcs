@@ -160,7 +160,7 @@ namespace Mint
 
         public bool IsConstantDefined(String name, [Optional] bool inherit = true)
         {
-            throw new System.NotImplementedException(nameof(IsConstantDefined));
+            throw new NotImplementedException(nameof(IsConstantDefined));
         }
 
         public Module GetModuleOrThrow(Symbol name, IList<Module> nesting = null)

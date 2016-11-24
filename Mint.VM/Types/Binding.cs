@@ -22,12 +22,7 @@ namespace Mint
         private Binding(CallFrame frame, IList<LocalVariable> dynamicLocals)
             : base(Class.BINDING)
         {
-            if(frame == null)
-            {
-                throw new ArgumentNullException(nameof(frame));
-            }
-
-            this.frame = frame;
+            this.frame = frame ?? throw new ArgumentNullException(nameof(frame));
             this.dynamicLocals = dynamicLocals;
         }
 

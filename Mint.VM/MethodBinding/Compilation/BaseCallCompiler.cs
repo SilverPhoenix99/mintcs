@@ -16,15 +16,16 @@ namespace Mint.MethodBinding.Compilation
         protected MethodBinder TryFindMethodBinder(iObject instance)
         {
             var binder = instance.EffectiveClass.FindMethod(CallSite.MethodName);
-            if(binder == null)
+            if(binder != null)
             {
-                var methodName = CallSite.MethodName.ToString();
-                var instanceInspect = instance.Inspect();
-                var className = instance.EffectiveClass.FullName;
-
-                throw new NoMethodError($"undefined method `{methodName}' for {instanceInspect}:{className}");
+                return binder;
             }
-            return binder;
+
+            var methodName = CallSite.MethodName.ToString();
+            var instanceInspect = instance.Inspect();
+            var className = instance.EffectiveClass.FullName;
+
+            throw new NoMethodError($"undefined method `{methodName}' for {instanceInspect}:{className}");
         }
     }
 }

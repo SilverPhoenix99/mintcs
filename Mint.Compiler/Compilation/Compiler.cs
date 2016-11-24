@@ -147,7 +147,7 @@ namespace Mint.Compilation
 
         public Expression Pop() => currentReducing.Children.Dequeue();
 
-        public Scopes.Scope EndScope() => CurrentScope = CurrentScope.Parent;
+        public Scope EndScope() => CurrentScope = CurrentScope.Parent;
 
         public Expression Compile()
         {
