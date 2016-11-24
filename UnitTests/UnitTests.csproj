@@ -10,6 +10,7 @@
     <RootNamespace>Mint.UnitTests</RootNamespace>
     <AssemblyName>Mint.UnitTests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FrameworkPathOverride Condition="'$(BuildingInsideVisualStudio)' != 'true'">C:\Windows\Microsoft.NET\Framework64\v4.0.30319</FrameworkPathOverride>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
