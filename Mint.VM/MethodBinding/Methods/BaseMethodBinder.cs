@@ -36,10 +36,10 @@ namespace Mint.MethodBinding.Methods
 
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
+            if(owner == null) throw new ArgumentNullException(nameof(owner));
 
             Name = name;
-            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            Owner = owner;
             Condition = new Condition();
             Visibility = visibility;
         }

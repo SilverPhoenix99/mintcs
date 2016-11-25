@@ -31,18 +31,27 @@ namespace Mint.Compilation.Scopes
             Variables = new LinkedDictionary<Symbol, ScopeVariable>();
         }
 
-        public Expression LocalsAdd(Symbol variableName, ParameterExpression variable)
+        public ScopeVariable AddNewVariable(Symbol name,
+                                            ParameterExpression local = null,
+                                            Expression initialValue = null)
         {
-            // new LocalVariable(@variableName)
-            var localVariable = LocalVariable.Expressions.New(Constant(variableName));
-
-            // $locals.Add($variable = ...)
-            return CallFrame_Expressions.Locals_Add(Locals, Assign(variable, localVariable));
+            var index = Variables.Count;
+            var scopeVariable = new NewScopeVariable(this, name, index, local, initialValue);
+            Variables.Add(name, scopeVariable);
+            return scopeVariable;
         }
 
-        public Expression LocalsIndex(ParameterExpression variable, int index) =>
-            // $variable = $locals[@index]
-            Assign(variable, CallFrame_Expressions.Locals_Indexer(Locals, Constant(index)));
+        public ScopeVariable AddReferencedVariable(ScopeVariable baseVariable)
+        {
+            var index = Variables.Count;
+            var scopeVariable = new ReferencedScopeVariable(this, baseVariable, index);
+            Variables.Add(baseVariable.Name, scopeVariable);
+            return scopeVariable;
+        }
+
+        public Expression LocalsAdd(Expression variable) =>
+            // $locals.Add(...)
+            CallFrame_Expressions.Locals_Add(Locals, variable);
 
         public Expression CompileCallFrameInitialization()
         {

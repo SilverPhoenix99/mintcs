@@ -21,7 +21,7 @@ namespace Mint.MethodBinding.Methods
 
         public IList<LocalVariable> Locals { get; }
 
-        public IEnumerable<Symbol> VariableNames => Arguments.Concat(Locals).Select(v => v.Name);
+        public IEnumerable<LocalVariable> Variables => Arguments.Concat(Locals);
 
         public CallFrame(iObject instance, CallFrame caller = null, params LocalVariable[] arguments)
         {

@@ -44,10 +44,9 @@ namespace Mint.Compilation
             : this(filename, root)
         {
             CurrentScope.CallFrame = Expression.Constant(topLevelFrame);
-            foreach(var name in topLevelFrame.VariableNames)
+            foreach(var variable in topLevelFrame.Variables)
             {
-                var variable = new ScopeVariable(name, CurrentScope.Variables.Count);
-                CurrentScope.Variables.Add(name, variable);
+                CurrentScope.AddNewVariable(variable.Name, initialValue: Constant(variable.Value));
             }
         }
 

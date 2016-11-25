@@ -23,36 +23,31 @@ namespace Mint.Compilation.Components
 
         private void FindOrDefineVariable()
         {
-            Scope scope;
-            ScopeVariable scopeVariable;
-            ParameterExpression local;
-            Expression initialValue;
+            ScopeVariable variable;
 
-            for(scope = Compiler.CurrentScope; scope != null && scope.Parent != scope; scope = scope.Parent)
+            var currentScope = Compiler.CurrentScope;
+
+            for(var scope = Compiler.CurrentScope; scope != null && scope.Parent != scope; scope = scope.Parent)
             {
                 if(!scope.Variables.ContainsKey(VariableName))
                 {
                     continue;
                 }
 
+                // variable found
+
                 if(scope != Compiler.CurrentScope)
                 {
-                    scopeVariable = scope.Variables[VariableName];
-                    scope = Compiler.CurrentScope;
-                    local = scopeVariable.Local;
-                    initialValue = Compiler.CurrentScope.LocalsIndex(local, scope.Variables.Count);
-                    scopeVariable = new ScopeVariable(VariableName, scope.Variables.Count, local, initialValue);
-                    scope.Variables.Add(VariableName, scopeVariable);
+                    // ... in another scope
+
+                    variable = scope.Variables[VariableName];
+                    currentScope.AddReferencedVariable(variable);
                 }
 
                 return;
             }
 
-            scope = Compiler.CurrentScope;
-            local = Expression.Variable(typeof(LocalVariable), VariableName.Name);
-            initialValue = scope.LocalsAdd(VariableName, local);
-            scopeVariable = new ScopeVariable(VariableName, scope.Variables.Count, local, initialValue);
-            scope.Variables.Add(VariableName, scopeVariable);
+            currentScope.AddNewVariable(VariableName);
         }
     }
 }

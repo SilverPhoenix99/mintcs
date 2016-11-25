@@ -70,7 +70,9 @@ namespace Mint.Lex
             get { return data; }
             set
             {
-                data = value ?? throw new ArgumentNullException(nameof(value));
+                if(value == null) throw new ArgumentNullException(nameof(value));
+
+                data = value;
                 Reset();
                 DataLength = CalculateDataLength(data);
                 lines = ResetLines(data, DataLength);

@@ -17,9 +17,11 @@ namespace Mint.Compilation.Scopes
 
         IDictionary<Symbol, ScopeVariable> Variables { get; }
 
-        Expression LocalsAdd(Symbol variableName, ParameterExpression variable);
+        ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null, Expression initialValue = null);
 
-        Expression LocalsIndex(ParameterExpression variable, int index);
+        ScopeVariable AddReferencedVariable(ScopeVariable baseVariable);
+
+        Expression LocalsAdd(Expression variable);
 
         Expression CompileCallFrameInitialization();
     }
