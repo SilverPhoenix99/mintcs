@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Mint.Compilation.Scopes.Variables;
 using System.Linq.Expressions;
 
 namespace Mint.Compilation.Scopes
@@ -9,20 +9,18 @@ namespace Mint.Compilation.Scopes
 
         Expression Nesting { get; }
 
-        Expression CallFrame { get; set; }
-
-        ParameterExpression Locals { get; }
+        Expression CallFrame { get; }
 
         MemberExpression Instance { get; }
 
-        IDictionary<Symbol, ScopeVariable> Variables { get; }
+        ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null);
 
-        ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null, Expression initialValue = null);
+        ScopeVariable AddIndexedVariable(Symbol name);
 
         ScopeVariable AddReferencedVariable(ScopeVariable baseVariable);
 
-        Expression LocalsAdd(Expression variable);
+        ScopeVariable FindVariable(Symbol name);
 
-        Expression CompileCallFrameInitialization();
+        Expression CompileBody(Expression body);
     }
 }

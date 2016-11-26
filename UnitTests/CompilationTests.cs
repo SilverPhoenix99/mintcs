@@ -244,7 +244,7 @@ namespace Mint.UnitTests
         {
             var frame = new CallFrame(new Object());
             Eval("a = []", frame);
-            var array = frame.Locals[0].Value as Array;
+            var array = frame.Locals[new Symbol("a")].Value as Array;
 
             Assert.That(array, Is.Not.Null);
             Assert.That(Eval("a[0] = 1", frame), Is.EqualTo(array[0]));

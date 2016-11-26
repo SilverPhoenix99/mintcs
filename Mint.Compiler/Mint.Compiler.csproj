@@ -124,11 +124,15 @@
     <Compile Include="Compilation\IncompleteCompilationError.cs" />
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scopes\BaseScope.cs" />
+    <Compile Include="Compilation\Scopes\Variables\BaseScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\LoopScope.cs" />
     <Compile Include="Compilation\Scopes\MethodScope.cs" />
     <Compile Include="Compilation\Scopes\ModuleScope.cs" />
+    <Compile Include="Compilation\Scopes\Variables\IndexedScopeVariable.cs" />
+    <Compile Include="Compilation\Scopes\Variables\NewScopeVariable.cs" />
+    <Compile Include="Compilation\Scopes\Variables\ReferencedScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\Scope.cs" />
-    <Compile Include="Compilation\Scopes\ScopeVariable.cs" />
+    <Compile Include="Compilation\Scopes\Variables\ScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\TopLevelScope.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />

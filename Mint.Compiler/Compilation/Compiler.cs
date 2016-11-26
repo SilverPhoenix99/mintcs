@@ -8,6 +8,7 @@ using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
+using System;
 
 namespace Mint.Compilation
 {
@@ -31,24 +32,21 @@ namespace Mint.Compilation
 
         public Ast<Token> CurrentNode { get; private set; }
 
-        private Compiler(string filename, Ast<Token> root)
-        {
-            Filename = filename;
-            CurrentScope = new TopLevelScope(this);
-            shifting.Push(new ShiftState(root));
-
-            InitializeComponents();
-        }
 
         public Compiler(string filename, Ast<Token> root, CallFrame topLevelFrame)
-            : this(filename, root)
         {
-            CurrentScope.CallFrame = Expression.Constant(topLevelFrame);
-            foreach(var variable in topLevelFrame.Variables)
-            {
-                CurrentScope.AddNewVariable(variable.Name, initialValue: Constant(variable.Value));
-            }
+            if(root == null) throw new ArgumentNullException(nameof(root));
+            if(topLevelFrame == null) throw new ArgumentNullException(nameof(topLevelFrame));
+
+            Filename = filename;
+            shifting.Push(new ShiftState(root));
+            InitializeComponents();
+            CurrentScope = new TopLevelScope(this, topLevelFrame);
         }
+
+        public Compiler(string filename, Ast<Token> root, iObject instance)
+            : this(filename, root, new CallFrame(instance))
+        { }
 
         private void InitializeComponents()
         {
@@ -115,7 +113,7 @@ namespace Mint.Compilation
             Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
             Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
         }
-
+        
         public void Register(CompilerComponent component, TokenType type)
         {
             selectors[type] = new UnconditionalSelector(component);
@@ -270,14 +268,15 @@ namespace Mint.Compilation
 
         private Expression BuildOutputExpression()
         {
-            var preamble = CurrentScope.CompileCallFrameInitialization();
-
-            // TODO: CallFrame compilation
-            return Block(
-                typeof(iObject),
-                CurrentScope.Variables.Select(v => v.Value.Local),
-                preamble,
-                BuildBodyExpression()
+            var body = BuildBodyExpression();
+            body = CurrentScope.CompileBody(body);
+            var setCurrentCallFrame = Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
+            return TryFinally(
+                Block(
+                    setCurrentCallFrame,
+                    body
+                ),
+                CallFrame.Expressions.Pop()
             );
         }
 

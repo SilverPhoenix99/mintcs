@@ -8,20 +8,21 @@ namespace Mint.Compilation.Components
     {
         private string Identifier => Node.Value.Value;
 
+        private Symbol VariableName => new Symbol(Identifier);
+
         public IdentifierCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Reduce()
         {
-            var scope = Compiler.CurrentScope;
-            var name = new Symbol(Identifier);
+            var variable = Compiler.CurrentScope.FindVariable(VariableName);
 
-            if(scope.Variables.ContainsKey(name))
+            if(variable == null)
             {
-                return LocalVariable.Expressions.Value(scope.Variables[name].Local);
+                throw new NotImplementedException("variable not found. methods not implemented.");
             }
 
-            throw new NotImplementedException("variable not found. methods not implemented.");
+            return variable.ValueExpression();
         }
     }
 }

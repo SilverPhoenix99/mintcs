@@ -1,96 +1,95 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Mint.MethodBinding.Methods;
+using Mint.Compilation.Scopes.Variables;
 using static System.Linq.Expressions.Expression;
+using CallFrame_Expressions = Mint.MethodBinding.Methods.CallFrame.Expressions;
+using System.Linq;
 
 namespace Mint.Compilation.Scopes
 {
-    using CallFrame_Expressions = Mint.MethodBinding.Methods.CallFrame.Expressions;
-
     public abstract class BaseScope : Scope
     {
+        protected readonly IDictionary<Symbol, ScopeVariable> variables;
+
         public Compiler Compiler { get; }
 
         public abstract Scope Parent { get; }
 
         public abstract Expression Nesting { get; }
 
-        public Expression CallFrame { get; set; }
-
-        public ParameterExpression Locals { get; }
+        public Expression CallFrame { get; }
 
         public MemberExpression Instance => CallFrame_Expressions.Instance(CallFrame);
-
-        public IDictionary<Symbol, ScopeVariable> Variables { get; }
-
-        protected BaseScope(Compiler compiler)
+        
+        protected BaseScope(Compiler compiler, Expression callFrame = null)
         {
             Compiler = compiler;
-            CallFrame = Variable(typeof(CallFrame), "frame");
-            Locals = Variable(typeof(IList<LocalVariable>), "locals");
-            Variables = new LinkedDictionary<Symbol, ScopeVariable>();
+            CallFrame = callFrame ?? CallFrame_Expressions.Current();
+            variables = new LinkedDictionary<Symbol, ScopeVariable>();
         }
 
-        public ScopeVariable AddNewVariable(Symbol name,
-                                            ParameterExpression local = null,
-                                            Expression initialValue = null)
+        public ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null) =>
+            AddVariable(new NewScopeVariable(this, name, local));
+
+        public ScopeVariable AddReferencedVariable(ScopeVariable baseVariable) =>
+            AddVariable(new ReferencedScopeVariable(this, baseVariable));
+
+        public ScopeVariable AddIndexedVariable(Symbol name) =>
+            AddVariable(new IndexedScopeVariable(this, name));
+
+        private ScopeVariable AddVariable(ScopeVariable scopeVariable)
         {
-            var index = Variables.Count;
-            var scopeVariable = new NewScopeVariable(this, name, index, local, initialValue);
-            Variables.Add(name, scopeVariable);
+            variables.Add(scopeVariable.Name, scopeVariable);
             return scopeVariable;
         }
 
-        public ScopeVariable AddReferencedVariable(ScopeVariable baseVariable)
+        public ScopeVariable FindVariable(Symbol name) => FindVariable(name, true);
+
+        protected virtual ScopeVariable FindVariable(Symbol name, bool isCurrentScope)
         {
-            var index = Variables.Count;
-            var scopeVariable = new ReferencedScopeVariable(this, baseVariable, index);
-            Variables.Add(baseVariable.Name, scopeVariable);
-            return scopeVariable;
+            return TryFindVariableLocally(name)
+                ?? TryFindVariableInParent(name, isCurrentScope);
         }
 
-        public Expression LocalsAdd(Expression variable) =>
-            // $locals.Add(...)
-            CallFrame_Expressions.Locals_Add(Locals, variable);
-
-        public Expression CompileCallFrameInitialization()
+        protected ScopeVariable TryFindVariableLocally(Symbol name)
         {
-            if(CallFrame.NodeType == ExpressionType.Constant)
-            {
-                return CompileCallFrameConstantInitialization();
-            }
-
-            if(CallFrame.NodeType == ExpressionType.Parameter)
-            {
-                return CompileCallFrameVariableInitialization();
-            }
-
-            throw new System.NotImplementedException("CallFrame not a constant");
+            ScopeVariable variable;
+            variables.TryGetValue(name, out variable);
+            return variable;
         }
 
-        private Expression CompileCallFrameConstantInitialization()
+        protected ScopeVariable TryFindVariableInParent(Symbol name, bool isCurrentScope)
         {
+            if(Parent == null || Parent == this)
+            {
+                return null;
+            }
+
+            var variable = ((BaseScope) Parent).FindVariable(name, false);
+
+            if(variable != null && isCurrentScope)
+            {
+                variable = AddReferencedVariable(variable);
+            }
+
+            return variable;
+        }
+
+        public Expression AddLocal(Expression localVariable) =>
+            // $callFrame.AddLocal(...)
+            CallFrame_Expressions.AddLocal(CallFrame, localVariable);
+
+        public virtual Expression CompileBody(Expression body)
+        {
+            if(variables.Count == 0)
+            {
+                return body;
+            }
+
             return Block(
-                new ParameterExpression[] { Locals },
-
-                // CallFrame.Current = @__CallFrame_1;
-                Assign(CallFrame_Expressions.Current(), CallFrame),
-
-                // $locals = @__CallFrame_1.Locals;
-                Assign(Locals, CallFrame_Expressions.Locals(CallFrame)),
-
-                CompileLocalsInitialization()
+                variables.Select(v => v.Value.Local),
+                body
             );
-        }
-
-        private Expression CompileCallFrameVariableInitialization()
-        {
-            throw new System.NotImplementedException(nameof(CompileCallFrameVariableInitialization));
-        }
-
-        private Expression CompileLocalsInitialization()
-        {
-             return Empty();
         }
     }
 }

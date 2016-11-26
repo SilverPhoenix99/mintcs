@@ -19,16 +19,22 @@ namespace Mint.MethodBinding.Methods
 
         public IList<LocalVariable> Arguments { get; }
 
-        public IList<LocalVariable> Locals { get; }
+        public IDictionary<Symbol, LocalVariable> Locals { get; }
 
-        public IEnumerable<LocalVariable> Variables => Arguments.Concat(Locals);
+        public IEnumerable<LocalVariable> Variables => Arguments.Concat(Locals.Values);
 
         public CallFrame(iObject instance, CallFrame caller = null, params LocalVariable[] arguments)
         {
             Instance = instance;
             Caller = caller;
-            Arguments = new List<LocalVariable>(arguments);
-            Locals = new List<LocalVariable>();
+            Arguments = arguments;
+            Locals = new LinkedDictionary<Symbol, LocalVariable>();
+        }
+
+        public LocalVariable AddLocal(LocalVariable local)
+        {
+            Locals.Add(local.Name, local);
+            return local;
         }
 
         public static CallFrame Push(iObject instance, params LocalVariable[] arguments) =>
@@ -44,11 +50,13 @@ namespace Mint.MethodBinding.Methods
 
             public static readonly PropertyInfo Locals = Reflector<CallFrame>.Property(_ => _.Locals);
 
-            public static readonly MethodInfo Locals_Add =
-                Reflector<IList<LocalVariable>>.Method(_ => _.Add(default(LocalVariable)));
+            public static readonly PropertyInfo IDictionary_Indexer =
+                Reflector<IDictionary<Symbol, LocalVariable>>.Property(_ => _[default(Symbol)]);
 
-            public static readonly PropertyInfo Locals_Indexer =
-                Reflector<IList<LocalVariable>>.Property(_ => _[default(int)]);
+            public static readonly MethodInfo AddLocal =
+                Reflector<CallFrame>.Method(_ => _.AddLocal(default(LocalVariable)));
+
+            public static readonly MethodInfo Pop = Reflector.Method(() => Pop());
         }
 
         public static class Expressions
@@ -62,11 +70,13 @@ namespace Mint.MethodBinding.Methods
             public static MemberExpression Locals(Expression callFrame) =>
                 Property(callFrame, Reflection.Locals);
 
-            public static MethodCallExpression Locals_Add(Expression locals, Expression localVariable) =>
-                Call(locals, Reflection.Locals_Add, localVariable);
+            public static MethodCallExpression AddLocal(Expression callFrame, Expression localVariable) =>
+                Call(callFrame, Reflection.AddLocal, localVariable);
 
-            public static IndexExpression Locals_Indexer(Expression locals, Expression index) =>
-                Property(locals, Reflection.Locals_Indexer, index);
+            public static IndexExpression LocalsIndexer(Expression callFrame, Expression name) =>
+                Property(Locals(callFrame), Reflection.IDictionary_Indexer, name);
+
+            public static MethodCallExpression Pop() => Call(Reflection.Pop);
         }
     }
 }
