@@ -135,6 +135,10 @@ namespace Mint.Reflection
 
     public static class Reflector<T>
     {
+        public static ConstructorInfo Ctor<P>() => Reflector.Ctor<T>(typeof(P));
+        public static ConstructorInfo Ctor<P1, P2>() => Reflector.Ctor<T>(typeof(P1), typeof(P2));
+        public static ConstructorInfo Ctor<P1, P2, P3>() => Reflector.Ctor<T>(typeof(P1), typeof(P2), typeof(P3));
+
         public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Method(lambda);
 
         public static MethodInfo Method(Expression<Action<T>> lambda) => Reflector.Method(lambda);

@@ -64,7 +64,7 @@ namespace Mint
 
         public static class Reflection
         {
-            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Binding>(typeof(iObject));
+            public static readonly ConstructorInfo Ctor = Reflector<Binding>.Ctor<iObject>();
 
             public static readonly MethodInfo SetLocalValue =
                 Reflector<Binding>.Method(_ => _.SetLocalValue(default(Symbol), default(iObject)));

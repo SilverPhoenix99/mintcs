@@ -67,8 +67,7 @@ namespace Mint
 
         public static class Reflection
         {
-            public static readonly ConstructorInfo Ctor =
-                Reflector.Ctor<Range>(typeof(iObject), typeof(iObject), typeof(bool));
+            public static readonly ConstructorInfo Ctor = Reflector<Range>.Ctor<iObject, iObject, bool>();
         }
 
         public static class Expressions

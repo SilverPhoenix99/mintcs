@@ -186,7 +186,7 @@ namespace Mint
 
         public static class Reflection
         {
-            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Symbol>(typeof(string));
+            public static readonly ConstructorInfo Ctor = Reflector<Symbol>.Ctor<string>();
         }
 
         public static class Expressions

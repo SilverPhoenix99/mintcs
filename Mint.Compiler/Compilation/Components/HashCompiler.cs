@@ -10,9 +10,6 @@ namespace Mint.Compilation.Components
 {
     internal class HashCompiler :CompilerComponentBase
     {
-        private static readonly MethodInfo MERGE_SELF = Reflector<Hash>.Method(_ => _.MergeSelf(default(Hash)));
-        private static readonly PropertyInfo INDEXER = Reflector<Hash>.Property(_ => _[default(iObject)]);
-
         public HashCompiler(Compiler compiler) : base(compiler)
         { }
 
@@ -58,7 +55,7 @@ namespace Mint.Compilation.Components
         {
             // h.merge!((Hash) $element)
             element = element.StripConversions().Cast<Hash>();
-            return Call(hash, MERGE_SELF, element).Cast<iObject>();
+            return Hash.Expressions.MergeSelf(hash, element).Cast<iObject>();
         }
 
         private static Expression MergeAssoc(Expression hash, Expression element)
@@ -73,7 +70,7 @@ namespace Mint.Compilation.Components
             // warning: key <key> is duplicated and overwritten on line <line>
 
             // hash[$elements[0]] = $elements[1];
-            var indexer = Property(hash, INDEXER, key);
+            var indexer = Hash.Expressions.Indexer(hash, key);
             return Assign(indexer, value);
         }
 

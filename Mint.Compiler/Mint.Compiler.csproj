@@ -138,12 +138,14 @@
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
     <Compile Include="Compilation\Selectors\MethodCallSelector.cs" />
     <Compile Include="Compilation\Selectors\AssignSelector.cs" />
+    <Compile Include="Compilation\Selectors\ModuleSelector.cs" />
     <Compile Include="Compilation\Selectors\SymbolSelector.cs" />
     <Compile Include="Compilation\Selectors\UnconditionalSelector.cs" />
     <Compile Include="Compilation\Selectors\WhileModSelector.cs" />
     <Compile Include="Compilation\TokenTypeExtensions.cs" />
     <Compile Include="Compilation\UnregisteredTokenError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\IList.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mint.Parser\Mint.Parser.csproj">

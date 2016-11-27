@@ -111,9 +111,9 @@ namespace Mint
         {
             public static readonly ConstructorInfo Ctor1 = Reflector.Ctor<String>();
 
-            public static readonly ConstructorInfo Ctor2 = Reflector.Ctor<String>(typeof(string));
+            public static readonly ConstructorInfo Ctor2 = Reflector<String>.Ctor<string>();
 
-            public static readonly ConstructorInfo Ctor3 = Reflector.Ctor<String>(typeof(object));
+            public static readonly ConstructorInfo Ctor3 = Reflector<String>.Ctor<object>();
 
             public static readonly MethodInfo Concat = Reflector<String>.Method(_ => _.Concat(default(string)));
         }

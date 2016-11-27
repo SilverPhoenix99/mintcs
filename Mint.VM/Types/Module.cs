@@ -163,7 +163,7 @@ namespace Mint
             throw new NotImplementedException(nameof(IsConstantDefined));
         }
 
-        public Module GetModuleOrThrow(Symbol name, IList<Module> nesting = null)
+        public Module GetModuleOrThrow(Symbol name, IEnumerable<Module> nesting = null)
         {
             var module = GetModule(name, nesting);
             if(module == null)
@@ -174,10 +174,10 @@ namespace Mint
             return module;
         }
 
-        public Module GetOrCreateModule(Symbol name, IList<Module> nesting = null) =>
+        public Module GetOrCreateModule(Symbol name, IEnumerable<Module> nesting = null) =>
             GetModule(name, nesting) ?? SetConstant(name, new Module(name, this)) as Module;
 
-        private Module GetModule(Symbol name, IList<Module> nesting)
+        private Module GetModule(Symbol name, IEnumerable<Module> nesting)
         {
             var constant = GetConstant(name, nesting);
             if(constant == null)
@@ -191,7 +191,7 @@ namespace Mint
 
         public iObject GetConstant(Symbol name) => GetConstant(name, null);
 
-        private iObject GetConstant(Symbol name, IList<Module> nesting)
+        private iObject GetConstant(Symbol name, IEnumerable<Module> nesting)
         {
             ValidateConstantName(name.Name);
 

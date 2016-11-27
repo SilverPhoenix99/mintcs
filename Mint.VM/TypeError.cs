@@ -18,13 +18,12 @@ namespace Mint
 
         public static class Reflection
         {
-            public static readonly ConstructorInfo Ctor_TypeError = Reflector.Ctor<TypeError>(typeof(string));
+            public static readonly ConstructorInfo Ctor = Reflector<TypeError>.Ctor<string>();
         }
 
         public static class Expressions
         {
-            public static NewExpression New(Expression message) =>
-                Expression.New(Reflection.Ctor_TypeError, message);
+            public static NewExpression New(Expression message) => Expression.New(Reflection.Ctor, message);
         }
     }
 }

@@ -15,10 +15,10 @@ namespace Mint.Compilation.Scopes
 
         public override Scope Parent => this;
 
-        public override Expression Nesting => Array.Expressions.New();
+        public override Expression Nesting => CompilerUtils.EmptyArray<Module>();
 
         public TopLevelScope(Compiler compiler, CallFrame callFrame)
-            : base(compiler, callFrame == null ? null : Expression.Constant(callFrame))
+            : base(compiler, callFrame == null ? null : Constant(callFrame))
         {
             if(callFrame == null) throw new ArgumentNullException(nameof(callFrame));
 

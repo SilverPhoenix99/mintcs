@@ -30,11 +30,9 @@ namespace Mint.MethodBinding.Methods
         {
             public static readonly PropertyInfo Value = Reflector<LocalVariable>.Property(_ => _.Value);
 
-            public static readonly ConstructorInfo Ctor1 =
-                Reflector.Ctor<LocalVariable>(typeof(Symbol));
+            public static readonly ConstructorInfo Ctor1 = Reflector<LocalVariable>.Ctor<Symbol>();
 
-            public static readonly ConstructorInfo Ctor2 =
-                Reflector.Ctor<LocalVariable>(typeof(Symbol), typeof(iObject));
+            public static readonly ConstructorInfo Ctor2 = Reflector<LocalVariable>.Ctor<Symbol, iObject>();
         }
 
         public static class Expressions

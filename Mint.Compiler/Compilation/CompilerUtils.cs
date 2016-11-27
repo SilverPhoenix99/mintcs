@@ -13,7 +13,7 @@ namespace Mint.Compilation
         private static readonly MethodInfo CONVERT_TO_STRING =
             Reflector.Method(() => System.Convert.ToString(default(object)));
 
-        private static readonly Expression EMPTY_ARRAY = Constant(System.Array.Empty<iObject>());
+        public static Expression EmptyArray<T>() => Constant(System.Array.Empty<T>());
 
         public static Expression ToBool(Expression expr)
         {
@@ -76,7 +76,7 @@ namespace Mint.Compilation
         {
             var site = new CallSite(methodName, visibility, arguments.Select(_ => _.Kind));
             var argList = arguments.Length == 0
-                        ? EMPTY_ARRAY
+                        ? EmptyArray<iObject>()
                         : NewArrayInit(typeof(iObject), arguments.Select(_ => _.Expression));
             return CallSite.Expressions.Call(Constant(site), instance, argList);
         }

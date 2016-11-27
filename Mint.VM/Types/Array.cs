@@ -196,7 +196,7 @@ namespace Mint
         {
             public static readonly ConstructorInfo CtorDefault = Reflector.Ctor<Array>();
 
-            public static readonly ConstructorInfo Ctor = Reflector.Ctor<Array>(typeof(IEnumerable<iObject>));
+            public static readonly ConstructorInfo Ctor = Reflector<Array>.Ctor<IEnumerable<iObject>>();
         }
 
         public static class Expressions

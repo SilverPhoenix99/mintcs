@@ -86,11 +86,21 @@ namespace Mint
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor = Reflector.Ctor<Hash>();
+
+            public static readonly MethodInfo MergeSelf = Reflector<Hash>.Method(_ => _.MergeSelf(default(Hash)));
+
+            public static readonly PropertyInfo Indexer = Reflector<Hash>.Property(_ => _[default(iObject)]);
         }
 
         public static class Expressions
         {
             public static NewExpression New() => Expression.New(Reflection.Ctor);
+
+            public static MethodCallExpression MergeSelf(Expression hash, Expression otherHash) =>
+                Expression.Call(hash, Reflection.MergeSelf, otherHash);
+
+            public static IndexExpression Indexer(Expression hash, Expression key) =>
+                Expression.Property(hash, Reflection.Indexer, key);
         }
     }
 }
