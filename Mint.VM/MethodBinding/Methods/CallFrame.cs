@@ -23,6 +23,8 @@ namespace Mint.MethodBinding.Methods
 
         public IEnumerable<LocalVariable> Variables => Arguments.Concat(Locals.Values);
 
+        public Module Module => Instance as Module ?? Instance.EffectiveClass;
+
         public CallFrame(iObject instance, CallFrame caller = null, params LocalVariable[] arguments)
         {
             Instance = instance;

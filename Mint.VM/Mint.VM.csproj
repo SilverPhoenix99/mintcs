@@ -111,6 +111,7 @@
     <Compile Include="Types\String.cs" />
     <Compile Include="Types\Symbol.cs" />
     <Compile Include="Types\TrueClass.cs" />
+    <Compile Include="ValueCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mint.Reflection\Mint.Reflection.csproj">

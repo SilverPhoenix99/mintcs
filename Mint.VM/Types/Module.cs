@@ -28,15 +28,15 @@ namespace Mint
 
         public IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
 
-        protected internal Dictionary<Symbol, MethodBinder> Methods { get; } = new Dictionary<Symbol, MethodBinder>();
+        protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
 
-        protected internal Dictionary<Symbol, iObject> Constants { get; } = new Dictionary<Symbol, iObject>();
+        protected internal IDictionary<Symbol, iObject> Constants { get; }
 
-        protected internal List<Module> Included { get; protected set; } = new List<Module>();
+        protected internal IList<Module> Included { get; protected set; }
 
-        protected internal List<Module> Prepended { get; protected set; } = new List<Module>();
+        protected internal IList<Module> Prepended { get; protected set; }
 
-        protected internal IList<WeakReference<Class>> Subclasses { get; } = new List<WeakReference<Class>>();
+        protected internal IList<WeakReference<Class>> Subclasses { get; }
 
         public Module(Symbol? name = null, Module container = null)
             : this(Class.MODULE, name, container)
@@ -49,18 +49,32 @@ namespace Mint
 
             Name = name;
             this.container = container ?? Class.OBJECT;
-
-            FullName = name?.ToString() ?? base.ToString();
-
-            if(this.container != Class.OBJECT)
-            {
-                FullName = $"{this.container.FullName}::{FullName}";
-            }
+            FullName = CalculateFullName(name?.ToString(), this.container);
+            Methods = new Dictionary<Symbol, MethodBinder>();
+            Constants = new Dictionary<Symbol, iObject>();
+            Included = new List<Module>();
+            Prepended = new List<Module>();
+            Subclasses = new List<WeakReference<Class>>();
         }
 
         ~Module()
         {
             // TODO : invalidate methods, including subclasses
+        }
+
+        private string CalculateFullName(string name, Module container)
+        {
+            if(name == null)
+            {
+                name = base.ToString();
+            }
+
+            if(container != Class.OBJECT)
+            {
+                name = $"{container.FullName}::{name}";
+            }
+
+            return name;
         }
 
         public override string ToString() => FullName;
@@ -81,7 +95,7 @@ namespace Mint
             Prepended = AppendModule(Prepended, module, null);
         }
 
-        protected List<Module> AppendModule(List<Module> modules, Module module, Class superclass)
+        protected List<Module> AppendModule(IList<Module> modules, Module module, Class superclass)
         {
             if(module.GetType() != typeof(Module))
             {
