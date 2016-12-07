@@ -1,6 +1,5 @@
 using Mint.Compilation.Components.Operators;
 using Mint.Compilation.Scopes.Variables;
-using Mint.MethodBinding.Methods;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
 

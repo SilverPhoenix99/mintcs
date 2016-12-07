@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using Mint.Parse;
-using Mint.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class HashCompiler :CompilerComponentBase
+    internal class HashCompiler : CompilerComponentBase
     {
         public HashCompiler(Compiler compiler) : base(compiler)
         { }

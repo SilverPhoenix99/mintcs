@@ -30,7 +30,7 @@ namespace Mint
 
         protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
 
-        protected internal IDictionary<Symbol, iObject> Constants { get; }
+        protected IDictionary<Symbol, iObject> Constants { get; }
 
         protected internal IList<Module> Included { get; protected set; }
 
@@ -236,8 +236,7 @@ namespace Mint
             }
 
             ValidateConstantName(name.Name);
-            Constants[name] = value;
-            return value;
+            return Constants[name] = value;
         }
     }
 }

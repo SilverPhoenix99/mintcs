@@ -2,36 +2,46 @@
 
 namespace Mint
 {
-    public class ValueCache<T>
+    public class ValueCache
     {
-        private T value;
+        private Func<object> value;
 
-        public Condition Condition { get; private set; }
-
-        public Func<T> Update { get; }
-
-        public T Value
+        public object Value
         {
-            get
-            {
-                return Condition.Valid ? value : (Value = Update());
-            }
-            set
-            {
-                this.value = value;
-                Condition = new Condition();
-            }
+            get { return value(); }
+            set { this.value = () => value; }
         }
 
-        public ValueCache(T initialValue, Func<T> update)
+        public Func<object> Update { get; set; }
+
+        public Action Destruct { get; set; }
+
+        public ValueCache(Func<object> update, Action destruct = null)
+        {
+            if(update == null) throw new ArgumentNullException(nameof(update));
+
+            Update = update;
+            Destruct = destruct;
+            Invalidate();
+        }
+
+        public ValueCache(object initialValue, Func<object> update, Action destruct = null)
+            : this(update, destruct)
         {
             Value = initialValue;
-            Update = update;
         }
 
-        public ValueCache(Func<T> update) : this(default(T), update)
+        ~ValueCache()
         {
-            Condition.Invalidate();
+            if(Destruct != null)
+            {
+                Destruct();
+            }
+        }
+
+        public void Invalidate()
+        {
+            value = () => Value = Update();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Components;
 using Mint.Compilation.Scopes;
@@ -113,7 +112,7 @@ namespace Mint.Compilation
             Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
             Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
         }
-        
+
         public void Register(CompilerComponent component, TokenType type)
         {
             selectors[type] = new UnconditionalSelector(component);

@@ -44,7 +44,7 @@ namespace Mint
         {
             if(module.Name.HasValue)
             {
-                Class.OBJECT.Constants[module.Name.Value] = module;
+                Class.OBJECT.SetConstant(module.Name.Value, module);
             }
             return module;
         }
@@ -95,7 +95,7 @@ namespace Mint
             public static readonly MethodInfo Box = Reflector.Method(
                 () => Box(default(object))
             );
-            
+
             public static readonly MethodInfo InstanceVariableGet = Reflector<iObject>.Method(
                 _ => _.InstanceVariableGet(default(Symbol))
             );
@@ -121,7 +121,7 @@ namespace Mint
 
                 return Expression.Call(method, value);
             }
-            
+
             public static MethodCallExpression InstanceVariableGet(Expression instance, Expression variableName) =>
                 Expression.Call(instance, Reflection.InstanceVariableGet, variableName);
 

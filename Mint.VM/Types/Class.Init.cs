@@ -46,7 +46,7 @@ namespace Mint
             #pragma warning restore 1720
 
             Debug.Assert(BASIC_OBJECT.Name != null, "BASIC_OBJECT.Name != null");
-            BASIC_OBJECT.Constants[BASIC_OBJECT.Name.Value] = BASIC_OBJECT;
+            BASIC_OBJECT.SetConstant(BASIC_OBJECT.Name.Value, BASIC_OBJECT);
 
             #pragma warning disable 1720
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
