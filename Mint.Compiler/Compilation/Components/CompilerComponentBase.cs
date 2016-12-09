@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     public abstract class CompilerComponentBase : CompilerComponent
     {
-        public Compiler Compiler { get; }
+        protected Compiler Compiler { get; }
 
         protected Ast<Token> Node => Compiler.CurrentNode;
 
@@ -13,7 +13,7 @@ namespace Mint.Compilation.Components
         {
             Compiler = compiler;
         }
-
+        
         public abstract Expression Compile();
     }
 }

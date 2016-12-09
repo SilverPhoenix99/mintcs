@@ -1,8 +1,6 @@
-﻿using Mint.MethodBinding.Arguments;
-using Mint.Parse;
+﻿using Mint.Parse;
 using System.Linq;
 using System.Linq.Expressions;
-using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
@@ -30,34 +28,9 @@ namespace Mint.Compilation.Components
             return (
                 from astArgument in ArgumentsNode
                 let argument = astArgument.Accept(Compiler)
-                let kind = AsArgumentKind(astArgument.Value.Type)
+                let kind = astArgument.Value.Type.GetArgumentKind()
                 select new InvocationArgument(kind, argument)
             ).ToArray();
-        }
-
-        private static ArgumentKind AsArgumentKind(TokenType type)
-        {
-            switch(type)
-            {
-                case kSTAR:
-                return ArgumentKind.Rest;
-
-                case tLABEL: goto case kASSOC;
-                case tLABEL_END: goto case kASSOC;
-                case kASSOC:
-                return ArgumentKind.Key;
-
-                case kDSTAR:
-                return ArgumentKind.KeyRest;
-
-                case kLBRACE2: goto case kAMPER;
-                case kDO: goto case kAMPER;
-                case kAMPER:
-                return ArgumentKind.Block;
-
-                default:
-                return ArgumentKind.Simple;
-            }
         }
     }
 }

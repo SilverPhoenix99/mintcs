@@ -43,11 +43,11 @@ namespace Mint.MethodBinding.Arguments
                 throw new ArgumentException("number of arguments does not match.");
             }
 
-            var zippedArgs = ArgumentKinds.Zip(arguments, (kind, value) => new { Kind = kind, Value = value });
-
-            foreach(var argument in zippedArgs)
+            for(var i = 0; i < arguments.Length; i++)
             {
-                argument.Kind.Bundle(argument.Value, this);
+                var kind = kinds[i];
+                var arg = arguments[i];
+                kind.Bundle(arg, this);
             }
         }
 

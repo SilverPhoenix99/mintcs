@@ -102,11 +102,6 @@ namespace Mint.Compilation
             Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
         }
 
-        public void Register(CompilerComponent component, TokenType type)
-        {
-            selectors[type] = new UnconditionalSelector(component);
-        }
-
         public void Register(CompilerComponent component, params TokenType[] types)
         {
             foreach(var type in types)
@@ -115,9 +110,9 @@ namespace Mint.Compilation
             }
         }
 
-        public void Register(ComponentSelector selector, TokenType type)
+        public void Register(CompilerComponent component, TokenType type)
         {
-            selectors[type] = selector;
+            Register(new UnconditionalSelector(component), type);
         }
 
         public void Register(ComponentSelector selector, params TokenType[] types)
@@ -126,6 +121,11 @@ namespace Mint.Compilation
             {
                 Register(selector, type);
             }
+        }
+
+        public void Register(ComponentSelector selector, TokenType type)
+        {
+            selectors[type] = selector;
         }
 
         public Scope EndScope() => CurrentScope = CurrentScope.Parent;

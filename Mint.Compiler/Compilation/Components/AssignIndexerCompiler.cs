@@ -10,7 +10,6 @@ namespace Mint.Compilation.Components
     internal class AssignIndexerCompiler : AssignCompiler
     {
         private readonly ParameterExpression instance;
-        private ParameterExpression[] argumentVars;
         private InvocationArgument[] invocationArguments;
 
         private Ast<Token> ArgumentsNode => LeftNode[1];
@@ -36,7 +35,7 @@ namespace Mint.Compilation.Components
             var arguments = CompileArguments();
             Right = RightNode.Accept(Compiler);
 
-            argumentVars = CreateArgumentVariables();
+            var argumentVars = CreateArgumentVariables();
 
             var argumentKinds = ArgumentsNode.Select(node => node.Value.Type.GetArgumentKind());
 
