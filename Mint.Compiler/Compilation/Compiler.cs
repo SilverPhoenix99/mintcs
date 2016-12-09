@@ -8,17 +8,16 @@ using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
 using System;
+using Mint.Reflection;
 
 namespace Mint.Compilation
 {
-    public partial class Compiler
+    public partial class Compiler : AstVisitor<Token, Expression>
     {
-        private readonly Stack<ShiftState> shifting = new Stack<ShiftState>();
-        private readonly Stack<ReduceState> reducing = new Stack<ReduceState>();
-        private readonly Queue<Expression> outputs = new Queue<Expression>();
-
-        private readonly IDictionary<TokenType, ComponentSelector> selectors
-            = new Dictionary<TokenType, ComponentSelector>();
+        private readonly Stack<ShiftState> shifting;
+        private readonly Stack<ReduceState> reducing;
+        private readonly Queue<Expression> outputs;
+        private readonly IDictionary<TokenType, ComponentSelector> selectors;
 
         private ShiftState currentShifting;
         private ReduceState currentReducing;
@@ -37,6 +36,10 @@ namespace Mint.Compilation
             if(root == null) throw new ArgumentNullException(nameof(root));
             if(topLevelFrame == null) throw new ArgumentNullException(nameof(topLevelFrame));
 
+            shifting = new Stack<ShiftState>();
+            reducing = new Stack<ReduceState>();
+            outputs = new Queue<Expression>();
+            selectors = new Dictionary<TokenType, ComponentSelector>();
             Filename = filename;
             shifting.Push(new ShiftState(root));
             InitializeComponents();
@@ -174,7 +177,16 @@ namespace Mint.Compilation
 
             return BuildOutputExpression();
         }
-
+        
+        public Expression Visit(Ast<Token> node)
+        {
+            var previousNode = CurrentNode;
+            CurrentNode = node;
+            var expression = GetComponentOrThrow(node).Compile();
+            CurrentNode = previousNode;
+            return expression;
+        }
+        
         private bool Reduce()
         {
             var canReduce = reducing.Count != 0 && reducing.Peek().CanReduce;
@@ -224,7 +236,7 @@ namespace Mint.Compilation
                 currentShifting = shifting.Pop();
                 CurrentNode = currentShifting.Node;
 
-                var component = GetComponentOrThrow();
+                var component = GetComponentOrThrow(CurrentNode);
                 component.Shift();
 
                 ShiftChildren(currentShifting.Children);
@@ -240,14 +252,14 @@ namespace Mint.Compilation
             }
         }
 
-        private CompilerComponent GetComponentOrThrow()
+        private CompilerComponent GetComponentOrThrow(Ast<Token> node)
         {
-            if(CurrentNode.IsList)
+            if(node.IsList)
             {
                 return ListComponent;
             }
 
-            var type = CurrentNode.Value.Type;
+            var type = node.Value.Type;
             ComponentSelector selector;
             if(selectors.TryGetValue(type, out selector))
             {

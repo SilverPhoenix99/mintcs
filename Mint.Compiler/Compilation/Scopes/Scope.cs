@@ -11,7 +11,7 @@ namespace Mint.Compilation.Scopes
 
         Expression CallFrame { get; }
 
-        MemberExpression Instance { get; }
+        Expression Instance { get; }
 
         ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null);
 

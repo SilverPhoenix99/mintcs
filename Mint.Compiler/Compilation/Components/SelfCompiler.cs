@@ -8,5 +8,7 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Reduce() => Compiler.CurrentScope.Instance;
+
+        public override Expression Compile() => Compiler.CurrentScope.Instance;
     }
 }

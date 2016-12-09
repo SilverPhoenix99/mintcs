@@ -1,6 +1,6 @@
+using System;
 using System.Globalization;
 using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
@@ -13,8 +13,16 @@ namespace Mint.Compilation.Components
         {
             var token = Node.Value;
             var str = token.Value.Replace("_", "");
-            var val = System.Convert.ToDouble(str, CultureInfo.InvariantCulture);
-            return Constant(new Float(val), typeof(iObject));
+            var val = Convert.ToDouble(str, CultureInfo.InvariantCulture);
+            return Expression.Constant(new Float(val), typeof(iObject));
+        }
+
+        public override Expression Compile()
+        {
+            var token = Node.Value;
+            var str = token.Value.Replace("_", "");
+            var val = Convert.ToDouble(str, CultureInfo.InvariantCulture);
+            return Expression.Constant(new Float(val), typeof(iObject));
         }
     }
 }

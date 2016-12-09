@@ -8,5 +8,7 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Reduce() => FalseClass.Expressions.Instance;
+
+        public override Expression Compile() => FalseClass.Expressions.Instance;
     }
 }

@@ -30,7 +30,7 @@ namespace Mint
 
         protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
 
-        protected IDictionary<Symbol, iObject> Constants { get; }
+        protected IDictionary<Symbol, ValueCache> Constants { get; }
 
         protected internal IList<Module> Included { get; protected set; }
 
@@ -51,7 +51,7 @@ namespace Mint
             this.container = container ?? Class.OBJECT;
             FullName = CalculateFullName(name?.ToString(), this.container);
             Methods = new Dictionary<Symbol, MethodBinder>();
-            Constants = new Dictionary<Symbol, iObject>();
+            Constants = new Dictionary<Symbol, ValueCache>();
             Included = new List<Module>();
             Prepended = new List<Module>();
             Subclasses = new List<WeakReference<Class>>();
@@ -216,7 +216,7 @@ namespace Mint
             }
 
             var module = modules.FirstOrDefault(_ => _.IsConstantDefined(name, false));
-            return module?.Constants[name];
+            return (iObject) module?.Constants[name].Value;
         }
 
         private static void ValidateConstantName(string name)
@@ -236,7 +236,31 @@ namespace Mint
             }
 
             ValidateConstantName(name.Name);
-            return Constants[name] = value;
+
+            return value;
+        }
+
+        protected internal ValueCache GetConstantCache(Symbol name, Func<object> update = null)
+        {
+            return TryGetConstantCache(name) ??
+                (
+                    update != null
+                        ? Constants[name] = new ValueCache(update)
+                        : ThrowUninitializedConstant(name)
+                );
+        }
+
+        protected internal ValueCache TryGetConstantCache(Symbol name)
+        {
+            ValueCache cache;
+            Constants.TryGetValue(name, out cache);
+            return cache;
+        }
+
+        private ValueCache ThrowUninitializedConstant(Symbol name)
+        {
+            var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
+            throw new NameError($"uninitialized constant {fullName}");
         }
     }
 }

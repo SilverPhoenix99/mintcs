@@ -6,7 +6,9 @@ namespace Mint.Compilation.Components
     {
         public TrueCompiler(Compiler compiler) : base(compiler)
         { }
-
+        
         public override Expression Reduce() => TrueClass.Expressions.Instance;
+
+        public override Expression Compile() => TrueClass.Expressions.Instance;
     }
 }

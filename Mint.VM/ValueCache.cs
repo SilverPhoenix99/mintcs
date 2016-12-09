@@ -5,6 +5,7 @@ namespace Mint
     public class ValueCache
     {
         private Func<object> value;
+        private Func<object> update;
 
         public object Value
         {
@@ -12,31 +13,26 @@ namespace Mint
             set { this.value = () => value; }
         }
 
-        public Func<object> Update { get; set; }
-
-        public Action Destruct { get; set; }
-
-        public ValueCache(Func<object> update, Action destruct = null)
+        public Func<object> Update
         {
-            if(update == null) throw new ArgumentNullException(nameof(update));
-
+            get { return update; }
+            set
+            {
+                if(value == null) throw new ArgumentNullException(nameof(Update));
+                update = value;
+            }
+        }
+        
+        public ValueCache(Func<object> update)
+        {
             Update = update;
-            Destruct = destruct;
             Invalidate();
         }
-
-        public ValueCache(object initialValue, Func<object> update, Action destruct = null)
-            : this(update, destruct)
+        
+        public ValueCache(object initialValue, Func<object> update)
+            : this(update)
         {
             Value = initialValue;
-        }
-
-        ~ValueCache()
-        {
-            if(Destruct != null)
-            {
-                Destruct();
-            }
         }
 
         public void Invalidate()

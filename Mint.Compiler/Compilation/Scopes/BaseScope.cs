@@ -19,7 +19,7 @@ namespace Mint.Compilation.Scopes
 
         public Expression CallFrame { get; }
 
-        public MemberExpression Instance => CallFrame_Expressions.Instance(CallFrame);
+        public virtual Expression Instance => CallFrame_Expressions.Instance(CallFrame);
         
         protected BaseScope(Compiler compiler, Expression callFrame = null)
         {

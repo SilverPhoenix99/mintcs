@@ -124,6 +124,7 @@
     <Compile Include="Compilation\IncompleteCompilationError.cs" />
     <Compile Include="Compilation\InvocationArgument.cs" />
     <Compile Include="Compilation\Scopes\BaseScope.cs" />
+    <Compile Include="Compilation\Scopes\CallScope.cs" />
     <Compile Include="Compilation\Scopes\Variables\BaseScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\LoopScope.cs" />
     <Compile Include="Compilation\Scopes\MethodScope.cs" />

@@ -6,5 +6,7 @@ namespace Mint.Compilation.Components
     {
         void Shift();
         Expression Reduce();
+
+        Expression Compile();
     }
 }

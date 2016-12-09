@@ -6,7 +6,9 @@ namespace Mint.Compilation.Components
     {
         public NilCompiler(Compiler compiler) : base(compiler)
         { }
-
+        
         public override Expression Reduce() => NilClass.Expressions.Instance;
+
+        public override Expression Compile() => NilClass.Expressions.Instance;
     }
 }
