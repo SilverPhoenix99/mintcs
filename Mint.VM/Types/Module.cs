@@ -250,7 +250,7 @@ namespace Mint
                 );
         }
 
-        protected internal ValueCache TryGetConstantCache(Symbol name)
+        private ValueCache TryGetConstantCache(Symbol name)
         {
             ValueCache cache;
             Constants.TryGetValue(name, out cache);

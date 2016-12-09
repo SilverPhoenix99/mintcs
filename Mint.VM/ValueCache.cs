@@ -22,13 +22,13 @@ namespace Mint
                 update = value;
             }
         }
-        
+
         public ValueCache(Func<object> update)
         {
             Update = update;
             Invalidate();
         }
-        
+
         public ValueCache(object initialValue, Func<object> update)
             : this(update)
         {
