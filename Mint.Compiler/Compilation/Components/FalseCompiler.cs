@@ -7,8 +7,6 @@ namespace Mint.Compilation.Components
         public FalseCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => FalseClass.Expressions.Instance;
-
         public override Expression Compile() => FalseClass.Expressions.Instance;
     }
 }

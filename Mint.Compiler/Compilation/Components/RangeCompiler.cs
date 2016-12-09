@@ -6,13 +6,17 @@ namespace Mint.Compilation.Components
 {
     internal class RangeCompiler : CompilerComponentBase
     {
+        private Ast<Token> LeftNode => Node[0];
+
+        private Ast<Token> RightNode => Node[1];
+
         public RangeCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var left = Pop();
-            var right = Pop();
+            var left = LeftNode.Accept(Compiler);
+            var right = RightNode.Accept(Compiler);
             var exclude = Constant(Node.Value.Type == TokenType.kDOT3);
             var range = Range.Expressions.New(left, right, exclude);
             return range.Cast<iObject>();

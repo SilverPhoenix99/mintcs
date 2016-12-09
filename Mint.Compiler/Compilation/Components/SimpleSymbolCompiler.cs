@@ -10,12 +10,6 @@ namespace Mint.Compilation.Components
         public SimpleSymbolCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-            // Do not shift identifier (child),
-            // otherwise the compiler assumes it is a variable or a method call.
-        }
-
-        public override Expression Reduce() => Constant(new Symbol(Identifier), typeof(iObject));
+        public override Expression Compile() => Constant(new Symbol(Identifier), typeof(iObject));
     }
 }

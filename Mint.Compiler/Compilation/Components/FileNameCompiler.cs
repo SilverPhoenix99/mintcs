@@ -8,7 +8,7 @@ namespace Mint.Compilation.Components
         public FileNameCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() =>
+        public override Expression Compile() =>
             Constant(new String(Compiler.Filename), typeof(iObject));
     }
 }

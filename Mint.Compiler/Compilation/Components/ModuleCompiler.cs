@@ -13,12 +13,6 @@ namespace Mint.Compilation.Components
 
         protected ModuleCompiler(Compiler compiler) : base(compiler)
         { }
-
-        public override void Shift()
-        {
-            Push(Body);
-            Compiler.CurrentScope = new ModuleScope(Compiler);
-        }
     }
 
 	internal class SimpleNameModuleCompiler : ModuleCompiler
@@ -26,13 +20,13 @@ namespace Mint.Compilation.Components
 	    public SimpleNameModuleCompiler(Compiler compiler) : base(compiler)
 	    { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
 	    {
             try
             {
-                var body = Pop();
-
                 // TODO
+
+                Compiler.CurrentScope = new ModuleScope(Compiler);
             }
             finally
             {
@@ -48,11 +42,13 @@ namespace Mint.Compilation.Components
         public AbsoluteNameModuleCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             try
             {
                 // TODO
+
+                Compiler.CurrentScope = new ModuleScope(Compiler);
             }
             finally
             {
@@ -68,17 +64,13 @@ namespace Mint.Compilation.Components
         public RelativeNameModuleCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-			Push(Name[0]);
-            base.Shift();
-        }
-
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             try
             {
                 // TODO
+
+                Compiler.CurrentScope = new ModuleScope(Compiler);
             }
             finally
             {

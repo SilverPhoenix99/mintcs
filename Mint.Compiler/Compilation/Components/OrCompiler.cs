@@ -1,17 +1,22 @@
 using System.Linq.Expressions;
+using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
     internal class OrCompiler : CompilerComponentBase
     {
+        private Ast<Token> LeftNode => Node[0];
+
+        private Ast<Token> RightNode => Node[1];
+
         public OrCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var left = Pop();
-            var right = Pop();
+            var left = LeftNode.Accept(Compiler);
+            var right = RightNode.Accept(Compiler);
 
             if(left.NodeType == ExpressionType.Constant)
             {

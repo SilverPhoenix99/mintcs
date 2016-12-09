@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using static Mint.Parse.TokenType;
 
@@ -10,15 +9,7 @@ namespace Mint.Compilation.Components
         public WordsCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-            foreach(var child in Node.Where(_ => _.Value.Type != tSPACE))
-            {
-                Push(child);
-            }
-        }
-
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             if(Node.List.Count == 0)
             {
@@ -27,11 +18,11 @@ namespace Mint.Compilation.Components
 
             var words = new List<Expression>();
             var contents = new List<Expression>();
-            foreach(var child in Node.List)
+            foreach(var child in Node)
             {
                 if(child.Value.Type != tSPACE)
                 {
-                    contents.Add(Pop());
+                    contents.Add(child.Accept(Compiler));
                     continue;
                 }
 

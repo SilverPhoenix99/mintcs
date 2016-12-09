@@ -1,16 +1,19 @@
 ﻿using System.Linq.Expressions;
+using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
     internal class NotCompiler : CompilerComponentBase
     {
+        private Ast<Token> Operand => Node[0];
+
         public NotCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var condition = Pop();
+            var condition = Operand.Accept(Compiler);
 
             if(condition.NodeType == ExpressionType.Constant)
             {

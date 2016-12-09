@@ -30,26 +30,11 @@ namespace Mint.Compilation.Components
             instance = Variable(typeof(iObject), "instance");
         }
 
-        public override void Shift()
+        public override Expression Compile()
         {
-            Push(LeftNode[0]);
-            PushArguments();
-            Push(RightNode);
-        }
-
-        private void PushArguments()
-        {
-            foreach(var argument in ArgumentsNode)
-            {
-                Push(argument);
-            }
-        }
-
-        public override Expression Reduce()
-        {
-            var left = Pop();
-            var arguments = PopArguments();
-            Right = Pop();
+            var left = LeftNode[0].Accept(Compiler);
+            var arguments = CompileArguments();
+            Right = RightNode.Accept(Compiler);
 
             argumentVars = CreateArgumentVariables();
 
@@ -67,19 +52,15 @@ namespace Mint.Compilation.Components
                 new[] { instance }.Concat(argumentVars),
                 Assign(instance, left),
                 argumentVarsAssignment,
-                base.Reduce()
+                base.Compile()
             );
         }
 
-        private Expression[] PopArguments()
-        {
-            return Enumerable.Range(0, ArgumentCount).Select(_ => Pop()).ToArray();
-        }
+        private Expression[] CompileArguments() => ArgumentsNode.Select(_ => _.Accept(Compiler)).ToArray();
 
-        private ParameterExpression[] CreateArgumentVariables()
-        {
-            return Enumerable.Range(0, ArgumentCount).Select(i => Variable(typeof(iObject), "arg" + i)).ToArray();
-        }
+        private ParameterExpression[] CreateArgumentVariables() =>
+            Enumerable.Range(0, ArgumentCount).Select(i => Variable(typeof(iObject), "arg" + i)).ToArray();
+
 
         public override Expression Setter(Expression rightHandSide)
         {

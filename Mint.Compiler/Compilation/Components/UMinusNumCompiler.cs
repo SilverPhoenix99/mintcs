@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
     internal class UMinusNumCompiler : CompilerComponentBase
     {
+        private Ast<Token> Value => Node[0];
+
         public UMinusNumCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var number = (iObject) ((ConstantExpression) Pop()).Value;
+            var constant = (ConstantExpression) Value.Accept(Compiler);
+            var number = constant.Value;
 
             if(number is Fixnum)
             {

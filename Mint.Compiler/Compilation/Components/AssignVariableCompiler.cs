@@ -15,15 +15,10 @@ namespace Mint.Compilation.Components
             : base(compiler, operatorCompiler)
         { }
 
-        public override void Shift()
+        public override Expression Compile()
         {
-            Push(RightNode);
-        }
-
-        public override Expression Reduce()
-        {
-            Right = Pop();
-            return base.Reduce();
+            Right = RightNode.Accept(Compiler);
+            return base.Compile();
         }
 
         protected abstract Expression CreateGetter();

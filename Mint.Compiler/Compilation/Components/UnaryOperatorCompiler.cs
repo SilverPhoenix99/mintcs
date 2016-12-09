@@ -12,9 +12,9 @@ namespace Mint.Compilation.Components
         protected UnaryOperatorCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var operand = Pop();
+            var operand = Operand.Accept(Compiler);
             var visibility = Operand.GetVisibility();
             return CompilerUtils.Call(operand, Operator, visibility);
         }

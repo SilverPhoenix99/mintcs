@@ -5,49 +5,35 @@ using Mint.Compilation.Scopes;
 using Mint.Compilation.Selectors;
 using Mint.MethodBinding.Methods;
 using Mint.Parse;
-using static System.Linq.Expressions.Expression;
 using static Mint.Parse.TokenType;
 using System;
-using Mint.Reflection;
 
 namespace Mint.Compilation
 {
     public partial class Compiler : AstVisitor<Token, Expression>
     {
-        private readonly Stack<ShiftState> shifting;
-        private readonly Stack<ReduceState> reducing;
-        private readonly Queue<Expression> outputs;
         private readonly IDictionary<TokenType, ComponentSelector> selectors;
-
-        private ShiftState currentShifting;
-        private ReduceState currentReducing;
 
         public string Filename { get; }
 
-        public Scope CurrentScope { get; set; }
-
         public CompilerComponent ListComponent { get; set; }
+
+        public Scope CurrentScope { get; set; }
 
         public Ast<Token> CurrentNode { get; private set; }
 
-
-        public Compiler(string filename, Ast<Token> root, CallFrame topLevelFrame)
+        public Compiler(string filename, CallFrame topLevelFrame)
         {
-            if(root == null) throw new ArgumentNullException(nameof(root));
             if(topLevelFrame == null) throw new ArgumentNullException(nameof(topLevelFrame));
 
-            shifting = new Stack<ShiftState>();
-            reducing = new Stack<ReduceState>();
-            outputs = new Queue<Expression>();
             selectors = new Dictionary<TokenType, ComponentSelector>();
             Filename = filename;
-            shifting.Push(new ShiftState(root));
             InitializeComponents();
             CurrentScope = new TopLevelScope(this, topLevelFrame);
         }
 
-        public Compiler(string filename, Ast<Token> root, iObject instance)
-            : this(filename, root, new CallFrame(instance))
+        public Compiler(string filename, iObject instance)
+            : this(filename, new CallFrame(instance))
         { }
 
         private void InitializeComponents()
@@ -142,114 +128,30 @@ namespace Mint.Compilation
             }
         }
 
-        public void Push(Ast<Token> node) => currentShifting.Children.Push(node);
-
-        public Expression Pop() => currentReducing.Children.Dequeue();
-
         public Scope EndScope() => CurrentScope = CurrentScope.Parent;
 
-        public Expression Compile()
+        public Expression Compile(Ast<Token> node)
         {
-            if(ListComponent == null)
-            {
-                throw new UnregisteredTokenError("ListComponent is null");
-            }
-
-            for(;;)
-            {
-                if(Reduce())
-                {
-                    continue;
-                }
-
-                if(shifting.Count == 0)
-                {
-                    break;
-                }
-
-                Shift();
-            }
-
-            if(reducing.Count != 0)
-            {
-                throw new IncompleteCompilationError("Compilation finished but some nodes were not reduced.");
-            }
-
-            return BuildOutputExpression();
+            var body = node.Accept(this);
+            body = CurrentScope.CompileBody(body);
+            var setCurrentCallFrame = Expression.Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
+            return Expression.TryFinally(
+                Expression.Block(
+                    setCurrentCallFrame,
+                    body
+                ),
+                CallFrame.Expressions.Pop()
+            );
         }
-        
+
         public Expression Visit(Ast<Token> node)
         {
             var previousNode = CurrentNode;
             CurrentNode = node;
-            var expression = GetComponentOrThrow(node).Compile();
+            var component = GetComponentOrThrow(node);
+            var expression = component.Compile();
             CurrentNode = previousNode;
             return expression;
-        }
-        
-        private bool Reduce()
-        {
-            var canReduce = reducing.Count != 0 && reducing.Peek().CanReduce;
-            if(!canReduce)
-            {
-                return false;
-            }
-
-            try
-            {
-                currentReducing = reducing.Pop();
-                CurrentNode = currentReducing.Node;
-
-                var expression = currentReducing.Component.Reduce();
-
-                if(currentReducing.Children.Count != 0)
-                {
-                    throw new IncompleteCompilationError("More nodes were shifted than needed.");
-                }
-
-                StoreReduced(expression);
-                return true;
-            }
-            finally
-            {
-                currentReducing = null;
-                CurrentNode = null;
-            }
-        }
-
-        private void StoreReduced(Expression expression)
-        {
-            if(reducing.Count == 0)
-            {
-                outputs.Enqueue(expression);
-            }
-            else
-            {
-                reducing.Peek().Children.Enqueue(expression);
-            }
-        }
-
-        private void Shift()
-        {
-            try
-            {
-                currentShifting = shifting.Pop();
-                CurrentNode = currentShifting.Node;
-
-                var component = GetComponentOrThrow(CurrentNode);
-                component.Shift();
-
-                ShiftChildren(currentShifting.Children);
-
-                var childCount = currentShifting.Children.Count;
-                var reducingState = new ReduceState(CurrentNode, component, childCount);
-                reducing.Push(reducingState);
-            }
-            finally
-            {
-                currentShifting = null;
-                CurrentNode = null;
-            }
         }
 
         private CompilerComponent GetComponentOrThrow(Ast<Token> node)
@@ -267,37 +169,6 @@ namespace Mint.Compilation
             }
 
             throw new UnregisteredTokenError(type.ToString());
-        }
-
-        private void ShiftChildren(IEnumerable<Ast<Token>> items)
-        {
-            foreach(var child in items)
-            {
-                shifting.Push(new ShiftState(child));
-            }
-        }
-
-        private Expression BuildOutputExpression()
-        {
-            var body = BuildBodyExpression();
-            body = CurrentScope.CompileBody(body);
-            var setCurrentCallFrame = Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
-            return TryFinally(
-                Block(
-                    setCurrentCallFrame,
-                    body
-                ),
-                CallFrame.Expressions.Pop()
-            );
-        }
-
-        private Expression BuildBodyExpression()
-        {
-            var body = outputs.Count == 0 ? NilClass.Expressions.Instance
-                 : outputs.Count > 1 ? Block(outputs)
-                 : outputs.Peek();
-            outputs.Clear();
-            return body;
         }
     }
 }

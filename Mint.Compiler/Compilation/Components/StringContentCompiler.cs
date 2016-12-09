@@ -12,9 +12,9 @@ namespace Mint.Compilation.Components
         public StringContentCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => Constant(ReduceContent(), typeof(iObject));
+        public override Expression Compile() => Constant(CompileContent(), typeof(iObject));
 
-        protected String ReduceContent() => new String(Content);
+        protected String CompileContent() => new String(Content);
 
         private string Dedent(string content)
         {

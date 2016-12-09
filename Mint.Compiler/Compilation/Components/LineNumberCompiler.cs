@@ -7,7 +7,7 @@ namespace Mint.Compilation.Components
         public LineNumberCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() =>
+        public override Expression Compile() =>
             Expression.Constant(new Fixnum(Node.Value.Location.StartLine), typeof(iObject));
     }
 }

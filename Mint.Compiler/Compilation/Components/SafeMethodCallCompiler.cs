@@ -8,10 +8,10 @@ namespace Mint.Compilation.Components
         public SafeMethodCallCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             var left = GetLeftExpression();
-            var arguments = PopArguments();
+            var arguments = CompileArguments();
             var methodName = new Symbol(MethodName);
             var visibility = GetVisibility();
 

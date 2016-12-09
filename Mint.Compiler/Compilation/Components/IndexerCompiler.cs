@@ -16,35 +16,21 @@ namespace Mint.Compilation.Components
         public IndexerCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
+        public override Expression Compile()
         {
-            Push(LeftNode);
-            PushArguments();
-        }
-
-        private void PushArguments()
-        {
-            foreach(var argument in ArgumentsNode)
-            {
-                Push(argument);
-            }
-        }
-
-        public override Expression Reduce()
-        {
-            var left = Pop();
-            var arguments = PopArguments();
+            var left = LeftNode.Accept(Compiler);
+            var arguments = CompileArguments();
 
             var visibility = LeftNode.GetVisibility();
             return CompilerUtils.Call(left, Symbol.AREF, visibility, arguments);
         }
 
-        protected InvocationArgument[] PopArguments()
+        protected InvocationArgument[] CompileArguments()
         {
             return (
                 from astArgument in ArgumentsNode
-                select AsArgumentKind(astArgument.Value.Type) into kind
-                let argument = Pop()
+                let argument = astArgument.Accept(Compiler)
+                let kind = AsArgumentKind(astArgument.Value.Type)
                 select new InvocationArgument(kind, argument)
             ).ToArray();
         }

@@ -11,18 +11,18 @@ namespace Mint.UnitTests
     [TestFixture]
     internal class CompilationTests
     {
-        public static Compiler CreateCompiler(string name, string fragment, CallFrame frame = null)
+        public static Compiler CreateCompiler(string name, CallFrame frame = null)
         {
             name = $"(CompilationTests.{name})";
             frame = frame ?? new CallFrame(new Object());
-            var ast = Parser.ParseString(name, fragment);
-            return new Compiler(name, ast, frame);
+            return new Compiler(name, frame);
         }
 
         public static iObject Eval(string code, CallFrame frame = null, [CallerMemberName] string name = "(eval)")
         {
-            var compiler = CreateCompiler(name, code, frame);
-            var body = compiler.Compile();
+            var ast = Parser.ParseString(name, code);
+            var compiler = CreateCompiler(name, frame);
+            var body = compiler.Compile(ast);
             var lambda = Expression.Lambda<Func<iObject>>(body);
             var function = lambda.Compile();
             return function();

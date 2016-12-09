@@ -1,31 +1,31 @@
 ﻿using System.Linq.Expressions;
 using Mint.Compilation.Scopes;
-using static System.Linq.Expressions.Expression;
+using Mint.Parse;
 using static Mint.Parse.TokenType;
 
 namespace Mint.Compilation.Components
 {
     internal class WhileCompiler : CompilerComponentBase
     {
+        private Ast<Token> ConditionNode => Node[0];
+
+        private Ast<Token> BodyNode => Node[1];
+
         public WhileCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
+        public override Expression Compile()
         {
             BeginScope();
-            base.Shift();
-        }
 
-        public override Expression Reduce()
-        {
             try
             {
-                var condition = Pop();
-                var body = Pop();
+                var condition = ConditionNode.Accept(Compiler);
+                var body = BodyNode.Accept(Compiler);
 
                 condition = ToBool(condition);
 
-                return Reduce(condition, body);
+                return Compile(condition, body);
             }
             finally
             {
@@ -33,10 +33,7 @@ namespace Mint.Compilation.Components
             }
         }
 
-        private void BeginScope()
-        {
-            Compiler.CurrentScope = new LoopScope(Compiler);
-        }
+        private void BeginScope() => Compiler.CurrentScope = new LoopScope(Compiler);
 
         private Expression ToBool(Expression condition)
         {
@@ -49,7 +46,7 @@ namespace Mint.Compilation.Components
             return condition;
         }
 
-        protected virtual Expression Reduce(Expression condition, Expression body)
+        protected virtual Expression Compile(Expression condition, Expression body)
         {
             var scope = Compiler.CurrentScope;
 

@@ -23,22 +23,16 @@ namespace Mint.Compilation.Components
             instance = Variable(typeof(iObject), "instance");
         }
 
-        public override void Shift()
+        public override Expression Compile()
         {
-            Push(LeftNode[0]);
-            Push(RightNode);
-        }
-
-        public override Expression Reduce()
-        {
-            var left = Pop();
-            Right = Pop();
+            var left = LeftNode[0].Accept(Compiler);
+            Right = RightNode.Accept(Compiler);
 
             return Block(
                 typeof(iObject),
                 new[] { instance },
                 Assign(instance, left),
-                base.Reduce()
+                base.Compile()
             );
         }
 

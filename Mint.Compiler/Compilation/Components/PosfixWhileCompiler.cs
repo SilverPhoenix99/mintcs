@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
@@ -8,7 +7,7 @@ namespace Mint.Compilation.Components
         public PosfixWhileCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression Reduce(Expression condition, Expression body)
+        protected override Expression Compile(Expression condition, Expression body)
         {
             var scope = Compiler.CurrentScope;
 

@@ -7,8 +7,6 @@ namespace Mint.Compilation.Components
         public SelfCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce() => Compiler.CurrentScope.Instance;
-
         public override Expression Compile() => Compiler.CurrentScope.Instance;
     }
 }

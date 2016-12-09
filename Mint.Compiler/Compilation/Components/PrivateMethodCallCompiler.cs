@@ -21,7 +21,7 @@ namespace Mint.Compilation.Components
         public PrivateMethodCallCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
+        public override Expression Compile()
         {
             var blockNode = ArgumentsNode.FirstOrDefault(_ => _.Value.Type == kDO || _.Value.Type == kLBRACE2);
 
@@ -31,34 +31,26 @@ namespace Mint.Compilation.Components
                 throw new SyntaxError(Compiler.Filename, line, "both block arg and actual block given");
             }
 
-            foreach(var argument in Arguments)
-            {
-                Push(argument);
-            }
-        }
-
-        public override Expression Reduce()
-        {
             var instance = GetLeftExpression();
-            var arguments = PopArguments();
+            var arguments = CompileArguments();
             var methodName = new Symbol(MethodName);
             var visibility = GetVisibility();
 
             return CompilerUtils.Call(instance, methodName, visibility, arguments);
         }
 
+        protected InvocationArgument[] CompileArguments() => Arguments.Select(CreateInvocationArgument).ToArray();
+
+        private InvocationArgument CreateInvocationArgument(Ast<Token> argument)
+        {
+            var kind = argument.Value.Type.GetArgumentKind();
+            var expression = argument.Accept(Compiler);
+            return new InvocationArgument(kind, expression);
+        }
+
         protected virtual Expression GetLeftExpression() => Compiler.CurrentScope.Instance;
 
         protected virtual Visibility GetVisibility() => Visibility.Private;
-
-        protected InvocationArgument[] PopArguments()
-        {
-            var count = Arguments.Count();
-            var arguments = Enumerable.Range(0, count).Select(_ => Pop());
-            var types = Arguments.Select(_ => _.Value.Type);
-
-            return types.Zip(arguments, CreateInvocationArgument).ToArray();
-        }
 
         private static InvocationArgument CreateInvocationArgument(TokenType type, Expression argument) =>
             new InvocationArgument(type.GetArgumentKind(), argument);

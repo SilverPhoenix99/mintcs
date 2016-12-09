@@ -12,7 +12,7 @@ namespace Mint.Compilation.Components
         public IdentifierCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             var variable = Compiler.CurrentScope.FindVariable(VariableName);
 

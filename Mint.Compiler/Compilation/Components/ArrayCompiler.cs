@@ -8,10 +8,9 @@ namespace Mint.Compilation.Components
         public ArrayCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var count = Node.List.Count;
-            var elements = Enumerable.Range(0, count).Select(_ => Pop());
+            var elements = Node.Select(_ => _.Accept(Compiler));
             var array = CompilerUtils.NewArray(elements.ToArray());
             return array.Cast<iObject>();
         }

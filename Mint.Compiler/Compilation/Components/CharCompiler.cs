@@ -9,9 +9,9 @@ namespace Mint.Compilation.Components
         public CharCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var first = Constant(ReduceContent());
+            var first = Constant(CompileContent());
             var count = Node.List.Count;
 
             if(count == 0)
@@ -19,7 +19,7 @@ namespace Mint.Compilation.Components
                 return first.Cast<iObject>();
             }
 
-            var contents = Enumerable.Range(0, count).Select(_ => Pop());
+            var contents = Node.Select(_ => _.Accept(Compiler));
             return CompilerUtils.StringConcat(first, contents);
         }
     }

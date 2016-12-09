@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Mint.MethodBinding;
+using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
@@ -11,12 +12,14 @@ namespace Mint.Compilation.Components
 
         protected virtual Type ElementType => typeof(Array);
 
+        private Ast<Token> Operand => Node[0];
+
         public SplatCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var operand = Pop();
+            var operand = Operand.Accept(Compiler);
             var convertCall = CompilerUtils.Call(operand, MethodName, Visibility.Private);
 
             return Condition(

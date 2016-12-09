@@ -11,13 +11,7 @@ namespace Mint.Compilation.Components
         public PublicMethodCallCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
-        {
-            Push(LeftNode);
-            base.Shift();
-        }
-
-        protected override Expression GetLeftExpression() => Pop();
+        protected override Expression GetLeftExpression() => LeftNode.Accept(Compiler);
 
         protected override Visibility GetVisibility() => LeftNode.GetVisibility();
     }

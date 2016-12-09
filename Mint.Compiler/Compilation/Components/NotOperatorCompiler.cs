@@ -10,9 +10,9 @@ namespace Mint.Compilation.Components
         public NotOperatorCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var instance = Pop();
+            var instance = Operand.Accept(Compiler);
             var visibility = Operand.GetVisibility();
             return CompilerUtils.Call(instance, Symbol.NOT_OP, visibility);
         }

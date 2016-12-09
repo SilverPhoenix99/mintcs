@@ -9,24 +9,6 @@ namespace Mint.Compilation.Components
         public ListCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
-        {
-            var count = Node.List.Count;
-
-            if(count == 0)
-            {
-                return NilClass.Expressions.Instance;
-            }
-
-            if(count == 1)
-            {
-                return Pop();
-            }
-
-            var body = Enumerable.Range(0, count).Select(_ => Pop());
-            return Block(typeof(iObject), body);
-        }
-
         public override Expression Compile()
         {
             switch(Node.List.Count)

@@ -8,14 +8,6 @@ namespace Mint.Compilation.Components
     {
         public FloatCompiler(Compiler compiler) : base(compiler)
         { }
-        
-        public override Expression Reduce()
-        {
-            var token = Node.Value;
-            var str = token.Value.Replace("_", "");
-            var val = Convert.ToDouble(str, CultureInfo.InvariantCulture);
-            return Expression.Constant(new Float(val), typeof(iObject));
-        }
 
         public override Expression Compile()
         {

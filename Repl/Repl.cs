@@ -58,8 +58,8 @@ namespace Mint
 
         private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, CallFrame topLevelFrame)
         {
-            var compiler = new Compiler("(imt)", ast, topLevelFrame);
-            var body = compiler.Compile();
+            var compiler = new Compiler("(imt)", topLevelFrame);
+            var body = compiler.Compile(ast);
             return Expression.Lambda<Func<iObject>>(body);
         }
 

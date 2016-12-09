@@ -8,7 +8,7 @@ namespace Mint.Compilation.Components
         public InstanceVariableCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
             var instance = Compiler.CurrentScope.Instance;
             var variableName = Constant(new Symbol(Node.Value.Value));

@@ -8,15 +8,15 @@ namespace Mint.Compilation.Components
         public ComplexSymbolCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
+        public override Expression Compile()
         {
-            var count = Node.List.Count;
-            var contents = Enumerable.Range(0, count).Select(_ => Pop());
-
             var first = String.Expressions.New();
+            var contents = Node.Select(_ => _.Accept(Compiler));
+
             var body = CompilerUtils.StringConcat(first, contents);
             body = ((UnaryExpression) body).Operand;
             body = body.Cast<string>();
+
             var symbol = Symbol.Expressions.New(body);
             return symbol.Cast<iObject>();
         }

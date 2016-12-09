@@ -11,12 +11,10 @@ namespace Mint.Compilation.Components
         public HashCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override Expression Reduce()
-        {
-            return Node.List.Count == 0 ? Hash.Expressions.New().Cast<iObject>() : ReduceElements();
-        }
+        public override Expression Compile() =>
+            Node.List.Count == 0 ? Hash.Expressions.New().Cast<iObject>() : CompileElements();
 
-        private Expression ReduceElements()
+        private Expression CompileElements()
         {
             var hash = Variable(typeof(Hash), "hash");
 
@@ -37,15 +35,12 @@ namespace Mint.Compilation.Components
             );
         }
 
-        private IEnumerable<Expression> GetInsertions(Expression hash)
-        {
-            var elements = Enumerable.Range(0, Node.List.Count).Select(_ => Pop()).ToArray();
-            var types = Node.List.Select(_ => _.Value.Type);
-            return elements.Zip(types, (element, type) => Insert(hash, element, type));
-        }
+        private IEnumerable<Expression> GetInsertions(Expression hash) => Node.Select(_ => Insert(hash, _));
 
-        private static Expression Insert(Expression hash, Expression element, TokenType type)
+        private Expression Insert(Expression hash, Ast<Token> node)
         {
+            var element = node.Accept(Compiler);
+            var type = node.Value.Type;
             return type == TokenType.kDSTAR ? MergeHash(hash, element) : MergeAssoc(hash, element);
         }
 
@@ -64,7 +59,7 @@ namespace Mint.Compilation.Components
             var key = elements[0];
             var value = elements[1];
 
-            // TODO give warning on duplicat keys
+            // TODO give warning on duplicate keys
             // warning: key <key> is duplicated and overwritten on line <line>
 
             // hash[$elements[0]] = $elements[1];

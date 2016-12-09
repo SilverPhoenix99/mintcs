@@ -22,7 +22,7 @@ namespace Mint.Compilation.Components
             this.operatorCompiler = operatorCompiler;
         }
 
-        public override Expression Reduce() => operatorCompiler.Reduce(this);
+        public override Expression Compile() => operatorCompiler.Reduce(this);
 
         public abstract Expression Setter(Expression rightHandSide);
     }

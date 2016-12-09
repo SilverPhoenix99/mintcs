@@ -9,28 +9,21 @@ namespace Mint.Compilation.Components
         public StringCompiler(Compiler compiler) : base(compiler)
         { }
 
-        public override void Shift()
+        public override Expression Compile()
         {
-            foreach(var child in Node.List)
+            foreach(var child in Node.Where(_ => _.Value?.Type == tSTRING_CONTENT))
             {
-                if(child.Value?.Type == tSTRING_CONTENT)
-                {
-                    // Shift: copy dedent value to children if dedents property is set in Node
-                    child.Value.MergeProperties(Node.Value);
-                }
-                Push(child);
+                // Shift: copy dedent value to children if dedents property is set in Node
+                child.Value.MergeProperties(Node.Value);
             }
-        }
 
-        public override Expression Reduce()
-        {
             if(IsSimpleContent())
             {
-                return Pop();
+                return Node[0].Accept(Compiler);
             }
 
             var count = Node.List.Count;
-            var contents = Enumerable.Range(0, count).Select(_ => Pop());
+            var contents = Node.Select(_ => _.Accept(Compiler));
             return CompilerUtils.StringConcat(String.Expressions.New(), contents);
         }
 
