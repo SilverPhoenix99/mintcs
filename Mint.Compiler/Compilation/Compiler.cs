@@ -132,16 +132,13 @@ namespace Mint.Compilation
 
         public Expression Compile(Ast<Token> node)
         {
+            var setCurrentFrame = Expression.Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
+
             var body = node.Accept(this);
             body = CurrentScope.CompileBody(body);
-            var setCurrentCallFrame = Expression.Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
-            return Expression.TryFinally(
-                Expression.Block(
-                    setCurrentCallFrame,
-                    body
-                ),
-                CallFrame.Expressions.Pop()
-            );
+            body = Expression.Block(setCurrentFrame, body);
+
+            return Expression.TryFinally(body, CallFrame.Expressions.Pop());
         }
 
         public Expression Visit(Ast<Token> node)

@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components.Operators
 {
     internal class GenericOpAssignOperator : AssignOperator
     {
-        public Expression Reduce(AssignCompiler component)
+        public Expression Compile(AssignCompiler component)
         {
             var instance = component.Getter;
             var methodName = component.Operator;

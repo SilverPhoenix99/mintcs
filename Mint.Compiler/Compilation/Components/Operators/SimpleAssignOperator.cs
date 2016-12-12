@@ -4,6 +4,6 @@ namespace Mint.Compilation.Components.Operators
 {
     internal class SimpleAssignOperator : AssignOperator
     {
-        public Expression Reduce(AssignCompiler component) => component.Setter(component.Right);
+        public Expression Compile(AssignCompiler component) => component.Setter(component.Right);
     }
 }

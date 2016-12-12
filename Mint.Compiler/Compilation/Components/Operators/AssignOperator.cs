@@ -4,6 +4,6 @@ namespace Mint.Compilation.Components.Operators
 {
     internal interface AssignOperator
     {
-        Expression Reduce(AssignCompiler component);
+        Expression Compile(AssignCompiler component);
     }
 }

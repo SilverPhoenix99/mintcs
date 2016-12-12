@@ -4,6 +4,7 @@ using Mint.Parse;
 using System.Linq;
 using System.Linq.Expressions;
 using static System.Linq.Expressions.Expression;
+using System.Collections.Generic;
 
 namespace Mint.Compilation.Components
 {
@@ -35,9 +36,8 @@ namespace Mint.Compilation.Components
             var arguments = CompileArguments();
             Right = RightNode.Accept(Compiler);
 
-            var argumentVars = CreateArgumentVariables();
-
             var argumentKinds = ArgumentsNode.Select(node => node.Value.Type.GetArgumentKind());
+            var argumentVars = CreateArgumentVariables();
 
             invocationArguments =
                 argumentKinds.Zip(argumentVars, (kind, arg) => new InvocationArgument(kind, arg)).ToArray();
@@ -55,7 +55,7 @@ namespace Mint.Compilation.Components
             );
         }
 
-        private Expression[] CompileArguments() => ArgumentsNode.Select(_ => _.Accept(Compiler)).ToArray();
+        private IEnumerable<Expression> CompileArguments() => ArgumentsNode.Select(_ => _.Accept(Compiler));
 
         private ParameterExpression[] CreateArgumentVariables() =>
             Enumerable.Range(0, ArgumentCount).Select(i => Variable(typeof(iObject), "arg" + i)).ToArray();

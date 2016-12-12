@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components.Operators
 {
     internal class OrAssignOperator : AssignOperator
     {
-        public Expression Reduce(AssignCompiler component)
+        public Expression Compile(AssignCompiler component)
         {
             var getter = Variable(typeof(iObject), "getter");
             var setter = component.Setter(component.Right);
