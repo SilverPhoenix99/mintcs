@@ -101,6 +101,7 @@ namespace Mint.Compilation
             Register(new MethodCallSelector(this), kDOT);
             Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
             Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
+            Register(new ConstantResolutionSelector(this), kCOLON2);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)

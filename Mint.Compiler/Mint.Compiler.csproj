@@ -136,6 +136,8 @@
     <Compile Include="Compilation\Scopes\TopLevelScope.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
+    <Compile Include="Compilation\Components\ConstantResolutionCompiler.cs" />
+    <Compile Include="Compilation\Selectors\ConstantResolutionSelector.cs" />
     <Compile Include="Compilation\Selectors\MethodCallSelector.cs" />
     <Compile Include="Compilation\Selectors\AssignSelector.cs" />
     <Compile Include="Compilation\Selectors\ModuleSelector.cs" />
