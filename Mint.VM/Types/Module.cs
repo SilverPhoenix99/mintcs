@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Mint.Reflection;
+using System.Linq.Expressions;
 
 namespace Mint
 {
@@ -30,7 +33,7 @@ namespace Mint
 
         protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
 
-        protected IDictionary<Symbol, ValueCache> Constants { get; }
+        protected IDictionary<Symbol, iObject> Constants { get; }
 
         protected internal IList<Module> Included { get; protected set; }
 
@@ -51,7 +54,7 @@ namespace Mint
             this.container = container ?? Class.OBJECT;
             FullName = CalculateFullName(name?.ToString(), this.container);
             Methods = new Dictionary<Symbol, MethodBinder>();
-            Constants = new Dictionary<Symbol, ValueCache>();
+            Constants = new Dictionary<Symbol, iObject>();
             Included = new List<Module>();
             Prepended = new List<Module>();
             Subclasses = new List<WeakReference<Class>>();
@@ -177,46 +180,37 @@ namespace Mint
             throw new NotImplementedException(nameof(IsConstantDefined));
         }
 
-        public Module GetModuleOrThrow(Symbol name, IEnumerable<Module> nesting = null)
-        {
-            var module = GetModule(name, nesting);
-            if(module == null)
-            {
-                throw new TypeError($"{name} is not a module");
-            }
+        public iObject GetConstant(Symbol name, [Optional] bool inherit = true) => GetConstant(name, null, inherit);
 
-            return module;
+        public iObject GetConstant(String path, [Optional] bool inherit = true)
+        {
+            throw new NotImplementedException();
         }
 
-        public Module GetOrCreateModule(Symbol name, IEnumerable<Module> nesting = null) =>
-            GetModule(name, nesting) ?? SetConstant(name, new Module(name, this)) as Module;
-
-        private Module GetModule(Symbol name, IEnumerable<Module> nesting)
+        public iObject GetConstant(Symbol name, IEnumerable<Module> nesting, bool inherit = true)
         {
-            var constant = GetConstant(name, nesting);
+            var constant = TryGetConstant(name, nesting, inherit);
+
             if(constant == null)
             {
-                var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
-                throw new NameError($"uninitialized constant {fullName}");
+                throw UninitializedConstant(name);
             }
 
-            return constant as Module;
+            return constant;
         }
 
-        public iObject GetConstant(Symbol name) => GetConstant(name, null);
-
-        private iObject GetConstant(Symbol name, IEnumerable<Module> nesting)
+        public iObject TryGetConstant(Symbol name, IEnumerable<Module> nesting, bool inherit = true)
         {
             ValidateConstantName(name.Name);
 
-            IEnumerable<Module> modules = Ancestors;
+            IEnumerable<Module> modules = inherit ? Ancestors : new[] { this };
             if(nesting != null)
             {
                 modules = nesting.Concat(modules).Distinct();
             }
 
             var module = modules.FirstOrDefault(_ => _.IsConstantDefined(name, false));
-            return (iObject) module?.Constants[name].Value;
+            return module?.Constants[name];
         }
 
         private static void ValidateConstantName(string name)
@@ -240,27 +234,62 @@ namespace Mint
             return value;
         }
 
-        protected internal ValueCache GetConstantCache(Symbol name, Func<object> update = null)
+        private iObject TryGetConstant(Symbol name)
         {
-            return TryGetConstantCache(name) ??
-                (
-                    update != null
-                        ? Constants[name] = new ValueCache(update)
-                        : ThrowUninitializedConstant(name)
-                );
+            iObject constant;
+            Constants.TryGetValue(name, out constant);
+            return constant;
         }
 
-        private ValueCache TryGetConstantCache(Symbol name)
-        {
-            ValueCache cache;
-            Constants.TryGetValue(name, out cache);
-            return cache;
-        }
-
-        private ValueCache ThrowUninitializedConstant(Symbol name)
+        private Exception UninitializedConstant(Symbol name)
         {
             var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
-            throw new NameError($"uninitialized constant {fullName}");
+            return new NameError($"uninitialized constant {fullName}");
+        }
+
+        public static class Reflection
+        {
+            public static readonly MethodInfo GetConstant = Reflector<Module>.Method(
+                _ => _.GetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
+            );
+
+            public static readonly MethodInfo TryGetConstant = Reflector<Module>.Method(
+                _ => _.TryGetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
+            );
+
+            public static readonly MethodInfo SetConstant = Reflector<Module>.Method(
+                _ => _.SetConstant(default(Symbol), default(iObject))
+            );
+        }
+
+        public static class Expressions
+        {
+            public static MethodCallExpression GetConstant(Expression module,
+                                                           Expression name,
+                                                           Expression inherit = null,
+                                                           Expression nesting = null) =>
+                Expression.Call(
+                    module,
+                    Reflection.GetConstant,
+                    name,
+                    nesting ?? Expression.Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
+                    inherit ?? Expression.Constant(true)
+                );
+
+            public static MethodCallExpression TryGetConstant(Expression module,
+                                                              Expression name,
+                                                              Expression inherit = null,
+                                                              Expression nesting = null) =>
+                Expression.Call(
+                    module,
+                    Reflection.TryGetConstant,
+                    name,
+                    nesting ?? Expression.Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
+                    inherit ?? Expression.Constant(true)
+                );
+
+            public static MethodCallExpression SetConstant(Expression module, Expression name, Expression value) =>
+                Expression.Call(module, Reflection.SetConstant, name, value);
         }
     }
 }

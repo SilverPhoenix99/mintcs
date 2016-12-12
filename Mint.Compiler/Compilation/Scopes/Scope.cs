@@ -13,6 +13,8 @@ namespace Mint.Compilation.Scopes
 
         Expression Instance { get; }
 
+        Expression Module { get; }
+
         ScopeVariable AddNewVariable(Symbol name, ParameterExpression local = null);
 
         ScopeVariable AddIndexedVariable(Symbol name);

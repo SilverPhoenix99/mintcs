@@ -335,7 +335,7 @@ cname :
     {
         throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class/module name must be CONSTANT");
     }
-  | tCONSTANT { $1.Value.Properties["module_name"] = true; }
+  | tCONSTANT
 ;
 
 cpath :
