@@ -20,6 +20,9 @@ namespace Mint.Compilation.Selectors
         { }
 
         public override CompilerComponent Select() =>
-            Right.Value.Type == TokenType.tCONSTANT ? ConstantResolutionCompiler : MethodCallCompiler;
+            Right.Value.Type == TokenType.tCONSTANT
+            && Node.List.Count == 2 // meaning, no arguments
+                ? ConstantResolutionCompiler
+                : MethodCallCompiler;
     }
 }
