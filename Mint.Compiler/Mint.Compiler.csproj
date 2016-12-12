@@ -60,6 +60,7 @@
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\ComplexSymbolCompiler.cs" />
+    <Compile Include="Compilation\Components\ConstantCompiler.cs" />
     <Compile Include="Compilation\Components\DivisionCompiler.cs" />
     <Compile Include="Compilation\Components\EqualCompiler.cs" />
     <Compile Include="Compilation\Components\FalseCompiler.cs" />

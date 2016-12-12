@@ -52,6 +52,8 @@ namespace Mint.MethodBinding.Methods
 
             public static readonly PropertyInfo Locals = Reflector<CallFrame>.Property(_ => _.Locals);
 
+            public static readonly PropertyInfo Module = Reflector<CallFrame>.Property(_ => _.Module);
+
             public static readonly PropertyInfo IDictionary_Indexer =
                 Reflector<IDictionary<Symbol, LocalVariable>>.Property(_ => _[default(Symbol)]);
 
@@ -71,6 +73,9 @@ namespace Mint.MethodBinding.Methods
 
             public static MemberExpression Locals(Expression callFrame) =>
                 Property(callFrame, Reflection.Locals);
+
+            public static MemberExpression Module(Expression callFrame) =>
+                Property(callFrame, Reflection.Module);
 
             public static MethodCallExpression AddLocal(Expression callFrame, Expression localVariable) =>
                 Call(callFrame, Reflection.AddLocal, localVariable);
