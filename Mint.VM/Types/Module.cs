@@ -230,8 +230,7 @@ namespace Mint
             }
 
             ValidateConstantName(name.Name);
-
-            return value;
+            return Constants[name] = value;
         }
 
         private iObject TryGetConstant(Symbol name)

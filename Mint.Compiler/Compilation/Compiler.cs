@@ -95,6 +95,7 @@ namespace Mint.Compilation
             Register(new InstanceVariableCompiler(this), tIVAR);
             Register(new SafeMethodCallCompiler(this), kANDDOT);
             Register(new WhileCompiler(this), kWHILE, kUNTIL);
+            Register(new ConstantCompiler(this), tCONSTANT);
 
             Register(new SymbolSelector(this), tSYMBEG);
             Register(new MethodCallSelector(this), kDOT);
