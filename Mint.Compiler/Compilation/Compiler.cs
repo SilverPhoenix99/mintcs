@@ -13,12 +13,13 @@ namespace Mint.Compilation
     public partial class Compiler : AstVisitor<Token, Expression>
     {
         private readonly IDictionary<TokenType, ComponentSelector> selectors;
+        private readonly Stack<Scope> scopes;
 
         public string Filename { get; }
 
         public CompilerComponent ListComponent { get; set; }
 
-        public Scope CurrentScope { get; set; }
+        public Scope CurrentScope => scopes.Peek();
 
         public Ast<Token> CurrentNode { get; private set; }
 
@@ -27,9 +28,10 @@ namespace Mint.Compilation
             if(topLevelFrame == null) throw new ArgumentNullException(nameof(topLevelFrame));
 
             selectors = new Dictionary<TokenType, ComponentSelector>();
+            scopes = new Stack<Scope>();
             Filename = filename;
             InitializeComponents();
-            CurrentScope = new TopLevelScope(this, topLevelFrame);
+            scopes.Push(new TopLevelScope(this, topLevelFrame));
         }
 
         public Compiler(string filename, iObject instance)
@@ -102,6 +104,7 @@ namespace Mint.Compilation
             Register(new AssignSelector(this), kASSIGN, tOP_ASGN);
             Register(new WhileModSelector(this), kWHILE_MOD, kUNTIL_MOD);
             Register(new ConstantResolutionSelector(this), kCOLON2);
+            Register(new ModuleSelector(this), kMODULE);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)
@@ -130,17 +133,20 @@ namespace Mint.Compilation
             selectors[type] = selector;
         }
 
-        public Scope EndScope() => CurrentScope = CurrentScope.Parent;
+        public void StartScope(Scope scope) => scopes.Push(scope);
+
+        public Scope EndScope() => scopes.Pop();
 
         public Expression Compile(Ast<Token> node)
         {
-            var setCurrentFrame = Expression.Assign(CallFrame.Expressions.Current(), CurrentScope.CallFrame);
-
+            var scope = CurrentScope;
             var body = node.Accept(this);
-            body = CurrentScope.CompileBody(body);
-            body = Expression.Block(setCurrentFrame, body);
+            body = scope.CompileBody(body);
 
-            return Expression.TryFinally(body, CallFrame.Expressions.Pop());
+            return Expression.Block(
+                Expression.Assign(CallFrame.Expressions.Current(), scope.CallFrame),
+                Expression.TryFinally(body, CallFrame.Expressions.Pop())
+            );
         }
 
         public Expression Visit(Ast<Token> node)
@@ -169,5 +175,7 @@ namespace Mint.Compilation
 
             throw new UnregisteredTokenError(type.ToString());
         }
+
+        public IEnumerator<Scope> Scopes() => scopes.GetEnumerator();
     }
 }

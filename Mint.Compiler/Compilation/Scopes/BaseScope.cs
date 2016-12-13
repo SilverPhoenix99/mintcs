@@ -1,9 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Scopes.Variables;
 using static System.Linq.Expressions.Expression;
 using CallFrame_Expressions = Mint.MethodBinding.Methods.CallFrame.Expressions;
-using System.Linq;
 
 namespace Mint.Compilation.Scopes
 {

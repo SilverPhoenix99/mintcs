@@ -33,7 +33,7 @@ namespace Mint.Compilation.Components
             }
         }
 
-        private void BeginScope() => Compiler.CurrentScope = new LoopScope(Compiler);
+        private void BeginScope() => Compiler.StartScope(new LoopScope(Compiler));
 
         private Expression ToBool(Expression condition)
         {

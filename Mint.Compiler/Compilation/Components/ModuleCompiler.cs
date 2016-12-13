@@ -20,7 +20,7 @@ namespace Mint.Compilation.Components
 
 	internal class SimpleNameModuleCompiler : ModuleCompiler
 	{
-        protected virtual Expression Container => CallFrame.Expressions.Module(CallFrame.Expressions.Current());
+        protected virtual Expression Container => Compiler.CurrentScope.Module;
 
 	    public SimpleNameModuleCompiler(Compiler compiler) : base(compiler)
 	    { }
@@ -29,12 +29,12 @@ namespace Mint.Compilation.Components
 	    {
             var name = new Symbol(Name.Value.Value);
 
-            Func<Module, IEnumerable<Module>, Module> f = (mod, nesting) => {
-                var constant = mod.TryGetConstant(name, nesting);
+            Func<Module, IEnumerable<Module>, Module> f = (module, nesting) => {
+                var constant = module.TryGetConstant(name, nesting);
 
                 if(constant == null)
                 {
-                    constant = mod.SetConstant(name, new Module(name, null));
+                    constant = module.SetConstant(name, new Module(name, module));
                 }
                 else if(!(constant is Module))
                 {
@@ -45,10 +45,10 @@ namespace Mint.Compilation.Components
             };
 
             var scope = new ModuleScope(Compiler);
-            var module = scope.Module as ParameterExpression;
-            var header = Assign(module, Invoke(Constant(f), Container, Compiler.CurrentScope.Nesting));
+            var moduleVar = scope.Module as ParameterExpression;
+            var header = Assign(moduleVar, Invoke(Constant(f), Container, Compiler.CurrentScope.Nesting));
 
-            Compiler.CurrentScope = scope;
+            Compiler.StartScope(scope);
 
             try
             {
@@ -69,11 +69,12 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
+            var scope = new ModuleScope(Compiler);
+            Compiler.StartScope(scope);
+
             try
             {
                 // TODO
-
-                Compiler.CurrentScope = new ModuleScope(Compiler);
             }
             finally
             {
@@ -91,11 +92,12 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
+            var scope = new ModuleScope(Compiler);
+            Compiler.StartScope(scope);
+
             try
             {
                 // TODO
-
-                Compiler.CurrentScope = new ModuleScope(Compiler);
             }
             finally
             {
