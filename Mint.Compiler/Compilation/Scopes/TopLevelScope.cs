@@ -15,7 +15,7 @@ namespace Mint.Compilation.Scopes
 
         public override Scope Parent => this;
 
-        public override Expression Nesting => CompilerUtils.EmptyArray<Module>();
+        public override Expression Nesting => null;
 
         public TopLevelScope(Compiler compiler, CallFrame callFrame)
             : base(compiler, callFrame == null ? null : Constant(callFrame))

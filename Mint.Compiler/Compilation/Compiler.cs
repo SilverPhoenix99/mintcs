@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Components;
 using Mint.Compilation.Scopes;
@@ -176,6 +177,13 @@ namespace Mint.Compilation
             throw new UnregisteredTokenError(type.ToString());
         }
 
-        public IEnumerator<Scope> Scopes() => scopes.GetEnumerator();
+        public Expression BuildNesting()
+        {
+            var nestingExpressions = scopes.Select(_ => _.Nesting).Where(_ => _ != null).ToArray();
+
+            return nestingExpressions.Length == 0
+                 ? Expression.Constant(System.Array.Empty<Module>())
+                 : Expression.NewArrayInit(typeof(Module), nestingExpressions).Cast<IEnumerable<Module>>();
+        }
     }
 }

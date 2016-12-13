@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using Mint.Reflection;
 using System.Linq.Expressions;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint
 {
@@ -233,7 +234,7 @@ namespace Mint
             return Constants[name] = value;
         }
 
-        private iObject TryGetConstant(Symbol name)
+        protected iObject TryGetConstant(Symbol name)
         {
             iObject constant;
             Constants.TryGetValue(name, out constant);
@@ -244,6 +245,32 @@ namespace Mint
         {
             var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
             return new NameError($"uninitialized constant {fullName}");
+        }
+
+        protected Module GetOrCreateModule(Symbol name, IEnumerable<Module> nesting)
+        {
+            var constant = TryGetConstant(name, nesting);
+
+            if(constant == null)
+            {
+                constant = SetConstant(name, new Module(name, this));
+            }
+            else if(!(constant is Module))
+            {
+                throw new TypeError(constant.Inspect() + " is not a module");
+            }
+
+            return (Module) constant;
+        }
+
+        protected static Module GetModuleOrThrow(iObject parent, Symbol name, IEnumerable<Module> nesting)
+        {
+            if(parent is Module)
+            {
+                return ((Module) parent).GetOrCreateModule(name, nesting);
+            }
+
+            throw new TypeError($"{parent.Inspect()} is not a class/module");
         }
 
         public static class Reflection
@@ -259,6 +286,14 @@ namespace Mint
             public static readonly MethodInfo SetConstant = Reflector<Module>.Method(
                 _ => _.SetConstant(default(Symbol), default(iObject))
             );
+
+            public static readonly MethodInfo GetOrCreateModule = Reflector<Module>.Method(
+                _ => _.GetOrCreateModule(default(Symbol), default(IEnumerable<Module>))
+            );
+
+            public static readonly MethodInfo GetModuleOrThrow = Reflector.Method(
+                () => GetModuleOrThrow(default(iObject), default(Symbol), default(IEnumerable<Module>))
+            );
         }
 
         public static class Expressions
@@ -267,28 +302,38 @@ namespace Mint
                                                            Expression name,
                                                            Expression inherit = null,
                                                            Expression nesting = null) =>
-                Expression.Call(
+                Call(
                     module,
                     Reflection.GetConstant,
                     name,
-                    nesting ?? Expression.Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
-                    inherit ?? Expression.Constant(true)
+                    nesting ?? Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
+                    inherit ?? Constant(true)
                 );
 
             public static MethodCallExpression TryGetConstant(Expression module,
                                                               Expression name,
                                                               Expression inherit = null,
                                                               Expression nesting = null) =>
-                Expression.Call(
+                Call(
                     module,
                     Reflection.TryGetConstant,
                     name,
-                    nesting ?? Expression.Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
-                    inherit ?? Expression.Constant(true)
+                    nesting ?? Constant(System.Array.Empty<Module>(), typeof(IEnumerable<Module>)),
+                    inherit ?? Constant(true)
                 );
 
             public static MethodCallExpression SetConstant(Expression module, Expression name, Expression value) =>
-                Expression.Call(module, Reflection.SetConstant, name, value);
+                Call(module, Reflection.SetConstant, name, value);
+
+            public static MethodCallExpression GetOrCreateModule(Expression module,
+                                                                 Expression name,
+                                                                 Expression nesting = null) =>
+                Call(module, Reflection.GetOrCreateModule, name, nesting ?? Constant(System.Array.Empty<Module>()));
+
+            public static MethodCallExpression GetModuleOrThrow(Expression parent,
+                                                                Expression name,
+                                                                Expression nesting = null) =>
+                Call(Reflection.GetModuleOrThrow, parent, name, nesting ?? Constant(System.Array.Empty<Module>()));
         }
     }
 }
