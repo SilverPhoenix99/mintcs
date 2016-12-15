@@ -1,4 +1,5 @@
-﻿using Mint.Compilation.Components;
+﻿using System;
+using Mint.Compilation.Components;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 
@@ -11,6 +12,8 @@ namespace Mint.Compilation.Selectors
         private ModuleCompiler absoluteName;
 
         private Ast<Token> Name => Node[0];
+
+        private TokenType Type => Name.Value.Type;
 
         private ModuleCompiler SimpleName => simpleName ?? (simpleName = new SimpleNameModuleCompiler(Compiler));
 
@@ -25,10 +28,14 @@ namespace Mint.Compilation.Selectors
 
         public override CompilerComponent Select()
         {
-            var type = Name.Value.Type;
-            return type == kCOLON2 ? RelativeName
-                 : type == kCOLON3 ? AbsoluteName
-                 : SimpleName;
+            switch(Type)
+            {
+                case kCOLON2: return RelativeName;
+                case kCOLON3: return AbsoluteName;
+                case tCONSTANT: return SimpleName;
+                default:
+                    throw new NotImplementedException($"Module compiler for type {Type}");
+            }
         }
     }
 }
