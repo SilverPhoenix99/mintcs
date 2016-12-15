@@ -12,7 +12,7 @@ namespace Mint.Compilation.Components
     {
 		protected virtual Ast<Token> NameNode => Node[0];
 
-        protected virtual Ast<Token> SuperclassNode => HasSuperclass ? Node[1] : null;
+        protected Ast<Token> SuperclassNode => HasSuperclass ? Node[1] : null;
 
         protected bool HasSuperclass => !Node[1].IsList;
 
@@ -85,59 +85,38 @@ namespace Mint.Compilation.Components
 
     internal class SimpleNameClassCompiler : ClassCompiler
     {
-        protected override Expression Container
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        protected override Expression Container => Compiler.CurrentScope.Module;
 
         public SimpleNameClassCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression GetClass()
-        {
-            throw new NotImplementedException();
-        }
+        protected override Expression GetClass() =>
+            Module.Expressions.GetOrCreateClass(Container, Name, CompileSuperclass(), Nesting);
     }
 
-    internal class AbsoluteNameClassCompiler : ClassCompiler
+    internal class AbsoluteNameClassCompiler : SimpleNameClassCompiler
     {
-        protected override Expression Container
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        protected override Ast<Token> NameNode => Node[0][0];
+
+        protected override Expression Container => Constant(Class.OBJECT);
 
         public AbsoluteNameClassCompiler(Compiler compiler) : base(compiler)
         { }
-
-        protected override Expression GetClass()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     internal class RelativeNameClassCompiler : ClassCompiler
     {
-        protected override Expression Container
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        protected Ast<Token> LeftNode => Node[0][0];
+
+        protected override Ast<Token> NameNode => Node[0][1];
+
+        protected override Expression Container => LeftNode.Accept(Compiler);
 
         public RelativeNameClassCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression GetClass()
-        {
-            throw new NotImplementedException();
-        }
+        protected override Expression GetClass() =>
+            Module.Expressions.GetOrCreateClassWithParentCast(Container, Name, CompileSuperclass(), Nesting);
     }
 
     internal class SingletonClassCompiler : ClassCompiler

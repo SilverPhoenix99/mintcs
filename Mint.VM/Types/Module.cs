@@ -264,7 +264,9 @@ namespace Mint
             return (Module) constant;
         }
 
-        protected static Module GetModuleOrThrow(iObject parent, Symbol name, IEnumerable<Module> nesting)
+        protected static Module GetOrCreateModuleWithParentCast(iObject parent,
+                                                                Symbol name,
+                                                                IEnumerable<Module> nesting)
         {
             if(parent is Module)
             {
@@ -297,6 +299,19 @@ namespace Mint
             return (Class) constant;
         }
 
+        protected static Class GetOrCreateClassWithParentCast(iObject parent,
+                                                               Symbol name,
+                                                               Class superclass,
+                                                               IEnumerable<Module> nesting)
+        {
+            if(parent is Module)
+            {
+                return ((Module) parent).GetOrCreateClass(name, superclass, nesting);
+            }
+
+            throw new TypeError($"{parent.Inspect()} is not a class/module");
+        }
+
         public static class Reflection
         {
             public static readonly MethodInfo GetConstant = Reflector<Module>.Method(
@@ -315,12 +330,22 @@ namespace Mint
                 _ => _.GetOrCreateModule(default(Symbol), default(IEnumerable<Module>))
             );
 
-            public static readonly MethodInfo GetModuleOrThrow = Reflector.Method(
-                () => GetModuleOrThrow(default(iObject), default(Symbol), default(IEnumerable<Module>))
+            public static readonly MethodInfo GetOrCreateModuleWithParentCast = Reflector.Method(
+                () => GetOrCreateModuleWithParentCast(default(iObject), default(Symbol), default(IEnumerable<Module>))
             );
 
             public static readonly MethodInfo GetOrCreateClass = Reflector<Module>.Method(
                 _ => _.GetOrCreateClass(default(Symbol), default(Class), default(IEnumerable<Module>))
+            );
+
+            public static readonly MethodInfo GetOrCreateClassWithParentCast = Reflector.Method(
+                () =>
+                    GetOrCreateClassWithParentCast(
+                        default(iObject),
+                        default(Symbol),
+                        default(Class),
+                        default(IEnumerable<Module>)
+                    )
             );
         }
 
@@ -358,10 +383,15 @@ namespace Mint
                                                                  Expression nesting = null) =>
                 Call(module, Reflection.GetOrCreateModule, name, nesting ?? Constant(System.Array.Empty<Module>()));
 
-            public static MethodCallExpression GetModuleOrThrow(Expression parent,
-                                                                Expression name,
-                                                                Expression nesting = null) =>
-                Call(Reflection.GetModuleOrThrow, parent, name, nesting ?? Constant(System.Array.Empty<Module>()));
+            public static MethodCallExpression GetOrCreateModuleWithParentCast(Expression parent,
+                                                                               Expression name,
+                                                                               Expression nesting = null) =>
+                Call(
+                    Reflection.GetOrCreateModuleWithParentCast,
+                    parent,
+                    name,
+                    nesting ?? Constant(System.Array.Empty<Module>())
+                );
 
             public static MethodCallExpression GetOrCreateClass(Expression module,
                                                                 Expression name,
@@ -370,6 +400,18 @@ namespace Mint
                 Call(
                     module,
                     Reflection.GetOrCreateClass,
+                    name,
+                    superclass ?? Constant(null, typeof(Class)),
+                    nesting ?? Constant(System.Array.Empty<Module>())
+                );
+
+            public static MethodCallExpression GetOrCreateClassWithParentCast(Expression parent,
+                                                                              Expression name,
+                                                                              Expression superclass = null,
+                                                                              Expression nesting = null) =>
+                Call(
+                    Reflection.GetOrCreateClassWithParentCast,
+                    parent,
                     name,
                     superclass ?? Constant(null, typeof(Class)),
                     nesting ?? Constant(System.Array.Empty<Module>())

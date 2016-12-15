@@ -14,6 +14,7 @@ namespace Mint.Compilation.Components
         public RelativeNameModuleCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression GetModule() => Module.Expressions.GetModuleOrThrow(Container, Name, Nesting);
+        protected override Expression GetModule() =>
+            Module.Expressions.GetOrCreateModuleWithParentCast(Container, Name, Nesting);
     }
 }
