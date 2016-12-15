@@ -103,6 +103,8 @@ namespace Mint
             public static readonly MethodInfo InstanceVariableSet = Reflector<iObject>.Method(
                 _ => _.InstanceVariableSet(default(Symbol), default(iObject))
             );
+
+            public static readonly PropertyInfo SingletonClass = Reflector<iObject>.Property(_ => _.SingletonClass);
         }
 
         public static class Expressions
@@ -129,6 +131,9 @@ namespace Mint
                                                                    Expression variableName,
                                                                    Expression value) =>
                 Expression.Call(instance, Reflection.InstanceVariableSet, variableName, value);
+
+            public static MemberExpression SingletonClass(Expression obj) =>
+                Expression.Property(obj, Reflection.SingletonClass);
         }
     }
 }

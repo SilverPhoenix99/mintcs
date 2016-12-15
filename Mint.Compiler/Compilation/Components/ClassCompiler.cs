@@ -121,20 +121,13 @@ namespace Mint.Compilation.Components
 
     internal class SingletonClassCompiler : ClassCompiler
     {
-        protected override Expression Container
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        protected override Expression Container { get { throw new NotImplementedException(); } }
+
+        private Ast<Token> OperandNode => Node[0][0];
 
         public SingletonClassCompiler(Compiler compiler) : base(compiler)
         { }
 
-        protected override Expression GetClass()
-        {
-            throw new NotImplementedException();
-        }
+        protected override Expression GetClass() => Object.Expressions.SingletonClass(OperandNode.Accept(Compiler));
     }
 }

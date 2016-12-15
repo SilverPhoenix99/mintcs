@@ -67,7 +67,7 @@ namespace Mint.Compilation
                 : ListInit(array, values).Cast<iObject>();
         }
 
-        public static Expression Call(
+        public static MethodCallExpression Call(
             Expression instance,
             Symbol methodName,
             Visibility visibility,

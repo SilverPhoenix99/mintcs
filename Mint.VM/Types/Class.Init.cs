@@ -79,14 +79,15 @@ namespace Mint
             #pragma warning disable 1720
             Module kernel = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
+                .AttrReader("singleton_class", _ => _.SingletonClass )
                 .DefMethod("to_s", () => default(FrozenObject).ToString() )
                 .DefMethod("inspect", () => default(FrozenObject).Inspect() )
                 .DefLambda("nil?", (Func<iObject, bool>) (_ => false) )
                 .DefLambda("frozen?", (Func<iObject, bool>) (_ => _.Frozen) )
-                .DefMethod("freeze", () => default(iObject).Freeze() )
-                .DefMethod("hash", () => default(iObject).GetHashCode() )
+                .DefMethod("freeze", _ => _.Freeze() )
+                .DefMethod("hash", _ => _.GetHashCode() )
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
-                .AttrReader("object_id", () => default(iObject).Id )
+                .AttrReader("object_id", _ => _.Id )
                 //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
             ;
             #pragma warning restore 1720
