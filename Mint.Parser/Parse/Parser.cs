@@ -57,7 +57,12 @@ namespace Mint.Parse
             }
 
             var token = Scanner.yylval.Value;
-            throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
+            if(token.Type != TokenType.EOF)
+            {
+                throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
+            }
+
+            return null;
         }
 
         // TODO: Assigns (kASSIGN and tOP_ASGN) will have to know if they are calling into a kASET ('[]=').

@@ -11,6 +11,8 @@ namespace Mint
         public static void Run()
         {
             var binding = new CallFrame(new Object());
+            Ast<Token> ast;
+
             for(var i = 1L; ; i++)
             {
                 var fragment = Prompt($"imt[{i}]> ");
@@ -22,7 +24,17 @@ namespace Mint
 
                 try
                 {
-                    var ast = Parser.ParseString("(imt)", fragment);
+                    for(;;)
+                    {
+                        ast = Parser.ParseString("(imt)", fragment);
+
+                        if(ast != null)
+                        {
+                            break;
+                        }
+
+                        fragment += "\n" + Prompt($"imt[{i}]* ");
+                    }
 
                     if(ast.List.Count == 0)
                     {
