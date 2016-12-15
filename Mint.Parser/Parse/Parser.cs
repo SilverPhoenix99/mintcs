@@ -51,7 +51,7 @@ namespace Mint.Parse
 
         public new Ast<Token> Parse()
         {
-            if(((ShiftReduceParser<Ast<Token>, LexLocation>) this).Parse())
+            if(base.Parse())
             {
                 return Result;
             }
