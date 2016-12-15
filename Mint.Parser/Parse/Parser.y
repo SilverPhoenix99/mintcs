@@ -674,17 +674,7 @@ primary :
     bodystmt kEND
     {
         Lexer.PopClosedScope();
-        var superclass = $3;
-        if(superclass.IsList)
-        {
-            // => empty list => no superclass
-            superclass = $2;
-        }
-        else
-        {
-            superclass = (Ast<Token>) superclass.Value + $2 + superclass[0];
-        }
-        $$ = $1 + superclass + $5;
+        $$ = $1 + $2 + $3 + $5;
     }
   | kCLASS kLSHIFT expr
     {
@@ -699,7 +689,7 @@ primary :
         Lexer.PopClosedScope();
         PopDef();
         PopSingle();
-        $$ = $1 + ($2 + $3) + $6;
+        $$ = $1 + ($2 + $3) + sexp() + $6;
     }
   | kMODULE cpath
     {
@@ -1206,7 +1196,7 @@ superclass :
       Lexer.CurrentState = Lexer.BegState;
       Lexer.CommandStart = true;
     }
-    expr term { $$ = $1 + $3; }
+    expr term { $$ = $3; }
   | { $$ = sexp(); } // nothing
 ;
 

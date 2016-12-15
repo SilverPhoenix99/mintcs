@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Mint.Reflection;
 
 namespace Mint
 {
@@ -56,7 +59,7 @@ namespace Mint
         {
             Prepended = AppendModule(Prepended, module, Superclass);
         }
-        
+
         public static bool IsA(iObject o, Class c)
         {
             if(NilClass.IsNil(c))
@@ -73,6 +76,26 @@ namespace Mint
             }
 
             return false;
+        }
+
+        public new static class Reflection
+        {
+            public static readonly ConstructorInfo Ctor = Reflector<Class>.Ctor<Class, Symbol?, Module, bool>();
+        }
+
+        public new static class Expressions
+        {
+            public static NewExpression New(Expression superclass,
+                                            Expression name = null,
+                                            Expression container = null,
+                                            Expression isSingleton = null) =>
+                Expression.New(
+                    Reflection.Ctor,
+                    superclass,
+                    name ?? Expression.Constant(null, typeof(Symbol?)),
+                    container ?? Expression.Constant(null, typeof(Module)),
+                    isSingleton ?? Expression.Constant(false)
+                );
         }
     }
 }

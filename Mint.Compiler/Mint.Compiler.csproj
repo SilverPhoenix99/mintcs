@@ -97,11 +97,11 @@
     <Compile Include="Compilation\Components\UnaryOperators\UnaryOperatorCompiler.cs" />
     <Compile Include="Compilation\Components\UnaryOperators\UnaryPlusCompiler.cs" />
     <Compile Include="Compilation\Components\AbsoluteNameModuleCompiler.cs" />
+    <Compile Include="Compilation\Components\AbsoluteResolutionCompiler.cs" />
     <Compile Include="Compilation\Components\AssocCompiler.cs" />
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\ConstantCompiler.cs" />
-    <Compile Include="Compilation\Components\ConstantResolutionCompiler.cs" />
     <Compile Include="Compilation\Components\FileNameCompiler.cs" />
     <Compile Include="Compilation\Components\IdentifierCompiler.cs" />
     <Compile Include="Compilation\Components\IfCompiler.cs" />
@@ -115,6 +115,7 @@
     <Compile Include="Compilation\Components\ModuleCompiler.cs" />
     <Compile Include="Compilation\Components\PosfixWhileCompiler.cs" />
     <Compile Include="Compilation\Components\RelativeNameModuleCompiler.cs" />
+    <Compile Include="Compilation\Components\RelativeResolutionCompiler.cs" />
     <Compile Include="Compilation\Components\SelfCompiler.cs" />
     <Compile Include="Compilation\Components\SimpleNameModuleCompiler.cs" />
     <Compile Include="Compilation\Components\SplatCompiler.cs" />

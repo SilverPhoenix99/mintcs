@@ -6,16 +6,19 @@ namespace Mint.Compilation.Scopes
 {
     public class ModuleScope : MethodScope
     {
-        public override Expression Nesting { get; }
+        public override Expression Nesting => Module;
 
         public override Expression Instance => Module.Cast<iObject>();
 
         public override Expression Module { get; }
 
-        public ModuleScope(Compiler compiler) : base(compiler)
+        protected ModuleScope(Compiler compiler, Expression module) : base(compiler)
         {
-            Module = Nesting = Expression.Variable(typeof(Module), "module");
+            Module = module;
         }
+
+        public ModuleScope(Compiler compiler) : this(compiler, Expression.Variable(typeof(Module), "module"))
+        { }
 
         public override Expression CompileBody(Expression body)
         {
