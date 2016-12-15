@@ -24,9 +24,6 @@ namespace Mint.Compilation.Components
 	    {
             var scope = new ModuleScope(Compiler);
             var moduleVar = scope.Module as ParameterExpression;
-
-            var name = Constant(new Symbol(NameNode.Value.Value));
-            var nesting = Compiler.BuildNesting();
             var header = Assign(moduleVar, GetModule());
 
             Compiler.StartScope(scope);

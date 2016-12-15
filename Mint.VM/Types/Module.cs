@@ -253,9 +253,10 @@ namespace Mint
 
             if(constant == null)
             {
-                constant = SetConstant(name, new Module(name, this));
+                return (Module) SetConstant(name, new Module(name, this));
             }
-            else if(!(constant is Module))
+
+            if(!(constant is Module))
             {
                 throw new TypeError(constant.Inspect() + " is not a module");
             }
@@ -271,6 +272,29 @@ namespace Mint
             }
 
             throw new TypeError($"{parent.Inspect()} is not a class/module");
+        }
+
+        protected Class GetOrCreateClass(Symbol name, Class superclass, IEnumerable<Module> nesting)
+        {
+            var constant = TryGetConstant(name, nesting);
+
+            if(constant == null)
+            {
+                constant = superclass == null ? new Class(name, this) : new Class(superclass, name, this);
+                return (Class) SetConstant(name, constant);
+            }
+
+            if(!(constant is Class))
+            {
+                throw new TypeError(constant.Inspect() + " is not a class");
+            }
+
+            if(superclass != null && ((Class) constant).Superclass != superclass)
+            {
+                throw new TypeError($"superclass mismatch for class {name}");
+            }
+
+            return (Class) constant;
         }
 
         public static class Reflection
@@ -293,6 +317,10 @@ namespace Mint
 
             public static readonly MethodInfo GetModuleOrThrow = Reflector.Method(
                 () => GetModuleOrThrow(default(iObject), default(Symbol), default(IEnumerable<Module>))
+            );
+
+            public static readonly MethodInfo GetOrCreateClass = Reflector<Module>.Method(
+                _ => _.GetOrCreateClass(default(Symbol), default(Class), default(IEnumerable<Module>))
             );
         }
 
@@ -334,6 +362,18 @@ namespace Mint
                                                                 Expression name,
                                                                 Expression nesting = null) =>
                 Call(Reflection.GetModuleOrThrow, parent, name, nesting ?? Constant(System.Array.Empty<Module>()));
+
+            public static MethodCallExpression GetOrCreateClass(Expression module,
+                                                                Expression name,
+                                                                Expression superclass = null,
+                                                                Expression nesting = null) =>
+                Call(
+                    module,
+                    Reflection.GetOrCreateClass,
+                    name,
+                    superclass ?? Constant(null, typeof(Class)),
+                    nesting ?? Constant(System.Array.Empty<Module>())
+                );
         }
     }
 }

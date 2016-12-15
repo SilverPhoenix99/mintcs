@@ -99,6 +99,7 @@
     <Compile Include="Compilation\Components\AbsoluteNameModuleCompiler.cs" />
     <Compile Include="Compilation\Components\AbsoluteResolutionCompiler.cs" />
     <Compile Include="Compilation\Components\AssocCompiler.cs" />
+    <Compile Include="Compilation\Components\ClassCompiler.cs" />
     <Compile Include="Compilation\Components\CompilerComponent.cs" />
     <Compile Include="Compilation\Components\CompilerComponentBase.cs" />
     <Compile Include="Compilation\Components\ConstantCompiler.cs" />
@@ -128,12 +129,14 @@
     <Compile Include="Compilation\Scopes\Variables\ScopeVariable.cs" />
     <Compile Include="Compilation\Scopes\BaseScope.cs" />
     <Compile Include="Compilation\Scopes\CallScope.cs" />
+    <Compile Include="Compilation\Scopes\ClassScope.cs" />
     <Compile Include="Compilation\Scopes\LoopScope.cs" />
     <Compile Include="Compilation\Scopes\MethodScope.cs" />
     <Compile Include="Compilation\Scopes\ModuleScope.cs" />
     <Compile Include="Compilation\Scopes\Scope.cs" />
     <Compile Include="Compilation\Scopes\TopLevelScope.cs" />
     <Compile Include="Compilation\Selectors\AssignSelector.cs" />
+    <Compile Include="Compilation\Selectors\ClassSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelector.cs" />
     <Compile Include="Compilation\Selectors\ComponentSelectorBase.cs" />
     <Compile Include="Compilation\Selectors\ConstantResolutionSelector.cs" />
