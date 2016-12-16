@@ -35,7 +35,7 @@ namespace Mint.Compilation.Components
             try
             {
                 var body = Body.Accept(Compiler);
-                return scope.CompileBody(Expression.Block(header, body));
+                return scope.CompileBody(Block(header, body));
             }
             finally
             {
@@ -76,7 +76,7 @@ namespace Mint.Compilation.Components
         public static class Expressions
         {
             public static MethodCallExpression SuperclassCast(Expression super) =>
-                Expression.Call(Reflection.SuperclassCast, super);
+                Call(Reflection.SuperclassCast, super);
         }
     }
 }

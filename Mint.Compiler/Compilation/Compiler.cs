@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Components;
@@ -7,7 +8,7 @@ using Mint.Compilation.Selectors;
 using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
-using System;
+using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation
 {
@@ -146,9 +147,9 @@ namespace Mint.Compilation
             var body = node.Accept(this);
             body = scope.CompileBody(body);
 
-            return Expression.Block(
-                Expression.Assign(CallFrame.Expressions.Current(), scope.CallFrame),
-                Expression.TryFinally(body, CallFrame.Expressions.Pop())
+            return Block(
+                Assign(CallFrame.Expressions.Current(), scope.CallFrame),
+                TryFinally(body, CallFrame.Expressions.Pop())
             );
         }
 
@@ -184,8 +185,8 @@ namespace Mint.Compilation
             var nestingExpressions = scopes.Select(_ => _.Nesting).Where(_ => _ != null).ToArray();
 
             return nestingExpressions.Length == 0
-                 ? Expression.Constant(System.Array.Empty<Module>())
-                 : Expression.NewArrayInit(typeof(Module), nestingExpressions).Cast<IEnumerable<Module>>();
+                 ? Constant(System.Array.Empty<Module>())
+                 : NewArrayInit(typeof(Module), nestingExpressions).Cast<IEnumerable<Module>>();
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Mint.MethodBinding.Methods
                 type = convertedType;
             }
 
-            return Expression.TypeIs(expression, type);
+            return TypeIs(expression, type);
         }
 
         protected internal static Expression TryConvert(Expression expression, Type type)
