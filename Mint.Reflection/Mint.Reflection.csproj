@@ -38,27 +38,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arity.cs" />
-    <Compile Include="Parameters\Attributes\BlockAttribute.cs" />
-    <Compile Include="Parameters\Attributes\KeyAttribute.cs" />
-    <Compile Include="Parameters\Attributes\OptionalAttribute.cs" />
-    <Compile Include="MethodInfoExtensions.cs" />
-    <Compile Include="Parameters\ParameterInfoExtensions.cs" />
-    <Compile Include="Parameters\States\BaseParameterState.cs" />
-    <Compile Include="Parameters\States\BlockState.cs" />
-    <Compile Include="Parameters\InvalidParameterError.cs" />
-    <Compile Include="Parameters\States\KeyRestState.cs" />
-    <Compile Include="Parameters\States\KeyState.cs" />
-    <Compile Include="Parameters\States\OptionalState.cs" />
-    <Compile Include="Parameters\ParameterCounter.cs" />
-    <Compile Include="Parameters\ParameterKind.cs" />
-    <Compile Include="Parameters\States\ParameterState.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parameters\States\RequiredPrefixState.cs" />
-    <Compile Include="Parameters\States\RequiredSuffixState.cs" />
-    <Compile Include="Parameters\States\RestState.cs" />
-    <Compile Include="Parameters\Attributes\RestAttribute.cs" />
-    <Compile Include="Reflector.cs" />
+    <Compile Include="**\*.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
