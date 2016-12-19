@@ -9,6 +9,7 @@ using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
+using Mint.MethodBinding;
 
 namespace Mint.Compilation
 {
@@ -149,7 +150,13 @@ namespace Mint.Compilation
 
             return Block(
                 Assign(CallFrame.Expressions.Current(), scope.CallFrame),
-                TryFinally(body, CallFrame.Expressions.Pop())
+                TryFinally(
+                    Block(
+                        Assign(CallFrame.Expressions.Visibility(scope.CallFrame), Constant(Visibility.Private)),
+                        body
+                    ),
+                    CallFrame.Expressions.Pop()
+                )
             );
         }
 

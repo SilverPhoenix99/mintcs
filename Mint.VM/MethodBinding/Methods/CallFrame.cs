@@ -25,12 +25,15 @@ namespace Mint.MethodBinding.Methods
 
         public Module Module => Instance as Module ?? Instance.EffectiveClass;
 
+        public Visibility Visibility { get; set; }
+
         public CallFrame(iObject instance, CallFrame caller = null, params LocalVariable[] arguments)
         {
             Instance = instance;
             Caller = caller;
             Arguments = arguments;
             Locals = new LinkedDictionary<Symbol, LocalVariable>();
+            Visibility = Visibility.Public;
         }
 
         public LocalVariable AddLocal(LocalVariable local)
@@ -53,6 +56,8 @@ namespace Mint.MethodBinding.Methods
             public static readonly PropertyInfo Locals = Reflector<CallFrame>.Property(_ => _.Locals);
 
             public static readonly PropertyInfo Module = Reflector<CallFrame>.Property(_ => _.Module);
+
+            public static readonly PropertyInfo Visibility = Reflector<CallFrame>.Property(_ => _.Visibility);
 
             public static readonly PropertyInfo IDictionary_Indexer =
                 Reflector<IDictionary<Symbol, LocalVariable>>.Property(_ => _[default(Symbol)]);
@@ -80,6 +85,9 @@ namespace Mint.MethodBinding.Methods
 
             public static MemberExpression Module(Expression callFrame) =>
                 Property(callFrame, Reflection.Module);
+
+            public static MemberExpression Visibility(Expression callFrame) =>
+                Property(callFrame, Reflection.Visibility);
 
             public static MethodCallExpression AddLocal(Expression callFrame, Expression localVariable) =>
                 Call(callFrame, Reflection.AddLocal, localVariable);
