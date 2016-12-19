@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Mint.Compilation.Scopes;
+using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
@@ -24,13 +25,16 @@ namespace Mint.Compilation.Components
 	    {
             var scope = new ModuleScope(Compiler);
             var moduleVar = scope.Module as ParameterExpression;
-            var header = Assign(moduleVar, GetModule());
+            Expression header = Assign(moduleVar, GetModule());
+            header = CallFrame.Expressions.Push(header);
 
             Compiler.StartScope(scope);
 
             try
             {
                 var body = Body.Accept(Compiler);
+                body = Expression.TryFinally(body, CallFrame.Expressions.Pop());
+
                 return scope.CompileBody(Expression.Block(header, body));
             }
             finally

@@ -60,6 +60,10 @@ namespace Mint.MethodBinding.Methods
             public static readonly MethodInfo AddLocal =
                 Reflector<CallFrame>.Method(_ => _.AddLocal(default(LocalVariable)));
 
+            public static readonly MethodInfo Push = Reflector.Method(
+                () => Push(default(iObject), default(LocalVariable[]))
+            );
+
             public static readonly MethodInfo Pop = Reflector.Method(() => Pop());
         }
 
@@ -82,6 +86,9 @@ namespace Mint.MethodBinding.Methods
 
             public static IndexExpression LocalsIndexer(Expression callFrame, Expression name) =>
                 Property(Locals(callFrame), Reflection.IDictionary_Indexer, name);
+
+            public static MethodCallExpression Push(Expression instance, Expression arguments = null) =>
+                Call(Reflection.Push, instance, arguments ?? Constant(System.Array.Empty<LocalVariable>()));
 
             public static MethodCallExpression Pop() => Call(Reflection.Pop);
         }
