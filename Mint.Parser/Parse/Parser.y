@@ -886,8 +886,7 @@ bv_decls :
 bvar :
     tIDENTIFIER
     {
-        $$ = $1;
-        Lexer.DefineArgument($$);
+        Lexer.DefineArgument($1);
     }
   | f_bad_arg
 ;
@@ -1277,8 +1276,7 @@ f_norm_arg :
     f_bad_arg
   | tIDENTIFIER
     {
-        $$ = $1;
-        VerifyFormalArgument($$.Value);
+        VerifyFormalArgument($1.Value);
         Lexer.DefineArgument($1);
     }
 ;
@@ -1300,36 +1298,19 @@ f_arg :
 f_label :
     tLABEL
     {
-        $$ = $1;
-        VerifyFormalArgument($$.Value);
-        Lexer.DefineArgument($$);
+        VerifyFormalArgument($1.Value);
+        Lexer.DefineArgument($1);
     }
 ;
 
 f_kw :
-    f_label arg
-    {
-        $$ = $1 + $2;
-        Lexer.DefineArgument($$);
-    }
+    f_label arg { $$ = $1 + $2; }
   | f_label
-    {
-        $$ = $1;
-        Lexer.DefineArgument($$);
-    }
 ;
 
 f_block_kw :
-    f_label primary
-    {
-        $$ = $1 + $2;
-        Lexer.DefineArgument($$);
-    }
+    f_label primary { $$ = $1 + $2; }
   | f_label
-    {
-        $$ = $1;
-        Lexer.DefineArgument($$);
-    }
 ;
 
 f_block_kwarg :
@@ -1350,26 +1331,18 @@ kwrest_mark :
 f_kwrest :
     kwrest_mark tIDENTIFIER
     {
+        Lexer.DefineArgument($2);
         $$ = $1 + $2;
-        Lexer.DefineArgument($$);
     }
   | kwrest_mark
 ;
 
 f_opt :
-    f_arg_asgn kASSIGN arg
-    {
-        $$ = $2 + $1 + $3;
-        Lexer.DefineArgument($1);
-    }
+    f_arg_asgn kASSIGN arg { $$ = $2 + $1 + $3; }
 ;
 
 f_block_opt :
-    f_arg_asgn kASSIGN primary
-    {
-        $$ = $2 + $1 + $3;
-        Lexer.DefineArgument($1);
-    }
+    f_arg_asgn kASSIGN primary { $$ = $2 + $1 + $3; }
 ;
 
 f_block_optarg :
@@ -1390,8 +1363,8 @@ restarg_mark :
 f_rest_arg :
     restarg_mark tIDENTIFIER
     {
-        $$ = $1 + $2;
         Lexer.DefineArgument($2);
+        $$ = $1 + $2;
     }
   | restarg_mark
 ;
@@ -1404,8 +1377,8 @@ blkarg_mark :
 f_block_arg :
     blkarg_mark tIDENTIFIER
     {
-        $$ = $1 + $2;
         Lexer.DefineArgument($2);
+        $$ = $1 + $2;
     }
 ;
 
