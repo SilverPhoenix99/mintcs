@@ -22,6 +22,7 @@ namespace Mint
         public static readonly Class INTEGER;
         public static readonly Class NIL;
         public static readonly Class NUMERIC;
+        public static readonly Class PROC;
         public static readonly Class RANGE;
         public static readonly Class RATIONAL;
         public static readonly Class REGEXP;
@@ -184,6 +185,9 @@ namespace Mint
                 .DefMethod("merge!", _ => _.MergeSelf(default(Hash)))
             ;
 
+            PROC = ModuleBuilder<Proc>.DescribeClass()
+            ;
+
             RANGE = ModuleBuilder<Range>.DescribeClass()
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
@@ -215,6 +219,7 @@ namespace Mint
             Object.DefineModule(INTEGER);
             Object.DefineModule(NIL);
             Object.DefineModule(NUMERIC);
+            Object.DefineModule(PROC);
             Object.DefineModule(RANGE);
             Object.DefineModule(RATIONAL);
             Object.DefineModule(REGEXP);

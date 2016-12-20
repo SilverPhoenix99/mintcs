@@ -102,6 +102,7 @@ namespace Mint.Compilation
             Register(new WhileCompiler(this), kWHILE, kUNTIL);
             Register(new ConstantCompiler(this), tCONSTANT);
             Register(new AbsoluteResolutionCompiler(this), kCOLON3);
+            Register(new MethodCompiler(this), kDEF);
 
             Register(new SymbolSelector(this), tSYMBEG);
             Register(new MethodCallSelector(this), kDOT);

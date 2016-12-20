@@ -714,7 +714,7 @@ primary :
     {
         Lexer.PopClosedScope();
         PopDef();
-        $$ = $1 + $2 + $4 + $5;
+        $$ = $1 + sexp() + $2 + $4 + $5;
     }
   | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
@@ -728,7 +728,7 @@ primary :
     {
         Lexer.PopClosedScope();
         PopSingle();
-        $$ = $1 + ($3 + $2 + $5) + $7 + $8;
+        $$ = $1 + $2 + $5 + $7 + $8;
     }
   | kBREAK
   | kNEXT

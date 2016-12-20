@@ -314,6 +314,10 @@ namespace Mint
 
         public static class Reflection
         {
+            public static readonly MethodInfo DefineMethod = Reflector<Module>.Method(
+                _ => _.DefineMethod(default(MethodBinder))
+            );
+
             public static readonly MethodInfo GetConstant = Reflector<Module>.Method(
                 _ => _.GetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
             );
@@ -351,6 +355,9 @@ namespace Mint
 
         public static class Expressions
         {
+            public static MethodCallExpression DefineMethod(Expression module, Expression methodBinder) =>
+                Call(module, Reflection.DefineMethod, methodBinder);
+
             public static MethodCallExpression GetConstant(Expression module,
                                                            Expression name,
                                                            Expression inherit = null,

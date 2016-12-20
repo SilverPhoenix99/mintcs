@@ -39,6 +39,9 @@ namespace Mint.Compilation.Scopes
         public ScopeVariable AddIndexedVariable(Symbol name) =>
             AddVariable(new IndexedScopeVariable(this, name));
 
+        public ScopeVariable AddPreInitializedVariable(Symbol name, ParameterExpression local) =>
+            AddVariable(new PreInitializedScopeVariable(this, name, local));
+
         private ScopeVariable AddVariable(ScopeVariable scopeVariable)
         {
             variables.Add(scopeVariable.Name, scopeVariable);

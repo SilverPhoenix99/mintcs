@@ -6,7 +6,7 @@ namespace Mint.Compilation.Scopes
     {
         public override Scope Parent { get; }
 
-        public override Expression Nesting => Parent.Nesting;
+        public override Expression Nesting => null;
 
         protected LoopScope(Compiler compiler, Scope parent) : base(compiler)
         {

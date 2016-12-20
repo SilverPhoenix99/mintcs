@@ -21,6 +21,8 @@ namespace Mint.Compilation.Scopes
 
         ScopeVariable AddReferencedVariable(ScopeVariable baseVariable);
 
+        ScopeVariable AddPreInitializedVariable(Symbol name , ParameterExpression local);
+
         ScopeVariable FindVariable(Symbol name);
 
         Expression CompileBody(Expression body);

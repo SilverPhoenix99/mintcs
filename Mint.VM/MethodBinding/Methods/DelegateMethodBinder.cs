@@ -36,7 +36,7 @@ namespace Mint.MethodBinding.Methods
             var condition = CreateCondition(frame, argumentsArray);
             var body = CreateBody(frame, argumentsArray);
             var elseBody = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
-            
+
             return Block(
                 new[] { argumentsArray },
                 Condition(condition, body, elseBody, typeof(iObject))
@@ -79,7 +79,7 @@ namespace Mint.MethodBinding.Methods
 
             var convertedArgs = parameters.Skip(1).Select(p => ConvertArgument(argumentArray, p));
             var arguments = new[] { instance }.Concat(convertedArgs);
-            
+
             return Box(Invoke(Constant(Lambda), arguments));
         }
 
@@ -95,9 +95,12 @@ namespace Mint.MethodBinding.Methods
 
             return new TypeError("no implicit conversion exists");
         }
-        
+
         public static class Reflection
         {
+            public static readonly ConstructorInfo Ctor =
+                Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, Delegate>();
+
             public static readonly MethodInfo ThrowInvalidConversion = Reflector.Method(
                 () => ThrowInvalidConversion()
             );
@@ -105,6 +108,9 @@ namespace Mint.MethodBinding.Methods
 
         public static class Expressions
         {
+            public static NewExpression New(Expression name, Expression owner, Expression lambda) =>
+                Expression.New(Reflection.Ctor, name, owner, lambda);
+
             public static MethodCallExpression ThrowInvalidConversion() => Call(Reflection.ThrowInvalidConversion);
         }
     }
