@@ -10,14 +10,16 @@ namespace Mint.MethodBinding.Methods
 {
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
+        private readonly int offset;
+
         private Delegate Lambda { get; }
 
-        public DelegateMethodBinder(Symbol name, Module owner, Delegate lambda/*, params Attribute[] parameterAttributes*/)
+        public DelegateMethodBinder(Symbol name, Module owner, Delegate lambda)
             : base(name, owner)
         {
             Lambda = lambda;
-
-            //this.parameterAttributes = parameterAttributes;
+            offset = lambda.Method.GetParameters()
+                .First(_ => typeof(iObject).IsAssignableFrom(_.ParameterType)).Position + 1;
             Arity = Lambda.Method.GetParameterCounter().Arity;
         }
 
@@ -25,6 +27,7 @@ namespace Mint.MethodBinding.Methods
             : base(newName, other)
         {
             Lambda = other.Lambda;
+            offset = other.offset;
         }
 
         public override MethodBinder Duplicate(Symbol newName) => new DelegateMethodBinder(newName, this);
@@ -45,10 +48,11 @@ namespace Mint.MethodBinding.Methods
 
         private Expression CreateCondition(CallFrameBinder frame, Expression argumentArray)
         {
-            var bindExpression = ArgumentBundle.Expressions.Bind(frame.Arguments, Constant(Lambda.Method));
+            var method = Property(Constant(Lambda), nameof(Lambda.Method));
+            var bindExpression = ArgumentBundle.Expressions.Bind(frame.Arguments, method);
             Expression argumentCheck = NotEqual(argumentArray, Constant(null));
 
-            if(Lambda.Method.GetParameters().Length > 1)
+            if(Lambda.Method.GetParameters().Length > offset)
             {
                 argumentCheck = AndAlso(argumentCheck, TypeCheckArgumentsExpression(argumentArray));
             }
@@ -60,12 +64,12 @@ namespace Mint.MethodBinding.Methods
         }
 
         private Expression TypeCheckArgumentsExpression(Expression argumentArray) =>
-            Enumerable.Range(1, Lambda.Method.GetParameters().Length - 1)
+            Enumerable.Range(offset, Lambda.Method.GetParameters().Length - offset)
                 .Select(i => TypeCheckArgumentExpression(argumentArray, i)).Aggregate(AndAlso);
 
         private Expression TypeCheckArgumentExpression(Expression argumentArray, int position)
         {
-            var argument = ArrayIndex(argumentArray, Constant(position - 1));
+            var argument = ArrayIndex(argumentArray, Constant(position - offset));
             var parameter = Lambda.Method.GetParameters()[position];
             return TypeIs(argument, parameter.ParameterType);
         }
@@ -75,17 +79,17 @@ namespace Mint.MethodBinding.Methods
             var instance = frame.Instance;
 
             var parameters = Lambda.Method.GetParameters();
-            instance = instance.Cast(parameters[0].ParameterType);
+            instance = instance.Cast(parameters[offset - 1].ParameterType);
 
-            var convertedArgs = parameters.Skip(1).Select(p => ConvertArgument(argumentArray, p));
+            var convertedArgs = parameters.Skip(offset).Select(p => ConvertArgument(argumentArray, p));
             var arguments = new[] { instance }.Concat(convertedArgs);
-
+            
             return Box(Invoke(Constant(Lambda), arguments));
         }
 
-        private static Expression ConvertArgument(Expression argumentArray, ParameterInfo parameter)
+        private Expression ConvertArgument(Expression argumentArray, ParameterInfo parameter)
         {
-            var argument = ArrayIndex(argumentArray, Constant(parameter.Position - 1));
+            var argument = ArrayIndex(argumentArray, Constant(parameter.Position - offset));
             return TryConvert(argument, parameter.ParameterType);
         }
 

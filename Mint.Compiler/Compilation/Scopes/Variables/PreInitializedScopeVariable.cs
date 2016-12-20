@@ -15,6 +15,7 @@ namespace Mint.Compilation.Scopes.Variables
         {
             Scope = scope;
             Name = name;
+            Local = local;
         }
 
         public Expression ValueExpression() => VariableExpression();

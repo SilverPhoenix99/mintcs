@@ -36,7 +36,9 @@ namespace Mint.Reflection.Parameters
 
             if(methodInfo.IsStatic || methodInfo.IsDynamicallyGenerated())
             {
-                parameterInfos = parameterInfos.Skip(1).ToArray();
+                var offset = parameterInfos.First(_ => _.ParameterType.FullName.StartsWith("Mint.")).Position + 1;
+
+                parameterInfos = parameterInfos.Skip(offset).ToArray();
             }
 
             ParameterState initialState = new RequiredPrefixState(this);

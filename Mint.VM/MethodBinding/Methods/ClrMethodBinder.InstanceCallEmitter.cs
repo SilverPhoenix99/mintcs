@@ -59,7 +59,7 @@ namespace Mint.MethodBinding.Methods
 
             private Expression CreateCondition()
             {
-                var bindExpression = ArgumentBundle.Expressions.Bind(BundledFrame.Arguments, Constant(Method));
+                var bindExpression = ArgumentBundle.Expressions.TryBind(BundledFrame.Arguments, Constant(Method));
                 Expression argumentCheck = NotEqual(ArgumentArray, Constant(null));
 
                 if(ParameterInfos.Length > Offset)

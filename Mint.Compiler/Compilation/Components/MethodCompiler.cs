@@ -138,8 +138,9 @@ namespace Mint.Compilation.Components
                 var lambda = lambdaExpression.Compile();
 
                 var parameterInfos = lambda.Method.GetParameters();
+                var offset = parameterInfos.Length - parameters.Length;
 
-                parameters.Zip(parameterInfos,
+                parameters.Zip(parameterInfos.Skip(offset),
                     (p, i) => TypeDescriptor.AddAttributes(i, p.Kind.GetAttributes())
                 ).All(_ => true); // force run
 
@@ -173,7 +174,7 @@ namespace Mint.Compilation.Components
                 Kind = kind;
                 DefaultValue = defaultValue;
                 Param = Parameter(type, name);
-                Local = Variable(typeof(iObject), name);
+                Local = Variable(typeof(LocalVariable), name);
             }
 
             public Expression CompileLocalVariable()

@@ -68,6 +68,14 @@ namespace Mint.MethodBinding.Arguments
         public iObject[] Bind(MethodInfo methodInfo)
         {
             var validator = new ArityValidator(this, methodInfo);
+            validator.Validate();
+            var binders = methodInfo.GetParameterBinders();
+            return binders.Select(binder => binder.Bind(this)).ToArray();
+        }
+
+        public iObject[] TryBind(MethodInfo methodInfo)
+        {
+            var validator = new ArityValidator(this, methodInfo);
             if(!validator.IsValid())
             {
                 return null;
@@ -82,12 +90,19 @@ namespace Mint.MethodBinding.Arguments
             public static readonly MethodInfo Bind = Reflector<ArgumentBundle>.Method(
                 _ => _.Bind(default(MethodInfo))
             );
+
+            public static readonly MethodInfo TryBind = Reflector<ArgumentBundle>.Method(
+                _ => _.TryBind(default(MethodInfo))
+            );
         }
 
         public static class Expressions
         {
             public static MethodCallExpression Bind(Expression argumentBundle, Expression methodInfo) =>
                 Expression.Call(argumentBundle, Reflection.Bind, methodInfo);
+
+            public static MethodCallExpression TryBind(Expression argumentBundle, Expression methodInfo) =>
+                Expression.Call(argumentBundle, Reflection.TryBind, methodInfo);
         }
     }
 }
