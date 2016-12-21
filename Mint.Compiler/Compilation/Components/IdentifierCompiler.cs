@@ -1,3 +1,4 @@
+using Mint.MethodBinding;
 using System;
 using System.Linq.Expressions;
 
@@ -7,21 +8,22 @@ namespace Mint.Compilation.Components
     {
         private string Identifier => Node.Value.Value;
 
-        private Symbol VariableName => new Symbol(Identifier);
-
         public IdentifierCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Compile()
         {
-            var variable = Compiler.CurrentScope.FindVariable(VariableName);
+            var name = new Symbol(Identifier);
+            var variable = Compiler.CurrentScope.FindVariable(name);
 
-            if(variable == null)
+            if(variable != null)
             {
-                throw new NotImplementedException("variable not found. methods not implemented.");
+                return variable.ValueExpression();
             }
 
-            return variable.ValueExpression();
+            var instance = Compiler.CurrentScope.Instance;
+            var arguments = System.Array.Empty<InvocationArgument>();
+            return CompilerUtils.Call(instance, name, Visibility.Private, arguments);
         }
     }
 }
