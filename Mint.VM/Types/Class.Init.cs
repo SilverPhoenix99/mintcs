@@ -2,6 +2,7 @@ using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Mint
 {
@@ -59,12 +60,14 @@ namespace Mint
             #pragma warning restore 1720
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
                 .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)))
                 .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
-                .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
+                .DefLambda("constants", (Func<Module, Array>) (_ => new Array(_.Constants.Cast<iObject>())) )
+                .DefMethod("inspect", _ => _.Inspect())
+                .AttrReader("name", _ => _.RubyName)
+                .DefMethod("to_s", _ => _.ToString())
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)

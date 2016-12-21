@@ -19,9 +19,13 @@ namespace Mint
         private static readonly Regex NAME_PATH =
             new Regex("^(?:::)?([^:]+)(?:::([^:]+))*$", RegexOptions.Compiled);
 
+        protected readonly IDictionary<Symbol, iObject> constants;
+
         public Symbol? Name { get; }
 
         public string FullName { get; }
+
+        internal iObject RubyName => FullName != null ? (String) FullName : (iObject) new NilClass();
 
         private Module container;
         public Module Container => container ?? (container = Class.OBJECT);
@@ -34,7 +38,7 @@ namespace Mint
 
         protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
 
-        protected IDictionary<Symbol, iObject> Constants { get; }
+        public IEnumerable<Symbol> Constants => constants.Keys;
 
         protected internal IList<Module> Included { get; protected set; }
 
@@ -55,7 +59,7 @@ namespace Mint
             this.container = container ?? Class.OBJECT;
             FullName = CalculateFullName(name?.ToString(), this.container);
             Methods = new Dictionary<Symbol, MethodBinder>();
-            Constants = new Dictionary<Symbol, iObject>();
+            constants = new Dictionary<Symbol, iObject>();
             Included = new List<Module>();
             Prepended = new List<Module>();
             Subclasses = new List<WeakReference<Class>>();
@@ -166,7 +170,7 @@ namespace Mint
         public bool IsConstantDefined(Symbol name, [Optional] bool inherit = true)
         {
             // If constant found, then name is valid
-            if(Constants.ContainsKey(name))
+            if(constants.ContainsKey(name))
             {
                 return true;
             }
@@ -211,7 +215,7 @@ namespace Mint
             }
 
             var module = modules.FirstOrDefault(_ => _.IsConstantDefined(name, false));
-            return module?.Constants[name];
+            return module?.constants[name];
         }
 
         private static void ValidateConstantName(string name)
@@ -231,13 +235,13 @@ namespace Mint
             }
 
             ValidateConstantName(name.Name);
-            return Constants[name] = value;
+            return constants[name] = value;
         }
 
         protected iObject TryGetConstant(Symbol name)
         {
             iObject constant;
-            Constants.TryGetValue(name, out constant);
+            constants.TryGetValue(name, out constant);
             return constant;
         }
 
