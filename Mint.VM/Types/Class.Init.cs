@@ -64,6 +64,7 @@ namespace Mint
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
                 .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)))
                 .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
+                .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)

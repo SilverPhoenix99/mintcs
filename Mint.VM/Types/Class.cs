@@ -20,6 +20,11 @@ namespace Mint
         public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
             : base(CLASS, name, container)
         {
+            if(Class.CLASS != null && superclass == Class.CLASS)
+            {
+                throw new TypeError("can't make subclass of Class");
+            }
+
             Superclass = superclass;
             IsSingleton = isSingleton;
         }
