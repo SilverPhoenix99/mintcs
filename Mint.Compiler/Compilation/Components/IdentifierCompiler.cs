@@ -1,5 +1,4 @@
 using Mint.MethodBinding;
-using System;
 using System.Linq.Expressions;
 
 namespace Mint.Compilation.Components

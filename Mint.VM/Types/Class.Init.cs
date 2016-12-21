@@ -59,6 +59,9 @@ namespace Mint
             ;
             #pragma warning restore 1720
 
+            OBJECT.SetConstant(BASIC_OBJECT.Name.Value, BASIC_OBJECT);
+            OBJECT.SetConstant(OBJECT.Name.Value, OBJECT);
+
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
@@ -98,7 +101,6 @@ namespace Mint
             #pragma warning restore 1720
 
             OBJECT.Include(kernel);
-            Object.DefineModule(kernel);
 
             NUMERIC = new Class(new Symbol("Numeric"));
 
@@ -209,27 +211,6 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
             ;
-
-            Object.DefineModule(BASIC_OBJECT);
-            Object.DefineModule(OBJECT);
-            Object.DefineModule(MODULE);
-            Object.DefineModule(CLASS);
-            Object.DefineModule(ARRAY);
-            Object.DefineModule(COMPLEX);
-            Object.DefineModule(FALSE);
-            Object.DefineModule(FIXNUM);
-            Object.DefineModule(FLOAT);
-            Object.DefineModule(HASH);
-            Object.DefineModule(INTEGER);
-            Object.DefineModule(NIL);
-            Object.DefineModule(NUMERIC);
-            Object.DefineModule(PROC);
-            Object.DefineModule(RANGE);
-            Object.DefineModule(RATIONAL);
-            Object.DefineModule(REGEXP);
-            Object.DefineModule(STRING);
-            Object.DefineModule(SYMBOL);
-            Object.DefineModule(TRUE);
         }
     }
 }

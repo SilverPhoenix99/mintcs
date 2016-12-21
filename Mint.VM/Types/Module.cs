@@ -55,6 +55,11 @@ namespace Mint
         {
             // Called by subclasses to prepare Class property. See class Class.
 
+            if(container != null && name == null)
+            {
+                throw new ArgumentNullException($"{nameof(name)} cannot be null if Module has {nameof(container)}");
+            }
+
             Name = name;
             this.container = container ?? Class.OBJECT;
             FullName = CalculateFullName(name?.ToString(), this.container);
@@ -63,6 +68,11 @@ namespace Mint
             Included = new List<Module>();
             Prepended = new List<Module>();
             Subclasses = new List<WeakReference<Class>>();
+
+            if(this.container != null && name != null)
+            {
+                this.container.SetConstant(name.Value, this);
+            }
         }
 
         ~Module()
@@ -257,7 +267,7 @@ namespace Mint
 
             if(constant == null)
             {
-                return (Module) SetConstant(name, new Module(name, this));
+                return new Module(name, this);
             }
 
             if(!(constant is Module))
@@ -286,8 +296,7 @@ namespace Mint
 
             if(constant == null)
             {
-                constant = superclass == null ? new Class(name, this) : new Class(superclass, name, this);
-                return (Class) SetConstant(name, constant);
+                return superclass == null ? new Class(name, this) : new Class(superclass, name, this);
             }
 
             if(!(constant is Class))

@@ -40,15 +40,6 @@ namespace Mint
 
         public static bool ToBool(iObject obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass);
 
-        public static Module DefineModule(Module module)
-        {
-            if(module.Name.HasValue)
-            {
-                Class.OBJECT.SetConstant(module.Name.Value, module);
-            }
-            return module;
-        }
-
         internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.FullName}";
 
         internal static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
