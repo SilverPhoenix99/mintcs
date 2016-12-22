@@ -1,4 +1,6 @@
-﻿namespace Mint
+﻿using System.Collections.Generic;
+
+namespace Mint
 {
     public interface iObject
     {
@@ -15,7 +17,7 @@
 
         bool HasSingletonClass { get; }
 
-        Array InstanceVariables { get; }
+        IEnumerable<Symbol> InstanceVariables { get; }
 
         bool Frozen { get; }
 

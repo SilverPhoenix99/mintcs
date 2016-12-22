@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Mint
 {
@@ -16,7 +17,7 @@ namespace Mint
 
         public bool Frozen => true;
 
-        public Array InstanceVariables => new Array();
+        public IEnumerable<Symbol> InstanceVariables => System.Array.Empty<Symbol>();
 
         public iObject Freeze() => this;
 

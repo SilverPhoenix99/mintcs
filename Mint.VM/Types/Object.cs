@@ -1,11 +1,12 @@
 ﻿using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Compilation;
+using Mint.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using Mint.Reflection;
+using System.Collections.Generic;
 
 namespace Mint
 {
@@ -25,6 +26,7 @@ namespace Mint
         public static iObject Box(long obj) => new Fixnum(obj);
         public static iObject Box(float obj) => new Float(obj);
         public static iObject Box(double obj) => new Float(obj);
+        public static iObject Box(IEnumerable<iObject> obj) => obj != null ? new Array(obj) : (iObject) new NilClass();
 
         public static iObject Box(bool obj) => obj ? new TrueClass() : (iObject) new FalseClass();
 
@@ -40,6 +42,9 @@ namespace Mint
             if(value is long) return Box((long) value);
             if(value is float) return Box((float) value);
             if(value is double) return Box((double) value);
+            if(value is IEnumerable<iObject>) return Box((IEnumerable<iObject>) value);
+            if(value is IEnumerable<Symbol>) return Box(((IEnumerable<Symbol>) value).Cast<iObject>());
+            if(value is IEnumerable<Fixnum>) return Box(((IEnumerable<Fixnum>) value).Cast<iObject>());
 
             throw new ArgumentError(nameof(value));
         }

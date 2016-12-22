@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Mint
@@ -16,7 +17,7 @@ namespace Mint
 
         public virtual bool HasSingletonClass => false;
 
-        public virtual Array InstanceVariables => new Array();
+        public virtual IEnumerable<Symbol> InstanceVariables => System.Array.Empty<Symbol>();
 
         public virtual bool Frozen { get { return true; } protected set { /* noop */ } }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mint
@@ -32,7 +31,7 @@ namespace Mint
                 ? effectiveClass = new Class(EffectiveClass, isSingleton: true)
                 : EffectiveClass;
 
-        public override Array InstanceVariables => new Array(variables.Keys.Cast<iObject>());
+        public override IEnumerable<Symbol> InstanceVariables => variables.Keys;
 
         public override bool  Frozen { get; protected set; }
 

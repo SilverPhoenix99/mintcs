@@ -2,8 +2,6 @@ using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using System;
 using System.Diagnostics;
-using System.Linq;
-
 namespace Mint
 {
     public partial class Class
@@ -67,11 +65,11 @@ namespace Mint
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .Allocator( () => new Module() )
-                .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
+                .AttrReader("ancestors", _ => _.Ancestors)
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
                 .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)))
                 .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
-                .DefLambda("constants", (Func<Module, Array>) (_ => new Array(_.Constants.Cast<iObject>())) )
+                .AttrReader("constants", _ => _.Constants)
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrReader("name", _ => _.FullName)
                 .DefMethod("to_s", _ => _.ToString())
@@ -160,8 +158,8 @@ namespace Mint
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
+                .DefMethod("to_s", _ => _.ToString())
+                .DefMethod("inspect", _ => _.Inspect())
             ;
 
             TRUE = ModuleBuilder<TrueClass>.DescribeClass()
