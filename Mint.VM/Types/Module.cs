@@ -21,11 +21,16 @@ namespace Mint
 
         protected readonly IDictionary<Symbol, iObject> constants;
 
-        public Symbol? Name { get; }
+        public Symbol? Name { get; private set; }
 
-        public string FullName { get; }
-
-        internal iObject RubyName => FullName != null ? (String) FullName : (iObject) new NilClass();
+        public string FullName
+        {
+            get
+            {
+                var name = Name?.Name ?? base.ToString();
+                return container == Class.OBJECT ? name : $"{container.FullName}::{name}";
+            }
+        }
 
         private Module container;
         public Module Container => container ?? (container = Class.OBJECT);
@@ -62,7 +67,6 @@ namespace Mint
 
             Name = name;
             this.container = container ?? Class.OBJECT;
-            FullName = CalculateFullName(name?.ToString(), this.container);
             Methods = new Dictionary<Symbol, MethodBinder>();
             constants = new Dictionary<Symbol, iObject>();
             Included = new List<Module>();
@@ -245,6 +249,14 @@ namespace Mint
             }
 
             ValidateConstantName(name.Name);
+
+            var module = value as Module;
+            if(module != null && module.Name == null)
+            {
+                module.Name = name;
+                module.container = this;
+            }
+
             return constants[name] = value;
         }
 

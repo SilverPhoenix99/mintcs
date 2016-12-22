@@ -12,8 +12,8 @@ namespace Mint
     public class Object : BaseObject
     {
         public static iObject Box(iObject obj) => obj ?? new NilClass();
-        public static iObject Box(string obj) => new String(obj);
-        public static iObject Box(StringBuilder obj) => new String(obj);
+        public static iObject Box(string obj) => obj != null ? new String(obj) : (iObject) new NilClass();
+        public static iObject Box(StringBuilder obj) => obj != null ? new String(obj) : (iObject) new NilClass();
         public static iObject Box(short obj) => new Fixnum(obj);
         public static iObject Box(int obj) => new Fixnum(obj);
         public static iObject Box(long obj) => new Fixnum(obj);

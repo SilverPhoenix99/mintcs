@@ -32,6 +32,9 @@ namespace Mint.Compilation.Selectors
 
                 case kLBRACK2:
                     return new AssignIndexerCompiler(Compiler, operatorCompiler);
+
+                case tCONSTANT:
+                    return new AssignConstantCompiler(Compiler, operatorCompiler);
             }
 
             throw new System.NotImplementedException();

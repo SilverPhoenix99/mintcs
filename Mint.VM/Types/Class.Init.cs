@@ -69,7 +69,7 @@ namespace Mint
                 .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
                 .DefLambda("constants", (Func<Module, Array>) (_ => new Array(_.Constants.Cast<iObject>())) )
                 .DefMethod("inspect", _ => _.Inspect())
-                .AttrReader("name", _ => _.RubyName)
+                .AttrReader("name", _ => _.FullName)
                 .DefMethod("to_s", _ => _.ToString())
             ;
 
