@@ -16,6 +16,8 @@ namespace Mint
 
         public virtual bool HasSingletonClass => false;
 
+        public virtual Array InstanceVariables => new Array();
+
         public virtual bool Frozen { get { return true; } protected set { /* noop */ } }
 
         public virtual iObject Freeze() => this;

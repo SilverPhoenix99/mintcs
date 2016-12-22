@@ -28,7 +28,7 @@ namespace Mint
             get
             {
                 var name = Name?.Name ?? base.ToString();
-                return container == Class.OBJECT ? name : $"{container.FullName}::{name}";
+                return Container == Class.OBJECT ? name : $"{Container.FullName}::{name}";
             }
         }
 

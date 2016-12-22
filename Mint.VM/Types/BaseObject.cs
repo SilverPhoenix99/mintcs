@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mint
@@ -17,7 +18,7 @@ namespace Mint
             $"^\\$(?:-{IDENT_CHAR}|(?:{VAR_START}|0){IDENT_CHAR}*|[~*$?!@/\\;,.=:<>\"])$",
             RegexOptions.Compiled);
 
-        protected readonly IDictionary<Symbol, iObject> variables = new Dictionary<Symbol, iObject>();
+        protected readonly IDictionary<Symbol, iObject> variables = new LinkedDictionary<Symbol, iObject>();
 
         public override Class Class => HasSingletonClass ? EffectiveClass.Superclass : EffectiveClass;
 
@@ -26,12 +27,14 @@ namespace Mint
 
         public override bool  HasSingletonClass => EffectiveClass.IsSingleton;
 
-        public override bool  Frozen { get; protected set; }
-
         public override Class SingletonClass =>
             !EffectiveClass.IsSingleton
                 ? effectiveClass = new Class(EffectiveClass, isSingleton: true)
                 : EffectiveClass;
+
+        public override Array InstanceVariables => new Array(variables.Keys.Cast<iObject>());
+
+        public override bool  Frozen { get; protected set; }
 
         protected BaseObject(Class klass)
         {

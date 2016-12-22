@@ -11,6 +11,12 @@ namespace Mint
 {
     public class Object : BaseObject
     {
+        public Object(Class klass) : base(klass)
+        { }
+
+        public Object() : base()
+        { }
+
         public static iObject Box(iObject obj) => obj ?? new NilClass();
         public static iObject Box(string obj) => obj != null ? new String(obj) : (iObject) new NilClass();
         public static iObject Box(StringBuilder obj) => obj != null ? new String(obj) : (iObject) new NilClass();

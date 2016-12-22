@@ -87,8 +87,14 @@ namespace Mint
 
         public void Add(TKey key, TValue value)
         {
-            var node = new Node(key, value);
-            Remove(key); // force remove to update list
+            Node node;
+            if(map.TryGetValue(key, out node))
+            {
+                node.Value = new KeyValuePair<TKey, TValue>(key, value);
+                return;
+            }
+
+            node = new Node(key, value);
             map[key] = node;
 
             if(head == null)
@@ -213,7 +219,7 @@ namespace Mint
 
         private class Node
         {
-            public readonly KeyValuePair<TKey, TValue> Value;
+            public KeyValuePair<TKey, TValue> Value;
             public Node Previous;
             public Node Next;
 

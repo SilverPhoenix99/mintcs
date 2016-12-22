@@ -44,6 +44,12 @@ namespace Mint
 
         #endregion
 
+        public ModuleBuilder<T> Allocator(Func<iObject> allocator)
+        {
+            Class.Allocator = allocator;
+            return this;
+        }
+
         #region DefMethod
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)

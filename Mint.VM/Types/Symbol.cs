@@ -23,6 +23,8 @@ namespace Mint
 
         public bool HasSingletonClass => false;
 
+        public Array InstanceVariables => new Array();
+
         public bool Frozen => true;
 
         public Symbol(string name)

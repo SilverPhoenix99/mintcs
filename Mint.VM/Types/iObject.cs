@@ -15,6 +15,8 @@
 
         bool HasSingletonClass { get; }
 
+        Array InstanceVariables { get; }
+
         bool Frozen { get; }
 
         iObject Freeze();

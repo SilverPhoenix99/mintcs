@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -16,6 +17,8 @@ namespace Mint
 
         public override IEnumerable<Module> Ancestors =>
             Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
+
+        public Func<iObject> Allocator { get; set; }
 
         public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
             : base(CLASS, name, container)
@@ -63,6 +66,17 @@ namespace Mint
         public override void Prepend(Module module)
         {
             Prepended = AppendModule(Prepended, module, Superclass);
+        }
+
+        public iObject Allocate()
+        {
+            if(Allocator == null)
+            {
+                var name = FullName ?? Inspect();
+                throw new TypeError($"allocator undefined for {name}");
+            }
+
+            return Allocator();
         }
 
         public static bool IsA(iObject o, Class c)

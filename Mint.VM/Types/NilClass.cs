@@ -13,8 +13,10 @@ namespace Mint
         public Class SingletonClass => Class.NIL;
 
         public Class EffectiveClass => Class.NIL;
-        
+
         public bool HasSingletonClass => false;
+
+        public Array InstanceVariables => new Array();
 
         public bool Frozen => true;
 
@@ -55,9 +57,9 @@ namespace Mint
         public static bool operator ==(NilClass self, object other) => self.Equals(other);
 
         public static bool operator !=(NilClass self, object other) => !self.Equals(other);
-        
+
         public static bool IsNil(object other) => other == null || other is NilClass;
-        
+
         public static class Reflection
         {
             public static readonly MethodInfo IsNil = Reflector.Method(() => IsNil(default(object)));
@@ -66,7 +68,7 @@ namespace Mint
         public static class Expressions
         {
             public static readonly Expression Instance;
-            
+
             static Expressions()
             {
                 Instance = Expression.Constant(new NilClass(), typeof(iObject));

@@ -16,6 +16,8 @@ namespace Mint
 
         public bool Frozen => true;
 
+        public Array InstanceVariables => new Array();
+
         public iObject Freeze() => this;
 
         public override string ToString() => "false";

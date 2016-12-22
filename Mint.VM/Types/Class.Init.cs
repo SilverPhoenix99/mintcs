@@ -39,6 +39,7 @@ namespace Mint
 
             #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
+                .Allocator( () => new Object(BASIC_OBJECT) )
                 .DefMethod( "equal?", () => default(iObject).Equal(default(object)) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
@@ -52,10 +53,12 @@ namespace Mint
 
             #pragma warning disable 1720
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
+                .Allocator( () => new Object() )
                 .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
                 .DefMethod("instance_variable_set", () =>
                     default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
                 )
+                .AttrReader("instance_variables", () => default(iObject).InstanceVariables)
             ;
             #pragma warning restore 1720
 
@@ -63,6 +66,7 @@ namespace Mint
             OBJECT.SetConstant(OBJECT.Name.Value, OBJECT);
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
+                .Allocator( () => new Module() )
                 .DefLambda("ancestors", (Func<Module, iObject>) (_ => new Array(_.Ancestors)) )
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
                 .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)))
@@ -74,6 +78,8 @@ namespace Mint
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
+                .Allocator( () => new Class() )
+                .DefMethod("allocate", _ => _.Allocate())
                 .AttrReader("superclass", _ => _.Superclass)
             ;
 
@@ -164,6 +170,7 @@ namespace Mint
             ;
 
             ARRAY = ModuleBuilder<Array>.DescribeClass()
+                .Allocator( () => new Mint.Array() )
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrAccessor("[]", _ => _[default(int)])
@@ -183,6 +190,7 @@ namespace Mint
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
+                .Allocator( () => new Hash() )
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrReader("count", _ => _.Count)
@@ -202,6 +210,7 @@ namespace Mint
             REGEXP = ModuleBuilder<Regexp>.DescribeClass();
 
             STRING = ModuleBuilder<String>.DescribeClass()
+                .Allocator( () => new String() )
                 .DefMethod("to_s", _ => _.ToString())
                 .DefMethod("inspect", _ => _.Inspect())
                 .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)))
