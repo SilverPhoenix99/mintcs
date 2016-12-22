@@ -17,9 +17,12 @@ namespace Mint.MethodBinding.Parameters
             var end = bundle.Splat.Count - ParameterCounter.SuffixRequired;
             var count = end - begin;
 
-            var values = from i in Enumerable.Range(begin, count)
-                         select bundle.Splat[i];
+            if(count <= 0)
+            {
+                return new Array();
+            }
 
+            var values = bundle.Splat.Skip(begin).Take(count);
             var result = new Array(values);
 
             var hasKeyRestParameter = ParameterCounter.HasKeyRest;

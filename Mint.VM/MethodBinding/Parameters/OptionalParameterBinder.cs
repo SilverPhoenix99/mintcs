@@ -17,8 +17,8 @@ namespace Mint.MethodBinding.Parameters
                 return bundle.Splat[Parameter.Position];
             }
 
-            var defaultValue = Parameter.HasDefaultValue ? Parameter.DefaultValue : null;
-            return Object.Box(defaultValue);
+            var defaultValue = Parameter.HasDefaultValue ? Object.Box(Parameter.DefaultValue) : null;
+            return defaultValue;
         }
     }
 }

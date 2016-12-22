@@ -1,17 +1,16 @@
 using System.Linq;
 using System.Linq.Expressions;
-using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Components
 {
-    internal class CharCompiler : StringCompiler
+    internal class CharCompiler : StringContentCompiler
     {
         public CharCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Compile()
         {
-            var first = Constant(CompileContent());
+            var first = base.Compile();
             var count = Node.List.Count;
 
             if(count == 0)

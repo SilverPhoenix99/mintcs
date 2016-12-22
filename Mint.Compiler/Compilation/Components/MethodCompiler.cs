@@ -134,7 +134,7 @@ namespace Mint.Compilation.Components
                 body = scope.CompileBody(body);
 
                 var lambdaParameters = new[] { instance }.Concat(parameters.Select(_ => _.Param));
-                var lambdaExpression = Expression.Lambda(body, Name, lambdaParameters);
+                var lambdaExpression = Lambda(body, Name, lambdaParameters);
                 var lambda = lambdaExpression.Compile();
 
                 var parameterInfos = lambda.Method.GetParameters();
@@ -174,7 +174,7 @@ namespace Mint.Compilation.Components
                 Kind = kind;
                 DefaultValue = defaultValue;
                 Param = Parameter(type, name);
-                Local = Variable(typeof(LocalVariable), name);
+                Local = Variable(typeof(LocalVariable), $"localVariable_{name}");
             }
 
             public Expression CompileLocalVariable()

@@ -62,9 +62,8 @@ namespace Mint.Compilation
         public static Expression NewArray(params Expression[] values)
         {
             var array = Array.Expressions.New();
-            return values.Length == 0
-                ? array
-                : ListInit(array, values).Cast<iObject>();
+            Expression value = values.Length == 0 ? (Expression) array : ListInit(array, values);
+            return value.Cast<iObject>();
         }
 
         public static MethodCallExpression Call(

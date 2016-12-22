@@ -11,8 +11,7 @@ namespace Mint.Compilation.Components
         public override Expression Compile()
         {
             var elements = Node.Select(_ => _.Accept(Compiler));
-            var array = CompilerUtils.NewArray(elements.ToArray());
-            return array.Cast<iObject>();
+            return CompilerUtils.NewArray(elements.ToArray());
         }
     }
 }

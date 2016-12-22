@@ -1,4 +1,6 @@
 using Mint.Reflection.Parameters.Attributes;
+using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace Mint.Reflection.Parameters
@@ -29,7 +31,8 @@ namespace Mint.Reflection.Parameters
             && !parameterInfo.IsBlock();
 
         private static bool HasAttribute<T>(this ICustomAttributeProvider parameterInfo) =>
-            parameterInfo.IsDefined(typeof(T), false);
+            parameterInfo.IsDefined(typeof(T), false)
+            || TypeDescriptor.GetAttributes(parameterInfo).OfType<T>().Any();
 
         public static ParameterKind GetParameterKind(this ParameterInfo parameterInfo)
         {

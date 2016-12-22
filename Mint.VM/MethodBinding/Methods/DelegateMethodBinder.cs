@@ -36,52 +36,22 @@ namespace Mint.MethodBinding.Methods
         {
             var argumentsArray = Variable(typeof(iObject[]), "arguments");
 
-            var condition = CreateCondition(frame, argumentsArray);
-            var body = CreateBody(frame, argumentsArray);
-            var elseBody = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
+            var method = Property(Constant(Lambda), nameof(Lambda.Method));
+            var bindExpression = ArgumentBundle.Expressions.Bind(frame.Arguments, method);
 
             return Block(
                 new[] { argumentsArray },
-                Condition(condition, body, elseBody, typeof(iObject))
+                Assign(argumentsArray, bindExpression),
+                CreateBody(frame.Instance, argumentsArray)
             );
         }
 
-        private Expression CreateCondition(CallFrameBinder frame, Expression argumentArray)
+        private Expression CreateBody(Expression instance, Expression argumentsArray)
         {
-            var method = Property(Constant(Lambda), nameof(Lambda.Method));
-            var bindExpression = ArgumentBundle.Expressions.Bind(frame.Arguments, method);
-            Expression argumentCheck = NotEqual(argumentArray, Constant(null));
-
-            if(Lambda.Method.GetParameters().Length > offset)
-            {
-                argumentCheck = AndAlso(argumentCheck, TypeCheckArgumentsExpression(argumentArray));
-            }
-
-            return Block(
-                Assign(argumentArray, bindExpression),
-                argumentCheck
-            );
-        }
-
-        private Expression TypeCheckArgumentsExpression(Expression argumentArray) =>
-            Enumerable.Range(offset, Lambda.Method.GetParameters().Length - offset)
-                .Select(i => TypeCheckArgumentExpression(argumentArray, i)).Aggregate(AndAlso);
-
-        private Expression TypeCheckArgumentExpression(Expression argumentArray, int position)
-        {
-            var argument = ArrayIndex(argumentArray, Constant(position - offset));
-            var parameter = Lambda.Method.GetParameters()[position];
-            return TypeIs(argument, parameter.ParameterType);
-        }
-
-        private Expression CreateBody(CallFrameBinder frame, Expression argumentArray)
-        {
-            var instance = frame.Instance;
-
             var parameters = Lambda.Method.GetParameters();
             instance = instance.Cast(parameters[offset - 1].ParameterType);
 
-            var convertedArgs = parameters.Skip(offset).Select(p => ConvertArgument(argumentArray, p));
+            var convertedArgs = parameters.Skip(offset).Select(p => ConvertArgument(argumentsArray, p));
             var arguments = new[] { instance }.Concat(convertedArgs);
             
             return Box(Invoke(Constant(Lambda), arguments));
@@ -93,29 +63,16 @@ namespace Mint.MethodBinding.Methods
             return TryConvert(argument, parameter.ParameterType);
         }
 
-        private static Exception ThrowInvalidConversion()
-        {
-            // TODO
-
-            return new TypeError("no implicit conversion exists");
-        }
-
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor =
-                Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, Delegate>();
-
-            public static readonly MethodInfo ThrowInvalidConversion = Reflector.Method(
-                () => ThrowInvalidConversion()
-            );
+                Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, Delegate>();            
         }
 
         public static class Expressions
         {
             public static NewExpression New(Expression name, Expression owner, Expression lambda) =>
                 Expression.New(Reflection.Ctor, name, owner, lambda);
-
-            public static MethodCallExpression ThrowInvalidConversion() => Call(Reflection.ThrowInvalidConversion);
         }
     }
 }

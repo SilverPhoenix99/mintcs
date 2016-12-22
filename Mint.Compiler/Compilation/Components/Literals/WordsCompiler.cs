@@ -13,22 +13,23 @@ namespace Mint.Compilation.Components
         {
             if(Node.List.Count == 0)
             {
-                return CompilerUtils.NewArray();
+                return Array.Expressions.New();
             }
 
             var words = new List<Expression>();
             var contents = new List<Expression>();
             foreach(var child in Node)
             {
-                if(child.Value.Type != tSPACE)
+                if(child.Value.Type == tSPACE)
                 {
-                    contents.Add(child.Accept(Compiler));
+                    var word = CreateWord(contents);
+                    words.Add(word);
+                    contents = new List<Expression>();
                     continue;
                 }
 
-                var word = CreateWord(contents);
-                words.Add(word);
-                contents = new List<Expression>();
+                var content = child.Accept(Compiler);
+                contents.Add(content);
             }
 
             return CompilerUtils.NewArray(words.ToArray());
