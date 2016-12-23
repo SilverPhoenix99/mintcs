@@ -10,7 +10,12 @@ namespace Mint
     {
         public static void Run()
         {
+            var lastResult = new LocalVariable(new Symbol("_"));
+            var previousResult = new LocalVariable(new Symbol("__"));
             var binding = new CallFrame(new Object());
+            binding.AddLocal(lastResult);
+            binding.AddLocal(previousResult);
+
             Ast<Token> ast;
 
             for(var i = 1L; ; i++)
@@ -44,7 +49,11 @@ namespace Mint
                     DumpAst(ast);
                     var expr = CompileAst(ast, binding);
                     DumpExpression(expr);
-                    RunExpression(expr);
+                    var result = RunExpression(expr);
+
+                    previousResult.Value = lastResult.Value;
+                    lastResult.Value = result;
+
                     Console.WriteLine();
                 }
                 catch(Exception e)
@@ -81,12 +90,13 @@ namespace Mint
             Console.WriteLine();
         }
 
-        private static void RunExpression(Expression<Func<iObject>> expr)
+        private static iObject RunExpression(Expression<Func<iObject>> expr)
         {
             var lambda = expr.Compile();
             var result = lambda();
             Console.WriteLine(result.Inspect());
             Console.WriteLine();
+            return result;
         }
     }
 }
