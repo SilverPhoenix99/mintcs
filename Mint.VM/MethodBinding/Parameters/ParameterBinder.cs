@@ -16,5 +16,7 @@ namespace Mint.MethodBinding.Parameters
         }
 
         public abstract iObject Bind(ArgumentBundle bundle);
+
+        protected int CountRequired() => ParameterCounter.PrefixRequired + ParameterCounter.SuffixRequired;
     }
 }

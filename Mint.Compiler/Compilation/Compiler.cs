@@ -45,7 +45,7 @@ namespace Mint.Compilation
         {
             ListComponent = new ListCompiler(this);
 
-            Register(ListComponent, kBEGIN, kELSE, tSTRING_DBEG);
+            Register(ListComponent, kBEGIN, kELSE, tSTRING_DBEG, tSTRING_DVAR);
             Register(new NilCompiler(this), kNIL);
             Register(new TrueCompiler(this), kTRUE);
             Register(new FalseCompiler(this), kFALSE);

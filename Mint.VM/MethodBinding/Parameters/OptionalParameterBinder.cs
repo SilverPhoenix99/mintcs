@@ -12,7 +12,9 @@ namespace Mint.MethodBinding.Parameters
 
         public override iObject Bind(ArgumentBundle bundle)
         {
-            if(Parameter.Position < bundle.Splat.Count)
+            var available = bundle.Splat.Count - CountRequired();
+
+            if(available > 0 && Parameter.Position < bundle.Splat.Count)
             {
                 return bundle.Splat[Parameter.Position];
             }

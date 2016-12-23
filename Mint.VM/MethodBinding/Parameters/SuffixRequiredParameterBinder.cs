@@ -13,22 +13,18 @@ namespace Mint.MethodBinding.Parameters
         public override iObject Bind(ArgumentBundle bundle)
         {
             var numParameters = CountParameters();
-            var splatPositionFromEnd = Parameter.Position + 1 - numParameters;
-            var splatPositionFromStart = bundle.Splat.Count - splatPositionFromEnd;
+            var splatPosition = bundle.Splat.Count + numParameters - Parameter.Position - 2;
 
-            if(splatPositionFromStart >= bundle.Splat.Count)
+            if(splatPosition < 0 || splatPosition >= bundle.Splat.Count)
             {
                 throw new ArgumentError(
-                    "required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
+                    $"required parameter `{Parameter.Name}' with index {Parameter.Position} not passed");
             }
 
-            return bundle.Splat[splatPositionFromStart];
+            return bundle.Splat[splatPosition];
         }
 
         private int CountParameters() =>
-            ParameterCounter.PrefixRequired
-            + ParameterCounter.Optional
-            + (ParameterCounter.HasRest ? 1 : 0)
-            + ParameterCounter.SuffixRequired;
+            CountRequired() + ParameterCounter.Optional + (ParameterCounter.HasRest ? 1 : 0);
     }
 }

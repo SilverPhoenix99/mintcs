@@ -13,7 +13,7 @@ namespace Mint.Compilation.Components
         {
             foreach(var child in Node.Where(_ => _.Value?.Type == tSTRING_CONTENT))
             {
-                // Shift: copy dedent value to children if dedents property is set in Node
+                // copy dedent value to children if dedents property is set in Node
                 child.Value.MergeProperties(Node.Value);
             }
 
