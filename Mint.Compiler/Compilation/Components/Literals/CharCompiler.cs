@@ -15,10 +15,11 @@ namespace Mint.Compilation.Components
 
             if(count == 0)
             {
-                return first.Cast<iObject>();
+                return first;
             }
 
             var contents = Node.Select(_ => _.Accept(Compiler));
+            first = first.StripConversions();
             return CompilerUtils.StringConcat(first, contents);
         }
     }
