@@ -65,9 +65,6 @@ namespace Mint.Parse
             return null;
         }
 
-        // TODO: Assigns (kASSIGN and tOP_ASGN) will have to know if they are calling into a kASET ('[]=').
-        //       They are: kLBRACK2
-
         protected static Ast<Token> EnsureNode() =>
             (Ast<Token>) new Token(kENSURE, "ensure", new LexLocation(-1, -1, -1, -1));
 

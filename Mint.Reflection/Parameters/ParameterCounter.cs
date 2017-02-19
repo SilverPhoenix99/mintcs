@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Reflection;
 
 namespace Mint.Reflection.Parameters
 {
@@ -30,19 +29,10 @@ namespace Mint.Reflection.Parameters
             }
         }
 
-        public ParameterCounter(MethodBase methodInfo)
+        public ParameterCounter(MethodMetadata method)
         {
-            var parameterInfos = methodInfo.GetParameters();
-
-            if(methodInfo.IsStatic || methodInfo.IsDynamicallyGenerated())
-            {
-                var offset = parameterInfos.First(_ => _.ParameterType.FullName.StartsWith("Mint.")).Position + 1;
-
-                parameterInfos = parameterInfos.Skip(offset).ToArray();
-            }
-
             ParameterState initialState = new RequiredPrefixState(this);
-            parameterInfos.Aggregate(initialState, (state, paramInfo) => state.Parse(paramInfo));
+            method.Parameters.Aggregate(initialState, (state, parameter) => state.Parse(parameter));
         }
     }
 }

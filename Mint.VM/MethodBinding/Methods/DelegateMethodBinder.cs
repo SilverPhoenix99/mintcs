@@ -8,26 +8,32 @@ using static System.Linq.Expressions.Expression;
 
 namespace Mint.MethodBinding.Methods
 {
+    /*
+     * Generated Stub:
+     *
+     * global iObject $instance;
+     * global ArgumentBundle $bundle;
+     *
+     * {
+     *     var arguments = $bundle.Bind(@methodInfo);
+     *     return Object.Box(<Lambda>.Invoke((<cast>) $instance, (<cast>) arguments[0], ...));
+     * }
+     */
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
-        private readonly int offset;
+        private DelegateMetadata Lambda { get; }
 
-        private Delegate Lambda { get; }
-
-        public DelegateMethodBinder(Symbol name, Module owner, Delegate lambda)
+        public DelegateMethodBinder(Symbol name, Module owner, DelegateMetadata lambda)
             : base(name, owner)
         {
             Lambda = lambda;
-            offset = lambda.Method.GetParameters()
-                .First(_ => typeof(iObject).IsAssignableFrom(_.ParameterType)).Position + 1;
-            Arity = Lambda.Method.GetParameterCounter().Arity;
+            Arity = Lambda.Method.ParameterCounter.Arity;
         }
 
         private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)
             : base(newName, other)
         {
             Lambda = other.Lambda;
-            offset = other.offset;
         }
 
         public override MethodBinder Duplicate(Symbol newName) => new DelegateMethodBinder(newName, this);
@@ -48,25 +54,26 @@ namespace Mint.MethodBinding.Methods
 
         private Expression CreateBody(Expression instance, Expression argumentsArray)
         {
-            var parameters = Lambda.Method.GetParameters();
-            instance = instance.Cast(parameters[offset - 1].ParameterType);
-
-            var convertedArgs = parameters.Skip(offset).Select(p => ConvertArgument(argumentsArray, p));
+            instance = instance.Cast(Lambda.InstanceType);
+            var convertedArgs = Lambda.Method.Parameters.Select(p => ConvertArgument(argumentsArray, p));
             var arguments = new[] { instance }.Concat(convertedArgs);
             
-            return Box(Invoke(Constant(Lambda), arguments));
+            return Box(Invoke(Constant(Lambda.Lambda), arguments));
         }
 
-        private Expression ConvertArgument(Expression argumentArray, ParameterInfo parameter)
+        private Expression ConvertArgument(Expression argumentArray, ParameterMetadata parameter)
         {
-            var argument = ArrayIndex(argumentArray, Constant(parameter.Position - offset));
-            return TryConvert(argument, parameter.ParameterType);
+            var argument = GetArgument(argumentArray, parameter);
+            return TryConvert(argument, parameter.Parameter.ParameterType);
         }
+
+        private BinaryExpression GetArgument(Expression argumentArray, ParameterMetadata parameter) =>
+            ArrayIndex(argumentArray, Constant(parameter.Position));
 
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor =
-                Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, Delegate>();            
+                Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, DelegateMetadata>();
         }
 
         public static class Expressions

@@ -1,81 +1,74 @@
 ﻿using Mint.MethodBinding.Parameters;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 
 namespace Mint
 {
     internal static class MethodInfoExtensions
     {
-        public static IEnumerable<ParameterBinder> GetParameterBinders(this MethodInfo methodInfo)
+        public static IEnumerable<ParameterBinder> GetParameterBinders(this MethodMetadata method)
         {
-            var descriptor = TypeDescriptor.GetAttributes(methodInfo);
-            var binders = descriptor[typeof(ParameterBinderCollection)] as ParameterBinderCollection;
+            var binders = method.Attributes.OfType<ParameterBinderCollection>().FirstOrDefault();
 
             if(binders == null)
             {
-                binders = new ParameterBinderCollection(CreateParameterBinders(methodInfo).ToArray());
-                TypeDescriptor.AddAttributes(methodInfo, binders);
+                binders = new ParameterBinderCollection(CreateParameterBinders(method).ToArray());
+                method.Attributes.Add(binders);
             }
 
             return binders.Binders;
         }
 
-        private static IEnumerable<ParameterBinder> CreateParameterBinders(MethodInfo methodInfo)
+        private static IEnumerable<ParameterBinder> CreateParameterBinders(MethodMetadata method)
         {
-            var parameterInfos = methodInfo.GetParameterEnumerator();
-            var parameterInformation = methodInfo.GetParameterCounter();
-            for(var i = 0; i < parameterInformation.PrefixRequired; i++)
+            var parameterMetadatas = method.Parameters.GetEnumerator();
+            var parameterCounter = method.ParameterCounter;
+            for(var i = 0; i < parameterCounter.PrefixRequired; i++)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new PrefixRequiredParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new PrefixRequiredParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            for(var i = 0; i < parameterInformation.Optional; i++)
+            for(var i = 0; i < parameterCounter.Optional; i++)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new OptionalParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new OptionalParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            if(parameterInformation.HasRest)
+            if(parameterCounter.HasRest)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new RestParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new RestParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            for(var i = 0; i < parameterInformation.SuffixRequired; i++)
+            for(var i = 0; i < parameterCounter.SuffixRequired; i++)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new SuffixRequiredParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new SuffixRequiredParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            var numKeys = parameterInformation.KeyRequired + parameterInformation.KeyOptional;
+            var numKeys = parameterCounter.KeyRequired + parameterCounter.KeyOptional;
             for(var i = 0; i < numKeys; i++)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return parameterInfo.IsOptional()
-                    ? (ParameterBinder) new KeyOptionalParameterBinder(parameterInfo, parameterInformation)
-                    : new KeyRequiredParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return parameterMetadata.IsOptional
+                    ? (ParameterBinder) new KeyOptionalParameterBinder(parameterMetadata, parameterCounter)
+                    : new KeyRequiredParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            if(parameterInformation.HasKeyRest)
+            if(parameterCounter.HasKeyRest)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new KeyRestParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new KeyRestParameterBinder(parameterMetadata, parameterCounter);
             }
 
-            if(parameterInformation.HasBlock)
+            if(parameterCounter.HasBlock)
             {
-                var parameterInfo = parameterInfos.Next();
-                yield return new BlockParameterBinder(parameterInfo, parameterInformation);
+                var parameterMetadata = parameterMetadatas.Next();
+                yield return new BlockParameterBinder(parameterMetadata, parameterCounter);
             }
         }
-
-        private static IEnumerator<ParameterInfo> GetParameterEnumerator(this MethodInfo methodInfo) =>
-            methodInfo.GetParameters().AsEnumerable().GetEnumerator();
 
         private static T Next<T>(this IEnumerator<T> enumerator) =>
             enumerator.MoveNext() ? enumerator.Current : default(T);

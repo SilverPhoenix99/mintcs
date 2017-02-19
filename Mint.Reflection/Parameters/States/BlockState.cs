@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Mint.Reflection.Parameters
+﻿namespace Mint.Reflection.Parameters
 {
     public partial class ParameterCounter
     {
@@ -8,21 +6,21 @@ namespace Mint.Reflection.Parameters
         {
             public BlockState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
-            public override ParameterState Parse(ParameterInfo info)
+            public override ParameterState Parse(ParameterMetadata parameter)
             {
-                switch(info.GetParameterKind())
+                switch(parameter.Kind)
                 {
-                    case ParameterKind.Block: UpdateWith(info); return this;
+                    case ParameterKind.Block: UpdateWith(parameter); return this;
 
-                    default: return InvalidParameterError(info);
+                    default: return InvalidParameterError(parameter);
                 }
             }
 
-            private void UpdateWith(ParameterInfo info)
+            private void UpdateWith(ParameterMetadata parameter)
             {
                 if(ParameterCounter.HasBlock)
                 {
-                    DuplicateParameterError("block", info);
+                    DuplicateParameterError("block", parameter);
                 }
 
                 ParameterCounter.HasBlock = true;

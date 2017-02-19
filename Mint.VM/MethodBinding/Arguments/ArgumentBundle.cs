@@ -65,34 +65,34 @@ namespace Mint.MethodBinding.Arguments
             return keys;
         }
 
-        public iObject[] Bind(MethodInfo methodInfo)
+        public iObject[] Bind(MethodMetadata method)
         {
-            var validator = new ArityValidator(this, methodInfo);
+            var validator = new ArityValidator(this, method);
             validator.Validate();
-            var binders = methodInfo.GetParameterBinders();
+            var binders = method.GetParameterBinders();
             return binders.Select(binder => binder.Bind(this)).ToArray();
         }
 
-        public iObject[] TryBind(MethodInfo methodInfo)
+        public iObject[] TryBind(MethodMetadata method)
         {
-            var validator = new ArityValidator(this, methodInfo);
+            var validator = new ArityValidator(this, method);
             if(!validator.IsValid())
             {
                 return null;
             }
 
-            var binders = methodInfo.GetParameterBinders();
+            var binders = method.GetParameterBinders();
             return binders.Select(binder => binder.Bind(this)).ToArray();
         }
 
         public static class Reflection
         {
             public static readonly MethodInfo Bind = Reflector<ArgumentBundle>.Method(
-                _ => _.Bind(default(MethodInfo))
+                _ => _.Bind(default(MethodMetadata))
             );
 
             public static readonly MethodInfo TryBind = Reflector<ArgumentBundle>.Method(
-                _ => _.TryBind(default(MethodInfo))
+                _ => _.TryBind(default(MethodMetadata))
             );
         }
 

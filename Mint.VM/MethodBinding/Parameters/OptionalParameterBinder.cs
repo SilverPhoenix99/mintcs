@@ -1,12 +1,12 @@
 using Mint.MethodBinding.Arguments;
+using Mint.Reflection;
 using Mint.Reflection.Parameters;
-using System.Reflection;
 
 namespace Mint.MethodBinding.Parameters
 {
     internal class OptionalParameterBinder : ParameterBinder
     {
-        public OptionalParameterBinder(ParameterInfo parameter, ParameterCounter counter)
+        public OptionalParameterBinder(ParameterMetadata parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 
@@ -19,7 +19,10 @@ namespace Mint.MethodBinding.Parameters
                 return bundle.Splat[Parameter.Position];
             }
 
-            var defaultValue = Parameter.HasDefaultValue ? Object.Box(Parameter.DefaultValue) : null;
+            var defaultValue = Parameter.Parameter.HasDefaultValue
+                ? Object.Box(Parameter.Parameter.DefaultValue)
+                : null;
+
             return defaultValue;
         }
     }

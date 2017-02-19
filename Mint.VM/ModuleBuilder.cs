@@ -54,7 +54,7 @@ namespace Mint
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)
         {
-            Module.DefineMethod(new ClrMethodBinder(name, Module, method));
+            Module.DefineMethod(new ClrMethodBinder(name, Module, new MethodMetadata(method, name.Name)));
             return this;
         }
 
@@ -92,7 +92,9 @@ namespace Mint
 
         private ModuleBuilder<T> DefLambda(Symbol name, Delegate lambda)
         {
-            Module.DefineMethod(new DelegateMethodBinder(name, Module, lambda));
+            var method = new MethodMetadata(lambda.Method, name.Name, hasInstance: true);
+            var delegateMetadata = new DelegateMetadata(lambda, method);
+            Module.DefineMethod(new DelegateMethodBinder(name, Module, delegateMetadata));
             return this;
         }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace Mint.Reflection.Parameters
 {
@@ -12,19 +11,19 @@ namespace Mint.Reflection.Parameters
             ParameterCounter = parameterCounter;
         }
 
-        public abstract ParameterState Parse(ParameterInfo info);
+        public abstract ParameterState Parse(ParameterMetadata parameter);
 
-        protected ParameterState ParseInfoWith<T>(ParameterInfo info) where T : ParameterState =>
-            ((ParameterState) Activator.CreateInstance(typeof(T), ParameterCounter)).Parse(info);
+        protected ParameterState ParseInfoWith<T>(ParameterMetadata parameter) where T : ParameterState =>
+            ((ParameterState) Activator.CreateInstance(typeof(T), ParameterCounter)).Parse(parameter);
 
-        protected static ParameterState InvalidParameterError(ParameterInfo info)
+        protected static ParameterState InvalidParameterError(ParameterMetadata parameter)
         {
-            throw new InvalidParameterError($"Parameter `{info.Name}' has an invalid parameter kind.");
+            throw new InvalidParameterError($"Parameter `{parameter.Name}' has an invalid parameter kind.");
         }
 
-        protected static void DuplicateParameterError(string type, ParameterInfo info)
+        protected static void DuplicateParameterError(string type, ParameterMetadata parameter)
         {
-            throw new InvalidParameterError($"Duplicate {type} parameter: `{info.Name}'");
+            throw new InvalidParameterError($"Duplicate {type} parameter: `{parameter.Name}'");
         }
     }
 }

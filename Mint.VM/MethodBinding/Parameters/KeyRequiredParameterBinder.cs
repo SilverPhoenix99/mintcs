@@ -1,12 +1,12 @@
 using Mint.MethodBinding.Arguments;
+using Mint.Reflection;
 using Mint.Reflection.Parameters;
-using System.Reflection;
 
 namespace Mint.MethodBinding.Parameters
 {
     internal class KeyRequiredParameterBinder : ParameterBinder
     {
-        public KeyRequiredParameterBinder(ParameterInfo parameter, ParameterCounter counter)
+        public KeyRequiredParameterBinder(ParameterMetadata parameter, ParameterCounter counter)
             : base(parameter, counter)
         { }
 

@@ -1,7 +1,5 @@
-﻿using Mint.Reflection.Parameters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -38,18 +36,6 @@ namespace Mint.Reflection
 
             var constraints = info.ParameterType.GetGenericParameterConstraints();
             return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
-        }
-
-        public static ParameterCounter GetParameterCounter(this MethodInfo methodInfo)
-        {
-            var counter = TypeDescriptor.GetAttributes(methodInfo)[typeof(ParameterCounter)] as ParameterCounter;
-            if(counter == null)
-            {
-                counter = new ParameterCounter(methodInfo);
-                TypeDescriptor.AddAttributes(methodInfo, counter);
-            }
-
-            return counter;
         }
 
         public static bool IsDynamicallyGenerated(this MethodBase methodInfo) =>

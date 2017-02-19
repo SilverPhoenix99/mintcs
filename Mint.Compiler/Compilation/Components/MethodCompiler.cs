@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Scopes;
@@ -7,10 +6,14 @@ using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using Mint.Reflection.Parameters;
 using static System.Linq.Expressions.Expression;
+using Mint.Reflection;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Mint.Compilation.Components
 {
-    internal class MethodCompiler : CompilerComponentBase
+    internal partial class MethodCompiler : CompilerComponentBase
     {
         private Ast<Token> LeftNode => Node[0];
 
@@ -18,26 +21,27 @@ namespace Mint.Compilation.Components
 
         private Ast<Token> ParametersNode => Node[2];
 
-        private Ast<Token> BodyNode => Node[3];
-
         public MethodCompiler(Compiler compiler) : base(compiler)
         { }
 
         public override Expression Compile()
 	    {
             var name = Constant(new Symbol(Name));
-            var module = CompileModule();
             var moduleVar = Variable(typeof(Module), "module");
-            var parameters = CompileParameters();
-            var lambda = BuildDelegate(parameters);
+            var module = CompileModule();
+            var delegateMetadata = BuildDelegateMetadata();
 
+            /*
+             * var $module = <module>;
+             * return (iObject) $module.DefineMethod(new DelegateMethodBinder(@name, $module, @delegateMetadata);
+             */
             return Block(
                 typeof(iObject),
                 new[] { moduleVar },
                 Assign(moduleVar, module),
                 Module.Expressions.DefineMethod(
                     moduleVar,
-                    DelegateMethodBinder.Expressions.New(name, moduleVar, Constant(lambda))
+                    DelegateMethodBinder.Expressions.New(name, moduleVar, Constant(delegateMetadata))
                 ).Cast<iObject>()
             );
 	    }
@@ -53,6 +57,17 @@ namespace Mint.Compilation.Components
             return Object.Expressions.SingletonClass(instance).Cast<Module>();
         }
 
+        private DelegateMetadata BuildDelegateMetadata()
+        {
+            var parameters = CompileParameters();
+
+            var emitter = new DelegateEmitter(Compiler, Name, parameters);
+            var lambda = emitter.Compile();
+
+            var builder = new DelegateMetadataBuilder(lambda, Name, parameters);
+            return builder.Build();
+        }
+        
         private Parameter[] CompileParameters() => ParametersNode.Select(CompileParameter).ToArray();
 
         private Parameter CompileParameter(Ast<Token> node)
@@ -104,87 +119,6 @@ namespace Mint.Compilation.Components
                     return new Parameter(typeof(iObject), name, ParameterKind.Required);
                 }
             }
-        }
-
-        private Delegate BuildDelegate(Parameter[] parameters)
-        {
-            var scope = new MethodScope(Compiler);
-
-            foreach(var parameter in parameters)
-            {
-                scope.AddPreInitializedVariable(parameter.Name, parameter.Local);
-            }
-
-            var instance = scope.Instance as ParameterExpression;
-            var arguments = NewArrayInit(typeof(LocalVariable), parameters.Select(CompileLocalVariable));
-
-            Compiler.StartScope(scope);
-
-            try
-            {
-                var body = BodyNode.Accept(Compiler);
-
-                body = Block(
-                    typeof(iObject),
-                    parameters.Select(_ => _.Local),
-                    CallFrame.Expressions.Push(instance, arguments),
-                    TryFinally(body, CallFrame.Expressions.Pop())
-                );
-
-                body = scope.CompileBody(body);
-
-                var lambdaParameters = new[] { instance }.Concat(parameters.Select(_ => _.Param));
-                var lambdaExpression = Lambda(body, Name, lambdaParameters);
-                var lambda = lambdaExpression.Compile();
-
-                var parameterInfos = lambda.Method.GetParameters();
-                var offset = parameterInfos.Length - parameters.Length;
-
-                parameters.Zip(parameterInfos.Skip(offset),
-                    (p, i) => TypeDescriptor.AddAttributes(i, p.Kind.GetAttributes())
-                ).All(_ => true); // force run
-
-                return lambda;
-            }
-            finally
-            {
-                Compiler.EndScope();
-            }
-        }
-
-        private static Expression CompileLocalVariable(Parameter parameter)
-        {
-            var expression = parameter.CompileLocalVariable();
-            return Assign(parameter.Local, expression);
-        }
-
-        private class Parameter
-        {
-            public readonly Type Type;
-            public readonly Symbol Name;
-            public readonly ParameterKind Kind;
-            public readonly Expression DefaultValue;
-            public readonly ParameterExpression Param;
-            public readonly ParameterExpression Local;
-
-            public Parameter(Type type, string name, ParameterKind kind, Expression defaultValue = null)
-            {
-                Type = type;
-                Name = new Symbol(name);
-                Kind = kind;
-                DefaultValue = defaultValue;
-                Param = Parameter(type, name);
-                Local = Variable(typeof(LocalVariable), $"localVariable_{name}");
-            }
-
-            public Expression CompileLocalVariable()
-            {
-                var value = CompileInitialValue();
-                return LocalVariable.Expressions.New(Constant(Name), value);
-            }
-
-            private Expression CompileInitialValue() =>
-                DefaultValue == null ? (Expression) Param : Coalesce(Param, DefaultValue);
         }
     }
 }

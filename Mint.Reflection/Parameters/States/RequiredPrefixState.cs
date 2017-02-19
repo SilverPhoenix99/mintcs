@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Mint.Reflection.Parameters
+﻿namespace Mint.Reflection.Parameters
 {
     public partial class ParameterCounter
     {
@@ -8,19 +6,19 @@ namespace Mint.Reflection.Parameters
         {
             public RequiredPrefixState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
-            public override ParameterState Parse(ParameterInfo info)
+            public override ParameterState Parse(ParameterMetadata parameter)
             {
-                switch(info.GetParameterKind())
+                switch(parameter.Kind)
                 {
                     case ParameterKind.Required:    ParameterCounter.PrefixRequired++; return this;
-                    case ParameterKind.Optional:    return ParseInfoWith<OptionalState>(info);
-                    case ParameterKind.Rest:        return ParseInfoWith<RestState>(info);
+                    case ParameterKind.Optional:    return ParseInfoWith<OptionalState>(parameter);
+                    case ParameterKind.Rest:        return ParseInfoWith<RestState>(parameter);
                     case ParameterKind.KeyRequired: goto case ParameterKind.KeyOptional;
-                    case ParameterKind.KeyOptional: return ParseInfoWith<KeyState>(info);
-                    case ParameterKind.KeyRest:     return ParseInfoWith<KeyRestState>(info);
-                    case ParameterKind.Block:       return ParseInfoWith<BlockState>(info);
+                    case ParameterKind.KeyOptional: return ParseInfoWith<KeyState>(parameter);
+                    case ParameterKind.KeyRest:     return ParseInfoWith<KeyRestState>(parameter);
+                    case ParameterKind.Block:       return ParseInfoWith<BlockState>(parameter);
 
-                    default: return InvalidParameterError(info);
+                    default: return InvalidParameterError(parameter);
                 }
             }
         }

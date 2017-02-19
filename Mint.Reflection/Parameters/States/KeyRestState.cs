@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace Mint.Reflection.Parameters
 {
     public partial class ParameterCounter
@@ -8,22 +6,22 @@ namespace Mint.Reflection.Parameters
         {
             public KeyRestState(ParameterCounter parameterCounter) : base(parameterCounter) { }
 
-            public override ParameterState Parse(ParameterInfo info)
+            public override ParameterState Parse(ParameterMetadata parameter)
             {
-                switch(info.GetParameterKind())
+                switch(parameter.Kind)
                 {
-                    case ParameterKind.KeyRest: UpdateWith(info); return this;
-                    case ParameterKind.Block:   return ParseInfoWith<BlockState>(info);
+                    case ParameterKind.KeyRest: UpdateWith(parameter); return this;
+                    case ParameterKind.Block:   return ParseInfoWith<BlockState>(parameter);
 
-                    default: return InvalidParameterError(info);
+                    default: return InvalidParameterError(parameter);
                 }
             }
 
-            private void UpdateWith(ParameterInfo info)
+            private void UpdateWith(ParameterMetadata parameter)
             {
                 if(ParameterCounter.HasKeyRest)
                 {
-                    DuplicateParameterError("keywords", info);
+                    DuplicateParameterError("keywords", parameter);
                 }
 
                 ParameterCounter.HasKeyRest = true;

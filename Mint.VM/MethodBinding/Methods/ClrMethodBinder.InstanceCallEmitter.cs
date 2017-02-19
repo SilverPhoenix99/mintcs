@@ -1,10 +1,9 @@
-using System;
 using Mint.MethodBinding.Arguments;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using static System.Linq.Expressions.Expression;
+using Mint.Reflection;
 
 namespace Mint.MethodBinding.Methods
 {
@@ -21,33 +20,30 @@ namespace Mint.MethodBinding.Methods
          * global iObject $instance;
          * global ArgumentBundle $bundle;
          * global iObject[] $arguments;
-         *     
+         *
          * case {
          *     $arguments = $bundle.Bind(@methodInfo);
          *     $arguments != null && $arguments[0] is <Type> && ...
          * }:
          * {
-         *     return Object.Box($instance.<Method>((<cast>) $arguments[0], ...));
+         *     return Object.Box(((<cast>) $instance).<Method>((<cast>) $arguments[0], ...));
          * }
          */
         private class InstanceCallEmitter : CallEmitter
         {
-            protected MethodInfo Method { get; }
+            protected MethodMetadata Method { get; }
 
             private CallFrameBinder BundledFrame { get; }
 
             private ParameterExpression ArgumentArray { get; }
 
-            protected ParameterInfo[] ParameterInfos { get; }
-
-            protected virtual int Offset => 0;
-
-            public InstanceCallEmitter(MethodInfo method, CallFrameBinder bundledFrame, ParameterExpression argumentsArray)
+            public InstanceCallEmitter(MethodMetadata method,
+                                       CallFrameBinder bundledFrame,
+                                       ParameterExpression argumentsArray)
             {
                 Method = method;
                 BundledFrame = bundledFrame;
                 ArgumentArray = argumentsArray;
-                ParameterInfos = Method.GetParameters();
             }
 
             public SwitchCase Bind()
@@ -62,7 +58,7 @@ namespace Mint.MethodBinding.Methods
                 var bindExpression = ArgumentBundle.Expressions.TryBind(BundledFrame.Arguments, Constant(Method));
                 Expression argumentCheck = NotEqual(ArgumentArray, Constant(null));
 
-                if(ParameterInfos.Length > Offset)
+                if(Method.Parameters.Count > 0)
                 {
                     argumentCheck = AndAlso(argumentCheck, TypeCheckArgumentsExpression());
                 }
@@ -73,39 +69,35 @@ namespace Mint.MethodBinding.Methods
                 );
             }
 
-            private Expression TypeCheckArgumentsExpression()
-            {
-                return Enumerable.Range(Offset, ParameterInfos.Length - Offset)
-                    .Select(TypeCheckArgumentExpression)
-                    .Aggregate(AndAlso);
-            }
+            private Expression TypeCheckArgumentsExpression() =>
+                Method.Parameters.Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
 
-            private Expression TypeCheckArgumentExpression(int position)
-            {
-                var argument = ArrayIndex(ArgumentArray, Constant(position));
-                var parameter = ParameterInfos[position];
-                return TypeIs(argument, parameter.ParameterType);
-            }
+            private Expression TypeCheckArgumentExpression(ParameterMetadata parameter) =>
+                TypeIs(GetArgument(parameter), parameter.Parameter.ParameterType);
 
-            private Expression CreateBody() => Box(Call(GetInstance(), Method, GetArguments()));
+            private Expression CreateBody() => Box(Call(GetInstance(), Method.Method, GetArguments()));
 
             protected virtual Expression GetInstance() => GetConvertedInstance();
 
             protected Expression GetConvertedInstance()
             {
-                var type = TryGetInstanceType();
+                var type = Method.Method.DeclaringType;
                 return type == null ? BundledFrame.Instance : BundledFrame.Instance.Cast(type);
             }
 
-            protected virtual IEnumerable<Expression> GetArguments() => ParameterInfos.Select(ConvertArgument);
+            protected virtual IEnumerable<Expression> GetArguments() => Method.Parameters.Select(ConvertArgument);
 
-            protected virtual Type TryGetInstanceType() => Method.DeclaringType != null ? Method.DeclaringType : null;
+            protected Expression ConvertArgument(ParameterMetadata parameter) =>
+                TryConvert(GetArgument(parameter), parameter.Parameter.ParameterType);
 
-            protected Expression ConvertArgument(ParameterInfo parameter)
+            protected BinaryExpression GetArgument(ParameterMetadata parameter)
             {
-                var argument = ArrayIndex(ArgumentArray, Constant(parameter.Position));
-                return TryConvert(argument, parameter.ParameterType);
+                var position = GetArgumentPosition(parameter);
+                return ArrayIndex(ArgumentArray, Constant(position));
             }
+
+            protected int GetArgumentPosition(ParameterMetadata parameter) =>
+                parameter.Position - Method.ParameterOffset;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
-using System.Reflection;
-using Mint.Reflection;
 using Mint.Reflection.Parameters;
+using Mint.Reflection;
 
 namespace Mint.MethodBinding.Arguments
 {
@@ -9,15 +8,15 @@ namespace Mint.MethodBinding.Arguments
     {
         public ArgumentBundle Arguments { get; }
 
-        public MethodInfo Method { get; }
+        public MethodMetadata Method { get; }
 
         private ParameterCounter Counter { get; }
 
-        public ArityValidator(ArgumentBundle arguments, MethodInfo methodInfo)
+        public ArityValidator(ArgumentBundle arguments, MethodMetadata method)
         {
             Arguments = arguments;
-            Method = methodInfo;
-            Counter = methodInfo.GetParameterCounter();
+            Method = method;
+            Counter = method.ParameterCounter;
         }
 
         public void Validate()
@@ -70,11 +69,10 @@ namespace Mint.MethodBinding.Arguments
 
         private string ValidateMissingKeywords()
         {
-            var parameters = Method.GetParameters();
             var requiredKeys = (
-                from p in parameters
+                from p in Method.Parameters
                 let name = new Symbol(p.Name)
-                where p.IsKeyRequired() && !Arguments.Keywords.HasKey(name)
+                where p.IsKeyRequired && !Arguments.Keywords.HasKey(name)
                 select name
             ).ToArray();
 
@@ -95,10 +93,9 @@ namespace Mint.MethodBinding.Arguments
                 return null;
             }
 
-            var parameters = Method.GetParameters();
             var parameterNames =
-                from p in parameters
-                where p.IsKey()
+                from p in Method.Parameters
+                where p.IsKey
                 select new Symbol(p.Name)
             ;
 

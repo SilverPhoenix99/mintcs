@@ -17,7 +17,7 @@ namespace Mint.MethodBinding.Methods
      *
      *     switch
      *     {
-     *         case <InstanceCallEmitter code>;
+     *         case <CallEmitter code>;
      *         
      *         default:
      *             new TypeError("no implicit conversion exists");
@@ -26,54 +26,58 @@ namespace Mint.MethodBinding.Methods
      */
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private MethodInfo[] MethodInfos { get; }
+        private MethodMetadata[] Methods { get; }
 
-        public ClrMethodBinder(Symbol name, Module owner, MethodInfo method, Visibility visibility = Visibility.Public)
+        public ClrMethodBinder(Symbol name,
+                               Module owner,
+                               MethodMetadata method,
+                               Visibility visibility = Visibility.Public)
             : base(name, owner, visibility)
         {
-            if(method.IsDynamicallyGenerated())
+            if(method.Method.IsDynamicallyGenerated())
             {
                 throw new ArgumentException("Method cannot be dynamically generated. Use DelegateMethodBinder instead.");
             }
 
-            MethodInfos = GetOverloads(method);
-            Debug.Assert(MethodInfos.Length != 0);
+            Methods = GetOverloads(method);
+            Debug.Assert(Methods.Length != 0);
             Arity = CalculateArity();
         }
 
         private ClrMethodBinder(Symbol newName, ClrMethodBinder other)
             : base(newName, other)
         {
-            MethodInfos = (MethodInfo[]) other.MethodInfos.Clone();
+            Methods = (MethodMetadata[]) other.Methods.Clone();
         }
 
-        private static MethodInfo[] GetOverloads(MethodInfo method)
+        private static MethodMetadata[] GetOverloads(MethodMetadata method)
         {
-            Debug.Assert(method.ReflectedType != null, "method.ReflectedType != null");
+            Debug.Assert(method.Method.ReflectedType != null, "method.ReflectedType != null");
 
             var methods =
-                from m in method.ReflectedType.GetMethods(Instance | NonPublic | Public)
+                from m in method.Method.ReflectedType.GetMethods(Instance | NonPublic | Public)
                 where m.Name == method.Name
-                select m
+                select new MethodMetadata(m)
             ;
 
-            if(method.IsStatic && !method.IsDefined(typeof(ExtensionAttribute)))
+            if(method.IsStatic && !method.Method.IsDefined(typeof(ExtensionAttribute)))
             {
                 methods = methods.Concat(new[] { method });
             }
 
-            return methods.Concat(method.GetExtensionOverloads()).ToArray();
+            var overloads = method.Method.GetExtensionOverloads().Select(m => new MethodMetadata(m));
+            return methods.Concat(overloads).ToArray();
         }
 
         private Arity CalculateArity() =>
-            MethodInfos.Select(_ => _.GetParameterCounter().Arity).Aggregate((left, right) => left.Merge(right));
+            Methods.Select(_ => _.ParameterCounter.Arity).Aggregate((left, right) => left.Merge(right));
 
         public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(CallFrameBinder frame)
         {
             var argumentsArray = Variable(typeof(iObject[]), "arguments");
-            var cases = MethodInfos.Select(info => CreateCallEmitter(info, frame, argumentsArray).Bind());
+            var cases = Methods.Select(method => CreateCallEmitter(method, frame, argumentsArray).Bind());
 
             var defaultCase = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
 
@@ -85,12 +89,12 @@ namespace Mint.MethodBinding.Methods
         }
 
         private static CallEmitter CreateCallEmitter(
-            MethodInfo info,
+            MethodMetadata method,
             CallFrameBinder frame,
             ParameterExpression argumentsArray
         ) =>
-            info.IsStatic ? new StaticCallEmitter(info, frame, argumentsArray)
-                          : new InstanceCallEmitter(info, frame, argumentsArray);
+            method.IsStatic ? new StaticCallEmitter(method, frame, argumentsArray)
+                          : new InstanceCallEmitter(method, frame, argumentsArray);
         
         private static Exception ThrowInvalidConversion()
         {
