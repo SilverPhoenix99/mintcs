@@ -12,7 +12,18 @@ namespace Mint.MethodBinding.Parameters
 
         public override iObject Bind(ArgumentBundle bundle)
         {
-            throw new System.NotImplementedException();
+            var value = bundle.Keywords[new Symbol(Parameter.Name)];
+
+            if(value != null)
+            {
+                return value;
+            }
+
+            var defaultValue = Parameter.Parameter.HasDefaultValue
+                ? Object.Box(Parameter.Parameter.DefaultValue)
+                : null;
+
+            return defaultValue;
         }
     }
 }

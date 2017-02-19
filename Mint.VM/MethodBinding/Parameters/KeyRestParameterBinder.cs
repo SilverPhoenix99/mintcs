@@ -12,6 +12,8 @@ namespace Mint.MethodBinding.Parameters
 
         public override iObject Bind(ArgumentBundle bundle)
         {
+            // TODO: Select all keywords that aren't KeyRequired or KeyOptional.
+
             throw new System.NotImplementedException();
         }
     }

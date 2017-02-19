@@ -98,7 +98,7 @@ namespace Mint.Compilation.Components
                     }
 
                     var value = node[0].Accept(Compiler);
-                    return new Parameter(typeof(Array), name, ParameterKind.KeyOptional, value);
+                    return new Parameter(typeof(iObject), name, ParameterKind.KeyOptional, value);
                 }
 
                 case TokenType.kDSTAR:

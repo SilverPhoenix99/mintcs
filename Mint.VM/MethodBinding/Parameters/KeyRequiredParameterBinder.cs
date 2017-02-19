@@ -12,7 +12,15 @@ namespace Mint.MethodBinding.Parameters
 
         public override iObject Bind(ArgumentBundle bundle)
         {
-            throw new System.NotImplementedException();
+            var value = bundle.Keywords[new Symbol(Parameter.Name)];
+
+            if(value != null)
+            {
+                return value;
+            }
+
+            throw new ArgumentError(
+                $"required keyword parameter `{Parameter.Name}' with index {Parameter.Position} was not passed");
         }
     }
 }
