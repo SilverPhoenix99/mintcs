@@ -1,22 +1,23 @@
 using Mint.MethodBinding.Arguments;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 
 namespace Mint.MethodBinding.Parameters
 {
     public abstract class ParameterBinder
     {
-        public ParameterMetadata Parameter { get; }
-        public ParameterCounter ParameterCounter { get; }
+        public MethodMetadata Method { get; }
 
-        public ParameterBinder(ParameterMetadata parameter, ParameterCounter counter)
+        public ParameterMetadata Parameter { get; }
+
+        public ParameterBinder(MethodMetadata method, ParameterMetadata parameter)
         {
+            Method = method;
             Parameter = parameter;
-            ParameterCounter = counter;
         }
 
         public abstract iObject Bind(ArgumentBundle bundle);
 
-        protected int CountRequired() => ParameterCounter.PrefixRequired + ParameterCounter.SuffixRequired;
+        protected int CountRequired() =>
+            Method.ParameterCounter.PrefixRequired + Method.ParameterCounter.SuffixRequired;
     }
 }

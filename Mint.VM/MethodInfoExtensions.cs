@@ -22,51 +22,51 @@ namespace Mint
 
         private static IEnumerable<ParameterBinder> CreateParameterBinders(MethodMetadata method)
         {
-            var parameterMetadatas = method.Parameters.GetEnumerator();
-            var parameterCounter = method.ParameterCounter;
-            for(var i = 0; i < parameterCounter.PrefixRequired; i++)
+            var parameters = method.Parameters.GetEnumerator();
+            var counter = method.ParameterCounter;
+            for(var i = 0; i < counter.PrefixRequired; i++)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new PrefixRequiredParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new PrefixRequiredParameterBinder(method, parameter);
             }
 
-            for(var i = 0; i < parameterCounter.Optional; i++)
+            for(var i = 0; i < counter.Optional; i++)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new OptionalParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new OptionalParameterBinder(method, parameter);
             }
 
-            if(parameterCounter.HasRest)
+            if(counter.HasRest)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new RestParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new RestParameterBinder(method, parameter);
             }
 
-            for(var i = 0; i < parameterCounter.SuffixRequired; i++)
+            for(var i = 0; i < counter.SuffixRequired; i++)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new SuffixRequiredParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new SuffixRequiredParameterBinder(method, parameter);
             }
 
-            var numKeys = parameterCounter.KeyRequired + parameterCounter.KeyOptional;
+            var numKeys = counter.KeyRequired + counter.KeyOptional;
             for(var i = 0; i < numKeys; i++)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return parameterMetadata.IsOptional
-                    ? (ParameterBinder) new KeyOptionalParameterBinder(parameterMetadata, parameterCounter)
-                    : new KeyRequiredParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return parameter.IsOptional
+                    ? (ParameterBinder) new KeyOptionalParameterBinder(method, parameter)
+                    : new KeyRequiredParameterBinder(method, parameter);
             }
 
-            if(parameterCounter.HasKeyRest)
+            if(counter.HasKeyRest)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new KeyRestParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new KeyRestParameterBinder(method, parameter);
             }
 
-            if(parameterCounter.HasBlock)
+            if(counter.HasBlock)
             {
-                var parameterMetadata = parameterMetadatas.Next();
-                yield return new BlockParameterBinder(parameterMetadata, parameterCounter);
+                var parameter = parameters.Next();
+                yield return new BlockParameterBinder(method, parameter);
             }
         }
 

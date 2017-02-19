@@ -22,7 +22,7 @@ namespace Mint
             {
                 var fragment = Prompt($"imt[{i}]> ");
 
-                if(fragment.Trim() == "quit")
+                if(fragment == null || fragment.Trim() == "quit")
                 {
                     break;
                 }

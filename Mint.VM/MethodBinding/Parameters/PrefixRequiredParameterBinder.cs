@@ -1,13 +1,12 @@
 using Mint.MethodBinding.Arguments;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 
 namespace Mint.MethodBinding.Parameters
 {
     internal class PrefixRequiredParameterBinder : ParameterBinder
     {
-        public PrefixRequiredParameterBinder(ParameterMetadata parameter, ParameterCounter counter)
-            : base(parameter, counter)
+        public PrefixRequiredParameterBinder(MethodMetadata method, ParameterMetadata parameter)
+            : base(method, parameter)
         { }
 
         public override iObject Bind(ArgumentBundle bundle)

@@ -1,13 +1,12 @@
 using Mint.MethodBinding.Arguments;
 using Mint.Reflection;
-using Mint.Reflection.Parameters;
 
 namespace Mint.MethodBinding.Parameters
 {
     internal class KeyRequiredParameterBinder : ParameterBinder
     {
-        public KeyRequiredParameterBinder(ParameterMetadata parameter, ParameterCounter counter)
-            : base(parameter, counter)
+        public KeyRequiredParameterBinder(MethodMetadata method, ParameterMetadata parameter)
+            : base(method, parameter)
         { }
 
         public override iObject Bind(ArgumentBundle bundle)
