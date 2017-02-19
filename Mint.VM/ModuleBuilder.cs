@@ -54,7 +54,7 @@ namespace Mint
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)
         {
-            Module.DefineMethod(new ClrMethodBinder(name, Module, new MethodMetadata(method, name.Name)));
+            Module.DefineMethod(new ClrMethodBinder(name, Module, new MethodMetadata(method)));
             return this;
         }
 
