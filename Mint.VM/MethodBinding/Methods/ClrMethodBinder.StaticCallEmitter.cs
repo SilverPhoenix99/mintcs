@@ -32,6 +32,13 @@ namespace Mint.MethodBinding.Methods
 
             protected override Expression GetInstance() => null;
 
+            protected override Expression GetConvertedInstance()
+            {
+                var position = Method.HasClosure ? 1 : 0;
+                var type = Method.Method.GetParameters()[position].ParameterType;
+                return BundledFrame.Instance.Cast(type);
+            }
+
             protected override IEnumerable<Expression> GetArguments()
             {
                 var convertedArgs = base.GetArguments();

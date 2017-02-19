@@ -33,7 +33,7 @@ namespace Mint.MethodBinding.Methods
         {
             protected MethodMetadata Method { get; }
 
-            private CallFrameBinder BundledFrame { get; }
+            protected CallFrameBinder BundledFrame { get; }
 
             private ParameterExpression ArgumentArray { get; }
 
@@ -79,7 +79,7 @@ namespace Mint.MethodBinding.Methods
 
             protected virtual Expression GetInstance() => GetConvertedInstance();
 
-            protected Expression GetConvertedInstance()
+            protected virtual Expression GetConvertedInstance()
             {
                 var type = Method.Method.DeclaringType;
                 return type == null ? BundledFrame.Instance : BundledFrame.Instance.Cast(type);
