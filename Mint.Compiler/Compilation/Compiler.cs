@@ -13,7 +13,7 @@ using Mint.MethodBinding;
 
 namespace Mint.Compilation
 {
-    public partial class Compiler : AstVisitor<Token, Expression>
+    public class Compiler : AstVisitor<Token, Expression>
     {
         private readonly IDictionary<TokenType, ComponentSelector> selectors;
         private readonly Stack<Scope> scopes;

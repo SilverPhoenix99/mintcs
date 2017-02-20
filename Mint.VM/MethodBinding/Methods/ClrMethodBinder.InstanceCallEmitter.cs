@@ -87,17 +87,11 @@ namespace Mint.MethodBinding.Methods
 
             protected virtual IEnumerable<Expression> GetArguments() => Method.Parameters.Select(ConvertArgument);
 
-            protected Expression ConvertArgument(ParameterMetadata parameter) =>
+            private Expression ConvertArgument(ParameterMetadata parameter) =>
                 TryConvert(GetArgument(parameter), parameter.Parameter.ParameterType);
 
-            protected BinaryExpression GetArgument(ParameterMetadata parameter)
-            {
-                var position = GetArgumentPosition(parameter);
-                return ArrayIndex(ArgumentArray, Constant(position));
-            }
-
-            protected int GetArgumentPosition(ParameterMetadata parameter) =>
-                parameter.Position - Method.ParameterOffset;
+            private BinaryExpression GetArgument(ParameterMetadata parameter) =>
+                ArrayIndex(ArgumentArray, Constant(parameter.Position));
         }
     }
 }

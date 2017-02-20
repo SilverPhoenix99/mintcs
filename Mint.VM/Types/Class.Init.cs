@@ -2,6 +2,7 @@ using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using System;
 using System.Diagnostics;
+
 namespace Mint
 {
     public partial class Class
@@ -131,6 +132,7 @@ namespace Mint
                 .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
                 .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
                 .DefMethod("bit_length", _ => _.BitLength() )
+                .DefMethod("+", () => default(Fixnum) + default(Fixnum))
             ;
 
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)

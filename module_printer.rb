@@ -179,3 +179,7 @@ class ModulePrinter
     `stty size`.split.map(&:to_i).reverse
   end
 end
+
+if $0 == __FILE__ && ARGV.size == 1
+  ModulePrinter.print( Object.const_get(ARGV[0]) )
+end

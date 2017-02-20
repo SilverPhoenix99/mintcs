@@ -15,9 +15,6 @@ namespace Mint.Reflection
 
         public static MethodInfo Method(Expression<Action> lambda) => Method((LambdaExpression) lambda);
 
-        public static MethodInfo Operator<TResult>(Expression<Func<TResult>> lambda) =>
-            Operator((LambdaExpression) lambda);
-
         public static MethodInfo Convert<TResult>(Expression<Func<TResult>> lambda) =>
             Convert((LambdaExpression) lambda);
 
@@ -35,16 +32,21 @@ namespace Mint.Reflection
 
         public static MethodInfo Method(LambdaExpression lambda)
         {
-            var body = (MethodCallExpression) Body(lambda);
-            var type = body.Object?.Type;
-            var method = body.Method;
+            var body = Body(lambda);
+
+            if(body is BinaryExpression)
+            {
+                return Operator(body);
+            }
+
+            var call = (MethodCallExpression) body;
+            var type = call.Object?.Type;
+            var method = call.Method;
             return type == null ? method : (DeclaringMethod(method, type) ?? method);
         }
 
-        public static MethodInfo Operator(LambdaExpression lambda)
+        private static MethodInfo Operator(Expression body)
         {
-            var body = Body(lambda);
-
             Type type;
             MethodInfo method;
             var bin = body as BinaryExpression;
@@ -55,7 +57,7 @@ namespace Mint.Reflection
             }
             else
             {
-                var unary = body as UnaryExpression;
+                var unary = (UnaryExpression) body;
                 type = unary.Type;
                 method = unary.Method;
             }
@@ -144,8 +146,6 @@ namespace Mint.Reflection
         public static MethodInfo Method<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Method(lambda);
 
         public static MethodInfo Method(Expression<Action<T>> lambda) => Reflector.Method(lambda);
-
-        public static MethodInfo Operator<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Operator(lambda);
 
         public static MethodInfo Convert<TResult>(Expression<Func<T, TResult>> lambda) => Reflector.Convert(lambda);
 
