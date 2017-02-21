@@ -111,6 +111,7 @@ namespace Mint.Compilation
             Register(new ConstantResolutionSelector(this), kCOLON2);
             Register(new ModuleSelector(this), kMODULE);
             Register(new ClassSelector(this), kCLASS);
+            Register(new CaseWhenSelector(this), kCASE);
         }
 
         public void Register(CompilerComponent component, params TokenType[] types)

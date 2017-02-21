@@ -20,7 +20,7 @@ namespace Mint.Compilation
             var cnst = expr as ConstantExpression;
             if(cnst != null)
             {
-                return Constant(!(cnst.Value is NilClass) && !(cnst.Value is FalseClass));
+                return Constant(Object.ToBool((iObject) cnst.Value));
             }
 
             // (obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass)
