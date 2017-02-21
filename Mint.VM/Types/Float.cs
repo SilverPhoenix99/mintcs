@@ -38,5 +38,21 @@ namespace Mint
         public static explicit operator float (Float v) => (float) v.Value;
 
         public static explicit operator Float(Fixnum v) => new Float(v.Value);
+
+        public static Float operator +(Float l, Float r) => new Float(l.Value + r.Value);
+
+        public static Float operator +(Float l, Fixnum r) => new Float(l.Value + r.Value);
+
+        public static Float operator -(Float l, Float r) => new Float(l.Value - r.Value);
+
+        public static Float operator -(Float l, Fixnum r) => new Float(l.Value - r.Value);
+
+        public static Float operator *(Float l, Float r) => new Float(l.Value * r.Value);
+
+        public static Float operator *(Float l, Fixnum r) => new Float(l.Value * r.Value);
+
+        public static Float operator /(Float l, Float r) => new Float(l.Value / r.Value);
+
+        public static Float operator /(Float l, Fixnum r) => new Float(l.Value / r.Value);
     }
 }

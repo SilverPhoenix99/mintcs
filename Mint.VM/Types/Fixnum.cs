@@ -171,5 +171,19 @@ namespace Mint
         public static explicit operator Fixnum(Float v)  => new Fixnum((long) v.Value);
 
         public static Fixnum operator +(Fixnum l, Fixnum r) => new Fixnum(l.Value + r.Value);
+
+        public static Float operator +(Fixnum l, Float r) => new Float(l.Value + r.Value);
+
+        public static Fixnum operator -(Fixnum l, Fixnum r) => new Fixnum(l.Value - r.Value);
+
+        public static Float operator -(Fixnum l, Float r) => new Float(l.Value - r.Value);
+
+        public static Fixnum operator *(Fixnum l, Fixnum r) => new Fixnum(l.Value * r.Value);
+
+        public static Float operator *(Fixnum l, Float r) => new Float(l.Value * r.Value);
+
+        public static Fixnum operator /(Fixnum l, Fixnum r) => new Fixnum(l.Value / r.Value);
+
+        public static Float operator /(Fixnum l, Float r) => new Float(l.Value / r.Value);
     }
 }

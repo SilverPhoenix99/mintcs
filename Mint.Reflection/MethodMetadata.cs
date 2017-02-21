@@ -110,5 +110,8 @@ namespace Mint.Reflection
                 throw new ArgumentException("parameter list contains duplicates");
             }
         }
+
+        public bool HasAttribute<T>() =>
+            Method.IsDefined(typeof(T), false) || Attributes.Any(a => a.GetType() == typeof(T));
     }
 }

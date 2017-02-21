@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Mint.Reflection;
 using System.Diagnostics;
 using System.Linq;
@@ -54,19 +55,54 @@ namespace Mint.MethodBinding.Methods
         {
             Debug.Assert(method.Method.ReflectedType != null, "method.ReflectedType != null");
 
-            var methods =
-                from m in method.Method.ReflectedType.GetMethods(Instance | NonPublic | Public)
-                where m.Name == method.Name
-                select new MethodMetadata(m)
-            ;
+            var type = method.HasAttribute<ExtensionAttribute>()
+                     ? method.Method.GetParameters()[0].ParameterType
+                     : method.Method.ReflectedType;
 
-            if(method.IsStatic && !method.Method.IsDefined(typeof(ExtensionAttribute)))
+            var methods = GetMethodOverloads(method.Name, type);
+            var extensionMethods = GetExtensionOverloads(method.Name, type);
+
+            return methods.Concat(extensionMethods).Select(m => new MethodMetadata(m)).ToArray();
+        }
+
+        private static IEnumerable<MethodInfo> GetMethodOverloads(string methodName, Type instanceType)
+        {
+            return
+                from method in instanceType.GetMethods(Instance | Static | NonPublic | Public)
+                where method.Name == methodName
+                   && !method.IsDefined(typeof(ExtensionAttribute), false)
+                select method
+            ;
+        }
+
+        private static IEnumerable<MethodInfo> GetExtensionOverloads(string methodName, Type instanceType)
+        {
+            return
+                from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                from type in assembly.GetTypes()
+                where type.IsSealed
+                   && !type.IsGenericType
+                   && !type.IsNested
+                   && type.IsDefined(typeof(ExtensionAttribute), false)
+                from method in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                where method.IsDefined(typeof(ExtensionAttribute), false)
+                   && method.Name == methodName
+                   && Matches(method.GetParameters()[0], instanceType)
+                select method
+            ;
+        }
+
+        private static bool Matches(ParameterInfo info, Type declaringType)
+        {
+            if(!info.ParameterType.IsGenericParameter)
             {
-                methods = methods.Concat(new[] { method });
+                // return : info.ParameterType is == or superclass of declaringType?
+                var matches = info.ParameterType.IsAssignableFrom(declaringType);
+                return matches;
             }
 
-            var overloads = method.Method.GetExtensionOverloads().Select(m => new MethodMetadata(m));
-            return methods.Concat(overloads).ToArray();
+            var constraints = info.ParameterType.GetGenericParameterConstraints();
+            return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
         }
 
         private Arity CalculateArity() =>

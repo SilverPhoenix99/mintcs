@@ -113,6 +113,10 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefLambda("abs", (Func<Float, Float>) (_ => Math.Abs(_.Value)) )
+                .DefMethod("+", () => default(Float) + default(Float))
+                .DefMethod("-", () => default(Float) - default(Float))
+                .DefMethod("*", () => default(Float) * default(Float))
+                .DefMethod("/", () => default(Float) / default(Float))
             ;
 
             COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC);
@@ -133,6 +137,9 @@ namespace Mint
                 .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
                 .DefMethod("bit_length", _ => _.BitLength() )
                 .DefMethod("+", () => default(Fixnum) + default(Fixnum))
+                .DefMethod("-", () => default(Fixnum) - default(Fixnum))
+                .DefMethod("*", () => default(Fixnum) * default(Fixnum))
+                .DefMethod("/", () => default(Fixnum) / default(Fixnum))
             ;
 
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
