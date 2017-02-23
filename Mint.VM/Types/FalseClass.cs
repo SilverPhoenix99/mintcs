@@ -25,13 +25,9 @@ namespace Mint
 
         public string Inspect() => ToString();
 
-        public bool IsA(Class klass) => Class.IsA(this, klass);
-
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
         public override bool Equals(object other) => other is FalseClass || other as bool? == false;
-
-        public bool Equal(object other) => Equals(other);
 
         public override int GetHashCode() => Id.GetHashCode();
 

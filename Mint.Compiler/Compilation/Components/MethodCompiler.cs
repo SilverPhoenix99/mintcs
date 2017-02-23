@@ -1,15 +1,10 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Mint.Compilation.Scopes;
 using Mint.MethodBinding.Methods;
 using Mint.Parse;
 using Mint.Reflection.Parameters;
 using static System.Linq.Expressions.Expression;
 using Mint.Reflection;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Mint.Compilation.Components
 {

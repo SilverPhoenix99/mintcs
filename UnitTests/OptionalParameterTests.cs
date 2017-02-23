@@ -1,7 +1,6 @@
 ﻿using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Compilation;
-using Mint.Reflection;
 using NUnit.Framework;
 
 namespace Mint.UnitTests
@@ -9,14 +8,6 @@ namespace Mint.UnitTests
     [TestFixture]
     public class OptionalParameterTests
     {
-        [Test]
-        public void TestArity()
-        {
-            var binder = new String("").EffectiveClass.FindMethod(new Symbol("ljust"));
-
-            Assert.That(binder.Arity, Is.EqualTo(new Arity(1, 2)));
-        }
-
         [Test]
         public void Test_String_ljust()
         {

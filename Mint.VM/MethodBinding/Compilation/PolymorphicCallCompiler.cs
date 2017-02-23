@@ -1,7 +1,6 @@
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Methods;
 using Mint.Reflection;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -67,9 +66,8 @@ namespace Mint.MethodBinding.Compilation
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {
-            var classId = instance.EffectiveClass.Id;
             var binder = TryFindMethodBinder(instance);
-            var cachedMethod = CreateCachedMethod(classId, binder);
+            var cachedMethod = CreateCachedMethod(instance, binder);
             Cache.Put(cachedMethod);
             CallSite.BundledCall = Compile();
             return CallSite.BundledCall(instance, bundle);
@@ -77,16 +75,17 @@ namespace Mint.MethodBinding.Compilation
 
         private CallSite.Stub UpgradeCompiler()
         {
-            var binderCache = Cache.Select(_ => new KeyValuePair<long, MethodBinder>(_.Key, _.Value.Binder));
+            var binderCache = Cache.Values.Cast<CachedMethod>();
             CallSite.CallCompiler = new MegamorphicCallCompiler(CallSite, binderCache);
             return CallSite.CallCompiler.Compile();
         }
 
-        private CachedMethod<Expression> CreateCachedMethod(long classId, MethodBinder binder)
+        private CachedMethod<Expression> CreateCachedMethod(iObject instance, MethodBinder binder)
         {
-            var frame = new CallFrameBinder(CallSite, Instance, Bundle);
+            var classId = instance.EffectiveClass.Id;
+            var frame = new CallFrameBinder(CallSite, instance.GetType(), Instance, Bundle);
             var siteExpression = binder.Bind(frame);
-            return new CachedMethod<Expression>(classId, binder, siteExpression);
+            return new CachedMethod<Expression>(classId, instance.GetType(), binder, siteExpression);
         }
 
         private Expression BuildBodyExpression()
@@ -94,7 +93,7 @@ namespace Mint.MethodBinding.Compilation
             var effectiveClassPropertyExpression = Instance.Property(Object.Reflection.EffectiveClass);
             var idPropertyExpression = effectiveClassPropertyExpression.Property(Object.Reflection.Id);
             var defaultCase = CreateDefaultCase();
-            var switchCases = Cache.Select(_ => CreateSwitchCases(_.Value));
+            var switchCases = Cache.Values.Select(CreateSwitchCases);
 
             return Switch(idPropertyExpression, defaultCase, null, switchCases);
         }

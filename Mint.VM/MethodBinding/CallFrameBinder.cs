@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 
 namespace Mint.MethodBinding
 {
@@ -6,13 +7,16 @@ namespace Mint.MethodBinding
     {
         public CallSite CallSite { get; }
 
+        public Type InstanceType { get; }
+
         public Expression Instance { get; }
 
         public Expression Arguments { get; }
 
-        public CallFrameBinder(CallSite callSite, Expression instance, Expression arguments)
+        public CallFrameBinder(CallSite callSite, Type instanceType, Expression instance, Expression arguments)
         {
             CallSite = callSite;
+            InstanceType = instanceType;
             Instance = instance;
             Arguments = arguments;
         }

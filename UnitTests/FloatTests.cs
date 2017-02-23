@@ -78,13 +78,13 @@ namespace Mint.UnitTests
         {
             var value = new Float(0.0);
 
-            Assert.IsTrue(value.IsA(Class.FLOAT));
-            Assert.IsFalse(value.IsA(Class.INTEGER));
-            Assert.IsTrue(value.IsA(Class.NUMERIC));
-            Assert.IsTrue(value.IsA(Class.OBJECT));
-            Assert.IsTrue(value.IsA(Class.BASIC_OBJECT));
-            Assert.IsFalse(value.IsA(Class.STRING));
-            Assert.IsFalse(value.IsA(Class.FIXNUM));
+            Assert.IsTrue(Object.IsA(value, Class.FLOAT));
+            Assert.IsFalse(Object.IsA(value, Class.INTEGER));
+            Assert.IsTrue(Object.IsA(value, Class.NUMERIC));
+            Assert.IsTrue(Object.IsA(value, Class.OBJECT));
+            Assert.IsTrue(Object.IsA(value, Class.BASIC_OBJECT));
+            Assert.IsFalse(Object.IsA(value, Class.STRING));
+            Assert.IsFalse(Object.IsA(value, Class.FIXNUM));
         }
 
         [Test]

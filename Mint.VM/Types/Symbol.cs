@@ -38,17 +38,15 @@ namespace Mint
 
         public string Inspect() => ":" + sym.Name; // TODO: use String#Inspect if there is whitespace or non-ascii
 
-        public bool IsA(Class klass) => Class.IsA(this, klass);
+        public override bool Equals(object obj) => obj is Symbol && Equals((Symbol)obj);
 
         public bool Equals(Symbol obj) => sym.Id == obj.sym.Id;
 
+        public bool ReferenceEquals(Symbol other) => Equals(other);
+
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
-        public override bool Equals(object obj) => obj is Symbol && Equals((Symbol) obj);
-
         public override int GetHashCode() => sym.Id.GetHashCode();
-
-        public bool Equal(object other) => Equals(other);
 
         public iObject InstanceVariableGet(Symbol name)
         {

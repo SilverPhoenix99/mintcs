@@ -1,4 +1,3 @@
-using Mint.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -30,8 +29,6 @@ namespace Mint.MethodBinding.Methods
 
         public Condition Condition { get; }
 
-        public Arity Arity { get; protected set; }
-
         public Visibility Visibility { get; }
 
         public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
@@ -46,9 +43,7 @@ namespace Mint.MethodBinding.Methods
 
         protected BaseMethodBinder(Symbol newName, MethodBinder other)
             : this(newName, other.Owner, other.Visibility)
-        {
-            Arity = other.Arity;
-        }
+        { }
 
         public abstract Expression Bind(CallFrameBinder frame);
 

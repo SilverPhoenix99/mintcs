@@ -14,7 +14,7 @@ namespace Mint
 
         public int Sign => Value.Sign;
 
-        private Bignum(BigInteger value)
+        internal Bignum(BigInteger value)
         {
             Value = value;
         }
@@ -34,6 +34,17 @@ namespace Mint
         }
 
         public override string ToString() => Value.ToString();
+
+        public override bool Equals(object other)
+        {
+            if(other is Bignum) return Equals((Bignum) other);
+            if(other is Fixnum) return Value.Equals((long) (Fixnum) other);
+            if(other is Float) return Value.Equals(new BigInteger((Float) other));
+            var instance = other as iObject;
+            return instance != null && Object.ToBool(Class.EqOp.Call(instance, this));
+        }
+
+        public bool Equals(Bignum other) => other != null && Value.Equals(other.Value);
 
         public string ToString(int radix)
         {

@@ -5,9 +5,9 @@ namespace Mint
 {
     public struct Fixnum : iObject
     {
-        private const int BYTE_BITS = 8;
+        public const int BYTE_SIZE = sizeof(long);
 
-        public const int SIZE = sizeof(long);
+        public const int BIT_SIZE = 8 * BYTE_SIZE;
 
         private const string RADIX = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -80,24 +80,21 @@ namespace Mint
 
         public string Inspect(int radix) => ToString(radix);
 
-        public bool IsA(Class klass) => Class.IsA(this, klass);
-
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
-
-        public bool Equal(object other) => other is Fixnum && ((Fixnum) other).Value == Value;
 
         public override bool Equals(object other)
         {
-            if(other is Fixnum) return Equal(other);
-            if(other is Float)  return ((Float) other).Equals(this);
-            // TODO Complex and Rational
-            return false;
+            if(other is Fixnum) return Equals((Fixnum) other);
+            if(other is Bignum || other is Float) return other.Equals(this);
+            var instance = other as iObject;
+            return instance != null && Object.ToBool(Class.EqOp.Call(instance, this));
         }
 
-        public Fixnum BitLength()
-        {
-            return SIZE * BYTE_BITS - LeadingZeros();
-        }
+        public bool Equals(Fixnum other) => other.Value == Value;
+
+        public bool ReferenceEquals(Fixnum other) => Equals(other);
+
+        public Fixnum BitLength() => BIT_SIZE - LeadingZeros();
 
         private Fixnum LeadingZeros()
         {
@@ -106,7 +103,7 @@ namespace Mint
             {
                 x = ~x;
             }
-            long n = SIZE * BYTE_BITS;
+            long n = BIT_SIZE;
 
             long y;
             y = x >> 32; if(y != 0) { n -= 32; x = y; }

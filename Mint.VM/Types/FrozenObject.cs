@@ -25,13 +25,9 @@ namespace Mint
 
         public virtual string Inspect() => ToString();
 
-        public bool IsA(Class klass) => Class.IsA(this, klass);
-
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
         public override string ToString() => $"#<{Class.FullName}:0x{Id:x}>";
-
-        public virtual bool Equal(object other) => Equals(other);
 
         public override bool Equals(object other) => ReferenceEquals(this, other);
 

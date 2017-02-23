@@ -26,12 +26,12 @@ namespace Mint.UnitTests
         public void TestIsA()
         {
             var value = new FalseClass();
-            Assert.IsTrue(value.IsA(Class.FALSE));
-            Assert.IsTrue(value.IsA(Class.OBJECT));
-            Assert.IsTrue(value.IsA(Class.BASIC_OBJECT));
-            Assert.IsFalse(value.IsA(Class.FIXNUM));
-            Assert.IsFalse(value.IsA(Class.SYMBOL));
-            Assert.IsFalse(value.IsA(Class.TRUE));
+            Assert.IsTrue(Object.IsA(value, Class.FALSE));
+            Assert.IsTrue(Object.IsA(value, Class.OBJECT));
+            Assert.IsTrue(Object.IsA(value, Class.BASIC_OBJECT));
+            Assert.IsFalse(Object.IsA(value, Class.FIXNUM));
+            Assert.IsFalse(Object.IsA(value, Class.SYMBOL));
+            Assert.IsFalse(Object.IsA(value, Class.TRUE));
         }
 
         [Test]
@@ -65,18 +65,12 @@ namespace Mint.UnitTests
         public void TestEquals()
         {
             Assert.IsTrue(new FalseClass().Equals(new FalseClass()));
-        }
-
-        [Test]
-        public void TestEqual()
-        {
-            Assert.IsTrue(new FalseClass().Equal(new FalseClass()));
-            Assert.IsTrue(new FalseClass().Equal(false));
-            Assert.IsFalse(new FalseClass().Equal(null));
-            Assert.IsFalse(new FalseClass().Equal(new NilClass()));
-            Assert.IsFalse(new FalseClass().Equal(new Fixnum()));
-            Assert.IsFalse(new FalseClass().Equal(new TrueClass()));
-            Assert.IsFalse(new FalseClass().Equal(true));
+            Assert.IsTrue(new FalseClass().Equals(false));
+            Assert.IsFalse(new FalseClass().Equals(null));
+            Assert.IsFalse(new FalseClass().Equals(new NilClass()));
+            Assert.IsFalse(new FalseClass().Equals(new Fixnum()));
+            Assert.IsFalse(new FalseClass().Equals(new TrueClass()));
+            Assert.IsFalse(new FalseClass().Equals(true));
         }
 
         [Test]

@@ -180,6 +180,23 @@ class ModulePrinter
   end
 end
 
-if $0 == __FILE__ && ARGV.size == 1
-  ModulePrinter.print( Object.const_get(ARGV[0]) )
+if $0 == __FILE__ && ARGV.size > 0
+
+  ARGV.each.with_index do |module_name, i|
+    puts
+
+    mod = begin
+      Object.const_get(module_name)
+    rescue
+      $stderr.puts "Invalid module: '#{module_name}'"
+      next
+    end
+
+    if ARGV.size > 1
+      separator = "=" * module_name.length
+      puts module_name, separator
+    end
+
+    ModulePrinter.print mod
+  end
 end

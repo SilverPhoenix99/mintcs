@@ -246,7 +246,7 @@ namespace Mint.UnitTests
         }
 
         [Test] // TODO ==
-        public void TestEqual()
+        public void TestEquals()
         {
             // [ "a", "c" ]    == [ "a", "c", 7 ]     #=> false
             var a = new String("a");

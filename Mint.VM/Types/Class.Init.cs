@@ -30,7 +30,7 @@ namespace Mint
         public static readonly Class SYMBOL;
         public static readonly Class TRUE;
 
-        private static readonly CallSite EqOp;
+        internal static readonly CallSite EqOp;
 
         static Class()
         {
@@ -39,11 +39,11 @@ namespace Mint
             #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .Allocator( () => new Object(BASIC_OBJECT) )
-                .DefMethod( "equal?", () => default(iObject).Equal(default(object)) )
+                .DefMethod("equal?", () => ReferenceEquals(default(object), default(object)) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
-                .DefMethod("==", () => default(iObject).Equals(default(object)) )
-                .DefLambda("!=", (Func<iObject, iObject, bool>) ( (l, r) => !Object.ToBool(EqOp.Call(l, r)) ) )
+                .Alias("==", "equal?")
+                .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !Object.ToBool(EqOp.Call(l, r))) )
             ;
             #pragma warning restore 1720
 
@@ -53,11 +53,6 @@ namespace Mint
             #pragma warning disable 1720
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
                 .Allocator( () => new Object() )
-                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
-                .DefMethod("instance_variable_set", () =>
-                    default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
-                )
-                .AttrReader("instance_variables", () => default(iObject).InstanceVariables)
             ;
             #pragma warning restore 1720
 
@@ -74,6 +69,8 @@ namespace Mint
                 .DefMethod("inspect", _ => _.Inspect())
                 .AttrReader("name", _ => _.FullName)
                 .DefMethod("to_s", _ => _.ToString())
+                .DefMethod("==", () => ReferenceEquals(default(object), default(object)) )
+                .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => Object.IsA(arg, mod)))
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
@@ -101,7 +98,15 @@ namespace Mint
                 .DefMethod("hash", _ => _.GetHashCode() )
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", _ => _.Id )
-                //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
+                .DefLambda("===", (Func<iObject, iObject, bool>) ((l, r) => Object.ToBool(EqOp.Call(l, r))) )
+                .DefMethod("is_a?", () => Object.IsA(default(iObject), default(iObject)))
+                .Alias("kind_of?", "is_a?")
+                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
+                .DefMethod("instance_variable_set", () =>
+                    default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
+                )
+                .AttrReader("instance_variables", () => default(iObject).InstanceVariables)
+            //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
             ;
             #pragma warning restore 1720
 
@@ -117,11 +122,17 @@ namespace Mint
                 .DefMethod("-", () => default(Float) - default(Float))
                 .DefMethod("*", () => default(Float) * default(Float))
                 .DefMethod("/", () => default(Float) / default(Float))
+                .DefMethod("==", _ => _.Equals(default(object)))
+                .Alias("===", "==")
             ;
 
-            COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC);
+            COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC)
+                //TODO .DefMethod("==", _ => _.Equals(default(object)) )
+            ;
 
-            RATIONAL = ModuleBuilder<Rational>.DescribeClass(NUMERIC);
+            RATIONAL = ModuleBuilder<Rational>.DescribeClass(NUMERIC)
+                //TODO .DefMethod("==", _ => _.Equals(default(object)) )
+            ;
 
             INTEGER = new Class(NUMERIC, new Symbol("Integer"));
 
@@ -134,15 +145,18 @@ namespace Mint
                 .Alias("magnitude", "abs")
                 .DefLambda("to_f", (Func<Fixnum, Float>) (_ => (Float) _) )
                 .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
-                .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.SIZE) )
+                .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.BYTE_SIZE) )
                 .DefMethod("bit_length", _ => _.BitLength() )
-                .DefMethod("+", () => default(Fixnum) + default(Fixnum))
-                .DefMethod("-", () => default(Fixnum) - default(Fixnum))
-                .DefMethod("*", () => default(Fixnum) * default(Fixnum))
-                .DefMethod("/", () => default(Fixnum) / default(Fixnum))
+                .DefMethod("+", () => default(Fixnum) + default(Fixnum) )
+                .DefMethod("-", () => default(Fixnum) - default(Fixnum) )
+                .DefMethod("*", () => default(Fixnum) * default(Fixnum) )
+                .DefMethod("/", () => default(Fixnum) / default(Fixnum) )
+                .DefMethod("==", _ => _.Equals(default(object)) )
+                .Alias("===", "==")
             ;
 
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
+                .DefMethod("==", _ => _.Equals(default(object)))
             ;
 
             BINDING = ModuleBuilder<Binding>.DescribeClass()

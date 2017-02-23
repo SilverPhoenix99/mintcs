@@ -325,9 +325,9 @@ namespace Mint
         }
 
         protected static Class GetOrCreateClassWithParentCast(iObject parent,
-                                                               Symbol name,
-                                                               Class superclass,
-                                                               IEnumerable<Module> nesting)
+                                                              Symbol name,
+                                                              Class superclass,
+                                                              IEnumerable<Module> nesting)
         {
             if(parent is Module)
             {

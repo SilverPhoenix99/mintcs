@@ -18,7 +18,7 @@ namespace Mint.MethodBinding.Compilation
             var instanceExpression = Expression.Constant(instance);
             var bundleExpression = Expression.Constant(bundle);
 
-            var frame = new CallFrameBinder(CallSite, instanceExpression, bundleExpression);
+            var frame = new CallFrameBinder(CallSite, instance.GetType(), instanceExpression, bundleExpression);
             var body = binder.Bind(frame);
             var lambda = Expression.Lambda<Func<iObject>>(body).Compile();
             return lambda();

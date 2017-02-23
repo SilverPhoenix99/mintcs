@@ -45,13 +45,13 @@ namespace Mint.UnitTests
         [Test]
         public void TestIsA()
         {
-            var fixnum = new NilClass();
+            var instance = new NilClass();
 
-            Assert.IsTrue(fixnum.IsA(Class.NIL));
-            Assert.IsTrue(fixnum.IsA(Class.OBJECT));
-            Assert.IsTrue(fixnum.IsA(Class.BASIC_OBJECT));
-            Assert.IsFalse(fixnum.IsA(Class.STRING));
-            Assert.IsFalse(fixnum.IsA(Class.TRUE));
+            Assert.IsTrue(Object.IsA(instance, Class.NIL));
+            Assert.IsTrue(Object.IsA(instance, Class.OBJECT));
+            Assert.IsTrue(Object.IsA(instance, Class.BASIC_OBJECT));
+            Assert.IsFalse(Object.IsA(instance, Class.STRING));
+            Assert.IsFalse(Object.IsA(instance, Class.TRUE));
         }
 
         [Test]
@@ -64,17 +64,11 @@ namespace Mint.UnitTests
         public void TestEquals()
         {
             Assert.IsTrue(new NilClass().Equals(new NilClass()));
-        }
-
-        [Test]
-        public void TestEqual()
-        {
-            Assert.IsTrue(new NilClass().Equal(new NilClass()));
-            Assert.IsTrue(new NilClass().Equal(null));
-            Assert.IsFalse(new NilClass().Equal(true));
-            Assert.IsFalse(new NilClass().Equal(new Fixnum()));
-            Assert.IsFalse(new NilClass().Equal(new FalseClass()));
-            Assert.IsFalse(new NilClass().Equal(false));
+            Assert.IsTrue(new NilClass().Equals(null));
+            Assert.IsFalse(new NilClass().Equals(true));
+            Assert.IsFalse(new NilClass().Equals(new Fixnum()));
+            Assert.IsFalse(new NilClass().Equals(new FalseClass()));
+            Assert.IsFalse(new NilClass().Equals(false));
         }
 
         [Test]

@@ -1,14 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Mint.MethodBinding.Compilation
 {
-    internal class CallCompilerCache<T> : IEnumerable<KeyValuePair<long, CachedMethod<T>>>
+    internal class CallCompilerCache<T>
     {
         private Dictionary<long, CachedMethod<T>> Cache { get; } = new Dictionary<long, CachedMethod<T>>();
 
         public int Count => Cache.Count;
+
+        public IEnumerable<CachedMethod<T>> Values => Cache.Values;
 
         public CachedMethod<T> this[long classId]
         {
@@ -30,9 +31,5 @@ namespace Mint.MethodBinding.Compilation
                 Cache.Remove(key);
             }
         }
-
-        public IEnumerator<KeyValuePair<long, CachedMethod<T>>> GetEnumerator() => Cache.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

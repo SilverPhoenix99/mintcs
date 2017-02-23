@@ -108,7 +108,7 @@ namespace Mint
 
         public Array CompactSelf()
         {
-            list.RemoveAll(item => item == null || item.IsA(Class.NIL));
+            list.RemoveAll(NilClass.IsNil);
             return this;
         }
 

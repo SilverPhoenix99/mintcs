@@ -202,7 +202,7 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestEqual()
+        public void TestEquals()
         {
             Assert.That(Eval("1 == 1"), Is.EqualTo(new TrueClass()));
             Assert.That(Eval("1 == :a"), Is.EqualTo(new FalseClass()));
@@ -213,7 +213,7 @@ namespace Mint.UnitTests
         }
 
         [Test]
-        public void TestNotEqual()
+        public void TestNotEquals()
         {
             Assert.That(Eval("1 != 1"), Is.EqualTo(new FalseClass()));
             Assert.That(Eval("1 != :a"), Is.EqualTo(new TrueClass()));

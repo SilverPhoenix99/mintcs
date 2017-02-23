@@ -1,3 +1,4 @@
+using System;
 using Mint.MethodBinding.Arguments;
 using Mint.MethodBinding.Methods;
 using System.Collections.Generic;
@@ -15,32 +16,19 @@ namespace Mint.MethodBinding.Compilation
             Cache = new CallCompilerCache<CallSite.Stub>();
         }
 
-        internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<KeyValuePair<long, MethodBinder>> cache)
+        internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<CachedMethod> cache)
             : this(callSite)
         {
-            foreach(var pair in cache)
+            foreach(var cachedMethod in cache)
             {
-                if(pair.Value.Condition.Valid)
+                if(cachedMethod.Binder.Condition.Valid)
                 {
-                    this.Cache.Put(CreateCachedMethod(pair.Key, pair.Value));
+                    var classId = cachedMethod.ClassId;
+                    var instanceType = cachedMethod.InstanceType;
+                    var binder = cachedMethod.Binder;
+                    Cache.Put(CreateCachedMethod(classId, instanceType, binder));
                 }
             }
-        }
-
-        private CachedMethod<CallSite.Stub> CreateCachedMethod(long classId, MethodBinder binder)
-        {
-            var stub = CompileMethod(binder);
-            return new CachedMethod<CallSite.Stub>(classId, binder, stub);
-        }
-
-        private CallSite.Stub CompileMethod(MethodBinder binder)
-        {
-            var instance = Parameter(typeof(iObject), "instance");
-            var bundle = Parameter(typeof(ArgumentBundle), "bundle");
-            var frame = new CallFrameBinder(CallSite, instance, bundle);
-            var body = binder.Bind(frame);
-            var lambda = Lambda<CallSite.Stub>(body, instance, bundle);
-            return lambda.Compile();
         }
 
         public override CallSite.Stub Compile() => Call;
@@ -54,11 +42,27 @@ namespace Mint.MethodBinding.Compilation
             {
                 Cache.RemoveInvalidCachedMethods();
                 var binder = TryFindMethodBinder(instance);
-                cachedMethod = CreateCachedMethod(instance.EffectiveClass.Id, binder);
+                cachedMethod = CreateCachedMethod(classId, instance.GetType(), binder);
                 Cache.Put(cachedMethod);
             }
 
             return cachedMethod.CachedCall(instance, bundle);
         }
-    }
+ 
+        private CachedMethod<CallSite.Stub> CreateCachedMethod(long classId, Type instanceType, MethodBinder binder)
+        {
+            var stub = CompileMethod(instanceType, binder);
+            return new CachedMethod<CallSite.Stub>(classId, instanceType, binder, stub);
+        }
+
+        private CallSite.Stub CompileMethod(Type instanceType, MethodBinder binder)
+        {
+            var instanceVariable = Parameter(typeof(iObject), "instance");
+            var bundle = Parameter(typeof(ArgumentBundle), "bundle");
+            var frame = new CallFrameBinder(CallSite, instanceType, instanceVariable, bundle);
+            var body = binder.Bind(frame);
+            var lambda = Lambda<CallSite.Stub>(body, instanceVariable, bundle);
+            return lambda.Compile();
+        }
+   }
 }

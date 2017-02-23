@@ -79,24 +79,6 @@ namespace Mint
             return Allocator();
         }
 
-        public static bool IsA(iObject o, Class c)
-        {
-            if(NilClass.IsNil(c))
-            {
-                throw new TypeError("class or module required");
-            }
-
-            for(var k = o.Class; k != null; k = k.Superclass)
-            {
-                if(c == k)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public new static class Reflection
         {
             public static readonly ConstructorInfo Ctor = Reflector<Class>.Ctor<Class, Symbol?, Module, bool>();

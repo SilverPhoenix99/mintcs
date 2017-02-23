@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Mint.Reflection;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Linq.Expressions;
@@ -27,7 +26,7 @@ namespace Mint.MethodBinding.Methods
      */
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private MethodMetadata[] Methods { get; }
+        private MethodMetadata Method { get; }
 
         public ClrMethodBinder(Symbol name,
                                Module owner,
@@ -35,85 +34,30 @@ namespace Mint.MethodBinding.Methods
                                Visibility visibility = Visibility.Public)
             : base(name, owner, visibility)
         {
+            if(method == null) throw new ArgumentNullException(nameof(method));
+
             if(method.Method.IsDynamicallyGenerated())
             {
                 throw new ArgumentException("Method cannot be dynamically generated. Use DelegateMethodBinder instead.");
             }
 
-            Methods = GetOverloads(method);
-            Debug.Assert(Methods.Length != 0);
-            Arity = CalculateArity();
+            Method = method;
         }
 
         private ClrMethodBinder(Symbol newName, ClrMethodBinder other)
             : base(newName, other)
         {
-            Methods = (MethodMetadata[]) other.Methods.Clone();
+            Method = other.Method;
         }
-
-        private static MethodMetadata[] GetOverloads(MethodMetadata method)
-        {
-            Debug.Assert(method.Method.ReflectedType != null, "method.ReflectedType != null");
-
-            var type = method.HasAttribute<ExtensionAttribute>()
-                     ? method.Method.GetParameters()[0].ParameterType
-                     : method.Method.ReflectedType;
-
-            var methods = GetMethodOverloads(method.Name, type);
-            var extensionMethods = GetExtensionOverloads(method.Name, type);
-
-            return methods.Concat(extensionMethods).Select(m => new MethodMetadata(m)).ToArray();
-        }
-
-        private static IEnumerable<MethodInfo> GetMethodOverloads(string methodName, Type instanceType)
-        {
-            return
-                from method in instanceType.GetMethods(Instance | Static | NonPublic | Public)
-                where method.Name == methodName
-                   && !method.IsDefined(typeof(ExtensionAttribute), false)
-                select method
-            ;
-        }
-
-        private static IEnumerable<MethodInfo> GetExtensionOverloads(string methodName, Type instanceType)
-        {
-            return
-                from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                from type in assembly.GetTypes()
-                where type.IsSealed
-                   && !type.IsGenericType
-                   && !type.IsNested
-                   && type.IsDefined(typeof(ExtensionAttribute), false)
-                from method in type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                where method.IsDefined(typeof(ExtensionAttribute), false)
-                   && method.Name == methodName
-                   && Matches(method.GetParameters()[0], instanceType)
-                select method
-            ;
-        }
-
-        private static bool Matches(ParameterInfo info, Type declaringType)
-        {
-            if(!info.ParameterType.IsGenericParameter)
-            {
-                // return : info.ParameterType is == or superclass of declaringType?
-                var matches = info.ParameterType.IsAssignableFrom(declaringType);
-                return matches;
-            }
-
-            var constraints = info.ParameterType.GetGenericParameterConstraints();
-            return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(declaringType));
-        }
-
-        private Arity CalculateArity() =>
-            Methods.Select(_ => _.ParameterCounter.Arity).Aggregate((left, right) => left.Merge(right));
 
         public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(CallFrameBinder frame)
         {
             var argumentsArray = Variable(typeof(iObject[]), "arguments");
-            var cases = Methods.Select(method => CreateCallEmitter(method, frame, argumentsArray).Bind());
+            var locator = new MethodOverloadLocator(Method, frame.InstanceType);
+            var methods = locator.GetOverloads();
+            var cases = methods.Select(method => CreateCallEmitter(method, frame, argumentsArray).Bind());
 
             var defaultCase = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
 
@@ -124,13 +68,11 @@ namespace Mint.MethodBinding.Methods
             );
         }
 
-        private static CallEmitter CreateCallEmitter(
-            MethodMetadata method,
-            CallFrameBinder frame,
-            ParameterExpression argumentsArray
-        ) =>
+        private static CallEmitter CreateCallEmitter(MethodMetadata method,
+                                                     CallFrameBinder frame,
+                                                     ParameterExpression argumentsArray) =>
             method.IsStatic ? new StaticCallEmitter(method, frame, argumentsArray)
-                          : new InstanceCallEmitter(method, frame, argumentsArray);
+                            : new InstanceCallEmitter(method, frame, argumentsArray);
         
         private static Exception ThrowInvalidConversion()
         {
@@ -156,6 +98,77 @@ namespace Mint.MethodBinding.Methods
         public static class Expressions
         {
             public static MethodCallExpression ThrowInvalidConversion() => Call(Reflection.ThrowInvalidConversion);
+        }
+
+        private class MethodOverloadLocator
+        {
+            public MethodMetadata Prototype { get; }
+
+            public Type InstanceType { get; }
+
+            public MethodOverloadLocator(MethodMetadata prototype, Type instanceType)
+            {
+                if(prototype == null) throw new ArgumentNullException(nameof(prototype));
+                if(instanceType == null) throw new ArgumentNullException(nameof(instanceType));
+
+                Prototype = prototype;
+                InstanceType = instanceType;
+            }
+
+            public IEnumerable<MethodMetadata> GetOverloads()
+            {
+                var methods = GetMethodOverloads();
+                var extensionMethods = GetExtensionOverloads();
+
+                var methodList = methods.Concat(extensionMethods).Select(m => new MethodMetadata(m)).ToList();
+
+                if(!methodList.Exists(_ => _.Method == Prototype.Method))
+                {
+                    methodList.Add(Prototype);
+                }
+
+                return methodList;
+            }
+
+            private IEnumerable<MethodInfo> GetMethodOverloads()
+            {
+                return
+                    from method in InstanceType.GetMethods(Instance | Static | NonPublic | Public)
+                    where method.Name == Prototype.Name
+                       && !method.IsDefined(typeof(ExtensionAttribute), false)
+                    select method
+                ;
+            }
+
+            private IEnumerable<MethodInfo> GetExtensionOverloads()
+            {
+                return
+                    from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                    from type in assembly.GetTypes()
+                    where type.IsSealed
+                       && !type.IsGenericType
+                       && !type.IsNested
+                       && type.IsDefined(typeof(ExtensionAttribute), false)
+                    from method in type.GetMethods(Static | NonPublic | Public)
+                    where method.IsDefined(typeof(ExtensionAttribute), false)
+                       && method.Name == Prototype.Name
+                       && Matches(method.GetParameters()[0])
+                    select method
+                ;
+            }
+
+            private bool Matches(ParameterInfo info)
+            {
+                if(!info.ParameterType.IsGenericParameter)
+                {
+                    // return : info.ParameterType is == or superclass of declaringType?
+                    var matches = info.ParameterType.IsAssignableFrom(InstanceType);
+                    return matches;
+                }
+
+                var constraints = info.ParameterType.GetGenericParameterConstraints();
+                return constraints.Length == 0 || constraints.Any(type => type.IsAssignableFrom(InstanceType));
+            }
         }
     }
 }

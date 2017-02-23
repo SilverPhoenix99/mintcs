@@ -15,15 +15,16 @@ namespace Mint
 
         public override string ToString() => Value.ToString("0.0###############", CultureInfo.InvariantCulture);
 
-        public override bool Equal(object other) => (other as Float)?.Value == Value;
-
         public override bool Equals(object other)
         {
-            if(other is Float)  return Equal(other);
-            if(other is Fixnum) return (double) ((Fixnum) other).Value == Value;
-            // TODO Complex and Rational
-            return false;
+            if(other is Float) return Equals((Float) other);
+            if(other is Fixnum) return Value.Equals((double) (Fixnum) other);
+            if(other is Bignum) return other.Equals(this);
+            var instance = other as iObject;
+            return instance != null && Object.ToBool(Class.EqOp.Call(instance, this));
         }
+
+        public bool Equals(Float other) => Value.Equals(other?.Value);
 
         public override int GetHashCode() => Value.GetHashCode();
 

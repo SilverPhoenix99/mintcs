@@ -88,8 +88,7 @@ namespace Mint.Reflection
 
             var call = (MethodCallExpression) body;
             var method = DeclaringMethod(call.Method, call.Object.Type);
-            var properties = method.DeclaringType.GetProperties(
-                Static | Instance | Public | NonPublic);
+            var properties = method.DeclaringType.GetProperties(Static | Instance | Public | NonPublic);
 
             return properties.Single(p => p.GetMethod == method || p.SetMethod == method);
         }

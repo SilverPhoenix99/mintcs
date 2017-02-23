@@ -88,6 +88,19 @@ namespace Mint
             throw new NameError($"`{name}' is not allowed as an instance variable name");
         }
 
+        public static bool IsA(iObject instance, iObject arg)
+        {
+            if(!(arg is Module))
+            {
+                throw new TypeError("class or module required");
+            }
+
+            var instanceClass = instance as Class ?? instance.EffectiveClass;
+            var module = (Module) arg;
+
+            return instanceClass.Ancestors.Any(c => c.Equals(module));
+        }
+
         public static class Reflection
         {
             public static readonly PropertyInfo Id = Reflector<iObject>.Property(_ => _.Id);

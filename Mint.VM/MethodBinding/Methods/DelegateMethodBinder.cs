@@ -1,5 +1,4 @@
 using Mint.Reflection;
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -27,7 +26,6 @@ namespace Mint.MethodBinding.Methods
             : base(name, owner)
         {
             Lambda = lambda;
-            Arity = Lambda.Method.ParameterCounter.Arity;
         }
 
         private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)
