@@ -1,3 +1,4 @@
+using System;
 using Mint.Reflection.Parameters.Attributes;
 using System.Collections;
 using System.Collections.Generic;
@@ -151,6 +152,72 @@ namespace Mint
         }
 
         public Array Uniq() => new Array(list).UniqSelf();
+
+        public override bool Equals(object other) => other is iObject && Equals((iObject) other);
+
+        public bool Equals(iObject other)
+        {
+            return other is Array ary
+                ? Equals(ary)
+                : Object.RespondTo(other, Symbol.TO_ARY) && Object.ToBool(Class.EqOp.Call(other, this));
+        }
+
+        private class Comparer : IEqualityComparer<Tuple<Array, Array>>
+        {
+            public bool Equals(Tuple<Array, Array> x, Tuple<Array, Array> y) =>
+                ReferenceEquals(x, y)
+                || (ReferenceEquals(x.Item1, y.Item1) && ReferenceEquals(x.Item2, y.Item2))
+                || (ReferenceEquals(x.Item1, y.Item2) && ReferenceEquals(x.Item2, y.Item1));
+
+            public int GetHashCode(Tuple<Array, Array> obj) => obj.Item1.GetHashCode() ^ obj.Item2.GetHashCode();
+        }
+
+        private static readonly Comparer COMPARER = new Comparer();
+
+        [ThreadStatic]
+        private static ISet<Tuple<Array, Array>> equalsRecursionSet;
+
+        public bool Equals(Array other)
+        {
+            if(ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if(other == null || Count != other.Count)
+            {
+                return false;
+            }
+
+            var topLevel = equalsRecursionSet == null;
+
+            if(topLevel)
+            {
+                equalsRecursionSet = new HashSet<Tuple<Array, Array>>(COMPARER);
+            }
+
+            try
+            {
+                var pair = new Tuple<Array, Array>(this, other);
+
+                if(equalsRecursionSet.Contains(pair))
+                {
+                    return true;
+                }
+
+                equalsRecursionSet.Add(pair);
+
+                var elements = list.Zip(other.list, (l, r) => Class.EqOp.Call(l, r));
+                return elements.Select(Object.ToBool).All(eq => eq);
+            }
+            finally
+            {
+                if(topLevel)
+                {
+                    equalsRecursionSet = null;
+                }
+            }
+        }
 
         public static Array operator +(Array left, Array right)
         {

@@ -206,6 +206,7 @@ namespace Mint
                 .DefMethod("uniq!", _ => _.UniqSelf() )
                 .DefMethod("<<", _ => _.Add(default(iObject)) )
                 .DefMethod("&", _ => _.AndAlso(default(Array)) )
+                .DefMethod("==", _ => _.Equals(default(iObject)) )
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
