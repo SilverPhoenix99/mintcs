@@ -923,7 +923,7 @@ lambda_body :
 ;
 
 do_block :
-    kDO_BLOCK { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kEND { $$ = $1 + $3 + $4; }
+    kDO_BLOCK { Lexer.PushOpenScope(); } opt_block_param bodystmt { Lexer.PopOpenScope(); } kEND { $$ = $1 + $3 + $4; }
 ;
 
 block_call :
@@ -968,7 +968,7 @@ method_call :
 
 brace_block :
     kLBRACE2 { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kRBRACE { $$ = $1 + $3 + $4; }
-  | kDO { Lexer.PushOpenScope(); } opt_block_param compstmt { Lexer.PopOpenScope(); } kEND         { $$ = $1 + $3 + $4; }
+  | kDO { Lexer.PushOpenScope(); } opt_block_param bodystmt { Lexer.PopOpenScope(); } kEND         { $$ = $1 + $3 + $4; }
 ;
 
 case_body :
