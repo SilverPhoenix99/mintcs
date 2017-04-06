@@ -42,8 +42,7 @@ namespace Mint
         {
             get
             {
-                iObject value;
-                map.TryGetValue(key, out value);
+                map.TryGetValue(key, out var value);
                 return value;
             }
             set { map[key] = value; }

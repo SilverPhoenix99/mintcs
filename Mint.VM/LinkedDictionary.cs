@@ -87,8 +87,7 @@ namespace Mint
 
         public void Add(TKey key, TValue value)
         {
-            Node node;
-            if(map.TryGetValue(key, out node))
+            if(map.TryGetValue(key, out var node))
             {
                 node.Value = new KeyValuePair<TKey, TValue>(key, value);
                 return;
@@ -128,8 +127,7 @@ namespace Mint
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
         {
-            TValue value;
-            return TryGetValue(item.Key, out value)
+            return TryGetValue(item.Key, out var value)
                 && EqualityComparer<TValue>.Default.Equals(value, item.Value);
         }
 
@@ -157,8 +155,7 @@ namespace Mint
 
         public bool Remove(TKey key)
         {
-            Node node;
-            if(!map.TryGetValue(key, out node))
+            if(!map.TryGetValue(key, out var node))
             {
                 return false;
             }
@@ -206,8 +203,7 @@ namespace Mint
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            Node node;
-            if(map.TryGetValue(key, out node))
+            if(map.TryGetValue(key, out var node))
             {
                 value = node.Value.Value;
                 return true;

@@ -99,7 +99,7 @@ namespace Mint.MethodBinding.Arguments
                 select new Symbol(p.Name)
             ;
 
-            var unknownKeys = Arguments.Keywords.Keys.Where(p => p is Symbol).Cast<Symbol>()
+            var unknownKeys = Arguments.Keywords.Keys.OfType<Symbol>()
                 .Except(parameterNames).ToArray();
 
             if(unknownKeys.Length == 0)

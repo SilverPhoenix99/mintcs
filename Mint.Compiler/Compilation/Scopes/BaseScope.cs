@@ -58,8 +58,7 @@ namespace Mint.Compilation.Scopes
 
         protected ScopeVariable TryFindVariableLocally(Symbol name)
         {
-            ScopeVariable variable;
-            variables.TryGetValue(name, out variable);
+            variables.TryGetValue(name, out var variable);
             return variable;
         }
 

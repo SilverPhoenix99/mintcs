@@ -26,11 +26,7 @@ namespace Mint.Compilation.Components
             return string.Join("\n", lines);
         }
 
-        private int Dedentation()
-        {
-            object value;
-            return Node.Value.Properties.TryGetValue("dedent", out value) ? (int) value : 0;
-        }
+        private int Dedentation() => Node.Value.Properties.TryGetValue("dedent", out var value) ? (int) value : 0;
 
         private string Dedent(string line, int dedent)
         {

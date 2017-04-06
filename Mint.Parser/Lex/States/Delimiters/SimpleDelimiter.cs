@@ -67,8 +67,7 @@ namespace Mint.Lex.States.Delimiters
         {
             var length = Math.Min(text.Length, 2);
             var key = text.Substring(0, length);
-            TokenType type;
-            return OPEN_DELIMITERS.TryGetValue(key, out type) ? type : tSTRING_BEG;
+            return OPEN_DELIMITERS.TryGetValue(key, out var type) ? type : tSTRING_BEG;
         }
 
         private static LiteralFeatures CalculateFeatures(string text)

@@ -63,8 +63,7 @@ namespace Mint.MethodBinding.Methods
 
         protected internal static Expression TypeIs(Expression expression, Type type)
         {
-            Type convertedType;
-            if(TYPES.TryGetValue(type, out convertedType))
+            if(TYPES.TryGetValue(type, out var convertedType))
             {
                 type = convertedType;
             }
@@ -74,8 +73,7 @@ namespace Mint.MethodBinding.Methods
 
         protected internal static Expression TryConvert(Expression expression, Type type)
         {
-            Type convertedType;
-            if(TYPES.TryGetValue(type, out convertedType))
+            if(TYPES.TryGetValue(type, out var convertedType))
             {
                 expression = expression.Cast(convertedType);
             }

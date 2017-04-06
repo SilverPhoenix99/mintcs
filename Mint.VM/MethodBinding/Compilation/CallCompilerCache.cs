@@ -15,8 +15,7 @@ namespace Mint.MethodBinding.Compilation
         {
             get
             {
-                CachedMethod<T> method;
-                var foundAndIsValid = Cache.TryGetValue(classId, out method) && method.Binder.Condition.Valid;
+                var foundAndIsValid = Cache.TryGetValue(classId, out var method) && method.Binder.Condition.Valid;
                 return foundAndIsValid ? method : null;
             }
         }

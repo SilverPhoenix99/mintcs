@@ -180,8 +180,7 @@ namespace Mint.Compilation
             }
 
             var type = node.Value.Type;
-            ComponentSelector selector;
-            if(selectors.TryGetValue(type, out selector))
+            if(selectors.TryGetValue(type, out var selector))
             {
                 return selector.Select();
             }
