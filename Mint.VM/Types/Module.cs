@@ -21,14 +21,14 @@ namespace Mint
 
         protected readonly IDictionary<Symbol, iObject> constants;
 
-        public Symbol? Name { get; private set; }
+        public Symbol? BaseName { get; private set; }
 
-        public string FullName
+        public string Name
         {
             get
             {
-                var name = Name?.Name ?? base.ToString();
-                return Container == Class.OBJECT ? name : $"{Container.FullName}::{name}";
+                var baseName = BaseName?.Name ?? base.ToString();
+                return Container == Class.OBJECT ? baseName : $"{Container.Name}::{baseName}";
             }
         }
 
@@ -55,17 +55,17 @@ namespace Mint
             : this(Class.MODULE, name, container)
         { }
 
-        protected Module(Class klass, Symbol? name = null, Module container = null)
+        protected Module(Class klass, Symbol? baseName = null, Module container = null)
             : base(klass)
         {
             // Called by subclasses to prepare Class property. See class Class.
 
-            if(container != null && name == null)
+            if(container != null && baseName == null)
             {
-                throw new ArgumentNullException($"{nameof(name)} cannot be null if Module has {nameof(container)}");
+                throw new ArgumentNullException($"{nameof(baseName)} cannot be null if Module has {nameof(container)}");
             }
 
-            Name = name;
+            BaseName = baseName;
             this.container = container ?? Class.OBJECT;
             Methods = new Dictionary<Symbol, MethodBinder>();
             constants = new Dictionary<Symbol, iObject>();
@@ -73,9 +73,9 @@ namespace Mint
             Prepended = new List<Module>();
             Subclasses = new List<WeakReference<Class>>();
 
-            if(this.container != null && name != null)
+            if(this.container != null && baseName != null)
             {
-                this.container.SetConstant(name.Value, this);
+                this.container.SetConstant(baseName.Value, this);
             }
         }
 
@@ -93,13 +93,13 @@ namespace Mint
 
             if(container != Class.OBJECT)
             {
-                name = $"{container.FullName}::{name}";
+                name = $"{container.Name}::{name}";
             }
 
             return name;
         }
 
-        public override string ToString() => FullName;
+        public override string ToString() => Name;
 
         public Symbol DefineMethod(MethodBinder method)
         {
@@ -121,7 +121,7 @@ namespace Mint
         {
             if(module.GetType() != typeof(Module))
             {
-                throw new TypeError($"wrong argument type {module.Class.FullName} (expected Module)");
+                throw new TypeError($"wrong argument type {module.Class.Name} (expected Module)");
             }
 
             var included = new List<Module>(modules.Count + module.Prepended.Count + module.Included.Count + 1);
@@ -164,8 +164,7 @@ namespace Mint
         {
             foreach(var mod in Ancestors)
             {
-                MethodBinder method;
-                if(!mod.Methods.TryGetValue(methodName, out method) || !method.Condition.Valid)
+                if(!mod.Methods.TryGetValue(methodName, out var method) || !method.Condition.Valid)
                 {
                     continue;
                 }
@@ -236,7 +235,7 @@ namespace Mint
         {
             if(!CONSTANT_NAME.IsMatch(name))
             {
-                throw new NameError($"wrong constant name {name}");
+                throw new NameError($"wrong constant baseName {name}");
             }
         }
 
@@ -244,16 +243,16 @@ namespace Mint
         {
             if(IsConstantDefined(name, false))
             {
-                var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
+                var fullName = this == Class.OBJECT ? name.Name : $"{Name}::{name}";
                 Console.Error.WriteLine($"warning: already initialized constant {fullName}");
             }
 
             ValidateConstantName(name.Name);
 
             var module = value as Module;
-            if(module != null && module.Name == null)
+            if(module != null && module.BaseName == null)
             {
-                module.Name = name;
+                module.BaseName = name;
                 module.container = this;
             }
 
@@ -262,14 +261,13 @@ namespace Mint
 
         protected iObject TryGetConstant(Symbol name)
         {
-            iObject constant;
-            constants.TryGetValue(name, out constant);
+            constants.TryGetValue(name, out var constant);
             return constant;
         }
 
         private Exception UninitializedConstant(Symbol name)
         {
-            var fullName = this == Class.OBJECT ? name.Name : $"{FullName}::{name}";
+            var fullName = this == Class.OBJECT ? name.Name : $"{Name}::{name}";
             return new NameError($"uninitialized constant {fullName}");
         }
 

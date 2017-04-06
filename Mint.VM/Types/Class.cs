@@ -20,8 +20,8 @@ namespace Mint
 
         public Func<iObject> Allocator { get; set; }
 
-        public Class(Class superclass, Symbol? name = null, Module container = null, bool isSingleton = false)
-            : base(CLASS, name, container)
+        public Class(Class superclass, Symbol? baseName = null, Module container = null, bool isSingleton = false)
+            : base(CLASS, baseName, container)
         {
             if(Class.CLASS != null && superclass == Class.CLASS)
             {
@@ -72,7 +72,7 @@ namespace Mint
         {
             if(Allocator == null)
             {
-                var name = FullName ?? Inspect();
+                var name = Name ?? Inspect();
                 throw new TypeError($"allocator undefined for {name}");
             }
 

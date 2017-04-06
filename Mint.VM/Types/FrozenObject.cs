@@ -27,7 +27,7 @@ namespace Mint
 
         public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
-        public override string ToString() => $"#<{Class.FullName}:0x{Id:x}>";
+        public override string ToString() => $"#<{Class.Name}:0x{Id:x}>";
 
         public override bool Equals(object other) => ReferenceEquals(this, other);
 
@@ -44,7 +44,7 @@ namespace Mint
         public virtual iObject InstanceVariableSet(Symbol name, iObject obj)
         {
             Object.ValidateInstanceVariableName(name.Name);
-            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
 
         public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);

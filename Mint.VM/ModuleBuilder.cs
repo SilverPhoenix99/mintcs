@@ -73,10 +73,9 @@ namespace Mint
         public ModuleBuilder<T> Alias(string newName, string oldName)
         {
             var name = new Symbol(oldName);
-            MethodBinder binder;
-            if(!Module.Methods.TryGetValue(name, out binder))
+            if(!Module.Methods.TryGetValue(name, out var binder))
             {
-                throw new NameError($"undefined method `{oldName}' for class `{Module.FullName}'");
+                throw new NameError($"undefined method `{oldName}' for class `{Module.Name}'");
             }
 
             name = new Symbol(newName);

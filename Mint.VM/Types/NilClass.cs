@@ -44,7 +44,7 @@ namespace Mint
         public iObject InstanceVariableSet(Symbol name, iObject obj)
         {
             Object.ValidateInstanceVariableName(name.Name);
-            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
 
         public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);

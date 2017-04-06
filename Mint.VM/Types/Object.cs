@@ -51,7 +51,7 @@ namespace Mint
 
         public static bool ToBool(iObject obj) => obj != null && !(obj is NilClass) && !(obj is FalseClass);
 
-        internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.FullName}";
+        internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.Name}";
 
         internal static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
         {
@@ -100,6 +100,9 @@ namespace Mint
 
             return instanceClass.Ancestors.Any(c => c.Equals(module));
         }
+
+        public static bool RespondTo(iObject instance, Symbol methodName) =>
+            instance.EffectiveClass.Methods.ContainsKey(methodName);
 
         public static class Reflection
         {

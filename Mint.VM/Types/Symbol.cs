@@ -59,7 +59,7 @@ namespace Mint
         public iObject InstanceVariableSet(Symbol name, iObject obj)
         {
             Object.ValidateInstanceVariableName(name.Name);
-            throw new RuntimeError($"can't modify frozen {EffectiveClass.FullName}");
+            throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
 
         public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
@@ -170,9 +170,7 @@ namespace Mint
             {
                 lock(typeof(Symbol))
                 {
-                    WeakReference<Sym> weakSym;
-                    Sym sym;
-                    if(SYMBOLS.TryGetValue(name, out weakSym) && weakSym.TryGetTarget(out sym))
+                    if(SYMBOLS.TryGetValue(name, out var weakSym) && weakSym.TryGetTarget(out var sym))
                     {
                         return sym;
                     }

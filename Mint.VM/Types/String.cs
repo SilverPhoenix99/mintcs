@@ -46,7 +46,7 @@ namespace Mint
 
             if(!(other is String))
             {
-                var type = NilClass.IsNil(other) ? "nil" : other.Class.FullName;
+                var type = NilClass.IsNil(other) ? "nil" : other.Class.Name;
                 throw new TypeError($"no implicit conversion of {type} into String");
             }
 

@@ -3,6 +3,8 @@ using Mint.MethodBinding.Arguments;
 using System;
 using System.Diagnostics;
 
+// ReSharper disable EqualExpressionComparison
+
 namespace Mint
 {
     public partial class Class
@@ -32,11 +34,12 @@ namespace Mint
 
         internal static readonly CallSite EqOp;
 
+#pragma warning disable CS1720
+
         static Class()
         {
             EqOp = new CallSite(Symbol.EQ, Visibility.Private, ArgumentKind.Simple);
 
-            #pragma warning disable 1720
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .Allocator( () => new Object(BASIC_OBJECT) )
                 .DefMethod("equal?", () => ReferenceEquals(default(object), default(object)) )
@@ -45,38 +48,35 @@ namespace Mint
                 .Alias("==", "equal?")
                 .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !Object.ToBool(EqOp.Call(l, r))) )
             ;
-            #pragma warning restore 1720
 
-            Debug.Assert(BASIC_OBJECT.Name != null, "BASIC_OBJECT.Name != null");
-            BASIC_OBJECT.SetConstant(BASIC_OBJECT.Name.Value, BASIC_OBJECT);
+            Debug.Assert(BASIC_OBJECT.BaseName != null, $"{nameof(BASIC_OBJECT)}.{nameof(BaseName)} != null");
+            BASIC_OBJECT.SetConstant(BASIC_OBJECT.BaseName.Value, BASIC_OBJECT);
 
-            #pragma warning disable 1720
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
                 .Allocator( () => new Object() )
             ;
-            #pragma warning restore 1720
-
-            OBJECT.SetConstant(BASIC_OBJECT.Name.Value, BASIC_OBJECT);
-            OBJECT.SetConstant(OBJECT.Name.Value, OBJECT);
+            
+            OBJECT.SetConstant(BASIC_OBJECT.BaseName.Value, BASIC_OBJECT);
+            OBJECT.SetConstant(OBJECT.BaseName.Value, OBJECT);
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .Allocator( () => new Module() )
-                .AttrReader("ancestors", _ => _.Ancestors)
-                .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)))
-                .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)))
-                .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)))
-                .AttrReader("constants", _ => _.Constants)
-                .DefMethod("inspect", _ => _.Inspect())
-                .AttrReader("name", _ => _.FullName)
-                .DefMethod("to_s", _ => _.ToString())
+                .AttrReader("ancestors", _ => _.Ancestors )
+                .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)) )
+                .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)) )
+                .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)) )
+                .AttrReader("constants", _ => _.Constants )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .AttrReader("name", _ => _.Name )
+                .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("==", () => ReferenceEquals(default(object), default(object)) )
-                .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => Object.IsA(arg, mod)))
+                .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => Object.IsA(arg, mod)) )
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
                 .Allocator( () => new Class() )
-                .DefMethod("allocate", _ => _.Allocate())
-                .AttrReader("superclass", _ => _.Superclass)
+                .DefMethod("allocate", _ => _.Allocate() )
+                .AttrReader("superclass", _ => _.Superclass )
             ;
 
             // required hack
@@ -86,7 +86,6 @@ namespace Mint
             MODULE.effectiveClass = CLASS;
             CLASS.effectiveClass = CLASS;
 
-            #pragma warning disable 1720
             Module kernel = ModuleBuilder<iObject>.DescribeModule("Kernel")
                 .AttrReader("class", _ => _.Class )
                 .AttrReader("singleton_class", _ => _.SingletonClass )
@@ -99,16 +98,15 @@ namespace Mint
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", _ => _.Id )
                 .DefLambda("===", (Func<iObject, iObject, bool>) ((l, r) => Object.ToBool(EqOp.Call(l, r))) )
-                .DefMethod("is_a?", () => Object.IsA(default(iObject), default(iObject)))
+                .DefMethod("is_a?", () => Object.IsA(default(iObject), default(iObject)) )
                 .Alias("kind_of?", "is_a?")
-                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)))
+                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)) )
                 .DefMethod("instance_variable_set", () =>
                     default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
                 )
-                .AttrReader("instance_variables", () => default(iObject).InstanceVariables)
+                .AttrReader("instance_variables", () => default(iObject).InstanceVariables )
             //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
             ;
-            #pragma warning restore 1720
 
             OBJECT.Include(kernel);
 
@@ -118,11 +116,11 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefLambda("abs", (Func<Float, Float>) (_ => Math.Abs(_.Value)) )
-                .DefMethod("+", () => default(Float) + default(Float))
-                .DefMethod("-", () => default(Float) - default(Float))
-                .DefMethod("*", () => default(Float) * default(Float))
-                .DefMethod("/", () => default(Float) / default(Float))
-                .DefMethod("==", _ => _.Equals(default(object)))
+                .DefMethod("+", () => default(Float) + default(Float) )
+                .DefMethod("-", () => default(Float) - default(Float) )
+                .DefMethod("*", () => default(Float) * default(Float) )
+                .DefMethod("/", () => default(Float) / default(Float) )
+                .DefMethod("==", _ => _.Equals(default(object)) )
                 .Alias("===", "==")
             ;
 
@@ -156,18 +154,18 @@ namespace Mint
             ;
 
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
-                .DefMethod("==", _ => _.Equals(default(object)))
+                .DefMethod("==", _ => _.Equals(default(object)) )
             ;
 
             BINDING = ModuleBuilder<Binding>.DescribeClass()
                 // TODO: eval
-                .DefMethod("clone", _ => _.Duplicate())
+                .DefMethod("clone", _ => _.Duplicate() )
                 .Alias("dup", "clone")
-                .DefMethod("local_variable_defined?", _ => _.IsLocalDefined(default(Symbol)))
-                .DefMethod("local_variable_get", _ => _.GetLocalValue(default(Symbol)))
-                .DefMethod("local_variable_set", _ => _.SetLocalValue(default(Symbol), default(iObject)))
-                .AttrReader("local_variables", _ => _.LocalVariables)
-                .AttrReader("receiver", _ => _.Receiver)
+                .DefMethod("local_variable_defined?", _ => _.IsLocalDefined(default(Symbol)) )
+                .DefMethod("local_variable_get", _ => _.GetLocalValue(default(Symbol)) )
+                .DefMethod("local_variable_set", _ => _.SetLocalValue(default(Symbol), default(iObject)) )
+                .AttrReader("local_variables", _ => _.LocalVariables )
+                .AttrReader("receiver", _ => _.Receiver )
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()
@@ -181,66 +179,69 @@ namespace Mint
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             TRUE = ModuleBuilder<TrueClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             ARRAY = ModuleBuilder<Array>.DescribeClass()
-                .Allocator( () => new Mint.Array() )
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .AttrAccessor("[]", _ => _[default(int)])
-                .DefMethod("clear", _ => _.Clear())
-                .DefMethod("join", _ => _.Join(default(String)))
-                .DefMethod("replace", _ => _.Replace(default(Array)))
-                .DefMethod("compact", _ => _.Compact())
-                .DefMethod("compact!", _ => _.CompactSelf())
-                .DefMethod("reverse", _ => _.Reverse())
-                .DefMethod("reverse!", _ => _.ReverseSelf())
-                .DefMethod("first", _ => _.First())
-                .DefMethod("last", _ => _.Last())
-                .DefMethod("uniq", _ => _.Uniq())
-                .DefMethod("uniq!", _ => _.UniqSelf())
-                .DefMethod("<<", _ => _.Add(default(iObject)))
-                .DefMethod("&", _ => _.AndAlso(default(Array)))
+                .Allocator( () => new Array() )
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .AttrAccessor("[]", _ => _[default(int)] )
+                .DefMethod("clear", _ => _.Clear() )
+                .DefMethod("join", _ => _.Join(default(String)) )
+                .DefMethod("replace", _ => _.Replace(default(Array)) )
+                .DefMethod("compact", _ => _.Compact() )
+                .DefMethod("compact!", _ => _.CompactSelf() )
+                .DefMethod("reverse", _ => _.Reverse() )
+                .DefMethod("reverse!", _ => _.ReverseSelf() )
+                .DefMethod("first", _ => _.First() )
+                .DefMethod("last", _ => _.Last() )
+                .DefMethod("uniq", _ => _.Uniq() )
+                .DefMethod("uniq!", _ => _.UniqSelf() )
+                .DefMethod("<<", _ => _.Add(default(iObject)) )
+                .DefMethod("&", _ => _.AndAlso(default(Array)) )
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
                 .Allocator( () => new Hash() )
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .AttrReader("count", _ => _.Count)
-                .AttrAccessor("[]", _ => _[default(iObject)])
-                .DefMethod("merge", _ => _.Merge(default(Hash)))
-                .DefMethod("merge!", _ => _.MergeSelf(default(Hash)))
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .AttrReader("count", _ => _.Count )
+                .AttrAccessor("[]", _ => _[default(iObject)] )
+                .DefMethod("merge", _ => _.Merge(default(Hash)) )
+                .DefMethod("merge!", _ => _.MergeSelf(default(Hash)) )
             ;
 
             PROC = ModuleBuilder<Proc>.DescribeClass()
             ;
 
             RANGE = ModuleBuilder<Range>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
 
             REGEXP = ModuleBuilder<Regexp>.DescribeClass();
 
             STRING = ModuleBuilder<String>.DescribeClass()
                 .Allocator( () => new String() )
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
-                .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)))
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
+                .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)) )
             ;
 
             SYMBOL = ModuleBuilder<Symbol>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString())
-                .DefMethod("inspect", _ => _.Inspect())
+                .DefMethod("to_s", _ => _.ToString() )
+                .DefMethod("inspect", _ => _.Inspect() )
             ;
         }
+
+#pragma warning restore CS1720
+
     }
 }

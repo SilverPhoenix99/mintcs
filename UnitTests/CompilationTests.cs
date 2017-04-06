@@ -230,7 +230,7 @@ namespace Mint.UnitTests
 
             Assert.That(self, Is.Not.Null);
             Assert.That(self, Is.TypeOf(typeof(Object)));
-            Assert.That(self.Class.FullName, Is.EqualTo("Object"));
+            Assert.That(self.Class.Name, Is.EqualTo("Object"));
         }
 
         [Test]

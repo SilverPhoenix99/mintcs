@@ -23,7 +23,7 @@ namespace Mint.MethodBinding.Compilation
 
             var methodName = CallSite.MethodName.ToString();
             var instanceInspect = instance.Inspect();
-            var className = instance.EffectiveClass.FullName;
+            var className = instance.EffectiveClass.Name;
 
             throw new NoMethodError($"undefined method `{methodName}' for {instanceInspect}:{className}");
         }
