@@ -11,7 +11,7 @@ namespace Mint
 
         private const string RADIX = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-        public long Id => (Value << 2) | 1;
+        public long Id => (Value << 1) | 1;
 
         public Class Class => Class.FIXNUM;
 

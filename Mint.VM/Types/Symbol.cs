@@ -148,9 +148,9 @@ namespace Mint
 
         private class Sym
         {
-            private static long nextId;
+            private static long nextId = 2;
 
-            public readonly long Id = Interlocked.Increment(ref nextId) << 4 | 0xe;
+            public readonly long Id = Interlocked.Add(ref nextId, 4);
             public readonly string Name;
 
             private Sym(string name)

@@ -5,9 +5,9 @@ namespace Mint
 {
     public abstract class FrozenObject : iObject
     {
-        private static long nextId;
+        private static long nextId = 4;
 
-        public virtual long Id { get; } = Interlocked.Increment(ref nextId) << 2;
+        public virtual long Id { get; } = Interlocked.Add(ref nextId, 4);
 
         public abstract Class Class { get; }
 
