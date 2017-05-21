@@ -22,8 +22,8 @@ namespace Mint.MethodBinding.Methods
     {
         private DelegateMetadata Lambda { get; }
 
-        public DelegateMethodBinder(Symbol name, Module owner, DelegateMetadata lambda)
-            : base(name, owner)
+        public DelegateMethodBinder(Symbol name, Module definer, DelegateMetadata lambda)
+            : base(name, definer)
         {
             Lambda = lambda;
         }
@@ -76,8 +76,11 @@ namespace Mint.MethodBinding.Methods
 
         public static class Expressions
         {
-            public static NewExpression New(Expression name, Expression owner, Expression lambda) =>
-                Expression.New(Reflection.Ctor, name, owner, lambda);
+            public static NewExpression New(Expression name,
+                                            Expression definer,
+                                            Expression caller,
+                                            Expression lambda) =>
+                Expression.New(Reflection.Ctor, name, definer, caller, lambda);
         }
     }
 }

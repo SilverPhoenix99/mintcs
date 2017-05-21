@@ -1,6 +1,8 @@
 ﻿using Mint.MethodBinding.Methods;
 using Mint.Reflection;
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -44,11 +46,36 @@ namespace Mint
 
         #endregion
 
+        #region Allocator
+
         public ModuleBuilder<T> Allocator(Func<iObject> allocator)
         {
             Class.Allocator = allocator;
             return this;
         }
+
+        public ModuleBuilder<T> GenerateAllocator()
+        {
+            var type = typeof(T);
+
+            var ctor = type.GetConstructors().FirstOrDefault(c =>
+                c.GetParameters().Length == 0
+                || c.GetParameters()[0].HasDefaultValue);
+
+            Debug.Assert(Module is Class);
+            Debug.Assert(!type.IsAbstract);
+            Debug.Assert(!type.IsInterface);
+            Debug.Assert(ctor != null);
+
+            // () => new T()
+            var args = ctor.GetParameters().Select(p => Expression.Default(p.ParameterType));
+            var lambda = Expression.Lambda<Func<iObject>>(Expression.New(ctor, args).Cast<iObject>());
+            var @delegate = lambda.Compile();
+
+            return Allocator(@delegate);
+        }
+
+        #endregion
 
         #region DefMethod
 

@@ -29,10 +29,11 @@ namespace Mint.MethodBinding.Methods
         private MethodMetadata Method { get; }
 
         public ClrMethodBinder(Symbol name,
-                               Module owner,
+                               Module definer,
                                MethodMetadata method,
+                               Module caller = null,
                                Visibility visibility = Visibility.Public)
-            : base(name, owner, visibility)
+            : base(name, definer, caller, visibility)
         {
             if(method == null) throw new ArgumentNullException(nameof(method));
 

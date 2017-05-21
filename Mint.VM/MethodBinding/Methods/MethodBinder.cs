@@ -6,7 +6,11 @@ namespace Mint.MethodBinding.Methods
     {
         Symbol Name { get; }
 
-        Module Owner { get; }
+        // Module that defines the method (module that has the "def")
+        Module Definer { get; }
+
+        // Module that calls the method
+        Module Caller { get; }
 
         Condition Condition { get; }
 

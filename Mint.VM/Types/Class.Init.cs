@@ -53,14 +53,14 @@ namespace Mint
             BASIC_OBJECT.SetConstant(BASIC_OBJECT.BaseName.Value, BASIC_OBJECT);
 
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
-                .Allocator( () => new Object() )
+                .GenerateAllocator()
             ;
             
             OBJECT.SetConstant(BASIC_OBJECT.BaseName.Value, BASIC_OBJECT);
             OBJECT.SetConstant(OBJECT.BaseName.Value, OBJECT);
 
             MODULE = ModuleBuilder<Module>.DescribeClass()
-                .Allocator( () => new Module() )
+                .GenerateAllocator()
                 .AttrReader("ancestors", _ => _.Ancestors )
                 .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)) )
                 .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)) )
@@ -74,7 +74,7 @@ namespace Mint
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
-                .Allocator( () => new Class() )
+                .GenerateAllocator()
                 .DefMethod("allocate", _ => _.Allocate() )
                 .AttrReader("superclass", _ => _.Superclass )
             ;
@@ -110,7 +110,9 @@ namespace Mint
 
             OBJECT.Include(kernel);
 
-            NUMERIC = new Class(new Symbol("Numeric"));
+            NUMERIC = ModuleBuilder<Object>.DescribeClass("Numeric")
+                .Allocator(() => new Object(NUMERIC))
+            ;
 
             FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
                 .DefMethod("to_s", _ => _.ToString() )
@@ -189,7 +191,7 @@ namespace Mint
             ;
 
             ARRAY = ModuleBuilder<Array>.DescribeClass()
-                .Allocator( () => new Array() )
+                .GenerateAllocator()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .AttrAccessor("[]", _ => _[default(int)] )
@@ -210,7 +212,7 @@ namespace Mint
             ;
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
-                .Allocator( () => new Hash() )
+                .GenerateAllocator()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .AttrReader("count", _ => _.Count )
@@ -223,14 +225,17 @@ namespace Mint
             ;
 
             RANGE = ModuleBuilder<Range>.DescribeClass()
+                .GenerateAllocator()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
             ;
 
-            REGEXP = ModuleBuilder<Regexp>.DescribeClass();
+            REGEXP = ModuleBuilder<Regexp>.DescribeClass()
+                .GenerateAllocator()
+            ;
 
             STRING = ModuleBuilder<String>.DescribeClass()
-                .Allocator( () => new String() )
+                .GenerateAllocator()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)) )

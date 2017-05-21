@@ -12,7 +12,7 @@ namespace Mint.UnitTests
             var fixnum = new Fixnum(value);
 
             Assert.That(fixnum.Value, Is.EqualTo(value));
-            Assert.That(fixnum.Id, Is.EqualTo(value << 2 | 1));
+            Assert.That(fixnum.Id, Is.EqualTo(value << 1 | 1));
         }
 
         [Test]

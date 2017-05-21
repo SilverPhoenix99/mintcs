@@ -28,6 +28,10 @@ namespace Mint
             : this((iObject) begin, end, excludeEnd)
         { }
 
+        public Range()
+            : this(new NilClass(), new NilClass())
+        { }
+
         public bool Include(iObject value)
         {
             if(value is Fixnum)

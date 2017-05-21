@@ -36,7 +36,7 @@ namespace Mint.Compilation.Components
                 Assign(moduleVar, module),
                 Module.Expressions.DefineMethod(
                     moduleVar,
-                    DelegateMethodBinder.Expressions.New(name, moduleVar, Constant(delegateMetadata))
+                    DelegateMethodBinder.Expressions.New(name, moduleVar, moduleVar, Constant(delegateMetadata))
                 ).Cast<iObject>()
             );
 	    }

@@ -25,24 +25,28 @@ namespace Mint.MethodBinding.Methods
 
         public Symbol Name { get; }
 
-        public Module Owner { get; }
+        public Module Definer { get; }
+
+        public Module Caller { get; }
 
         public Condition Condition { get; }
 
         public Visibility Visibility { get; }
 
-        public BaseMethodBinder(Symbol name, Module owner, Visibility visibility = Visibility.Public)
+        protected BaseMethodBinder(Symbol name,
+                                   Module definer,
+                                   Module caller = null,
+                                   Visibility visibility = Visibility.Public)
         {
-            if(owner == null) throw new ArgumentNullException(nameof(owner));
-
             Name = name;
-            Owner = owner;
+            Definer = definer ?? throw new ArgumentNullException(nameof(definer));
+            Caller = caller ?? definer;
             Condition = new Condition();
             Visibility = visibility;
         }
 
         protected BaseMethodBinder(Symbol newName, MethodBinder other)
-            : this(newName, other.Owner, other.Visibility)
+            : this(newName, other.Definer, other.Caller, other.Visibility)
         { }
 
         public abstract Expression Bind(CallFrameBinder frame);
@@ -61,7 +65,7 @@ namespace Mint.MethodBinding.Methods
             return Object.Expressions.Box(expression);
         }
 
-        protected internal static Expression TypeIs(Expression expression, Type type)
+        protected static Expression TypeIs(Expression expression, Type type)
         {
             if(TYPES.TryGetValue(type, out var convertedType))
             {
@@ -71,7 +75,7 @@ namespace Mint.MethodBinding.Methods
             return Expression.TypeIs(expression, type);
         }
 
-        protected internal static Expression TryConvert(Expression expression, Type type)
+        protected static Expression TryConvert(Expression expression, Type type)
         {
             if(TYPES.TryGetValue(type, out var convertedType))
             {
