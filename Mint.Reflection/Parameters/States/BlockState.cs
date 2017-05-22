@@ -4,7 +4,10 @@
     {
         private class BlockState : BaseParameterState
         {
-            public BlockState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public BlockState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {
@@ -15,6 +18,7 @@
                     default: return InvalidParameterError(parameter);
                 }
             }
+
 
             private void UpdateWith(ParameterMetadata parameter)
             {

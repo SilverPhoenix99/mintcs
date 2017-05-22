@@ -2,17 +2,21 @@
 {
     public class Arity
     {
-        public int Minimum { get; }
-        public int Maximum { get; }
-
         public Arity(int minimum, int maximum)
         {
             Minimum = minimum;
             Maximum = maximum;
         }
 
-        public bool Include(int number) => Minimum <= number && number <= Maximum;
+
+        public int Minimum { get; }
+        public int Maximum { get; }
+
+
+        public bool Include(int number)
+            => Minimum <= number && number <= Maximum;
         
+
         public Arity Merge(Arity other)
         {
             var min = Minimum;
@@ -24,9 +28,12 @@
             return new Arity(min, max);
         }
 
+
         public override bool Equals(object obj) => Equals(obj as Arity);
 
-        public bool Equals(Arity other) => other?.Minimum == Minimum && other?.Maximum == Maximum;
+
+        public bool Equals(Arity other) => other?.Minimum == Minimum && other.Maximum == Maximum;
+
 
         public override int GetHashCode()
         {
@@ -35,6 +42,7 @@
             return hash * 31 + Maximum.GetHashCode();
         }
         
+
         public override string ToString()
         {
             return Minimum == Maximum ? Minimum.ToString()

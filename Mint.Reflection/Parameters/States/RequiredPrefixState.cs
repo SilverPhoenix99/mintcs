@@ -4,7 +4,10 @@
     {
         private class RequiredPrefixState : BaseParameterState
         {
-            public RequiredPrefixState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public RequiredPrefixState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {

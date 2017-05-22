@@ -2,9 +2,12 @@ namespace Mint.Reflection.Parameters
 {
     public partial class ParameterCounter
     {
-        internal class KeyRestState : BaseParameterState
+        private class KeyRestState : BaseParameterState
         {
-            public KeyRestState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public KeyRestState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {
@@ -16,6 +19,7 @@ namespace Mint.Reflection.Parameters
                     default: return InvalidParameterError(parameter);
                 }
             }
+
 
             private void UpdateWith(ParameterMetadata parameter)
             {

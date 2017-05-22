@@ -6,6 +6,6 @@ namespace Mint.Reflection
     public static class MethodInfoExtensions
     {
         public static bool IsDynamicallyGenerated(this MethodBase methodInfo) =>
-            methodInfo.ReflectedType.IsDefined(typeof(CompilerGeneratedAttribute), false);
+            methodInfo.ReflectedType?.IsDefined(typeof(CompilerGeneratedAttribute), false) ?? false;
     }
 }

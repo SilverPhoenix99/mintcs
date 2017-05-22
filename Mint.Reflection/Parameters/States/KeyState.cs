@@ -2,9 +2,12 @@
 {
     public partial class ParameterCounter
     {
-        internal class KeyState : BaseParameterState
+        private class KeyState : BaseParameterState
         {
-            public KeyState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public KeyState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {

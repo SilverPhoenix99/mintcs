@@ -2,9 +2,12 @@
 {
     public partial class ParameterCounter
     {
-        internal class RequiredSuffixState : BaseParameterState
+        private class RequiredSuffixState : BaseParameterState
         {
-            public RequiredSuffixState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public RequiredSuffixState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {

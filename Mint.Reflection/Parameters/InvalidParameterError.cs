@@ -7,8 +7,10 @@ namespace Mint.Reflection.Parameters
         public InvalidParameterError()
         { }
 
+
         public InvalidParameterError(string message) : base(message)
         { }
+
 
         public InvalidParameterError(string message, Exception innerException) : base(message, innerException)
         { }

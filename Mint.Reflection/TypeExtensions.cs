@@ -23,8 +23,9 @@ namespace Mint.Reflection
                       && method.Name == methodName
                       && method.GetParameters()[0].IsAssignableFrom(type)
                 select method
-                ;
+            ;
         }
+
 
         public static IEnumerable<MethodInfo> GetMethodOverloads(this Type type, string methodName)
         {
@@ -33,7 +34,7 @@ namespace Mint.Reflection
                 where method.Name == methodName
                       && !method.IsDefined(typeof(ExtensionAttribute), false)
                 select method
-                ;
+            ;
         }
     }
 }

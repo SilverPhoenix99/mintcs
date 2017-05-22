@@ -105,7 +105,6 @@ namespace Mint
                     default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
                 )
                 .AttrReader("instance_variables", () => default(iObject).InstanceVariables )
-            //.DefMethod("to_bool", () => Object.ToBool(default(iObject)) ) // for testing static methods
             ;
 
             OBJECT.Include(kernel);

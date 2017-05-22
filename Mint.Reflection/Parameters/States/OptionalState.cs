@@ -4,7 +4,10 @@
     {
         private class OptionalState : BaseParameterState
         {
-            public OptionalState(ParameterCounter parameterCounter) : base(parameterCounter) { }
+            public OptionalState(ParameterCounter parameterCounter)
+                : base(parameterCounter)
+            { }
+
 
             public override ParameterState Parse(ParameterMetadata parameter)
             {
