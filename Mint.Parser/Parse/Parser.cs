@@ -9,7 +9,6 @@ namespace Mint.Parse
     {
         private bool inDef;
         private bool inSingle;
-
         private readonly Stack<BitStack> cmdargStack = new Stack<BitStack>();
         private readonly Stack<BitStack> condStack = new Stack<BitStack>();
         private BitStack inDefStack = new BitStack();
@@ -17,37 +16,93 @@ namespace Mint.Parse
         private readonly Stack<int> leftParenCounterStack = new Stack<int>();
         private BitStack inKwargStack = new BitStack();
 
+
         public Parser(Lexer lexer)
             : base(new LexerAdapter(lexer))
         { }
+
 
         public Parser(string filename, string data, bool isFile = false)
             : this(new Lexer(filename, data, isFile))
         { }
 
+
         public Lexer Lexer => ((LexerAdapter) Scanner).Lexer;
-
         public Ast<Token> Result => CurrentSemanticValue;
-
         public string Filename => Lexer.Filename;
 
-        private void PushCmdarg() { cmdargStack.Push(Lexer.Cmdarg); }
-        private void PopCmdarg()  { Lexer.Cmdarg = cmdargStack.Pop(); }
 
-        private void PushCond() { condStack.Push(Lexer.Cond); }
-        private void PopCond()  { Lexer.Cond = condStack.Pop(); }
+        private void PushCmdarg()
+        {
+            cmdargStack.Push(Lexer.Cmdarg);
+        }
 
-        private void PushDef() { inDefStack.Push(inDef); }
-        private void PopDef()  { inDef = inDefStack.Pop(); }
 
-        private void PushSingle() { inSingleStack.Push(inSingle); }
-        private void PopSingle()  { inSingle = inSingleStack.Pop(); }
+        private void PopCmdarg()
+        {
+            Lexer.Cmdarg = cmdargStack.Pop();
+        }
 
-        private void PushLParBeg() { leftParenCounterStack.Push(Lexer.LeftParenCounter); }
-        private void PopLParBeg()  { Lexer.LeftParenCounter = leftParenCounterStack.Pop(); }
 
-        private void PushKwarg() { inKwargStack.Push(Lexer.InKwarg); }
-        private void PopKwarg()  { Lexer.InKwarg = inKwargStack.Pop(); }
+        private void PushCond()
+        {
+            condStack.Push(Lexer.Cond);
+        }
+
+
+        private void PopCond()
+        {
+            Lexer.Cond = condStack.Pop();
+        }
+
+
+        private void PushDef()
+        {
+            inDefStack.Push(inDef);
+        }
+
+
+        private void PopDef()
+        {
+            inDef = inDefStack.Pop();
+        }
+        
+
+        private void PushSingle()
+        {
+            inSingleStack.Push(inSingle);
+        }
+
+
+        private void PopSingle()
+        {
+            inSingle = inSingleStack.Pop();
+        }
+
+
+        private void PushLParBeg()
+        {
+            leftParenCounterStack.Push(Lexer.LeftParenCounter);
+        }
+
+
+        private void PopLParBeg()
+        {
+            Lexer.LeftParenCounter = leftParenCounterStack.Pop();
+        }
+
+
+        private void PushKwarg()
+        {
+            inKwargStack.Push(Lexer.InKwarg);
+        }
+
+
+        private void PopKwarg()
+        {
+            Lexer.InKwarg = inKwargStack.Pop();
+        }
+
 
         public new Ast<Token> Parse()
         {
@@ -65,26 +120,7 @@ namespace Mint.Parse
             return null;
         }
 
-        protected static Ast<Token> EnsureNode() =>
-            (Ast<Token>) new Token(kENSURE, "ensure", new LexLocation(-1, -1, -1, -1));
-
-        protected static Ast<Token> CallNode() =>
-            (Ast<Token>) new Token(kDOT, ".", new LexLocation(-1, -1, -1, -1));
-
-        private static Ast<Token> sexp() => new Ast<Token>();
-
-        private static Ast<Token> sexp(params Ast<Token>[] nodes) => new Ast<Token>(null, nodes);
-
-        public static Ast<Token> ParseFile(string filename, string data)
-        {
-            return new Parser(filename, data, isFile: true).Parse();
-        }
-
-        public static Ast<Token> ParseString(string filename, string data)
-        {
-            return new Parser(filename, data, isFile: false).Parse();
-        }
-
+        
         private void VerifyFormalArgument(Token token)
         {
             var name = token.Value;
@@ -110,14 +146,41 @@ namespace Mint.Parse
             }
         }
 
+        
+        protected static Ast<Token> EnsureNode()
+            => (Ast<Token>)new Token(kENSURE, "ensure", new LexLocation(-1, -1, -1, -1));
+
+
+        protected static Ast<Token> CallNode()
+            => (Ast<Token>)new Token(kDOT, ".", new LexLocation(-1, -1, -1, -1));
+
+
+        private static Ast<Token> NewNode()
+            => new Ast<Token>();
+
+
+        private static Ast<Token> NewNode(params Ast<Token>[] nodes)
+            => new Ast<Token>(null, nodes);
+
+
+        public static Ast<Token> ParseFile(string filename, string data)
+            => new Parser(filename, data, isFile: true).Parse();
+
+
+        public static Ast<Token> ParseString(string filename, string data)
+            => new Parser(filename, data, isFile: false).Parse();
+
+
         private class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>
         {
-            public Lexer Lexer { get; }
-
             public LexerAdapter(Lexer lexer)
             {
                 Lexer = lexer;
             }
+
+
+            public Lexer Lexer { get; }
+
 
             public override int yylex()
             {

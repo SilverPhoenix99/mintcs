@@ -25,27 +25,6 @@ namespace Mint.Lex.States.Delimiters
                 { ":\"", tSYMBEG },
             });
 
-        public virtual bool IsNested => false;
-
-        public string Text { get; }
-
-        public char OpenDelimiter { get; }
-
-        public char CloseDelimiter { get; protected set; }
-
-        public TokenType BeginType { get; }
-
-        public LiteralFeatures Features { get; set; }
-
-        public bool CanLabel => Features.HasFlag(Label);
-
-        public bool HasInterpolation => Features.HasFlag(Interpolation);
-
-        public bool IsWords => Features.HasFlag(Words);
-
-        public bool IsRegexp => Features.HasFlag(Regexp);
-
-        protected StringLiteral Literal { get; }
 
         public SimpleDelimiter(StringLiteral literal, string delimiterText)
         {
@@ -57,11 +36,27 @@ namespace Mint.Lex.States.Delimiters
             Features = CalculateFeatures(Text);
         }
 
+
+        public virtual bool IsNested => false;
+        public char CloseDelimiter { get; protected set; }
+        public TokenType BeginType { get; }
+        public LiteralFeatures Features { get; set; }
+        public bool CanLabel => Features.HasFlag(Label);
+        public bool HasInterpolation => Features.HasFlag(Interpolation);
+        public bool IsWords => Features.HasFlag(Words);
+        public bool IsRegexp => Features.HasFlag(Regexp);
+        protected StringLiteral Literal { get; }
+        protected char OpenDelimiter { get; }
+        private string Text { get; }
+
+
         public virtual void IncrementNesting()
         { }
 
+
         public virtual void DecrementNesting()
         { }
+
 
         private static TokenType CalculateBeginTokenType(string text)
         {
@@ -69,6 +64,7 @@ namespace Mint.Lex.States.Delimiters
             var key = text.Substring(0, length);
             return OPEN_DELIMITERS.TryGetValue(key, out var type) ? type : tSTRING_BEG;
         }
+
 
         private static LiteralFeatures CalculateFeatures(string text)
         {

@@ -9,11 +9,8 @@ namespace Mint.Lex.States
         private readonly Delimiter delimiter;
         private RegexpFlags regexpOptions = RegexpFlags.None;
         private bool emittedSpace;
-        private State endState;
+        private readonly State endState;
 
-        protected override char CurrentChar => Lexer.CurrentChar;
-
-        private bool IsDelimiter => Lexer.CurrentChar == delimiter.CloseDelimiter;
 
         public StringLiteral(Lexer lexer, int ts, int te, bool canLabel = false, State endState = null)
             : base(lexer, lexer.Position + 1)
@@ -32,6 +29,11 @@ namespace Mint.Lex.States
             BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;
         }
 
+
+        protected override char CurrentChar => Lexer.CurrentChar;
+        private bool IsDelimiter => Lexer.CurrentChar == delimiter.CloseDelimiter;
+
+
         protected override void EmitContent(int te)
         {
             if(delimiter.IsWords && contentStart == te)
@@ -43,17 +45,20 @@ namespace Mint.Lex.States
             emittedSpace = false;
         }
 
+
         protected override void EmitDBeg()
         {
             base.EmitDBeg();
             emittedSpace = false;
         }
 
+
         protected override void EmitDVar(TokenType type)
         {
             base.EmitDVar(type);
             emittedSpace = false;
         }
+
 
         private void EmitEndToken(int ts, int te)
         {
@@ -67,6 +72,7 @@ namespace Mint.Lex.States
             Lexer.PopLiteral();
             Lexer.CurrentState = endState;
         }
+
 
         private void EmitSpace(int ts, int te)
         {

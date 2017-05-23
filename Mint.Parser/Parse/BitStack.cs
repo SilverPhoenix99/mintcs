@@ -4,12 +4,15 @@
     {
         private ulong stack;
 
+
         public bool Peek => (stack & 1) == 1;
+
 
         public void Push(bool value)
         {
             stack = (stack << 1) | (value ? 1ul : 0);
         }
+
 
         public bool Pop()
         {
@@ -17,6 +20,7 @@
             stack >>= 1;
             return peek;
         }
+
 
         public bool LexPop()
         {

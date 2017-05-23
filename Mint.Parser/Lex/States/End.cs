@@ -5,10 +5,12 @@ namespace Mint.Lex.States
 {
     internal partial class End : Shared
     {
-        protected override bool CanLabel => Lexer.CanLabel && !Lexer.CommandStart;
-
         public End(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override bool CanLabel => Lexer.CanLabel && !Lexer.CommandStart;
+
 
         protected override void EmitIdentifierToken()
         {
@@ -21,11 +23,13 @@ namespace Mint.Lex.States
             }
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
+
 
         protected override void EmitDoToken()
         {
@@ -51,6 +55,7 @@ namespace Mint.Lex.States
             Lexer.CommandStart = true;
         }
 
+
         protected override void EmitLeftBrace()
         {
             Lexer.CurrentState = Lexer.BegState;
@@ -72,6 +77,7 @@ namespace Mint.Lex.States
             Lexer.Cond.Push(false);
             Lexer.Cmdarg.Push(false);
         }
+
 
         protected override void EmitConstantToken()
         {

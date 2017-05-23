@@ -11,6 +11,13 @@
         protected bool isImaginary;
         protected bool isRational;
 
+
+        protected StateBase(Lexer lexer)
+        {
+            Lexer = lexer;
+        }
+
+
         public Lexer Lexer { get; }
         protected virtual bool CanLabel => false;
         protected virtual State OperatorState => Lexer.BegState;
@@ -18,12 +25,9 @@
         protected int pe => eof;
         protected virtual char CurrentChar => Lexer.CurrentChar;
 
-        protected StateBase(Lexer lexer)
-        {
-            Lexer = lexer;
-        }
 
         public abstract void Advance();
+
 
         protected virtual void Reset(int initialState)
         {

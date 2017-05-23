@@ -8,7 +8,13 @@ namespace Mint.Lex.States
         private const string SPACE_CHARS = "\t\n\v\f\r ";
         private const string PRINTABLE_SPACE_CHARS = "tnvfrs";
 
+
         private Literal currentLiteral;
+
+
+        protected Shared(Lexer lexer) : base(lexer)
+        { }
+
 
         protected virtual TokenType DoubleStarTokenType => kPOW;
         protected virtual TokenType StarTokenType => kMUL;
@@ -23,14 +29,15 @@ namespace Mint.Lex.States
         protected virtual TokenType UntilTokenType => kUNTIL_MOD;
         protected virtual TokenType WhileTokenType => kWHILE_MOD;
 
-        protected Shared(Lexer lexer) : base(lexer)
-        { }
 
         protected abstract void EmitIdentifierToken();
 
+
         protected abstract void EmitFidToken();
 
+
         protected abstract void EmitDoToken();
+
 
         protected virtual void EmitModifierKeywordToken(TokenType type)
         {
@@ -40,12 +47,14 @@ namespace Mint.Lex.States
             Lexer.CommandStart = true;
         }
 
+
         protected virtual void EmitRescueToken()
         {
             Lexer.EmitToken(kRESCUE_MOD, ts, te);
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CanLabel = true;
         }
+
 
         protected virtual void EmitLeftBrace()
         {
@@ -68,6 +77,7 @@ namespace Mint.Lex.States
             Lexer.Cmdarg.Push(false);
         }
 
+
         protected virtual void EmitLeftBracket()
         {
             Lexer.EmitToken(LeftBracketTokenType, ts, te);
@@ -78,11 +88,13 @@ namespace Mint.Lex.States
             Lexer.Cmdarg.Push(false);
         }
 
+
         protected virtual void EmitDivToken()
         {
             Lexer.EmitToken(kDIV, ts, te);
             Lexer.CurrentState = OperatorState;
         }
+
 
         protected virtual void EmitConstantToken()
         {
@@ -90,12 +102,14 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
+
         protected virtual void EmitBegKeywordToken(TokenType type)
         {
             Lexer.EmitToken(type, ts, te);
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
         }
+
 
         protected override void Reset(int initialState)
         {

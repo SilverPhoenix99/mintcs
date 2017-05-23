@@ -65,10 +65,10 @@ top_compstmt :
 ;
 
 top_stmts :
-    { $$ = sexp(); } // nothing
-  | top_stmt                 { $$ = sexp($1); }
+    { $$ = NewNode(); } // nothing
+  | top_stmt                 { $$ = NewNode($1); }
   | top_stmts terms top_stmt { $$ = $1 + $3; }
-  //| error top_stmt           { $$ = sexp($2); } // Must give error
+  //| error top_stmt           { $$ = NewNode($2); } // Must give error
 ;
 
 top_stmt :
@@ -104,7 +104,7 @@ bodystmt :
 
         if(opt_rescue.List.Count != 0)
         {
-            $$ = EnsureNode() + compstmt + opt_rescue + sexp();
+            $$ = EnsureNode() + compstmt + opt_rescue + NewNode();
             break;
         }
 
@@ -117,10 +117,10 @@ compstmt :
 ;
 
 stmts :
-    { $$ = sexp(); } // nothing
-  | stmt_or_begin             { $$ = sexp($1); }
+    { $$ = NewNode(); } // nothing
+  | stmt_or_begin             { $$ = NewNode($1); }
   | stmts terms stmt_or_begin { $$ = $1 + $3; }
-  //| error stmt                { $$ = sexp($2); } // Must give error
+  //| error stmt                { $$ = NewNode($2); } // Must give error
 ;
 
 stmt_or_begin :
@@ -145,7 +145,7 @@ stmt :
   | stmt kUNLESS_MOD expr { $$ = $2 + $3 + $1; }
   | stmt kWHILE_MOD expr  { $$ = $2 + $3 + $1; }
   | stmt kUNTIL_MOD expr  { $$ = $2 + $3 + $1; }
-  | stmt kRESCUE_MOD stmt { $$ = EnsureNode() + $1 + ($2 + $3) + sexp(); }
+  | stmt kRESCUE_MOD stmt { $$ = EnsureNode() + $1 + ($2 + $3) + NewNode(); }
   | kAPP_END kLBRACE2 compstmt kRBRACE
     {
         if(inDef || inSingle)
@@ -201,11 +201,11 @@ fcall :
 ;
 
 command :
-    fcall command_args %prec tLOWEST { $$ = CallNode() + sexp() + $1 + $2; }
+    fcall command_args %prec tLOWEST { $$ = CallNode() + NewNode() + $1 + $2; }
   | fcall command_args cmd_brace_block
     {
       //block_dup_check($2,$3);
-      $$ = CallNode() + sexp() + $1 + ($2 + $3);
+      $$ = CallNode() + NewNode() + $1 + ($2 + $3);
     }
   | primary call_op operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary call_op operation2 command_args cmd_brace_block
@@ -244,13 +244,13 @@ mlhs_basic :
   | mlhs_head kSTAR                            { $$ = $1 + $2; }
   | mlhs_head kSTAR kCOMMA mlhs_post           { $$ = $1 + $2 + $4; }
   | kSTAR mlhs_node                            { $$ = $1 + $2; }
-  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = sexp($1 + $2) + $4; }
-  | kSTAR                                      { $$ = sexp($1); }
-  | kSTAR kCOMMA mlhs_post                     { $$ = sexp($1) + $3; }
+  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = NewNode($1 + $2) + $4; }
+  | kSTAR                                      { $$ = NewNode($1); }
+  | kSTAR kCOMMA mlhs_post                     { $$ = NewNode($1) + $3; }
 ;
 
 mlhs_item :
-    mlhs_node                 { $$ = sexp($1); }
+    mlhs_node                 { $$ = NewNode($1); }
   | kLPAREN mlhs_inner rparen { $$ = $2; }
 ;
 
@@ -363,8 +363,8 @@ fitem :
 ;
 
 undef_list :
-    fitem { $$ = sexp($1); }
-  | undef_list kCOMMA { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + sexp($4); }
+    fitem { $$ = NewNode($1); }
+  | undef_list kCOMMA { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + NewNode($4); }
 ;
 
 op :
@@ -448,12 +448,12 @@ arg :
     lhs kASSIGN arg { $$ = $2 + $1 + $3; }
   | lhs kASSIGN arg kRESCUE_MOD arg
     {
-      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
+      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + NewNode() + NewNode();
     }
   | var_lhs tOP_ASGN arg { $$ = $2 + $1 + $3; }
   | var_lhs tOP_ASGN arg kRESCUE_MOD arg
     {
-      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + sexp() + sexp();
+      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + NewNode() + NewNode();
     }
   | primary kLBRACK2 opt_call_args rbracket tOP_ASGN arg
     {
@@ -519,7 +519,7 @@ arg :
 ;
 
 aref_args :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | args trailer
   | args kCOMMA assocs trailer { $$ = $1 + $3; }
   | assocs trailer
@@ -530,12 +530,12 @@ paren_args :
 ;
 
 opt_paren_args :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | paren_args
 ;
 
 opt_call_args :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | call_args
   | args kCOMMA
   | args kCOMMA assocs kCOMMA { $$ = $1 + $3; }
@@ -543,11 +543,11 @@ opt_call_args :
 ;
 
 call_args :
-    command                          { $$ = sexp($1); }
+    command                          { $$ = NewNode($1); }
   | args opt_block_arg               { $$ = $1 + $2; }
   | assocs opt_block_arg             { $$ = $1 + $2; }
   | args kCOMMA assocs opt_block_arg { $$ = $1 + $3 + $4; }
-  | block_arg                        { $$ = sexp($1); }
+  | block_arg                        { $$ = NewNode($1); }
 ;
 
 command_args :
@@ -568,12 +568,12 @@ block_arg :
 
 opt_block_arg :
     kCOMMA block_arg  { $$ = $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 args :
-    arg                   { $$ = sexp($1); }
-  | kSTAR arg             { $$ = sexp($1 + $2); }
+    arg                   { $$ = NewNode($1); }
+  | kSTAR arg             { $$ = NewNode($1 + $2); }
   | args kCOMMA arg       { $$ = $1 + $3; }
   | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
 ;
@@ -586,7 +586,7 @@ mrhs_arg :
 mrhs :
     args kCOMMA arg       { $$ = $1 + $3; }
   | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
-  | kSTAR arg             { $$ = sexp($1 + $2); }
+  | kSTAR arg             { $$ = NewNode($1 + $2); }
 ;
 
 primary :
@@ -607,7 +607,7 @@ primary :
       Lexer.Cmdarg = new BitStack();
     }
     bodystmt kEND { PopCmdarg(); $$ = $1.Append($3.List); }
-  | kLPAREN_ARG { Lexer.CurrentState = Lexer.EndargState; } rparen { $$ = sexp(); }
+  | kLPAREN_ARG { Lexer.CurrentState = Lexer.EndargState; } rparen { $$ = NewNode(); }
   | kLPAREN_ARG
     {
       PushCmdarg();
@@ -625,12 +625,12 @@ primary :
   | kLBRACE assoc_list kRBRACE { $$ = $1.Append($2.List); }
   | kRETURN
   | kYIELD kLPAREN2 call_args rparen { $$ = $1 + $3; }
-  | kYIELD kLPAREN2 rparen           { $$ = $1 + sexp(); }
+  | kYIELD kLPAREN2 rparen           { $$ = $1 + NewNode(); }
   | kYIELD
   | kDEFINED opt_nl kLPAREN2 expr rparen { $$ = $1 + $4; }
   | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
-  | kNOT kLPAREN2 rparen      { $$ = $1 + sexp(); }
-  | fcall brace_block         { $$ = CallNode() + sexp() + $1 + sexp($2); }
+  | kNOT kLPAREN2 rparen      { $$ = $1 + NewNode(); }
+  | fcall brace_block         { $$ = CallNode() + NewNode() + $1 + NewNode($2); }
   | method_call
   | method_call brace_block
     {
@@ -658,7 +658,7 @@ primary :
   | kWHILE { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
   | kUNTIL { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
   | kCASE expr opt_terms case_body kEND { $$ = $1 + $2 + $4; }
-  | kCASE opt_terms case_body kEND { $$ = $1 + sexp() + $3; }
+  | kCASE opt_terms case_body kEND { $$ = $1 + NewNode() + $3; }
   | kFOR for_var kIN { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND
     {
         $$ = $1 + $2 + $5 + $8;
@@ -689,7 +689,7 @@ primary :
         Lexer.PopClosedScope();
         PopDef();
         PopSingle();
-        $$ = $1 + ($2 + $3) + sexp() + $6;
+        $$ = $1 + ($2 + $3) + NewNode() + $6;
     }
   | kMODULE cpath
     {
@@ -714,7 +714,7 @@ primary :
     {
         Lexer.PopClosedScope();
         PopDef();
-        $$ = $1 + sexp() + $2 + $4 + $5;
+        $$ = $1 + NewNode() + $2 + $4 + $5;
     }
   | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
@@ -753,7 +753,7 @@ if_tail :
 ;
 
 opt_else :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | kELSE compstmt { $$ = $1 + $2; }
 ;
 
@@ -763,7 +763,7 @@ for_var :
 ;
 
 f_marg :
-    f_norm_arg { $$ = sexp($1); }
+    f_norm_arg { $$ = NewNode($1); }
   | kLPAREN f_margs rparen { $$ = $2; }
 ;
 
@@ -778,10 +778,10 @@ f_margs :
   | f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list { $$ = $1 + ($3 + $4) + $6; }
   | f_marg_list kCOMMA kSTAR { $$ = $1 + $3; }
   | f_marg_list kCOMMA kSTAR kCOMMA f_marg_list { $$ = $1 + $3 + $5; }
-  | kSTAR f_norm_arg { $$ = sexp($1 + $2); }
-  | kSTAR f_norm_arg kCOMMA f_marg_list { $$ = sexp($1 + $2) + $4; }
-  | kSTAR { $$ = sexp($1); }
-  | kSTAR kCOMMA f_marg_list { $$ = sexp($1) + $3; }
+  | kSTAR f_norm_arg { $$ = NewNode($1 + $2); }
+  | kSTAR f_norm_arg kCOMMA f_marg_list { $$ = NewNode($1 + $2) + $4; }
+  | kSTAR { $$ = NewNode($1); }
+  | kSTAR kCOMMA f_marg_list { $$ = NewNode($1) + $3; }
 ;
 
 block_args_tail :
@@ -795,14 +795,14 @@ block_args_tail :
     }
   | f_kwrest opt_f_block_arg
     {
-      $$ = sexp($1) + $2;
+      $$ = NewNode($1) + $2;
     }
-  | f_block_arg { $$ = sexp($1); }
+  | f_block_arg { $$ = NewNode($1); }
 ;
 
 opt_block_args_tail :
     kCOMMA block_args_tail { $$ = $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 block_param :
@@ -853,33 +853,33 @@ block_param :
     }
   | f_rest_arg opt_block_args_tail
     {
-      $$ = sexp($1) + $2;
+      $$ = NewNode($1) + $2;
     }
   | f_rest_arg kCOMMA f_arg opt_block_args_tail
     {
-      $$ = sexp($1) + $3 + $4;
+      $$ = NewNode($1) + $3 + $4;
     }
   | block_args_tail
 ;
 
 opt_block_param :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | block_param_def { Lexer.CommandStart = true; }
 ;
 
 block_param_def :
     kPIPE opt_bv_decl kPIPE             { $$ = $2; }
-  | kOROP                               { $$ = sexp(); }
+  | kOROP                               { $$ = NewNode(); }
   | kPIPE block_param opt_bv_decl kPIPE { $$ = $2 + $3; }
 ;
 
 opt_bv_decl :
-    opt_nl                            { $$ = sexp(); }
+    opt_nl                            { $$ = NewNode(); }
   | opt_nl kSEMICOLON bv_decls opt_nl { $$ = $3; }
 ;
 
 bv_decls :
-    bvar                 { $$ = sexp($1); }
+    bvar                 { $$ = NewNode($1); }
   | bv_decls kCOMMA bvar { $$ = $1 + $3; }
 ;
 
@@ -908,7 +908,7 @@ lambda :
         PopLParBeg();
         PopCmdarg();
         Lexer.Cmdarg.LexPop();
-        $$ = sexp($2, $4);
+        $$ = NewNode($2, $4);
     }
 ;
 
@@ -955,12 +955,12 @@ block_call :
 ;
 
 method_call :
-    fcall paren_args                          { $$ = CallNode() + sexp() + $1 + $2; }
+    fcall paren_args                          { $$ = CallNode() + NewNode() + $1 + $2; }
   | primary call_op operation2 opt_paren_args { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 paren_args     { $$ = $2 + $1 + $3 + $4; }
-  | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + sexp(); }
-  | primary call_op paren_args                { $$ = $2 + $1 + sexp() + $3; }
-  | primary kCOLON2 paren_args                { $$ = $2 + $1 + sexp() + $3; }
+  | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + NewNode(); }
+  | primary call_op paren_args                { $$ = $2 + $1 + NewNode() + $3; }
+  | primary kCOLON2 paren_args                { $$ = $2 + $1 + NewNode() + $3; }
   | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
   | primary kLBRACK2 opt_call_args rbracket   { $$ = $2 + $1 + $3; }
@@ -972,36 +972,36 @@ brace_block :
 ;
 
 case_body :
-    kWHEN args then compstmt cases { $$ = sexp($1 + $2 + $4) + $5; }
+    kWHEN args then compstmt cases { $$ = NewNode($1 + $2 + $4) + $5; }
 ;
 
 cases :
-    opt_else { $$ = $1.IsList ? $1 : sexp($1); }
+    opt_else { $$ = $1.IsList ? $1 : NewNode($1); }
   | case_body
 ;
 
 opt_rescue :
     kRESCUE exc_list exc_var then compstmt opt_rescue
     {
-      $$ = sexp($1 + $2 + $3 + $5) + $6;
+      $$ = NewNode($1 + $2 + $3 + $5) + $6;
     }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 exc_list :
     arg
   | mrhs
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 exc_var :
     kASSOC lhs { $$ = $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 opt_ensure :
     kENSURE compstmt { $$ = $1 + $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 literal :
@@ -1044,12 +1044,12 @@ words :
 ;
 
 word_list :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | word_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 word :
-    string_content { $$ = sexp($1); }
+    string_content { $$ = NewNode($1); }
   | word string_content { $$ = $1 + $2; }
 ;
 
@@ -1059,7 +1059,7 @@ symbols :
 ;
 
 symbol_list :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | symbol_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
@@ -1074,27 +1074,27 @@ qsymbols :
 ;
 
 qword_list :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | qword_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 qsym_list :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | qsym_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 string_contents :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | string_contents string_content { $$ = $1 + $2; }
 ;
 
 xstring_contents :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | xstring_contents string_content { $$ = $1 + $2; }
 ;
 
 regexp_contents :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | regexp_contents string_content { $$ = $1 + $2; }
 ;
 
@@ -1196,7 +1196,7 @@ superclass :
       Lexer.CommandStart = true;
     }
     expr term { $$ = $3; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 f_arglist :
@@ -1223,13 +1223,13 @@ f_arglist :
 args_tail :
     f_kwarg kCOMMA f_kwrest opt_f_block_arg { $$ = $1 + $3 + $4; }
   | f_kwarg opt_f_block_arg                 { $$ = $1 + $2; }
-  | f_kwrest opt_f_block_arg                { $$ = sexp($1) + $2; }
-  | f_block_arg                             { $$ = sexp($1); }
+  | f_kwrest opt_f_block_arg                { $$ = NewNode($1) + $2; }
+  | f_block_arg                             { $$ = NewNode($1); }
 ;
 
 opt_args_tail :
     kCOMMA args_tail { $$ = $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 f_args :
@@ -1247,10 +1247,10 @@ f_args :
   | f_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
   | f_optarg opt_args_tail { $$ = $1 + $2; }
   | f_optarg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $4; }
-  | f_rest_arg opt_args_tail { $$ = sexp($1) + $2; }
-  | f_rest_arg kCOMMA f_arg opt_args_tail { $$ = sexp($1) + $3 + $4; }
+  | f_rest_arg opt_args_tail { $$ = NewNode($1) + $2; }
+  | f_rest_arg kCOMMA f_arg opt_args_tail { $$ = NewNode($1) + $3 + $4; }
   | args_tail
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 f_bad_arg :
@@ -1286,8 +1286,8 @@ f_arg_asgn :
 ;
 
 f_arg_item :
-    f_arg_asgn { $$ = sexp($1); }
-  | kLPAREN f_margs rparen { $$ = sexp($2); }
+    f_arg_asgn { $$ = NewNode($1); }
+  | kLPAREN f_margs rparen { $$ = NewNode($2); }
 ;
 
 f_arg :
@@ -1314,12 +1314,12 @@ f_block_kw :
 ;
 
 f_block_kwarg :
-    f_block_kw { $$ = sexp($1); }
+    f_block_kw { $$ = NewNode($1); }
   | f_block_kwarg kCOMMA f_block_kw { $$ = $1 + $3; }
 ;
 
 f_kwarg :
-    f_kw { $$ = sexp($1); }
+    f_kw { $$ = NewNode($1); }
   | f_kwarg kCOMMA f_kw { $$ = $1 + $3; }
 ;
 
@@ -1346,12 +1346,12 @@ f_block_opt :
 ;
 
 f_block_optarg :
-    f_block_opt { $$ = sexp($1); }
+    f_block_opt { $$ = NewNode($1); }
   | f_block_optarg kCOMMA f_block_opt { $$ = $1 + $3; }
 ;
 
 f_optarg :
-    f_opt { $$ = sexp($1); }
+    f_opt { $$ = NewNode($1); }
   | f_optarg kCOMMA f_opt { $$ = $1 + $3; }
 ;
 
@@ -1384,7 +1384,7 @@ f_block_arg :
 
 opt_f_block_arg :
     kCOMMA f_block_arg { $$ = $2; }
-  | { $$ = sexp(); } // nothing
+  | { $$ = NewNode(); } // nothing
 ;
 
 singleton :
@@ -1410,12 +1410,12 @@ singleton :
 ;
 
 assoc_list :
-    { $$ = sexp(); } // nothing
+    { $$ = NewNode(); } // nothing
   | assocs trailer
 ;
 
 assocs :
-    assoc { $$ = sexp($1); }
+    assoc { $$ = NewNode($1); }
   | assocs kCOMMA assoc { $$ = $1 + $3; }
 ;
 

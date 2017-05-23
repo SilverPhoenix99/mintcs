@@ -5,10 +5,12 @@ namespace Mint.Lex.States
 {
     internal partial class Mid : Beg
     {
-        protected override bool CanLabel => false;
-
         public Mid(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override bool CanLabel => false;
+
 
         protected override void EmitDoToken()
         {
@@ -34,6 +36,7 @@ namespace Mint.Lex.States
             Lexer.CommandStart = true;
         }
 
+
         protected override void EmitModifierKeywordToken(TokenType type)
         {
             Lexer.EmitToken(type, ts, te);
@@ -41,6 +44,7 @@ namespace Mint.Lex.States
             Lexer.CanLabel = true;
             Lexer.CommandStart = true;
         }
+
 
         protected override void EmitRescueToken()
         {

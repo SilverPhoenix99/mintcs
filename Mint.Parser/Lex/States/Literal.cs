@@ -7,14 +7,15 @@ namespace Mint.Lex.States
     {
         protected int contentStart;
 
-        public uint BraceCount { get; set; }
-
-        public Token BeginToken { get; protected set; }
-
         protected Literal(Lexer lexer, int contentStart) : base(lexer)
         {
             this.contentStart = contentStart;
         }
+
+
+        public uint BraceCount { get; set; }
+        public Token BeginToken { get; protected set; }
+
 
         public void Resume(int te)
         {
@@ -22,10 +23,12 @@ namespace Mint.Lex.States
             contentStart = te;
         }
 
+
         protected virtual void EmitContent(int te)
         {
             Lexer.EmitStringContentToken(contentStart, te);
         }
+
 
         protected virtual void EmitDBeg()
         {
@@ -34,6 +37,7 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
         }
+
 
         protected virtual void EmitDVar(TokenType type)
         {

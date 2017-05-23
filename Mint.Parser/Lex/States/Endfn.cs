@@ -4,10 +4,12 @@ namespace Mint.Lex.States
 {
     internal partial class Endfn : End
     {
-        protected override bool CanLabel => !Lexer.CommandStart;
-
         public Endfn(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override bool CanLabel => !Lexer.CommandStart;
+
 
         protected override void EmitIdentifierToken()
         {

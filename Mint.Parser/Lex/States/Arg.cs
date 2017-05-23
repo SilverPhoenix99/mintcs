@@ -5,10 +5,12 @@ namespace Mint.Lex.States
 {
     internal partial class Arg : ArgBase
     {
-        protected override bool CanLabel => true;
-
         public Arg(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override bool CanLabel => true;
+
 
         protected override void EmitLeftBrace()
         {

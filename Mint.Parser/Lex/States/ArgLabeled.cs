@@ -5,6 +5,10 @@ namespace Mint.Lex.States
 {
     internal partial class ArgLabeled : ArgBase
     {
+        public ArgLabeled(Lexer lexer) : base(lexer)
+        { }
+
+
         protected override TokenType DoubleStarTokenType => kDSTAR;
         protected override TokenType StarTokenType => kSTAR;
         protected override TokenType PlusTokenType => kUPLUS;
@@ -15,8 +19,6 @@ namespace Mint.Lex.States
         protected override TokenType UntilTokenType => kUNTIL;
         protected override TokenType WhileTokenType => kWHILE;
 
-        public ArgLabeled(Lexer lexer) : base(lexer)
-        { }
 
         protected override void EmitModifierKeywordToken(TokenType type)
         {
@@ -25,11 +27,13 @@ namespace Mint.Lex.States
             Lexer.CommandStart = true;
         }
 
+
         protected override void EmitRescueToken()
         {
             Lexer.EmitToken(kRESCUE, ts, te);
             Lexer.CurrentState = Lexer.MidState;
         }
+
 
         protected override void EmitDivToken()
         {

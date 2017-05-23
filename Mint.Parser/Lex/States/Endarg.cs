@@ -5,10 +5,12 @@ namespace Mint.Lex.States
 {
     internal class Endarg : End
     {
-        protected override bool CanLabel => false;
-
         public Endarg(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override bool CanLabel => false;
+
 
         protected override void EmitIdentifierToken()
         {
@@ -21,11 +23,13 @@ namespace Mint.Lex.States
             }
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.EndState;
         }
+
 
         protected override void EmitDoToken()
         {
@@ -46,6 +50,7 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
         }
+
 
         protected override void EmitLeftBrace()
         {

@@ -5,6 +5,10 @@ namespace Mint.Lex.States
 {
     internal partial class Class : Shared
     {
+        public Class(Lexer lexer) : base(lexer)
+        { }
+
+
         protected override TokenType DoubleStarTokenType => kDSTAR;
         protected override TokenType StarTokenType => kSTAR;
         protected override TokenType AmpersandTokenType => kAMPER;
@@ -12,8 +16,6 @@ namespace Mint.Lex.States
         protected override TokenType LeftBracketTokenType => kLBRACK;
         protected override TokenType LeftParenTokenType => kLPAREN;
 
-        public Class(Lexer lexer) : base(lexer)
-        { }
 
         protected override void EmitIdentifierToken()
         {
@@ -30,12 +32,14 @@ namespace Mint.Lex.States
             }
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
+        
         protected override void EmitDoToken()
         {
             var tokenType = kDO;
@@ -59,6 +63,7 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.BegState;
             Lexer.CommandStart = true;
         }
+
 
         protected override void EmitDivToken()
         {

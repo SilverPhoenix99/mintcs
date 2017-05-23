@@ -4,10 +4,12 @@ namespace Mint.Lex.States
 {
     internal partial class Dot : Shared
     {
-        protected override State OperatorState => Lexer.ArgState;
-
         public Dot(Lexer lexer) : base(lexer)
         { }
+
+
+        protected override State OperatorState => Lexer.ArgState;
+
 
         protected override void EmitIdentifierToken()
         {
@@ -15,16 +17,19 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
 
+
         protected override void EmitDoToken()
         {
             throw new System.MethodAccessException("Dot state has no keywords.");
         }
+
 
         protected override void EmitLeftBracket()
         {

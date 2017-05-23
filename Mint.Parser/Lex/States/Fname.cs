@@ -5,8 +5,11 @@ namespace Mint.Lex.States
 {
     internal partial class Fname : Shared
     {
-        protected override State OperatorState => Lexer.ArgState;
+        public Fname(Lexer lexer) : base(lexer)
+        { }
 
+
+        protected override State OperatorState => Lexer.ArgState;
         protected override TokenType AmpersandTokenType => kAMPER;
         protected override TokenType NthRefTokenType => tGVAR;
         protected override TokenType BackRefTokenType => tGVAR;
@@ -15,8 +18,6 @@ namespace Mint.Lex.States
         protected override TokenType UntilTokenType => kUNTIL;
         protected override TokenType WhileTokenType => kWHILE;
 
-        public Fname(Lexer lexer) : base(lexer)
-        { }
 
         protected override void EmitIdentifierToken()
         {
@@ -24,11 +25,13 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.EndfnState;
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.EndfnState;
         }
+
 
         protected override void EmitDoToken()
         {
@@ -36,17 +39,20 @@ namespace Mint.Lex.States
             Lexer.CurrentState = Lexer.BegState;
         }
 
+
         protected override void EmitModifierKeywordToken(TokenType type)
         {
             Lexer.EmitToken(type, ts, te);
             Lexer.CurrentState = Lexer.BegState;
         }
 
+
         protected override void EmitRescueToken()
         {
             Lexer.EmitToken(kRESCUE, ts, te);
             Lexer.CurrentState = Lexer.MidState;
         }
+
 
         protected override void EmitLeftBracket()
         {
@@ -56,11 +62,13 @@ namespace Mint.Lex.States
             Lexer.ParenNest++;
         }
 
+
         protected override void EmitConstantToken()
         {
             Lexer.EmitToken(tCONSTANT, ts, te);
             Lexer.CurrentState = Lexer.EndfnState;
         }
+
 
         protected override void EmitBegKeywordToken(TokenType type)
         {

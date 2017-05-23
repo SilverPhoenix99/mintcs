@@ -7,6 +7,7 @@ namespace Mint.Lex.States
         protected ArgBase(Lexer lexer) : base(lexer)
         { }
 
+
         protected override void EmitIdentifierToken()
         {
             var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
@@ -22,11 +23,13 @@ namespace Mint.Lex.States
             }
         }
 
+
         protected override void EmitFidToken()
         {
             Lexer.EmitToken(tFID, ts, te - 1);
             Lexer.CurrentState = Lexer.CommandStart ? Lexer.CmdargState : Lexer.ArgState;
         }
+
 
         protected override void EmitDoToken()
         {
