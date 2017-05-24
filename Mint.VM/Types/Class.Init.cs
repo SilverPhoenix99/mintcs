@@ -235,7 +235,7 @@ namespace Mint
 
             STRING = ModuleBuilder<String>.DescribeClass()
                 .GenerateAllocator()
-                .DefMethod("to_s", _ => _.ToString() )
+                .DefLambda("to_s", (Func<String, String>) (_ => _) ) // Optimization: return itself
                 .DefMethod("inspect", _ => _.Inspect() )
                 .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)) )
             ;
@@ -245,8 +245,6 @@ namespace Mint
                 .DefMethod("inspect", _ => _.Inspect() )
             ;
         }
-
 #pragma warning restore CS1720
-
     }
 }

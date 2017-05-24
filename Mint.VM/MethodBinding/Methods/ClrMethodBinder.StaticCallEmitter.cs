@@ -30,7 +30,10 @@ namespace Mint.MethodBinding.Methods
                 : base(method, bundledFrame, argumentsArray)
             { }
 
-            protected override Expression GetInstance() => null;
+
+            protected override Expression GetInstance()
+                => null;
+
 
             protected override Expression GetConvertedInstance()
             {
@@ -38,6 +41,7 @@ namespace Mint.MethodBinding.Methods
                 var type = Method.Method.GetParameters()[position].ParameterType;
                 return BundledFrame.Instance.Cast(type);
             }
+
 
             protected override IEnumerable<Expression> GetArguments()
             {

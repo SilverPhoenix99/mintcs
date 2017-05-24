@@ -9,6 +9,8 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
-        public override iObject Bind(ArgumentBundle bundle) => bundle.Block ?? new NilClass();
+
+        public override iObject Bind(ArgumentBundle bundle)
+            => bundle.Block ?? new NilClass();
     }
 }

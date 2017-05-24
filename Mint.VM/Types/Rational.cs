@@ -9,6 +9,7 @@ namespace Mint
             throw new NotImplementedException();
         }
 
+
         public static Rational operator -(Rational v) { throw new NotImplementedException(); }
     }
 }

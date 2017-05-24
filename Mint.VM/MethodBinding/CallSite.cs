@@ -12,18 +12,9 @@ namespace Mint.MethodBinding
     {
         public delegate iObject Stub(iObject instance, ArgumentBundle bundle);
 
-        public Visibility Visibility { get; }
-
-        public Symbol MethodName { get; }
-
-        public IList<ArgumentKind> ArgumentKinds { get; }
-
-        public CallCompiler CallCompiler { get; set; }
-
-        public Stub BundledCall { get; set; }
 
         private Arity arity;
-        public Arity Arity => arity ?? (arity = CalculateArity());
+
 
         public CallSite(Symbol methodName, Visibility visibility, params ArgumentKind[] argumentKinds)
         {
@@ -33,17 +24,29 @@ namespace Mint.MethodBinding
             BundledCall = DefaultCall;
         }
 
+
         public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> argumentKinds)
             : this(methodName, visibility, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
+
 
         public CallSite(Symbol methodName, params ArgumentKind[] argumentKinds)
             : this(methodName, Visibility.Public, argumentKinds)
         { }
 
+
         public CallSite(Symbol methodName, IEnumerable<ArgumentKind> argumentKinds)
             : this(methodName, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
         { }
+
+
+        public Visibility Visibility { get; }
+        public Symbol MethodName { get; }
+        public IList<ArgumentKind> ArgumentKinds { get; }
+        public CallCompiler CallCompiler { get; set; }
+        public Stub BundledCall { get; set; }
+        public Arity Arity => arity ?? (arity = CalculateArity());
+
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {
@@ -55,11 +58,13 @@ namespace Mint.MethodBinding
             return BundledCall(instance, bundle);
         }
 
+
         public iObject Call(iObject instance, params iObject[] arguments)
         {
             var bundle = new ArgumentBundle(ArgumentKinds, arguments);
             return BundledCall(instance, bundle);
         }
+
 
         private Arity CalculateArity()
         {
@@ -72,11 +77,13 @@ namespace Mint.MethodBinding
             return new Arity(min, max);
         }
 
+
         public override string ToString()
         {
             var argumentKinds = string.Join(", ", ArgumentKinds.Select(_ => _.Description));
             return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
         }
+
 
         public static class Reflection
         {
@@ -85,10 +92,11 @@ namespace Mint.MethodBinding
             );
         }
 
+
         public static class Expressions
         {
-            public static MethodCallExpression Call(Expression callSite, Expression instance, Expression arguments) =>
-                Expression.Call(callSite, Reflection.Call, instance, arguments);
+            public static MethodCallExpression Call(Expression callSite, Expression instance, Expression arguments)
+                => Expression.Call(callSite, Reflection.Call, instance, arguments);
         }
     }
 }

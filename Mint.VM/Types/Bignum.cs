@@ -8,22 +8,24 @@ namespace Mint
     {
         private const string CHAR_CONVERSION = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-        public override Class Class => Class.BIGNUM;
-
-        public BigInteger Value { get; }
-
-        public int Sign => Value.Sign;
 
         internal Bignum(BigInteger value)
         {
             Value = value;
         }
 
+
+        public override Class Class => Class.BIGNUM;
+        public BigInteger Value { get; }
+        public int Sign => Value.Sign;
+
+
         public static Bignum Parse(string value, int radix = 10)
         {
             ValidateRadixBoundary(radix);
             return new Parser(value, (uint) radix).Parse();
         }
+
 
         private static void ValidateRadixBoundary(int radix)
         {
@@ -33,7 +35,10 @@ namespace Mint
             }
         }
 
-        public override string ToString() => Value.ToString();
+
+        public override string ToString()
+            => Value.ToString();
+
 
         public override bool Equals(object other)
         {
@@ -43,7 +48,10 @@ namespace Mint
             return other is iObject instance && Object.ToBool(Class.EqOp.Call(instance, this));
         }
 
-        public bool Equals(Bignum other) => other != null && Value.Equals(other.Value);
+
+        public bool Equals(Bignum other)
+            => other != null && Value.Equals(other.Value);
+
 
         public string ToString(int radix)
         {
@@ -65,6 +73,7 @@ namespace Mint
             return new string(digits.ToArray());
         }
 
+
         private IList<char> BuildDigitsList(int radix)
         {
             var bigRadix = new BigInteger(radix);
@@ -81,6 +90,7 @@ namespace Mint
             return digits;
         }
 
+
         private static void ReverseDigits(IList<char> digits)
         {
             var halfList = digits.Count / 2;
@@ -89,6 +99,7 @@ namespace Mint
                 SwapValues(digits, i, digits.Count - i - 1);
             }
         }
+
 
         private static void SwapValues(IList<char> list, int index1, int index2)
         {

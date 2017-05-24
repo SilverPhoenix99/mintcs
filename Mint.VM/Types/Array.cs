@@ -11,31 +11,45 @@ namespace Mint
 {
     public class Array : BaseObject, IEnumerable<iObject>
     {
+        private static readonly Comparer COMPARER = new Comparer();
+
+        [ThreadStatic]
+        private static ISet<Tuple<Array, Array>> equalsRecursionSet;
+
+
         private readonly List<iObject> list;
 
-        public Array(IEnumerable<iObject> objs) : base(Class.ARRAY)
+
+        public Array(IEnumerable<iObject> objs)
+            : base(Class.ARRAY)
         {
             list = objs == null ? new List<iObject>() : new List<iObject>(objs);
         }
 
-        public Array() : this((IEnumerable<iObject>) null)
+
+        public Array()
+            : this((IEnumerable<iObject>) null)
         { }
 
-        public Array(params iObject[] objs) : this((IEnumerable<iObject>) objs)
+
+        public Array(params iObject[] objs)
+            : this((IEnumerable<iObject>) objs)
         { }
 
-        public Array(int count, iObject obj) : this()
-        {
-            for(var i = 0; i < count; i++)
-            {
-                list.Add(obj);
-            }
-        }
 
-        public Array(int count) : this(count, new NilClass())
+        public Array(int count, iObject obj)
+            : this(Enumerable.Repeat(obj, count))
         { }
 
-        public int Count => list.Count;
+
+        public Array(int count)
+            : this(count, new NilClass())
+        { }
+
+
+        public int Count
+            => list.Count;
+
 
         public iObject this[int index]
         {
@@ -65,11 +79,13 @@ namespace Mint
             }
         }
 
+
         public iObject Push(params iObject[] elements)
         {
             list.AddRange(elements);
             return this;
         }
+
 
         public Array Add(iObject element)
         {
@@ -77,11 +93,18 @@ namespace Mint
             return this;
         }
 
-        public IEnumerator<iObject> GetEnumerator() => list.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
+        public IEnumerator<iObject> GetEnumerator()
+            => list.GetEnumerator();
 
-        public override string ToString() => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => list.GetEnumerator();
+
+
+        public override string ToString()
+            => $"[{string.Join(", ", list.Select(_ => _.Inspect()))}]";
+
 
         public Array AndAlso(Array other)
         {
@@ -91,15 +114,14 @@ namespace Mint
             return result;
         }
 
+
         public iObject First()
-        {
-            return this[0];
-        }
+            => this[0];
+
 
         public iObject Last()
-        {
-            return this[-1];
-        }
+            => this[-1];
+
 
         public Array Clear()
         {
@@ -107,13 +129,17 @@ namespace Mint
             return this;
         }
 
+
         public Array CompactSelf()
         {
             list.RemoveAll(NilClass.IsNil);
             return this;
         }
 
-        public Array Compact() => new Array(list).CompactSelf();
+
+        public Array Compact()
+            => new Array(list).CompactSelf();
+
 
         public String Join([Optional] String str = null)
         {
@@ -123,6 +149,7 @@ namespace Mint
             }
             return new String(string.Join(str.ToString(), list));
         }
+
 
         public Array Replace(Array other)
         {
@@ -135,13 +162,17 @@ namespace Mint
             return this;
         }
 
+
         public Array ReverseSelf()
         {
             list.Reverse();
             return this;
         }
 
-        public Array Reverse() => new Array(list).ReverseSelf();
+
+        public Array Reverse()
+            => new Array(list).ReverseSelf();
+
 
         public Array UniqSelf()
         {
@@ -151,9 +182,14 @@ namespace Mint
             return this;
         }
 
-        public Array Uniq() => new Array(list).UniqSelf();
 
-        public override bool Equals(object other) => other is iObject && Equals((iObject) other);
+        public Array Uniq()
+            => new Array(list).UniqSelf();
+
+
+        public override bool Equals(object other)
+            => other is iObject && Equals((iObject) other);
+
 
         public bool Equals(iObject other)
         {
@@ -161,22 +197,8 @@ namespace Mint
                 ? Equals(ary)
                 : Object.RespondTo(other, Symbol.TO_ARY) && Object.ToBool(Class.EqOp.Call(other, this));
         }
-
-        private class Comparer : IEqualityComparer<Tuple<Array, Array>>
-        {
-            public bool Equals(Tuple<Array, Array> x, Tuple<Array, Array> y) =>
-                ReferenceEquals(x, y)
-                || (ReferenceEquals(x.Item1, y.Item1) && ReferenceEquals(x.Item2, y.Item2))
-                || (ReferenceEquals(x.Item1, y.Item2) && ReferenceEquals(x.Item2, y.Item1));
-
-            public int GetHashCode(Tuple<Array, Array> obj) => obj.Item1.GetHashCode() ^ obj.Item2.GetHashCode();
-        }
-
-        private static readonly Comparer COMPARER = new Comparer();
-
-        [ThreadStatic]
-        private static ISet<Tuple<Array, Array>> equalsRecursionSet;
-
+        
+        
         public bool Equals(Array other)
         {
             if(ReferenceEquals(this, other))
@@ -219,6 +241,7 @@ namespace Mint
             }
         }
 
+
         public static Array operator +(Array left, Array right)
         {
             if(left == null || right == null)
@@ -229,6 +252,7 @@ namespace Mint
             result.list.AddRange(right);
             return result;
         }
+
 
         public static Array operator *(Array left, Fixnum right)
         {
@@ -244,7 +268,10 @@ namespace Mint
             return result;
         }
 
-        public static String operator *(Array left, String right) => left.Join(right);
+
+        public static String operator *(Array left, String right)
+            => left.Join(right);
+
 
         public static Array operator -(Array left, Array right)
         {
@@ -257,7 +284,23 @@ namespace Mint
             return result;
         }
 
-        public static explicit operator Array(iObject[] objects) => new Array(objects);
+
+        public static explicit operator Array(iObject[] objects)
+            => new Array(objects);
+
+
+        private class Comparer : IEqualityComparer<Tuple<Array, Array>>
+        {
+            public bool Equals(Tuple<Array, Array> x, Tuple<Array, Array> y)
+                => ReferenceEquals(x, y)
+                    || (ReferenceEquals(x.Item1, y.Item1) && ReferenceEquals(x.Item2, y.Item2))
+                    || (ReferenceEquals(x.Item1, y.Item2) && ReferenceEquals(x.Item2, y.Item1));
+
+
+            public int GetHashCode(Tuple<Array, Array> obj)
+                => obj.Item1.GetHashCode() ^ obj.Item2.GetHashCode();
+        }
+
 
         public static class Reflection
         {
@@ -268,9 +311,12 @@ namespace Mint
 
         public static class Expressions
         {
-            public static NewExpression New(Expression values) => Expression.New(Reflection.Ctor, values);
+            public static NewExpression New(Expression values)
+                => Expression.New(Reflection.Ctor, values);
 
-            public static NewExpression New() => Expression.New(Reflection.CtorDefault);
+
+            public static NewExpression New()
+                => Expression.New(Reflection.CtorDefault);
         }
     }
 }

@@ -7,21 +7,6 @@ namespace Mint
         private Func<object> value;
         private Func<object> update;
 
-        public object Value
-        {
-            get { return value(); }
-            set { this.value = () => value; }
-        }
-
-        public Func<object> Update
-        {
-            get { return update; }
-            set
-            {
-                if(value == null) throw new ArgumentNullException(nameof(Update));
-                update = value;
-            }
-        }
 
         public ValueCache(Func<object> update)
         {
@@ -29,11 +14,27 @@ namespace Mint
             Invalidate();
         }
 
+
         public ValueCache(object initialValue, Func<object> update)
             : this(update)
         {
             Value = initialValue;
         }
+
+
+        public object Value
+        {
+            get => value();
+            set => this.value = () => value;
+        }
+
+
+        public Func<object> Update
+        {
+            get => update;
+            set => update = value ?? throw new ArgumentNullException(nameof(Update));
+        }
+
 
         public void Invalidate()
         {

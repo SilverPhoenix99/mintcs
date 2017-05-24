@@ -6,10 +6,9 @@ namespace Mint.MethodBinding.Compilation
     internal class CallCompilerCache<T>
     {
         private Dictionary<long, CachedMethod<T>> Cache { get; } = new Dictionary<long, CachedMethod<T>>();
-
         public int Count => Cache.Count;
-
         public IEnumerable<CachedMethod<T>> Values => Cache.Values;
+
 
         public CachedMethod<T> this[long classId]
         {
@@ -20,7 +19,10 @@ namespace Mint.MethodBinding.Compilation
             }
         }
 
-        public void Put(CachedMethod<T> cachedMethod) => Cache[cachedMethod.ClassId] = cachedMethod;
+
+        public void Put(CachedMethod<T> cachedMethod)
+            => Cache[cachedMethod.ClassId] = cachedMethod;
+
 
         public void RemoveInvalidCachedMethods()
         {

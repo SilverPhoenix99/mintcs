@@ -4,8 +4,10 @@ namespace Mint.MethodBinding.Arguments
     {
         private class KeyArgumentKind : ArgumentKind
         {
-            public KeyArgumentKind() : base("Key")
+            public KeyArgumentKind()
+                : base("Key")
             { }
+
 
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {

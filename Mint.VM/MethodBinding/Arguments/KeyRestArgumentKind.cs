@@ -4,8 +4,10 @@ namespace Mint.MethodBinding.Arguments
     {
         private class KeyRestArgumentKind : ArgumentKind
         {
-            public KeyRestArgumentKind() : base("KeyRest")
+            public KeyRestArgumentKind()
+                : base("KeyRest")
             { }
+
 
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {

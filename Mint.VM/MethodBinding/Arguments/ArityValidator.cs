@@ -6,18 +6,18 @@ namespace Mint.MethodBinding.Arguments
 {
     internal class ArityValidator
     {
-        public ArgumentBundle Arguments { get; }
+        private readonly ArgumentBundle arguments;
+        private readonly MethodMetadata method;
+        private readonly ParameterCounter counter;
 
-        public MethodMetadata Method { get; }
-
-        private ParameterCounter Counter { get; }
 
         public ArityValidator(ArgumentBundle arguments, MethodMetadata method)
         {
-            Arguments = arguments;
-            Method = method;
-            Counter = method.ParameterCounter;
+            this.arguments = arguments;
+            this.method = method;
+            counter = method.ParameterCounter;
         }
+
 
         public void Validate()
         {
@@ -28,16 +28,19 @@ namespace Mint.MethodBinding.Arguments
             }
         }
 
-        public bool IsValid() => ValidateInternal() == null;
+
+        public bool IsValid()
+            => ValidateInternal() == null;
+
 
         private string ValidateInternal()
         {
-            if(!Counter.HasKeywords)
+            if(!counter.HasKeywords)
             {
                 return ValidateInclusiveArity();
             }
 
-            if(Arguments.HasKeyArguments || Arguments.Splat.LastOrDefault() is Hash)
+            if(arguments.HasKeyArguments || arguments.Splat.LastOrDefault() is Hash)
             {
                 // keywords are bound first to required args, if there aren't enough,
                 // and thus, included for arity purposes.
@@ -53,26 +56,30 @@ namespace Mint.MethodBinding.Arguments
                 ?? ValidateMissingKeywords();
         }
 
-        private string ValidateInclusiveArity() =>
-            Counter.Arity.Include(Arguments.Arity) ? null : WrongArityMessage(Arguments.Arity);
+
+        private string ValidateInclusiveArity()
+            => counter.Arity.Include(arguments.Arity) ? null : WrongArityMessage(arguments.Arity);
+
 
         private string ValidateExclusiveArity()
         {
-            var arity = Arguments.Arity;
-            return Counter.Arity.Minimum <= arity && --arity <= Counter.Arity.Maximum
+            var arity = arguments.Arity;
+            return counter.Arity.Minimum <= arity && --arity <= counter.Arity.Maximum
                  ? null
                  : WrongArityMessage(arity);
         }
 
-        private string WrongArityMessage(int arity) =>
-            $"wrong number of arguments (given {arity}, expected {Counter.Arity})";
+
+        private string WrongArityMessage(int arity)
+            => $"wrong number of arguments (given {arity}, expected {counter.Arity})";
+
 
         private string ValidateMissingKeywords()
         {
             var requiredKeys = (
-                from p in Method.Parameters
+                from p in method.Parameters
                 let name = new Symbol(p.Name)
-                where p.IsKeyRequired && !Arguments.Keywords.HasKey(name)
+                where p.IsKeyRequired && !arguments.Keywords.HasKey(name)
                 select name
             ).ToArray();
 
@@ -86,20 +93,21 @@ namespace Mint.MethodBinding.Arguments
             return $"missing keyword{plural}: {keywords}";
         }
 
+
         private string ValidateUnknownKeywords()
         {
-            if(Counter.HasKeyRest)
+            if(counter.HasKeyRest)
             {
                 return null;
             }
 
             var parameterNames =
-                from p in Method.Parameters
+                from p in method.Parameters
                 where p.IsKey
                 select new Symbol(p.Name)
             ;
 
-            var unknownKeys = Arguments.Keywords.Keys.OfType<Symbol>()
+            var unknownKeys = arguments.Keywords.Keys.OfType<Symbol>()
                 .Except(parameterNames).ToArray();
 
             if(unknownKeys.Length == 0)

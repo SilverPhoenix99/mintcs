@@ -16,44 +16,19 @@ namespace Mint
         private static readonly Regex CONSTANT_NAME =
             new Regex("^[A-Z](?:[A-Za-z0-9_]|[^\x00-\x7F])*$", RegexOptions.Compiled);
 
+
         private static readonly Regex NAME_PATH =
             new Regex("^(?:::)?([^:]+)(?:::([^:]+))*$", RegexOptions.Compiled);
 
+
         protected readonly IDictionary<Symbol, iObject> constants;
-
-        public Symbol? BaseName { get; private set; }
-
-        public string Name
-        {
-            get
-            {
-                var baseName = BaseName?.Name ?? base.ToString();
-                return Container == Class.OBJECT ? baseName : $"{Container.Name}::{baseName}";
-            }
-        }
-
         private Module container;
-        public Module Container => container ?? (container = Class.OBJECT);
 
-        public virtual bool IsModule => true;
-
-        public virtual IEnumerable<Module> Ancestors => Prepended.Concat(new[] { this }).Concat(Included);
-
-        public IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
-
-        protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
-
-        public IEnumerable<Symbol> Constants => constants.Keys;
-
-        protected internal IList<Module> Included { get; protected set; }
-
-        protected internal IList<Module> Prepended { get; protected set; }
-
-        protected internal IList<WeakReference<Class>> Subclasses { get; }
 
         public Module(Symbol? name = null, Module container = null)
             : this(Class.MODULE, name, container)
         { }
+
 
         protected Module(Class klass, Symbol? baseName = null, Module container = null)
             : base(klass)
@@ -79,10 +54,34 @@ namespace Mint
             }
         }
 
+
         ~Module()
         {
             // TODO : invalidate methods, including subclasses
         }
+
+
+        public Symbol? BaseName { get; private set; }
+        public Module Container => container ?? (container = Class.OBJECT);
+        public virtual bool IsModule => true;
+        public virtual IEnumerable<Module> Ancestors => Prepended.Concat(new[] { this }).Concat(Included);
+        public IEnumerable<Module> IncludedModules => Prepended.Concat(Included);
+        protected internal IDictionary<Symbol, MethodBinder> Methods { get; }
+        public IEnumerable<Symbol> Constants => constants.Keys;
+        protected IList<Module> Included { get; set; }
+        protected IList<Module> Prepended { get; set; }
+        protected IList<WeakReference<Class>> Subclasses { get; }
+
+
+        public string Name
+        {
+            get
+            {
+                var baseName = BaseName?.Name ?? base.ToString();
+                return ReferenceEquals(Container, Class.OBJECT) ? baseName : $"{Container.Name}::{baseName}";
+            }
+        }
+
 
         private string CalculateFullName(string name, Module container)
         {
@@ -91,7 +90,7 @@ namespace Mint
                 name = base.ToString();
             }
 
-            if(container != Class.OBJECT)
+            if(!ReferenceEquals(container, Class.OBJECT))
             {
                 name = $"{container.Name}::{name}";
             }
@@ -99,7 +98,10 @@ namespace Mint
             return name;
         }
 
-        public override string ToString() => Name;
+
+        public override string ToString()
+            => Name;
+
 
         public Symbol DefineMethod(MethodBinder method)
         {
@@ -107,15 +109,18 @@ namespace Mint
             return ( Methods[method.Name] = method ).Name;
         }
 
+
         public virtual void Include(Module module)
         {
             Included = AppendModule(Included, module, null);
         }
 
+
         public virtual void Prepend(Module module)
         {
             Prepended = AppendModule(Prepended, module, null);
         }
+
 
         protected List<Module> AppendModule(IList<Module> modules, Module module, Class superclass)
         {
@@ -134,7 +139,7 @@ namespace Mint
             var index = 0;
             foreach(var mod in module.Ancestors)
             {
-                if(mod == this)
+                if(ReferenceEquals(mod, this))
                 {
                     throw new ArgumentError("cyclic include detected");
                 }
@@ -160,6 +165,7 @@ namespace Mint
             return included;
         }
 
+
         public MethodBinder FindMethod(Symbol methodName)
         {
             foreach(var mod in Ancestors)
@@ -169,7 +175,7 @@ namespace Mint
                     continue;
                 }
 
-                if(mod != this)
+                if(!ReferenceEquals(mod, this))
                 {
                     DefineMethod(method.Duplicate());
                 }
@@ -179,6 +185,7 @@ namespace Mint
 
             return null;
         }
+
 
         public bool IsConstantDefined(Symbol name, [Optional] bool inherit = true)
         {
@@ -193,17 +200,22 @@ namespace Mint
             return false;
         }
 
+
         public bool IsConstantDefined(String name, [Optional] bool inherit = true)
         {
             throw new NotImplementedException(nameof(IsConstantDefined));
         }
 
-        public iObject GetConstant(Symbol name, [Optional] bool inherit = true) => GetConstant(name, null, inherit);
+
+        public iObject GetConstant(Symbol name, [Optional] bool inherit = true)
+            => GetConstant(name, null, inherit);
+
 
         public iObject GetConstant(String path, [Optional] bool inherit = true)
         {
             throw new NotImplementedException();
         }
+
 
         public iObject GetConstant(Symbol name, IEnumerable<Module> nesting, bool inherit = true)
         {
@@ -217,11 +229,12 @@ namespace Mint
             return constant;
         }
 
+
         public iObject TryGetConstant(Symbol name, IEnumerable<Module> nesting, bool inherit = true)
         {
             ValidateConstantName(name.Name);
 
-            IEnumerable<Module> modules = inherit ? Ancestors : new[] { this };
+            var modules = inherit ? Ancestors : new[] { this };
             if(nesting != null)
             {
                 modules = nesting.Concat(modules).Distinct();
@@ -231,6 +244,7 @@ namespace Mint
             return module?.constants[name];
         }
 
+
         private static void ValidateConstantName(string name)
         {
             if(!CONSTANT_NAME.IsMatch(name))
@@ -239,18 +253,18 @@ namespace Mint
             }
         }
 
+
         public iObject SetConstant(Symbol name, iObject value)
         {
             if(IsConstantDefined(name, false))
             {
-                var fullName = this == Class.OBJECT ? name.Name : $"{Name}::{name}";
+                var fullName = ReferenceEquals(this, Class.OBJECT) ? name.Name : $"{Name}::{name}";
                 Console.Error.WriteLine($"warning: already initialized constant {fullName}");
             }
 
             ValidateConstantName(name.Name);
 
-            var module = value as Module;
-            if(module != null && module.BaseName == null)
+            if(value is Module module && module.BaseName == null)
             {
                 module.BaseName = name;
                 module.container = this;
@@ -259,17 +273,20 @@ namespace Mint
             return constants[name] = value;
         }
 
+
         protected iObject TryGetConstant(Symbol name)
         {
             constants.TryGetValue(name, out var constant);
             return constant;
         }
 
+
         private Exception UninitializedConstant(Symbol name)
         {
-            var fullName = this == Class.OBJECT ? name.Name : $"{Name}::{name}";
+            var fullName = ReferenceEquals(this, Class.OBJECT) ? name.Name : $"{Name}::{name}";
             return new NameError($"uninitialized constant {fullName}");
         }
+
 
         protected Module GetOrCreateModule(Symbol name, IEnumerable<Module> nesting)
         {
@@ -288,17 +305,19 @@ namespace Mint
             return (Module) constant;
         }
 
+
         protected static Module GetOrCreateModuleWithParentCast(iObject parent,
                                                                 Symbol name,
                                                                 IEnumerable<Module> nesting)
         {
-            if(parent is Module)
+            if(parent is Module mod)
             {
-                return ((Module) parent).GetOrCreateModule(name, nesting);
+                return mod.GetOrCreateModule(name, nesting);
             }
 
             throw new TypeError($"{parent.Inspect()} is not a class/module");
         }
+
 
         protected Class GetOrCreateClass(Symbol name, Class superclass, IEnumerable<Module> nesting)
         {
@@ -322,18 +341,20 @@ namespace Mint
             return (Class) constant;
         }
 
+
         protected static Class GetOrCreateClassWithParentCast(iObject parent,
                                                               Symbol name,
                                                               Class superclass,
                                                               IEnumerable<Module> nesting)
         {
-            if(parent is Module)
+            if(parent is Module mod)
             {
-                return ((Module) parent).GetOrCreateClass(name, superclass, nesting);
+                return mod.GetOrCreateClass(name, superclass, nesting);
             }
 
             throw new TypeError($"{parent.Inspect()} is not a class/module");
         }
+
 
         public static class Reflection
         {
@@ -341,29 +362,36 @@ namespace Mint
                 _ => _.DefineMethod(default(MethodBinder))
             );
 
+
             public static readonly MethodInfo GetConstant = Reflector<Module>.Method(
                 _ => _.GetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
             );
+
 
             public static readonly MethodInfo TryGetConstant = Reflector<Module>.Method(
                 _ => _.TryGetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
             );
 
+
             public static readonly MethodInfo SetConstant = Reflector<Module>.Method(
                 _ => _.SetConstant(default(Symbol), default(iObject))
             );
+
 
             public static readonly MethodInfo GetOrCreateModule = Reflector<Module>.Method(
                 _ => _.GetOrCreateModule(default(Symbol), default(IEnumerable<Module>))
             );
 
+
             public static readonly MethodInfo GetOrCreateModuleWithParentCast = Reflector.Method(
                 () => GetOrCreateModuleWithParentCast(default(iObject), default(Symbol), default(IEnumerable<Module>))
             );
 
+
             public static readonly MethodInfo GetOrCreateClass = Reflector<Module>.Method(
                 _ => _.GetOrCreateClass(default(Symbol), default(Class), default(IEnumerable<Module>))
             );
+
 
             public static readonly MethodInfo GetOrCreateClassWithParentCast = Reflector.Method(
                 () =>
@@ -376,16 +404,18 @@ namespace Mint
             );
         }
 
+
         public static class Expressions
         {
-            public static MethodCallExpression DefineMethod(Expression module, Expression methodBinder) =>
-                Call(module, Reflection.DefineMethod, methodBinder);
+            public static MethodCallExpression DefineMethod(Expression module, Expression methodBinder)
+                => Call(module, Reflection.DefineMethod, methodBinder);
+
 
             public static MethodCallExpression GetConstant(Expression module,
                                                            Expression name,
                                                            Expression inherit = null,
-                                                           Expression nesting = null) =>
-                Call(
+                                                           Expression nesting = null)
+                => Call(
                     module,
                     Reflection.GetConstant,
                     name,
@@ -393,11 +423,12 @@ namespace Mint
                     inherit ?? Constant(true)
                 );
 
+
             public static MethodCallExpression TryGetConstant(Expression module,
                                                               Expression name,
                                                               Expression inherit = null,
-                                                              Expression nesting = null) =>
-                Call(
+                                                              Expression nesting = null)
+                => Call(
                     module,
                     Reflection.TryGetConstant,
                     name,
@@ -405,29 +436,33 @@ namespace Mint
                     inherit ?? Constant(true)
                 );
 
-            public static MethodCallExpression SetConstant(Expression module, Expression name, Expression value) =>
-                Call(module, Reflection.SetConstant, name, value);
+
+            public static MethodCallExpression SetConstant(Expression module, Expression name, Expression value)
+                => Call(module, Reflection.SetConstant, name, value);
+
 
             public static MethodCallExpression GetOrCreateModule(Expression module,
                                                                  Expression name,
-                                                                 Expression nesting = null) =>
-                Call(module, Reflection.GetOrCreateModule, name, nesting ?? Constant(System.Array.Empty<Module>()));
+                                                                 Expression nesting = null)
+                => Call(module, Reflection.GetOrCreateModule, name, nesting ?? Constant(System.Array.Empty<Module>()));
+
 
             public static MethodCallExpression GetOrCreateModuleWithParentCast(Expression parent,
                                                                                Expression name,
-                                                                               Expression nesting = null) =>
-                Call(
+                                                                               Expression nesting = null)
+                => Call(
                     Reflection.GetOrCreateModuleWithParentCast,
                     parent,
                     name,
                     nesting ?? Constant(System.Array.Empty<Module>())
                 );
 
+
             public static MethodCallExpression GetOrCreateClass(Expression module,
                                                                 Expression name,
                                                                 Expression superclass = null,
-                                                                Expression nesting = null) =>
-                Call(
+                                                                Expression nesting = null)
+                => Call(
                     module,
                     Reflection.GetOrCreateClass,
                     name,
@@ -435,11 +470,12 @@ namespace Mint
                     nesting ?? Constant(System.Array.Empty<Module>())
                 );
 
+
             public static MethodCallExpression GetOrCreateClassWithParentCast(Expression parent,
                                                                               Expression name,
                                                                               Expression superclass = null,
-                                                                              Expression nesting = null) =>
-                Call(
+                                                                              Expression nesting = null)
+                => Call(
                     Reflection.GetOrCreateClassWithParentCast,
                     parent,
                     name,

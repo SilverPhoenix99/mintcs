@@ -4,8 +4,10 @@ namespace Mint.MethodBinding.Arguments
     {
         private class RestArgumentKind : ArgumentKind
         {
-            public RestArgumentKind() : base("Rest")
+            public RestArgumentKind()
+                : base("Rest")
             { }
+
 
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {

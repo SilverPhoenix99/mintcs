@@ -23,15 +23,6 @@ namespace Mint.MethodBinding.Methods
             { typeof(double),        typeof(Float)  }
         };
 
-        public Symbol Name { get; }
-
-        public Module Definer { get; }
-
-        public Module Caller { get; }
-
-        public Condition Condition { get; }
-
-        public Visibility Visibility { get; }
 
         protected BaseMethodBinder(Symbol name,
                                    Module definer,
@@ -45,15 +36,28 @@ namespace Mint.MethodBinding.Methods
             Visibility = visibility;
         }
 
+
         protected BaseMethodBinder(Symbol newName, MethodBinder other)
             : this(newName, other.Definer, other.Caller, other.Visibility)
         { }
 
+
+        public Symbol Name { get; }
+        public Module Definer { get; }
+        public Module Caller { get; }
+        public Condition Condition { get; }
+        public Visibility Visibility { get; }
+
+
         public abstract Expression Bind(CallFrameBinder frame);
+
 
         public abstract MethodBinder Duplicate(Symbol newName);
 
-        public MethodBinder Duplicate() => Duplicate(Name);
+
+        public MethodBinder Duplicate()
+            => Duplicate(Name);
+
 
         protected static Expression Box(Expression expression)
         {
@@ -65,6 +69,7 @@ namespace Mint.MethodBinding.Methods
             return Object.Expressions.Box(expression);
         }
 
+
         protected static Expression TypeIs(Expression expression, Type type)
         {
             if(TYPES.TryGetValue(type, out var convertedType))
@@ -74,6 +79,7 @@ namespace Mint.MethodBinding.Methods
 
             return Expression.TypeIs(expression, type);
         }
+
 
         protected static Expression TryConvert(Expression expression, Type type)
         {

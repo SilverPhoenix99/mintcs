@@ -11,6 +11,7 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
+
         public override iObject Bind(ArgumentBundle bundle)
         {
             var parameters = Method.Parameters.Where(p => p.IsKeyRequired || p.IsKeyOptional);

@@ -7,31 +7,39 @@ namespace Mint
     {
         private static long nextId = 4;
 
+
         public virtual long Id { get; } = Interlocked.Add(ref nextId, 4);
-
         public abstract Class Class { get; }
-
-        public virtual Class SingletonClass { get { throw new TypeError("can't define singleton"); } }
-
+        public virtual Class SingletonClass => throw new TypeError("can't define singleton");
         public virtual Class EffectiveClass => Class;
-
         public virtual bool HasSingletonClass => false;
-
         public virtual IEnumerable<Symbol> InstanceVariables => System.Array.Empty<Symbol>();
-
         public virtual bool Frozen { get { return true; } protected set { /* noop */ } }
 
-        public virtual iObject Freeze() => this;
 
-        public virtual string Inspect() => ToString();
+        public virtual iObject Freeze()
+            => this;
 
-        public iObject Send(iObject name, params iObject[] args) => Object.Send(this, name, args);
 
-        public override string ToString() => $"#<{Class.Name}:0x{Id:x}>";
+        public virtual string Inspect()
+            => ToString();
 
-        public override bool Equals(object other) => ReferenceEquals(this, other);
 
-        public override int GetHashCode() => Id.GetHashCode();
+        public iObject Send(iObject name, params iObject[] args)
+            => Object.Send(this, name, args);
+
+
+        public override string ToString()
+            => $"#<{Class.Name}:0x{Id:x}>";
+
+
+        public override bool Equals(object other)
+            => ReferenceEquals(this, other);
+
+
+        public override int GetHashCode()
+            => Id.GetHashCode();
+
 
         public virtual iObject InstanceVariableGet(Symbol name)
         {
@@ -39,7 +47,10 @@ namespace Mint
             return null;
         }
 
-        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
+
+        public iObject InstanceVariableGet(string name)
+            => InstanceVariableGet(new Symbol(name));
+
 
         public virtual iObject InstanceVariableSet(Symbol name, iObject obj)
         {
@@ -47,6 +58,8 @@ namespace Mint
             throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
 
-        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
+
+        public iObject InstanceVariableSet(string name, iObject obj)
+            => InstanceVariableSet(new Symbol(name), obj);
     }
 }

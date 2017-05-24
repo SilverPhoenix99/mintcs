@@ -24,8 +24,6 @@ namespace Mint.MethodBinding.Methods
      */
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
-        private MethodMetadata Method { get; }
-
         public ClrMethodBinder(Symbol name,
                                Module definer,
                                MethodMetadata method,
@@ -43,13 +41,20 @@ namespace Mint.MethodBinding.Methods
             Method = method;
         }
 
+
         private ClrMethodBinder(Symbol newName, ClrMethodBinder other)
             : base(newName, other)
         {
             Method = other.Method;
         }
 
-        public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
+
+        private MethodMetadata Method { get; }
+
+
+        public override MethodBinder Duplicate(Symbol newName)
+            => new ClrMethodBinder(newName, this);
+
 
         public override Expression Bind(CallFrameBinder frame)
         {
@@ -66,6 +71,7 @@ namespace Mint.MethodBinding.Methods
             );
         }
 
+
         private IEnumerable<MethodMetadata> GetOverloads(CallFrameBinder frame)
         {
             var methods = frame.InstanceType.GetMethodOverloads(Method.Name);
@@ -81,11 +87,14 @@ namespace Mint.MethodBinding.Methods
             return methodList;
         }
 
+
         private static CallEmitter CreateCallEmitter(MethodMetadata method,
                                                      CallFrameBinder frame,
-                                                     ParameterExpression argumentsArray) =>
-            method.IsStatic ? new StaticCallEmitter(method, frame, argumentsArray)
-                            : new InstanceCallEmitter(method, frame, argumentsArray);
+                                                     ParameterExpression argumentsArray)
+            => method.IsStatic
+                ? new StaticCallEmitter(method, frame, argumentsArray)
+                : new InstanceCallEmitter(method, frame, argumentsArray);
+    
         
         private static Exception ThrowInvalidConversion()
         {
@@ -101,6 +110,7 @@ namespace Mint.MethodBinding.Methods
             return new TypeError("no implicit conversion exists");
         }
 
+
         public static class Reflection
         {
             public static readonly MethodInfo ThrowInvalidConversion = Reflector.Method(
@@ -110,7 +120,8 @@ namespace Mint.MethodBinding.Methods
 
         public static class Expressions
         {
-            public static MethodCallExpression ThrowInvalidConversion() => Call(Reflection.ThrowInvalidConversion);
+            public static MethodCallExpression ThrowInvalidConversion()
+                => Call(Reflection.ThrowInvalidConversion);
         }
     }
 }

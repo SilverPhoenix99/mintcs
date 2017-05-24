@@ -8,15 +8,20 @@ namespace Mint.MethodBinding.Arguments
         public static readonly ArgumentKind KeyRest = new KeyRestArgumentKind(); // **expr
         public static readonly ArgumentKind Block = new BlockArgumentKind();     // &expr or f(...) do |...| expr end
 
-        public string Description { get; }
 
         private ArgumentKind(string description)
         {
             Description = description;
         }
 
+
+        public string Description { get; }
+
+
         public abstract void Bundle(iObject argument, ArgumentBundle bundle);
 
-        public override string ToString() => Description;
+
+        public override string ToString()
+            => Description;
     }
 }

@@ -4,10 +4,6 @@ namespace Mint
 {
     public class Complex : BaseObject
     {
-        public iObject Real { get; }
-
-        public iObject Imag { get; }
-
         // TODO accept string
         public Complex(iObject real, iObject imag) : base(Class.COMPLEX)
         {
@@ -30,6 +26,11 @@ namespace Mint
             Imag = imag;
         }
 
+
+        public iObject Real { get; }
+        public iObject Imag { get; }
+
+
         public override string ToString()
         {
             dynamic imag = Imag;
@@ -38,6 +39,7 @@ namespace Mint
             return $"{Real}{sign}{imag.ToString()}i";
         }
 
+
         public override string Inspect()
         {
             dynamic imag = Imag;
@@ -45,6 +47,7 @@ namespace Mint
             imag = imag.abs();
             return $"({Real.Inspect()}{sign}{imag.Inspect()}i)";
         }
+
 
         public static Complex operator -(Complex v) { throw new NotImplementedException(); }
     }

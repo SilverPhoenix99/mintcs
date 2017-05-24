@@ -9,6 +9,7 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
+
         public override iObject Bind(ArgumentBundle bundle)
         {
             if(Parameter.Position >= bundle.Splat.Count)

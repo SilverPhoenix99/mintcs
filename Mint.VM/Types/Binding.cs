@@ -13,36 +13,43 @@ namespace Mint
         private readonly CallFrame frame;
         private readonly IList<LocalVariable> dynamicLocals;
 
-        public iObject Receiver => frame.Instance;
-
-        private IEnumerable<LocalVariable> Locals =>
-            frame.Arguments.Concat(frame.Locals.Values).Concat(dynamicLocals);
-
-        public Array LocalVariables => new Array(Locals.Select(_ => _.Name).Cast<iObject>());
 
         private Binding(CallFrame frame, IList<LocalVariable> dynamicLocals)
             : base(Class.BINDING)
         {
-            if(frame == null) throw new ArgumentNullException(nameof(frame));
-
-            this.frame = frame;
+            this.frame = frame ?? throw new ArgumentNullException(nameof(frame));
             this.dynamicLocals = dynamicLocals;
         }
+
 
         private Binding(Binding other) : this(other.frame, new List<LocalVariable>(other.dynamicLocals))
         { }
 
+
         internal Binding(CallFrame frame) : this(frame, new List<LocalVariable>())
         { }
+
 
         public Binding() : this(CallFrame.Current)
         { }
 
-        public bool IsLocalDefined(Symbol local) => Locals.Any(_ => _.Name == local);
 
-        internal LocalVariable GetLocal(Symbol local) => Locals.FirstOrDefault(_ => _.Name == local);
+        public iObject Receiver => frame.Instance;
+        public Array LocalVariables => new Array(Locals.Select(_ => _.Name).Cast<iObject>());
+        private IEnumerable<LocalVariable> Locals => frame.Arguments.Concat(frame.Locals.Values).Concat(dynamicLocals);
 
-        public iObject GetLocalValue(Symbol local) => GetLocal(local)?.Value;
+
+        public bool IsLocalDefined(Symbol local)
+            => Locals.Any(_ => _.Name == local);
+
+
+        internal LocalVariable GetLocal(Symbol local)
+            => Locals.FirstOrDefault(_ => _.Name == local);
+
+
+        public iObject GetLocalValue(Symbol local)
+            => GetLocal(local)?.Value;
+
 
         public iObject SetLocalValue(Symbol local, iObject value)
         {
@@ -60,7 +67,10 @@ namespace Mint
             return value;
         }
 
-        public Binding Duplicate() => new Binding(this);
+
+        public Binding Duplicate()
+            => new Binding(this);
+
 
         public static class Reflection
         {
@@ -70,9 +80,11 @@ namespace Mint
                 Reflector<Binding>.Method(_ => _.SetLocalValue(default(Symbol), default(iObject)));
         }
 
+
         public static class Expressions
         {
-            public static NewExpression New(Expression receiver) => Expression.New(Reflection.Ctor, receiver);
+            public static NewExpression New(Expression receiver)
+                => Expression.New(Reflection.Ctor, receiver);
         }
     }
 }

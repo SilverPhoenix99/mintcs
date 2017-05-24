@@ -28,19 +28,19 @@ namespace Mint.MethodBinding.Compilation
     {
         private const int CACHE_FULL_THRESHOLD = 32;
 
-        private CallCompilerCache<Expression> Cache { get; }
-
-        private ParameterExpression Instance { get; } = Parameter(typeof(iObject), "instance");
-
-        private ParameterExpression Bundle { get; } = Parameter(typeof(ArgumentBundle), "bundle");
-
-        private GotoExpression GotoExpression { get; } = Goto(Label("default"), typeof(iObject));
 
         public PolymorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
             Cache = new CallCompilerCache<Expression>();
         }
+
+
+        private CallCompilerCache<Expression> Cache { get; }
+        private readonly ParameterExpression instanceExpr = Parameter(typeof(iObject), "instance");
+        private readonly ParameterExpression bundleExpr = Parameter(typeof(ArgumentBundle), "bundle");
+        private readonly GotoExpression gotoExpr = Goto(Label("default"), typeof(iObject));
+
 
         public override CallSite.Stub Compile()
         {
@@ -56,13 +56,18 @@ namespace Mint.MethodBinding.Compilation
                 return UpgradeCompiler();
             }
 
-            var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), Instance, Bundle);
+            var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), instanceExpr, bundleExpr);
             return lambda.Compile();
         }
 
-        private bool IsCacheEmpty() => Cache.Count == 0;
 
-        private bool IsCacheFull() => Cache.Count > CACHE_FULL_THRESHOLD;
+        private bool IsCacheEmpty()
+            => Cache.Count == 0;
+
+
+        private bool IsCacheFull()
+            => Cache.Count > CACHE_FULL_THRESHOLD;
+
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {
@@ -73,6 +78,7 @@ namespace Mint.MethodBinding.Compilation
             return CallSite.BundledCall(instance, bundle);
         }
 
+
         private CallSite.Stub UpgradeCompiler()
         {
             var binderCache = Cache.Values.Cast<CachedMethod>();
@@ -80,23 +86,26 @@ namespace Mint.MethodBinding.Compilation
             return CallSite.CallCompiler.Compile();
         }
 
+
         private CachedMethod<Expression> CreateCachedMethod(iObject instance, MethodBinder binder)
         {
             var classId = instance.EffectiveClass.Id;
-            var frame = new CallFrameBinder(CallSite, instance.GetType(), Instance, Bundle);
+            var frame = new CallFrameBinder(CallSite, instance.GetType(), instanceExpr, bundleExpr);
             var siteExpression = binder.Bind(frame);
             return new CachedMethod<Expression>(classId, instance.GetType(), binder, siteExpression);
         }
 
+
         private Expression BuildBodyExpression()
         {
-            var effectiveClassPropertyExpression = Instance.Property(Object.Reflection.EffectiveClass);
+            var effectiveClassPropertyExpression = instanceExpr.Property(Object.Reflection.EffectiveClass);
             var idPropertyExpression = effectiveClassPropertyExpression.Property(Object.Reflection.Id);
             var defaultCase = CreateDefaultCase();
             var switchCases = Cache.Values.Select(CreateSwitchCases);
 
             return Switch(idPropertyExpression, defaultCase, null, switchCases);
         }
+
 
         private SwitchCase CreateSwitchCases(CachedMethod<Expression> method)
         {
@@ -107,10 +116,11 @@ namespace Mint.MethodBinding.Compilation
 
             var condition = Constant(method.ClassId);
             var validPropertyExpression = Constant(method.Binder.Condition).Property(Condition.Reflection.Valid);
-            var body = Condition(validPropertyExpression, method.CachedCall, GotoExpression);
+            var body = Condition(validPropertyExpression, method.CachedCall, gotoExpr);
 
             return SwitchCase(body, condition);
         }
+
 
         private Expression CreateDefaultCase()
         {
@@ -120,10 +130,11 @@ namespace Mint.MethodBinding.Compilation
              */
 
             return Block(
-                Label(GotoExpression.Target),
-                Expressions.DefaultCall(Constant(this), Instance, Bundle)
+                Label(gotoExpr.Target),
+                Expressions.DefaultCall(Constant(this), instanceExpr, bundleExpr)
             );
         }
+
 
         public static class Reflection
         {
@@ -132,12 +143,13 @@ namespace Mint.MethodBinding.Compilation
             );
         }
 
+
         public static class Expressions
         {
             public static MethodCallExpression DefaultCall(Expression callCompiler,
                                                            Expression instance,
-                                                           Expression bundle) =>
-                Call(callCompiler, Reflection.DefaultCall, instance, bundle);
+                                                           Expression bundle)
+                => Call(callCompiler, Reflection.DefaultCall, instance, bundle);
         }
     }
 }

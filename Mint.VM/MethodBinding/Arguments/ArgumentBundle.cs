@@ -4,29 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Reflection;
+using static Mint.MethodBinding.Arguments.ArgumentKind;
 
 namespace Mint.MethodBinding.Arguments
 {
     public class ArgumentBundle
     {
-        public IList<ArgumentKind> ArgumentKinds { get; }
-
-        public IList<iObject> Splat { get; set; }
-
         private Hash keywords;
-        public Hash Keywords
-        {
-            get { return keywords ?? (keywords = GetOrCreateKeysArgument()); }
-            set { keywords = value; }
-        }
 
-        public iObject Block { get; set; }
-
-        public int Arity => Splat.Count;
-
-        public bool HasKeyArguments =>
-            ArgumentKinds.Any(kind => kind == ArgumentKind.Key || kind == ArgumentKind.KeyRest);
-
+        
         public ArgumentBundle(IList<ArgumentKind> kinds, params iObject[] arguments)
         {
             ArgumentKinds = kinds;
@@ -51,6 +37,20 @@ namespace Mint.MethodBinding.Arguments
             }
         }
 
+
+        public IList<ArgumentKind> ArgumentKinds { get; }
+        public IList<iObject> Splat { get; set; }
+        public iObject Block { get; set; }
+        public int Arity => Splat.Count;
+        public bool HasKeyArguments => ArgumentKinds.Any(kind => kind == Key || kind == KeyRest);
+        
+        public Hash Keywords
+        {
+            get => keywords ?? (keywords = GetOrCreateKeysArgument());
+            set => keywords = value;
+        }
+
+
         private Hash GetOrCreateKeysArgument()
         {
             if(!HasKeyArguments)
@@ -65,6 +65,7 @@ namespace Mint.MethodBinding.Arguments
             return keys;
         }
 
+
         public iObject[] Bind(MethodMetadata method)
         {
             var validator = new ArityValidator(this, method);
@@ -72,6 +73,7 @@ namespace Mint.MethodBinding.Arguments
             var binders = method.GetParameterBinders();
             return binders.Select(binder => binder.Bind(this)).ToArray();
         }
+
 
         public iObject[] TryBind(MethodMetadata method)
         {
@@ -85,6 +87,7 @@ namespace Mint.MethodBinding.Arguments
             return binders.Select(binder => binder.Bind(this)).ToArray();
         }
 
+
         public static class Reflection
         {
             public static readonly MethodInfo Bind = Reflector<ArgumentBundle>.Method(
@@ -96,13 +99,15 @@ namespace Mint.MethodBinding.Arguments
             );
         }
 
+
         public static class Expressions
         {
-            public static MethodCallExpression Bind(Expression argumentBundle, Expression methodInfo) =>
-                Expression.Call(argumentBundle, Reflection.Bind, methodInfo);
+            public static MethodCallExpression Bind(Expression argumentBundle, Expression methodInfo)
+                => Expression.Call(argumentBundle, Reflection.Bind, methodInfo);
 
-            public static MethodCallExpression TryBind(Expression argumentBundle, Expression methodInfo) =>
-                Expression.Call(argumentBundle, Reflection.TryBind, methodInfo);
+
+            public static MethodCallExpression TryBind(Expression argumentBundle, Expression methodInfo)
+                => Expression.Call(argumentBundle, Reflection.TryBind, methodInfo);
         }
     }
 }

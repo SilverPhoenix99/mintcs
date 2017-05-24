@@ -7,8 +7,10 @@ namespace Mint
         public RuntimeError()
         { }
 
+
         public RuntimeError(string message) : base(message)
         { }
+
 
         public RuntimeError(string message, Exception innerException) : base(message, innerException)
         { }

@@ -10,6 +10,7 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
+
         public override iObject Bind(ArgumentBundle bundle)
         {
             var begin = Method.ParameterCounter.PrefixRequired + Method.ParameterCounter.Optional;

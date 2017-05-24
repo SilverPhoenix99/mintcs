@@ -14,6 +14,7 @@ namespace Mint.MethodBinding.Methods
             SwitchCase Bind();
         }
 
+
         /*
          * Generated Stub:
          *
@@ -31,12 +32,6 @@ namespace Mint.MethodBinding.Methods
          */
         private class InstanceCallEmitter : CallEmitter
         {
-            protected MethodMetadata Method { get; }
-
-            protected CallFrameBinder BundledFrame { get; }
-
-            private ParameterExpression ArgumentArray { get; }
-
             public InstanceCallEmitter(MethodMetadata method,
                                        CallFrameBinder bundledFrame,
                                        ParameterExpression argumentsArray)
@@ -46,12 +41,19 @@ namespace Mint.MethodBinding.Methods
                 ArgumentArray = argumentsArray;
             }
 
+
+            protected MethodMetadata Method { get; }
+            protected CallFrameBinder BundledFrame { get; }
+            private ParameterExpression ArgumentArray { get; }
+
+
             public SwitchCase Bind()
             {
                 var condition = CreateCondition();
                 var body = CreateBody();
                 return SwitchCase(body, condition);
             }
+
 
             private Expression CreateCondition()
             {
@@ -69,15 +71,22 @@ namespace Mint.MethodBinding.Methods
                 );
             }
 
-            private Expression TypeCheckArgumentsExpression() =>
-                Method.Parameters.Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
 
-            private Expression TypeCheckArgumentExpression(ParameterMetadata parameter) =>
-                TypeIs(GetArgument(parameter), parameter.Parameter.ParameterType);
+            private Expression TypeCheckArgumentsExpression()
+                => Method.Parameters.Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
 
-            private Expression CreateBody() => Box(Call(GetInstance(), Method.Method, GetArguments()));
 
-            protected virtual Expression GetInstance() => GetConvertedInstance();
+            private Expression TypeCheckArgumentExpression(ParameterMetadata parameter)
+                => TypeIs(GetArgument(parameter), parameter.Parameter.ParameterType);
+
+
+            private Expression CreateBody()
+                => Box(Call(GetInstance(), Method.Method, GetArguments()));
+
+
+            protected virtual Expression GetInstance()
+                => GetConvertedInstance();
+
 
             protected virtual Expression GetConvertedInstance()
             {
@@ -85,13 +94,17 @@ namespace Mint.MethodBinding.Methods
                 return type == null ? BundledFrame.Instance : BundledFrame.Instance.Cast(type);
             }
 
-            protected virtual IEnumerable<Expression> GetArguments() => Method.Parameters.Select(ConvertArgument);
 
-            private Expression ConvertArgument(ParameterMetadata parameter) =>
-                TryConvert(GetArgument(parameter), parameter.Parameter.ParameterType);
+            protected virtual IEnumerable<Expression> GetArguments()
+                => Method.Parameters.Select(ConvertArgument);
 
-            private BinaryExpression GetArgument(ParameterMetadata parameter) =>
-                ArrayIndex(ArgumentArray, Constant(parameter.Position));
+
+            private Expression ConvertArgument(ParameterMetadata parameter) 
+                => TryConvert(GetArgument(parameter), parameter.Parameter.ParameterType);
+
+
+            private BinaryExpression GetArgument(ParameterMetadata parameter)
+                => ArrayIndex(ArgumentArray, Constant(parameter.Position));
         }
     }
 }

@@ -20,6 +20,7 @@ namespace Mint
             return binders.Binders;
         }
 
+
         private static IEnumerable<ParameterBinder> CreateParameterBinders(MethodMetadata method)
         {
             var parameters = method.Parameters.GetEnumerator();
@@ -70,7 +71,8 @@ namespace Mint
             }
         }
 
-        private static T Next<T>(this IEnumerator<T> enumerator) =>
-            enumerator.MoveNext() ? enumerator.Current : default(T);
+
+        private static T Next<T>(this IEnumerator<T> enumerator)
+            => enumerator.MoveNext() ? enumerator.Current : default(T);
     }
 }

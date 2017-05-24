@@ -8,13 +8,12 @@ namespace Mint.MethodBinding.Compilation
 {
     public sealed class MegamorphicCallCompiler : BaseCallCompiler
     {
-        private CallCompilerCache<CallSite.Stub> Cache { get; }
-
         public MegamorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
             Cache = new CallCompilerCache<CallSite.Stub>();
         }
+
 
         internal MegamorphicCallCompiler(CallSite callSite, IEnumerable<CachedMethod> cache)
             : this(callSite)
@@ -31,7 +30,13 @@ namespace Mint.MethodBinding.Compilation
             }
         }
 
-        public override CallSite.Stub Compile() => Call;
+
+        private CallCompilerCache<CallSite.Stub> Cache { get; }
+
+
+        public override CallSite.Stub Compile()
+            => Call;
+
 
         private iObject Call(iObject instance, ArgumentBundle bundle)
         {
@@ -48,12 +53,14 @@ namespace Mint.MethodBinding.Compilation
 
             return cachedMethod.CachedCall(instance, bundle);
         }
+
  
         private CachedMethod<CallSite.Stub> CreateCachedMethod(long classId, Type instanceType, MethodBinder binder)
         {
             var stub = CompileMethod(instanceType, binder);
             return new CachedMethod<CallSite.Stub>(classId, instanceType, binder, stub);
         }
+
 
         private CallSite.Stub CompileMethod(Type instanceType, MethodBinder binder)
         {

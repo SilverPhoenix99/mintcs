@@ -9,21 +9,10 @@ namespace Mint
 {
     public partial class Class : Module
     {
-        public Class Superclass { get; }
-
-        public bool IsSingleton { get; }
-
-        public override bool IsModule => false;
-
-        public override IEnumerable<Module> Ancestors =>
-            Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
-
-        public Func<iObject> Allocator { get; set; }
-
         public Class(Class superclass, Symbol? baseName = null, Module container = null, bool isSingleton = false)
             : base(CLASS, baseName, container)
         {
-            if(Class.CLASS != null && superclass == Class.CLASS)
+            if(CLASS != null && ReferenceEquals(superclass, CLASS))
             {
                 throw new TypeError("can't make subclass of Class");
             }
@@ -32,9 +21,11 @@ namespace Mint
             IsSingleton = isSingleton;
         }
 
+
         public Class(Symbol? name = null, Module container = null, bool isSingleton = false)
             : this(OBJECT, name, container, isSingleton)
         { }
+
 
         ~Class()
         {
@@ -46,9 +37,8 @@ namespace Mint
             var list = Superclass.Subclasses;
             for(var i = 0; i < list.Count; i++)
             {
-                Class klass;
                 var weakRef = list[i];
-                if(!weakRef.TryGetTarget(out klass) || klass != this)
+                if(!weakRef.TryGetTarget(out Class klass) || !ReferenceEquals(klass, this))
                 {
                     continue;
                 }
@@ -58,15 +48,28 @@ namespace Mint
             }
         }
 
+
+        public Class Superclass { get; }
+        public bool IsSingleton { get; }
+        public override bool IsModule => false;
+        public Func<iObject> Allocator { get; set; }
+
+
+        public override IEnumerable<Module> Ancestors =>
+            Superclass == null ? base.Ancestors : base.Ancestors.Concat(Superclass.Ancestors);
+
+        
         public override void Include(Module module)
         {
             Included = AppendModule(Included, module, Superclass);
         }
 
+
         public override void Prepend(Module module)
         {
             Prepended = AppendModule(Prepended, module, Superclass);
         }
+
 
         public iObject Allocate()
         {
@@ -79,18 +82,20 @@ namespace Mint
             return Allocator();
         }
 
+
         public new static class Reflection
         {
             public static readonly ConstructorInfo Ctor = Reflector<Class>.Ctor<Class, Symbol?, Module, bool>();
         }
+
 
         public new static class Expressions
         {
             public static NewExpression New(Expression superclass,
                                             Expression name = null,
                                             Expression container = null,
-                                            Expression isSingleton = null) =>
-                Expression.New(
+                                            Expression isSingleton = null)
+                => Expression.New(
                     Reflection.Ctor,
                     superclass,
                     name ?? Expression.Constant(null, typeof(Symbol?)),

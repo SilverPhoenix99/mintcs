@@ -10,31 +10,32 @@ namespace Mint
 {
     public class String : BaseObject
     {
+        private const string DFT_PADSTR = " ";
+
+
         private StringBuilder value;
 
-        public string Value
-        {
-            get
-            {
-                return value.ToString();
-            }
-            set
-            {
-                if(value == null) throw new ArgumentNullException(nameof(value));
-                this.value = new StringBuilder(value);
-            }
-        }
 
         public String(string value) : base(Class.STRING)
         {
             Value = value;
         }
 
-        public String() : this("")
-        { }
 
         public String(object value) : this(value.ToString())
         { }
+
+
+        public String() : this("")
+        { }
+
+
+        public string Value
+        {
+            get => value.ToString();
+            set => this.value = new StringBuilder(value ?? throw new ArgumentNullException(nameof(value)));
+        }
+
 
         public String Concat(iObject other)
         {
@@ -54,6 +55,7 @@ namespace Mint
             return this;
         }
 
+
         public String Concat(string content)
         {
             content = content ?? "";
@@ -61,22 +63,28 @@ namespace Mint
             return  this;
         }
 
+
         // TODO: transform special chars into escapes
-        public override string Inspect() => $"\"{Value}\"";
+        public override string Inspect()
+            => $"\"{Value}\"";
 
-        public override string ToString() => Value;
 
-        public bool Equals(String other) => other != null && other.value.Equals(value);
+        public override string ToString()
+            => Value;
 
-        public override bool Equals(object other) => Equals(other as String);
 
-        public override int GetHashCode() => Value.GetHashCode();
+        public bool Equals(String other)
+            => other != null && other.value.Equals(value);
 
-        public static explicit operator String(string s) => new String(s);
 
-        public static explicit operator string(String s) => s.Value;
+        public override bool Equals(object other)
+            => Equals(other as String);
 
-        private const string DFT_PADSTR = " ";
+
+        public override int GetHashCode()
+            => Value.GetHashCode();
+
+        
         public String LeftJustify(int length, [Optional] string padstr = DFT_PADSTR)
         {
             if(padstr == null)
@@ -107,6 +115,15 @@ namespace Mint
             return new String(result.ToString());
         }
 
+
+        public static explicit operator String(string s)
+            => new String(s);
+
+
+        public static explicit operator string(String s)
+            => s.Value;
+
+
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor1 = Reflector.Ctor<String>();
@@ -118,9 +135,12 @@ namespace Mint
             public static readonly MethodInfo Concat = Reflector<String>.Method(_ => _.Concat(default(string)));
         }
 
+
         public static class Expressions
         {
-            public static NewExpression New() => Expression.New(Reflection.Ctor1);
+            public static NewExpression New()
+                => Expression.New(Reflection.Ctor1);
+
 
             public static NewExpression New(Expression value)
             {
@@ -135,8 +155,9 @@ namespace Mint
                 return Expression.New(Reflection.Ctor3, value);
             }
 
-            public static MethodCallExpression Concat(Expression instance, Expression value) =>
-                Expression.Call(instance, Reflection.Concat, value);
+
+            public static MethodCallExpression Concat(Expression instance, Expression value)
+                => Expression.Call(instance, Reflection.Concat, value);
         }
     }
 }

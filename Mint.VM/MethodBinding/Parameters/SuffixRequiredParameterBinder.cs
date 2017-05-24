@@ -9,9 +9,13 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
+
         public override iObject Bind(ArgumentBundle bundle)
         {
-            var numParameters = CountParameters();
+            var numParameters = Method.ParameterCounter.Required
+                                + Method.ParameterCounter.Optional
+                                + (Method.ParameterCounter.HasRest ? 1 : 0);
+
             var splatPosition = bundle.Splat.Count + numParameters - Parameter.Position - 2;
 
             if(splatPosition < 0 || splatPosition >= bundle.Splat.Count)
@@ -22,8 +26,5 @@ namespace Mint.MethodBinding.Parameters
 
             return bundle.Splat[splatPosition];
         }
-
-        private int CountParameters() =>
-            CountRequired() + Method.ParameterCounter.Optional + (Method.ParameterCounter.HasRest ? 1 : 0);
     }
 }

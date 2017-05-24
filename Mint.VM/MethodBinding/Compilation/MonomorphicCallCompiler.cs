@@ -10,7 +10,10 @@ namespace Mint.MethodBinding.Compilation
             : base(callSite)
         { }
 
-        public override CallSite.Stub Compile() => DefaultCall;
+
+        public override CallSite.Stub Compile()
+            => DefaultCall;
+
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
         {

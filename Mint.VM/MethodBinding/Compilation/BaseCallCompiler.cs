@@ -4,14 +4,17 @@ namespace Mint.MethodBinding.Compilation
 {
     public abstract class BaseCallCompiler : CallCompiler
     {
-        public CallSite CallSite { get; }
-
         protected BaseCallCompiler(CallSite callSite)
         {
             CallSite = callSite;
         }
 
+
+        protected CallSite CallSite { get; }
+
+
         public abstract CallSite.Stub Compile();
+
 
         protected MethodBinder TryFindMethodBinder(iObject instance)
         {

@@ -9,9 +9,10 @@ namespace Mint.MethodBinding.Parameters
             : base(method, parameter)
         { }
 
+
         public override iObject Bind(ArgumentBundle bundle)
         {
-            var available = bundle.Splat.Count - CountRequired();
+            var available = bundle.Splat.Count - Method.ParameterCounter.Required;
 
             if(available > 0 && Parameter.Position < bundle.Splat.Count)
             {

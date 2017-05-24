@@ -24,11 +24,9 @@ namespace Mint.Reflection.Parameters
         public int KeyOptional { get; private set; }
         public bool HasKeyRest { get; private set; }
         public bool HasBlock { get; private set; }
-
-
-        public bool HasKeywords
-            => KeyRequired > 0 || KeyOptional > 0 || HasKeyRest;
-
+        public bool HasKeywords => KeyRequired > 0 || KeyOptional > 0 || HasKeyRest;
+        public int Required => PrefixRequired + SuffixRequired;
+        
 
         public Arity Arity
         {

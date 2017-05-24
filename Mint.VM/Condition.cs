@@ -7,10 +7,12 @@ namespace Mint
     {
         public bool Valid { get; private set; } = true;
 
+
         public void Invalidate()
         {
             Valid = false;
         }
+
 
         public static class Reflection
         {

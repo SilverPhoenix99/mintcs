@@ -8,10 +8,12 @@ namespace Mint
         {
             private const uint INVALID_DIGIT = uint.MaxValue;
 
+
             private readonly string value;
             private readonly uint radix;
             private int beginIndex;
             private readonly int sign;
+
 
             public Parser(string value, uint radix)
             {
@@ -20,6 +22,7 @@ namespace Mint
                 beginIndex = CalculateBeginIndex(value);
                 sign = CalculateSign(beginIndex);
             }
+
 
             private static int CalculateBeginIndex(string value)
             {
@@ -34,6 +37,7 @@ namespace Mint
                 return value.Length;
             }
 
+
             private int CalculateSign(int index)
             {
                 if(index >= value.Length || value[index] != '-')
@@ -44,6 +48,7 @@ namespace Mint
                 beginIndex++;
                 return -1;
             }
+
 
             public Bignum Parse()
             {
@@ -68,6 +73,7 @@ namespace Mint
 
                 return new Bignum(accumulator);
             }
+
 
             private static uint ConvertLetterToDigit(uint letter, uint radix)
             {

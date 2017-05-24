@@ -4,8 +4,10 @@ namespace Mint.MethodBinding.Arguments
     {
         private class SimpleArgumentKind : ArgumentKind
         {
-            public SimpleArgumentKind() : base("Simple")
+            public SimpleArgumentKind()
+                : base("Simple")
             { }
+
 
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {

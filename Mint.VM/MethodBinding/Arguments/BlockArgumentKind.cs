@@ -4,8 +4,10 @@ namespace Mint.MethodBinding.Arguments
     {
         private class BlockArgumentKind : ArgumentKind
         {
-            public BlockArgumentKind() : base("Block")
+            public BlockArgumentKind()
+                : base("Block")
             { }
+
 
             public override void Bundle(iObject argument, ArgumentBundle bundle)
             {
