@@ -11,9 +11,9 @@ namespace Mint.Compilation.Selectors
         private ModuleCompiler relativeName;
         private ModuleCompiler absoluteName;
 
-        private Ast<Token> Name => Node[0];
+        private SyntaxNode Name => Node[0];
 
-        private TokenType Type => Name.Value.Type;
+        private TokenType Type => Name.Token.Type;
 
         private ModuleCompiler SimpleName => simpleName ?? (simpleName = new SimpleNameModuleCompiler(Compiler));
 

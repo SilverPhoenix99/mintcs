@@ -16,7 +16,7 @@ namespace Mint
             binding.AddLocal(lastResult);
             binding.AddLocal(previousResult);
 
-            Ast<Token> ast;
+            SyntaxNode node;
 
             for(var i = 1L; ; i++)
             {
@@ -31,9 +31,9 @@ namespace Mint
                 {
                     for(;;)
                     {
-                        ast = Parser.ParseString("(imt)", fragment);
+                        node = Parser.ParseString("(imt)", fragment);
 
-                        if(ast != null)
+                        if(node != null)
                         {
                             break;
                         }
@@ -41,13 +41,13 @@ namespace Mint
                         fragment += "\n" + Prompt($"imt[{i}]* ");
                     }
 
-                    if(ast.List.Count == 0)
+                    if(node.List.Count == 0)
                     {
                         continue;
                     }
 
-                    DumpAst(ast);
-                    var expr = CompileAst(ast, binding);
+                    DumpAst(node);
+                    var expr = CompileAst(node, binding);
                     DumpExpression(expr);
                     var result = RunExpression(expr);
 
@@ -70,17 +70,17 @@ namespace Mint
             return Console.ReadLine();
         }
 
-        internal static void DumpAst(Ast<Token> ast)
+        internal static void DumpAst(SyntaxNode node)
         {
-            var doc = AstXmlSerializer.ToXml(ast);
+            var doc = AstXmlSerializer.ToXml(node);
             Console.WriteLine(doc.ToString());
             Console.WriteLine();
         }
 
-        private static Expression<Func<iObject>> CompileAst(Ast<Token> ast, CallFrame topLevelFrame)
+        private static Expression<Func<iObject>> CompileAst(SyntaxNode node, CallFrame topLevelFrame)
         {
             var compiler = new Compiler("(imt)", topLevelFrame);
-            var body = compiler.Compile(ast);
+            var body = compiler.Compile(node);
             return Expression.Lambda<Func<iObject>>(body);
         }
 

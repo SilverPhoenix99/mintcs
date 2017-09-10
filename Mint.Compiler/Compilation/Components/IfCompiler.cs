@@ -7,11 +7,11 @@ namespace Mint.Compilation.Components
 {
     internal class IfCompiler : CompilerComponentBase
     {
-        private Ast<Token> Condition => Node[0];
+        private SyntaxNode Condition => Node[0];
 
-        private Ast<Token> IfBodyNode => Node[1];
+        private SyntaxNode IfBodyNode => Node[1];
 
-        private Ast<Token> ElseBodyNode => Node[2];
+        private SyntaxNode ElseBodyNode => Node[2];
 
         private bool HasElse => Node.List.Count == 3;
 
@@ -36,7 +36,7 @@ namespace Mint.Compilation.Components
         {
             var conditionValue = Object.ToBool((iObject) condition.Value);
 
-            if(Node.Value.Type == kUNLESS || Node.Value.Type == kUNLESS_MOD)
+            if(Node.Token.Type == kUNLESS || Node.Token.Type == kUNLESS_MOD)
             {
                 conditionValue = !conditionValue;
             }
@@ -48,7 +48,7 @@ namespace Mint.Compilation.Components
         {
             condition = CompilerUtils.ToBool(condition);
 
-            if(Node.Value.Type == kUNLESS || Node.Value.Type == kUNLESS_MOD)
+            if(Node.Token.Type == kUNLESS || Node.Token.Type == kUNLESS_MOD)
             {
                 condition = CompilerUtils.Negate(condition);
             }

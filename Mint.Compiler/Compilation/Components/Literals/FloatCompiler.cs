@@ -11,8 +11,8 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
-            var token = Node.Value;
-            var str = token.Value.Replace("_", "");
+            var token = Node.Token;
+            var str = token.Text.Replace("_", "");
             var val = Convert.ToDouble(str, CultureInfo.InvariantCulture);
             return Expression.Constant(new Float(val), typeof(iObject));
         }

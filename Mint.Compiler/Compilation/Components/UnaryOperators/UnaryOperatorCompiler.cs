@@ -7,7 +7,7 @@ namespace Mint.Compilation.Components
     {
         protected abstract Symbol Operator { get; }
 
-        private Ast<Token> Operand => Node[0];
+        private SyntaxNode Operand => Node[0];
 
         protected UnaryOperatorCompiler(Compiler compiler) : base(compiler)
         { }

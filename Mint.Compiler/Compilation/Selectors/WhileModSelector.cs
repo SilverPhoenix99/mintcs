@@ -9,7 +9,7 @@ namespace Mint.Compilation.Selectors
         private CompilerComponent whileCompiler;
         private CompilerComponent postfixWhileCompiler;
 
-        private Ast<Token> BodyNode => Node[1];
+        private SyntaxNode BodyNode => Node[1];
 
         private CompilerComponent WhileCompiler => whileCompiler ?? (whileCompiler = new WhileCompiler(Compiler));
 
@@ -21,7 +21,7 @@ namespace Mint.Compilation.Selectors
 
         public override CompilerComponent Select()
         {
-            return BodyNode?.Value.Type == kBEGIN ? PostfixWhileCompiler : WhileCompiler;
+            return BodyNode?.Token.Type == kBEGIN ? PostfixWhileCompiler : WhileCompiler;
         }
     }
 }

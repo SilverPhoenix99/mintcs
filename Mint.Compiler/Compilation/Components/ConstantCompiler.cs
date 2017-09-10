@@ -11,7 +11,7 @@ namespace Mint.Compilation.Components
         public override Expression Compile()
         {
             var module = Compiler.CurrentScope.Module;
-            var constantName = Constant(new Symbol(Node.Value.Value));
+            var constantName = Constant(new Symbol(Node.Token.Text));
             return Module.Expressions.GetConstant(module, constantName);
         }
     }

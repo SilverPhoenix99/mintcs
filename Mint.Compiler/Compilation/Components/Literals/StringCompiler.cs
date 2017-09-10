@@ -11,10 +11,10 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
-            foreach(var child in Node.Where(_ => _.Value?.Type == tSTRING_CONTENT))
+            foreach(var child in Node.Where(_ => _.Token?.Type == tSTRING_CONTENT))
             {
                 // copy dedent value to children if dedents property is set in Node
-                child.Value.MergeProperties(Node.Value);
+                child.Token.MergeProperties(Node.Token);
             }
 
             if(IsSimpleContent())
@@ -31,7 +31,7 @@ namespace Mint.Compilation.Components
         {
             var hasSingleChild = Node.List.Count == 1;
             var firstChild = Node[0];
-            return hasSingleChild && firstChild.Value.Type == tSTRING_CONTENT;
+            return hasSingleChild && firstChild.Token.Type == tSTRING_CONTENT;
         }
     }
 }

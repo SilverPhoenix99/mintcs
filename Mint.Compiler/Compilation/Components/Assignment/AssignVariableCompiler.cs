@@ -7,7 +7,7 @@ namespace Mint.Compilation.Components
     {
         private Expression getter;
 
-        protected Symbol VariableName => new Symbol(LeftNode.Value.Value);
+        protected Symbol VariableName => new Symbol(LeftNode.Token.Text);
 
         public override Expression Getter => getter ?? (getter = CreateGetter());
 

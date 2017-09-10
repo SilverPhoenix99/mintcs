@@ -6,9 +6,9 @@ namespace Mint.Compilation.Components
 {
     internal abstract class BinaryOperatorCompiler : CompilerComponentBase
     {
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
-        private Ast<Token> RightNode => Node[1];
+        private SyntaxNode RightNode => Node[1];
 
         protected abstract Symbol Operator { get; }
 

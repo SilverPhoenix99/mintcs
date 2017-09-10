@@ -10,16 +10,16 @@ namespace Mint.Compilation.Selectors
         private const string OR_OP = "||";
         private const string AND_OP = "&&";
 
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
         public AssignSelector(Compiler compiler) : base(compiler)
         { }
 
         public override CompilerComponent Select()
         {
-            var operatorCompiler = CreateOperator(Node.Value);
+            var operatorCompiler = CreateOperator(Node.Token);
 
-            switch(LeftNode.Value.Type)
+            switch(LeftNode.Token.Type)
             {
                 case tIDENTIFIER:
                     return new AssignLocalVariableCompiler(Compiler, operatorCompiler);
@@ -52,8 +52,8 @@ namespace Mint.Compilation.Selectors
                 throw new System.NotImplementedException();
             }
 
-            return token.Value == OR_OP ? new OrAssignOperator()
-                 : token.Value == AND_OP ? new AndAssignOperator()
+            return token.Text == OR_OP ? new OrAssignOperator()
+                 : token.Text == AND_OP ? new AndAssignOperator()
                  : (AssignOperator) new GenericOpAssignOperator();
         }
     }

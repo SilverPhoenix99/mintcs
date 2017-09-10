@@ -11,7 +11,7 @@ namespace Mint.Lex.States
         protected override void EmitIdentifierToken()
         {
             var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
-            var isLocalVar = Lexer.IsVariableDefined(token.Value);
+            var isLocalVar = Lexer.IsVariableDefined(token.Text);
             if(isLocalVar)
             {
                 Lexer.CurrentState = Lexer.EndState;

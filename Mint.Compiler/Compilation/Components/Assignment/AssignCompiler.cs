@@ -9,9 +9,9 @@ namespace Mint.Compilation.Components
     {
         private readonly AssignOperator operatorCompiler;
 
-        protected Ast<Token> LeftNode => Node[0];
-        protected Ast<Token> RightNode => Node[1];
-        public Symbol Operator => new Symbol(Node.Value.Value);
+        protected SyntaxNode LeftNode => Node[0];
+        protected SyntaxNode RightNode => Node[1];
+        public Symbol Operator => new Symbol(Node.Token.Text);
 
         public abstract Expression Getter { get; }
         public Expression Right { get; protected set; }

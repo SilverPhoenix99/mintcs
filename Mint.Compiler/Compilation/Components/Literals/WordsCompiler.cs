@@ -20,7 +20,7 @@ namespace Mint.Compilation.Components
             var contents = new List<Expression>();
             foreach(var child in Node)
             {
-                if(child.Value.Type == tSPACE)
+                if(child.Token.Type == tSPACE)
                 {
                     var word = CreateWord(contents);
                     words.Add(word);

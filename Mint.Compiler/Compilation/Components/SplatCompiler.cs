@@ -12,7 +12,7 @@ namespace Mint.Compilation.Components
 
         protected virtual Type ElementType => typeof(Array);
 
-        private Ast<Token> Operand => Node[0];
+        private SyntaxNode Operand => Node[0];
 
         public SplatCompiler(Compiler compiler) : base(compiler)
         { }

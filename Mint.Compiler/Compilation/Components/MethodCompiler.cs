@@ -10,11 +10,11 @@ namespace Mint.Compilation.Components
 {
     internal partial class MethodCompiler : CompilerComponentBase
     {
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
-        private string Name => Node[1].Value.Value;
+        private string Name => Node[1].Token.Text;
 
-        private Ast<Token> ParametersNode => Node[2];
+        private SyntaxNode ParametersNode => Node[2];
 
         public MethodCompiler(Compiler compiler) : base(compiler)
         { }
@@ -65,26 +65,26 @@ namespace Mint.Compilation.Components
         
         private Parameter[] CompileParameters() => ParametersNode.Select(CompileParameter).ToArray();
 
-        private Parameter CompileParameter(Ast<Token> node)
+        private Parameter CompileParameter(SyntaxNode node)
         {
-            switch(node.Value.Type)
+            switch(node.Token.Type)
             {
                 case TokenType.kASSIGN:
                 {
-                    var name = node[0].Value.Value;
+                    var name = node[0].Token.Text;
                     var value = node[1].Accept(Compiler);
                     return new Parameter(typeof(iObject), name, ParameterKind.Optional, value);
                 }
 
                 case TokenType.kSTAR:
                 {
-                    var name = node[0].Value.Value;
+                    var name = node[0].Token.Text;
                     return new Parameter(typeof(Array), name, ParameterKind.Rest);
                 }
 
                 case TokenType.tLABEL:
                 {
-                    var name = node.Value.Value;
+                    var name = node.Token.Text;
                     name = name.Remove(name.Length - 1);
 
                     if(node.List.Count == 0)
@@ -98,19 +98,19 @@ namespace Mint.Compilation.Components
 
                 case TokenType.kDSTAR:
                 {
-                    var name = node[0].Value.Value;
+                    var name = node[0].Token.Text;
                     return new Parameter(typeof(Hash), name, ParameterKind.KeyRest);
                 }
 
                 case TokenType.kAMPER:
                 {
-                    var name = node[0].Value.Value;
+                    var name = node[0].Token.Text;
                     return new Parameter(typeof(Proc), name, ParameterKind.Block);
                 }
 
                 default:
                 {
-                    var name = node.Value.Value;
+                    var name = node.Token.Text;
                     return new Parameter(typeof(iObject), name, ParameterKind.Required);
                 }
             }

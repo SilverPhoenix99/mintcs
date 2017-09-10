@@ -86,7 +86,7 @@
     <Compile Include="Lex\States\State.cs" />
     <Compile Include="Lex\States\StateBase.cs" />
     <Compile Include="Lex\States\StringLiteral.cs" />
-    <Compile Include="Parse\Ast.cs" />
+    <Compile Include="Parse\SyntaxNode.cs" />
     <Compile Include="Parse\AstVisitor.cs" />
     <Compile Include="Parse\BitStack.cs" />
     <Compile Include="Parse\Parser.cs" />

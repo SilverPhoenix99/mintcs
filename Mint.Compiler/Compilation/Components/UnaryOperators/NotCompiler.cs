@@ -6,7 +6,7 @@ namespace Mint.Compilation.Components
 {
     internal class NotCompiler : CompilerComponentBase
     {
-        private Ast<Token> Operand => Node[0];
+        private SyntaxNode Operand => Node[0];
 
         public NotCompiler(Compiler compiler) : base(compiler)
         { }

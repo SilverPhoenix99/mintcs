@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     internal class SimpleSymbolCompiler : CompilerComponentBase
     {
-        private string Identifier => Node[0].Value.Value;
+        private string Identifier => Node[0].Token.Text;
 
         public SimpleSymbolCompiler(Compiler compiler) : base(compiler)
         { }

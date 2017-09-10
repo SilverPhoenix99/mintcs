@@ -8,6 +8,6 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Compile() =>
-            Expression.Constant(new Fixnum(Node.Value.Location.StartLine), typeof(iObject));
+            Expression.Constant(new Fixnum(Node.Token.Location.StartLine), typeof(iObject));
     }
 }

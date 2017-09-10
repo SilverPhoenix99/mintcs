@@ -7,7 +7,7 @@ namespace Mint.Compilation.Selectors
     {
         protected Compiler Compiler { get; }
 
-        protected Ast<Token> Node => Compiler.CurrentNode;
+        protected SyntaxNode Node => Compiler.CurrentNode;
 
         protected ComponentSelectorBase(Compiler compiler)
         {

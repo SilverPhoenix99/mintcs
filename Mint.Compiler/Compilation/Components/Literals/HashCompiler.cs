@@ -37,10 +37,10 @@ namespace Mint.Compilation.Components
 
         private IEnumerable<Expression> GetInsertions(Expression hash) => Node.Select(_ => Insert(hash, _));
 
-        private Expression Insert(Expression hash, Ast<Token> node)
+        private Expression Insert(Expression hash, SyntaxNode node)
         {
             var element = node.Accept(Compiler);
-            var type = node.Value.Type;
+            var type = node.Token.Type;
             return type == TokenType.kDSTAR ? MergeHash(hash, element) : MergeAssoc(hash, element);
         }
 

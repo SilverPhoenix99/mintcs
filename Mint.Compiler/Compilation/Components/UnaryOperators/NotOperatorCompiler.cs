@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     internal class NotOperatorCompiler : CompilerComponentBase
     {
-        private Ast<Token> Operand => Node[0];
+        private SyntaxNode Operand => Node[0];
 
         public NotOperatorCompiler(Compiler compiler) : base(compiler)
         { }

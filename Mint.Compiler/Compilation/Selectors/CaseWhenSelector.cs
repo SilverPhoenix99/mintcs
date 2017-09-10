@@ -8,9 +8,9 @@ namespace Mint.Compilation.Selectors
         private CompilerComponent caseWhenWithValueCompiler;
         private CompilerComponent caseWhenCompiler;
 
-        private Ast<Token> ValueNode => Node[0];
+        private SyntaxNode ValueNode => Node[0];
 
-        private bool HasValue => ValueNode.Value != null || ValueNode.List.Count > 0;
+        private bool HasValue => ValueNode.Token != null || ValueNode.List.Count > 0;
 
         private CompilerComponent CaseWhenWithValueCompiler =>
             caseWhenWithValueCompiler ?? (caseWhenWithValueCompiler = new CaseWhenWithValueCompiler(Compiler));

@@ -8,8 +8,8 @@ namespace Mint.Compilation.Components
     {
         // <left>[*<args>]   =>   <left>.[](*<args>)
 
-        protected virtual Ast<Token> LeftNode => Node[0];
-        protected virtual Ast<Token> ArgumentsNode => Node[1];
+        protected virtual SyntaxNode LeftNode => Node[0];
+        protected virtual SyntaxNode ArgumentsNode => Node[1];
 
         public IndexerCompiler(Compiler compiler) : base(compiler)
         { }
@@ -28,7 +28,7 @@ namespace Mint.Compilation.Components
             return (
                 from astArgument in ArgumentsNode
                 let argument = astArgument.Accept(Compiler)
-                let kind = astArgument.Value.Type.GetArgumentKind()
+                let kind = astArgument.Token.Type.GetArgumentKind()
                 select new InvocationArgument(kind, argument)
             ).ToArray();
         }

@@ -5,9 +5,9 @@ namespace Mint.Compilation.Components
 {
     internal class LabelEndCompiler : CompilerComponentBase
     {
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
-        private Ast<Token> RightNode => Node[1];
+        private SyntaxNode RightNode => Node[1];
 
         public LabelEndCompiler(Compiler compiler) : base(compiler)
         { }
@@ -30,13 +30,9 @@ namespace Mint.Compilation.Components
             return Symbol.Expressions.New(expression);
         }
 
-        private static Expression AsConcat(Expression expression)
-        {
-            var block = expression as BlockExpression;
-
-            return block == null
-                ? expression
-                : CompilerUtils.StringConcat(String.Expressions.New(), block.Expressions);
-        }
+        private static Expression AsConcat(Expression expression) =>
+            expression is BlockExpression block
+                ? CompilerUtils.StringConcat(String.Expressions.New(), block.Expressions)
+                : expression;
     }
 }

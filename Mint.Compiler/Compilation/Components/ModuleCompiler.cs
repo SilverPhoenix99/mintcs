@@ -8,13 +8,13 @@ namespace Mint.Compilation.Components
 {
     internal abstract class ModuleCompiler : CompilerComponentBase
     {
-		protected virtual Ast<Token> NameNode => Node[0];
+		protected virtual SyntaxNode NameNode => Node[0];
 
         protected abstract Expression Container { get; }
 
-        protected Ast<Token> Body => Node[1];
+        protected SyntaxNode Body => Node[1];
 
-        protected Expression Name => Constant(new Symbol(NameNode.Value.Value));
+        protected Expression Name => Constant(new Symbol(NameNode.Token.Text));
 
         protected Expression Nesting => Compiler.BuildNesting();
 

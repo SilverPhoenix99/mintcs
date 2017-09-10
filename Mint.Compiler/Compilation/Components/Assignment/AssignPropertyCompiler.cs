@@ -11,7 +11,7 @@ namespace Mint.Compilation.Components
 
         public override Expression Getter => CompilerUtils.Call(instance, GetterMethodName, Visibility);
 
-        private string MethodName => LeftNode[1].Value.Value;
+        private string MethodName => LeftNode[1].Token.Text;
 
         private Symbol GetterMethodName => new Symbol(MethodName);
 

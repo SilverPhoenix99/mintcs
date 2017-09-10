@@ -16,7 +16,7 @@ namespace Mint.Lex.States
         {
             var token = Lexer.EmitToken(tIDENTIFIER, ts, te);
             Lexer.CurrentState = Lexer.EndState;
-            var isLocalVar = Lexer.IsVariableDefined(token.Value);
+            var isLocalVar = Lexer.IsVariableDefined(token.Text);
             if(isLocalVar)
             {
                 Lexer.CanLabel = true;

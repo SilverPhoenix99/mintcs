@@ -5,9 +5,9 @@ namespace Mint.Compilation.Components
 {
     internal class RelativeNameModuleCompiler : ModuleCompiler
     {
-        protected Ast<Token> LeftNode => Node[0][0];
+        protected SyntaxNode LeftNode => Node[0][0];
 
-        protected override Ast<Token> NameNode => Node[0][1];
+        protected override SyntaxNode NameNode => Node[0][1];
 
         protected override Expression Container => LeftNode.Accept(Compiler);
 

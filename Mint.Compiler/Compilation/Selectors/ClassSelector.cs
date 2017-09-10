@@ -12,9 +12,9 @@ namespace Mint.Compilation.Selectors
         private ClassCompiler absoluteName;
         private ClassCompiler singleton;
 
-        private Ast<Token> Name => Node[0];
+        private SyntaxNode Name => Node[0];
 
-        private TokenType Type => Name.Value.Type;
+        private TokenType Type => Name.Token.Type;
 
         private ClassCompiler SimpleName => simpleName ?? (simpleName = new SimpleNameClassCompiler(Compiler));
 

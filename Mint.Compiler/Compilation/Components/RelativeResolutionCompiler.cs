@@ -6,11 +6,11 @@ namespace Mint.Compilation.Components
 {
     internal class RelativeResolutionCompiler : CompilerComponentBase
     {
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
-        private Ast<Token> RightNode => Node[1];
+        private SyntaxNode RightNode => Node[1];
 
-        private Symbol ConstantName => new Symbol(RightNode.Value.Value);
+        private Symbol ConstantName => new Symbol(RightNode.Token.Text);
 
         public RelativeResolutionCompiler(Compiler compiler) : base(compiler)
         { }
@@ -19,18 +19,18 @@ namespace Mint.Compilation.Components
         {
             var name = ConstantName;
 
-            Func<iObject, iObject> resolutionLambda = (obj) =>
+            iObject ResolutionLambda(iObject obj)
             {
-                if(obj is Module)
+                if(obj is Module module)
                 {
-                    return ((Module) obj).GetConstant(name);
+                    return module.GetConstant(name);
                 }
 
                 throw new TypeError(obj.Inspect() + " is not a class/module");
-            };
+            }
 
             var left = LeftNode.Accept(Compiler);
-            return Expression.Invoke(Expression.Constant(resolutionLambda), left);
+            return Expression.Invoke(Expression.Constant((Func<iObject, iObject>) ResolutionLambda), left);
         }
     }
 }

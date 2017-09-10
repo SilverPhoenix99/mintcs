@@ -6,9 +6,9 @@ namespace Mint.Compilation.Components
 {
     internal class AbsoluteResolutionCompiler : CompilerComponentBase
     {
-        private Ast<Token> OperandNode => Node[0];
+        private SyntaxNode OperandNode => Node[0];
 
-        private Symbol ConstantName => new Symbol(OperandNode.Value.Value);
+        private Symbol ConstantName => new Symbol(OperandNode.Token.Text);
 
         public AbsoluteResolutionCompiler(Compiler compiler) : base(compiler)
         { }

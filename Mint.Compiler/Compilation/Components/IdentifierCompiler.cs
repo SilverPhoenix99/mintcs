@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     internal class IdentifierCompiler : CompilerComponentBase
     {
-        private string Identifier => Node.Value.Value;
+        private string Identifier => Node.Token.Text;
 
         public IdentifierCompiler(Compiler compiler) : base(compiler)
         { }

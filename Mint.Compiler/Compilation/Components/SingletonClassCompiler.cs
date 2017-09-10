@@ -5,7 +5,7 @@ namespace Mint.Compilation.Components
 {
     internal class SingletonClassCompiler : ClassCompiler
     {
-        private Ast<Token> OperandNode => Node[0][0];
+        private SyntaxNode OperandNode => Node[0][0];
 
         public SingletonClassCompiler(Compiler compiler) : base(compiler)
         { }

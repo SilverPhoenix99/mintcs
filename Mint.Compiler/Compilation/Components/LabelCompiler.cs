@@ -6,9 +6,9 @@ namespace Mint.Compilation.Components
 {
     internal class LabelCompiler : CompilerComponentBase
     {
-        private string Label => Node.Value.Value;
+        private string Label => Node.Token.Text;
 
-        private Ast<Token> Value => Node[0];
+        private SyntaxNode Value => Node[0];
 
         public LabelCompiler(Compiler compiler) : base(compiler)
         { }

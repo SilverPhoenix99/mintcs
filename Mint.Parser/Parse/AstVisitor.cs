@@ -1,12 +1,12 @@
 ﻿namespace Mint.Parse
 {
-    public interface AstVisitor<T, out TRet>
+    public interface AstVisitor<out TRet>
     {
-        TRet Visit(Ast<T> node);
+        TRet Visit(SyntaxNode node);
     }
 
-    public interface AstVisitor<T>
+    public interface AstVisitor
     {
-        void Visit(Ast<T> node);
+        void Visit(SyntaxNode node);
     }
 }

@@ -9,13 +9,13 @@ namespace Mint.Compilation.Components
 {
     internal class PrivateMethodCallCompiler : CompilerComponentBase
     {
-        protected string MethodName => Node[1].Value.Value;
+        protected string MethodName => Node[1].Token.Text;
 
-        private Ast<Token> ArgumentsNode => Node[2];
+        private SyntaxNode ArgumentsNode => Node[2];
 
         // remove empty double splats: `**{}`
-        private IEnumerable<Ast<Token>> Arguments => ArgumentsNode.Where(
-            arg => arg.Value.Type != kDSTAR || arg[0].Value.Type != kLBRACE || arg[0].List.Count != 0
+        private IEnumerable<SyntaxNode> Arguments => ArgumentsNode.Where(
+            arg => arg.Token.Type != kDSTAR || arg[0].Token.Type != kLBRACE || arg[0].List.Count != 0
         );
 
         public PrivateMethodCallCompiler(Compiler compiler) : base(compiler)
@@ -23,11 +23,11 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
-            var blockNode = ArgumentsNode.FirstOrDefault(_ => _.Value.Type == kDO || _.Value.Type == kLBRACE2);
+            var blockNode = ArgumentsNode.FirstOrDefault(_ => _.Token.Type == kDO || _.Token.Type == kLBRACE2);
 
-            if(blockNode != null && ArgumentsNode.Any(_ => _.Value.Type == kAMPER))
+            if(blockNode != null && ArgumentsNode.Any(_ => _.Token.Type == kAMPER))
             {
-                var line = blockNode.Value.Location.StartLine;
+                var line = blockNode.Token.Location.StartLine;
                 throw new SyntaxError(Compiler.Filename, line, "both block arg and actual block given");
             }
 
@@ -41,9 +41,9 @@ namespace Mint.Compilation.Components
 
         protected InvocationArgument[] CompileArguments() => Arguments.Select(CreateInvocationArgument).ToArray();
 
-        private InvocationArgument CreateInvocationArgument(Ast<Token> argument)
+        private InvocationArgument CreateInvocationArgument(SyntaxNode argument)
         {
-            var kind = argument.Value.Type.GetArgumentKind();
+            var kind = argument.Token.Type.GetArgumentKind();
             var expression = argument.Accept(Compiler);
             return new InvocationArgument(kind, expression);
         }

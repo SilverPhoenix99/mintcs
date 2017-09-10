@@ -13,7 +13,7 @@ using Mint.MethodBinding;
 
 namespace Mint.Compilation
 {
-    public class Compiler : AstVisitor<Token, Expression>
+    public class Compiler : AstVisitor<Expression>
     {
         private readonly IDictionary<TokenType, ComponentSelector> selectors;
         private readonly Stack<Scope> scopes;
@@ -24,7 +24,7 @@ namespace Mint.Compilation
 
         public Scope CurrentScope => scopes.Peek();
 
-        public Ast<Token> CurrentNode { get; private set; }
+        public SyntaxNode CurrentNode { get; private set; }
 
         public Compiler(string filename, CallFrame topLevelFrame)
         {
@@ -144,7 +144,7 @@ namespace Mint.Compilation
 
         public Scope EndScope() => scopes.Pop();
 
-        public Expression Compile(Ast<Token> node)
+        public Expression Compile(SyntaxNode node)
         {
             var scope = CurrentScope;
             var body = node.Accept(this);
@@ -162,7 +162,7 @@ namespace Mint.Compilation
             );
         }
 
-        public Expression Visit(Ast<Token> node)
+        public Expression Visit(SyntaxNode node)
         {
             var previousNode = CurrentNode;
             CurrentNode = node;
@@ -172,14 +172,14 @@ namespace Mint.Compilation
             return expression;
         }
 
-        private CompilerComponent GetComponentOrThrow(Ast<Token> node)
+        private CompilerComponent GetComponentOrThrow(SyntaxNode node)
         {
             if(node.IsList)
             {
                 return ListComponent;
             }
 
-            var type = node.Value.Type;
+            var type = node.Token.Type;
             if(selectors.TryGetValue(type, out var selector))
             {
                 return selector.Select();

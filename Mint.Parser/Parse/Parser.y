@@ -8,7 +8,7 @@
 
 %using Mint.Lex;
 
-%YYSTYPE Ast<Token>
+%YYSTYPE SyntaxNode
 
 %token tUNKNOWN
 
@@ -65,10 +65,10 @@ top_compstmt :
 ;
 
 top_stmts :
-    { $$ = NewNode(); } // nothing
-  | top_stmt                 { $$ = NewNode($1); }
+    { $$ = new SyntaxNode(); } // nothing
+  | top_stmt                 { $$ = new SyntaxNode($1); }
   | top_stmts terms top_stmt { $$ = $1 + $3; }
-  //| error top_stmt           { $$ = NewNode($2); } // Must give error
+  //| error top_stmt           { $$ = new SyntaxNode($2); } // Must give error
 ;
 
 top_stmt :
@@ -98,13 +98,13 @@ bodystmt :
 
         if(opt_ensure.List.Count != 0)
         {
-            $$ = (Ast<Token>) opt_ensure.Value + compstmt + opt_rescue + opt_ensure[0];
+            $$ = new SyntaxNode(opt_ensure.Token, compstmt, opt_rescue, opt_ensure[0]);
             break;
         }
 
         if(opt_rescue.List.Count != 0)
         {
-            $$ = EnsureNode() + compstmt + opt_rescue + NewNode();
+            $$ = EnsureNode(compstmt, opt_rescue);
             break;
         }
 
@@ -117,17 +117,17 @@ compstmt :
 ;
 
 stmts :
-    { $$ = NewNode(); } // nothing
-  | stmt_or_begin             { $$ = NewNode($1); }
+    { $$ = new SyntaxNode(); } // nothing
+  | stmt_or_begin             { $$ = new SyntaxNode($1); }
   | stmts terms stmt_or_begin { $$ = $1 + $3; }
-  //| error stmt                { $$ = NewNode($2); } // Must give error
+  //| error stmt                { $$ = new SyntaxNode($2); } // Must give error
 ;
 
 stmt_or_begin :
     stmt
   | kAPP_BEGIN
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "BEGIN is permitted only at toplevel");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "BEGIN is permitted only at toplevel");
     }
     kLBRACE2 top_compstmt kRBRACE
 ;
@@ -138,14 +138,14 @@ stmt :
   | kALIAS tGVAR tBACK_REF { $$ = $1 + $2 + $3; }
   | kALIAS tGVAR tNTH_REF
     {
-        throw new SyntaxError(Filename, $3.Value.Location.StartLine, "can't make alias for the number variables");
+        throw new SyntaxError(Filename, $3.Token.Location.StartLine, "can't make alias for the number variables");
     }
   | kUNDEF undef_list     { $$ = $1 + $2; }
   | stmt kIF_MOD expr     { $$ = $2 + $3 + $1; }
   | stmt kUNLESS_MOD expr { $$ = $2 + $3 + $1; }
   | stmt kWHILE_MOD expr  { $$ = $2 + $3 + $1; }
   | stmt kUNTIL_MOD expr  { $$ = $2 + $3 + $1; }
-  | stmt kRESCUE_MOD stmt { $$ = EnsureNode() + $1 + ($2 + $3) + NewNode(); }
+  | stmt kRESCUE_MOD stmt { $$ = EnsureNode($1, $2 + $3); }
   | kAPP_END kLBRACE2 compstmt kRBRACE
     {
         if(inDef || inSingle)
@@ -201,22 +201,22 @@ fcall :
 ;
 
 command :
-    fcall command_args %prec tLOWEST { $$ = CallNode() + NewNode() + $1 + $2; }
+    fcall command_args %prec tLOWEST { $$ = CallNode($1, $2); }
   | fcall command_args cmd_brace_block
     {
-      //block_dup_check($2,$3);
-      $$ = CallNode() + NewNode() + $1 + ($2 + $3);
+      //block_dup_check($2, $3);
+      $$ = CallNode($1, $2 + $3);
     }
   | primary call_op operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary call_op operation2 command_args cmd_brace_block
     {
-      //block_dup_check($4,$5);
+      //block_dup_check($4, $5);
       $$ = $2 + $1 + $3 + ($4 + $5);
     }
   | primary kCOLON2 operation2 command_args %prec tLOWEST { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 command_args cmd_brace_block
     {
-      //block_dup_check($4,$5);
+      //block_dup_check($4, $5);
       $$ = $2 + $1 + $3 + ($4 + $5);
     }
   | kSUPER command_args { $$ = $1 + $2; }
@@ -244,13 +244,13 @@ mlhs_basic :
   | mlhs_head kSTAR                            { $$ = $1 + $2; }
   | mlhs_head kSTAR kCOMMA mlhs_post           { $$ = $1 + $2 + $4; }
   | kSTAR mlhs_node                            { $$ = $1 + $2; }
-  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = NewNode($1 + $2) + $4; }
-  | kSTAR                                      { $$ = NewNode($1); }
-  | kSTAR kCOMMA mlhs_post                     { $$ = NewNode($1) + $3; }
+  | kSTAR mlhs_node kCOMMA mlhs_post           { $$ = new SyntaxNode($1 + $2) + $4; }
+  | kSTAR                                      { $$ = new SyntaxNode($1); }
+  | kSTAR kCOMMA mlhs_post                     { $$ = new SyntaxNode($1) + $3; }
 ;
 
 mlhs_item :
-    mlhs_node                 { $$ = NewNode($1); }
+    mlhs_node                 { $$ = new SyntaxNode($1); }
   | kLPAREN mlhs_inner rparen { $$ = $2; }
 ;
 
@@ -275,7 +275,7 @@ mlhs_node :
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $3.Token.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -283,16 +283,16 @@ mlhs_node :
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $2.Token.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $1 + $2;
     }
   | backref
     {
-        if($1.Value.Type == TokenType.tNTH_REF
-        || $1.Value.Type == TokenType.tBACK_REF)
+        if($1.Token.Type == TokenType.tNTH_REF
+        || $1.Token.Type == TokenType.tBACK_REF)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "Can't set variable " + $1.Value.Value);
+            throw new SyntaxError(Filename, $1.Token.Location.StartLine, "Can't set variable " + $1.Token.Text);
         }
     }
 ;
@@ -308,7 +308,7 @@ lhs :
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $3.Value.Location.StartLine, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $3.Token.Location.StartLine, "dynamic constant assignment");
         }
         $$ = $2 + $1 + $3;
     }
@@ -316,16 +316,16 @@ lhs :
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $2.Value.Location.StartLine, "dynamic constant assignment");
+            throw new SyntaxError(Filename, $2.Token.Location.StartLine, "dynamic constant assignment");
         }
       $$ = $1 + $2;
     }
   | backref
     {
-        if($1.Value.Type == TokenType.tNTH_REF
-        || $1.Value.Type == TokenType.tBACK_REF)
+        if($1.Token.Type == TokenType.tNTH_REF
+        || $1.Token.Type == TokenType.tBACK_REF)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "Can't set variable " + $1.Value.Value);
+            throw new SyntaxError(Filename, $1.Token.Location.StartLine, "Can't set variable " + $1.Token.Text);
         }
     }
 ;
@@ -333,7 +333,7 @@ lhs :
 cname :
     tIDENTIFIER
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class/module name must be CONSTANT");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "class/module name must be CONSTANT");
     }
   | tCONSTANT
 ;
@@ -363,8 +363,8 @@ fitem :
 ;
 
 undef_list :
-    fitem { $$ = NewNode($1); }
-  | undef_list kCOMMA { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + NewNode($4); }
+    fitem { $$ = new SyntaxNode($1); }
+  | undef_list kCOMMA { Lexer.CurrentState = Lexer.FnameState; } fitem { $$ = $1 + new SyntaxNode($4); }
 ;
 
 op :
@@ -445,81 +445,54 @@ reswords :
 ;
 
 arg :
-    lhs kASSIGN arg { $$ = $2 + $1 + $3; }
-  | lhs kASSIGN arg kRESCUE_MOD arg
-    {
-      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + NewNode() + NewNode();
-    }
-  | var_lhs tOP_ASGN arg { $$ = $2 + $1 + $3; }
-  | var_lhs tOP_ASGN arg kRESCUE_MOD arg
-    {
-      $$ = EnsureNode() + ($2 + $1 + $3) + ($4 + $5) + NewNode() + NewNode();
-    }
-  | primary kLBRACK2 opt_call_args rbracket tOP_ASGN arg
-    {
-      $$ = $5 + ($2 + $1 + $3) + $6;
-    }
-  | primary call_op tIDENTIFIER tOP_ASGN arg
-    {
-      $$ = $4 + ($2 + $1 + $3) + $5;
-    }
-  | primary call_op tCONSTANT tOP_ASGN arg
-    {
-      $$ = $4 + ($2 + $1 + $3) + $5;
-    }
-  | primary kCOLON2 tIDENTIFIER tOP_ASGN arg
-    {
-      $$ = $4 + ($2 + $1 + $3) + $5;
-    }
-  | primary kCOLON2 tCONSTANT tOP_ASGN arg
-    {
-      $$ = $4 + ($2 + $1 + $3) + $5;
-    }
-  | kCOLON3 tCONSTANT tOP_ASGN arg
-    {
-      $$ = $3 + ($1 + $2) + $4;
-    }
-  | backref tOP_ASGN arg { $$ = $2 + $1 + $3; }
-  | arg kDOT2 arg        { $$ = $2 + $1 + $3; }
-  | arg kDOT3 arg        { $$ = $2 + $1 + $3; }
-  | arg kPLUS arg        { $$ = $2 + $1 + $3; }
-  | arg kMINUS arg       { $$ = $2 + $1 + $3; }
-  | arg kMUL arg         { $$ = $2 + $1 + $3; }
-  | arg kDIV arg         { $$ = $2 + $1 + $3; }
-  | arg kPERCENT arg     { $$ = $2 + $1 + $3; }
-  | arg kPOW arg         { $$ = $2 + $1 + $3; }
-  | kUMINUS_NUM simple_numeric kPOW arg { $$ = $3 + ($1 + $2) + $4; }
-  | kUPLUS arg           { $$ = $1 + $2; }
-  | kUMINUS arg          { $$ = $1 + $2; }
-  | arg kPIPE arg        { $$ = $2 + $1 + $3; }
-  | arg kXOR arg         { $$ = $2 + $1 + $3; }
-  | arg kBIN_AND arg     { $$ = $2 + $1 + $3; }
-  | arg kCMP arg         { $$ = $2 + $1 + $3; }
-  | arg kGREATER arg     { $$ = $2 + $1 + $3; }
-  | arg kGEQ arg         { $$ = $2 + $1 + $3; }
-  | arg kLESS arg        { $$ = $2 + $1 + $3; }
-  | arg kLEQ arg         { $$ = $2 + $1 + $3; }
-  | arg kEQ arg          { $$ = $2 + $1 + $3; }
-  | arg kEQQ arg         { $$ = $2 + $1 + $3; }
-  | arg kNEQ arg         { $$ = $2 + $1 + $3; }
-  | arg kMATCH arg       { $$ = $2 + $1 + $3; }
-  | arg kNMATCH arg      { $$ = $2 + $1 + $3; }
-  | kNOTOP arg           { $$ = $1 + $2; }
-  | kNEG arg             { $$ = $1 + $2; }
-  | arg kLSHIFT arg      { $$ = $2 + $1 + $3; }
-  | arg kRSHIFT arg      { $$ = $2 + $1 + $3; }
-  | arg kANDOP arg       { $$ = $2 + $1 + $3; }
-  | arg kOROP arg        { $$ = $2 + $1 + $3; }
-  | kDEFINED opt_nl arg  { $$ = $1 + $3; }
-  | arg kQMARK arg opt_nl kCOLON arg
-    {
-      $$ = $2 + $1 + $3 + $6;
-    }
+    lhs kASSIGN arg                                      { $$ = $2 + $1 + $3; }
+  | lhs kASSIGN arg kRESCUE_MOD arg                      { $$ = EnsureNode($2 + $1 + $3, $4 + $5); }
+  | var_lhs tOP_ASGN arg                                 { $$ = $2 + $1 + $3; }
+  | var_lhs tOP_ASGN arg kRESCUE_MOD arg                 { $$ = EnsureNode($2 + $1 + $3, $4 + $5); }
+  | primary kLBRACK2 opt_call_args rbracket tOP_ASGN arg { $$ = $5 + ($2 + $1 + $3) + $6; }
+  | primary call_op tIDENTIFIER tOP_ASGN arg             { $$ = $4 + ($2 + $1 + $3) + $5; }
+  | primary call_op tCONSTANT tOP_ASGN arg               { $$ = $4 + ($2 + $1 + $3) + $5; }
+  | primary kCOLON2 tIDENTIFIER tOP_ASGN arg             { $$ = $4 + ($2 + $1 + $3) + $5; }
+  | primary kCOLON2 tCONSTANT tOP_ASGN arg               { $$ = $4 + ($2 + $1 + $3) + $5; }
+  | kCOLON3 tCONSTANT tOP_ASGN arg                       { $$ = $3 + ($1 + $2) + $4; }
+  | backref tOP_ASGN arg                                 { $$ = $2 + $1 + $3; }
+  | arg kDOT2 arg                                        { $$ = $2 + $1 + $3; }
+  | arg kDOT3 arg                                        { $$ = $2 + $1 + $3; }
+  | arg kPLUS arg                                        { $$ = $2 + $1 + $3; }
+  | arg kMINUS arg                                       { $$ = $2 + $1 + $3; }
+  | arg kMUL arg                                         { $$ = $2 + $1 + $3; }
+  | arg kDIV arg                                         { $$ = $2 + $1 + $3; }
+  | arg kPERCENT arg                                     { $$ = $2 + $1 + $3; }
+  | arg kPOW arg                                         { $$ = $2 + $1 + $3; }
+  | kUMINUS_NUM simple_numeric kPOW arg                  { $$ = $3 + ($1 + $2) + $4; }
+  | kUPLUS arg                                           { $$ = $1 + $2; }
+  | kUMINUS arg                                          { $$ = $1 + $2; }
+  | arg kPIPE arg                                        { $$ = $2 + $1 + $3; }
+  | arg kXOR arg                                         { $$ = $2 + $1 + $3; }
+  | arg kBIN_AND arg                                     { $$ = $2 + $1 + $3; }
+  | arg kCMP arg                                         { $$ = $2 + $1 + $3; }
+  | arg kGREATER arg                                     { $$ = $2 + $1 + $3; }
+  | arg kGEQ arg                                         { $$ = $2 + $1 + $3; }
+  | arg kLESS arg                                        { $$ = $2 + $1 + $3; }
+  | arg kLEQ arg                                         { $$ = $2 + $1 + $3; }
+  | arg kEQ arg                                          { $$ = $2 + $1 + $3; }
+  | arg kEQQ arg                                         { $$ = $2 + $1 + $3; }
+  | arg kNEQ arg                                         { $$ = $2 + $1 + $3; }
+  | arg kMATCH arg                                       { $$ = $2 + $1 + $3; }
+  | arg kNMATCH arg                                      { $$ = $2 + $1 + $3; }
+  | kNOTOP arg                                           { $$ = $1 + $2; }
+  | kNEG arg                                             { $$ = $1 + $2; }
+  | arg kLSHIFT arg                                      { $$ = $2 + $1 + $3; }
+  | arg kRSHIFT arg                                      { $$ = $2 + $1 + $3; }
+  | arg kANDOP arg                                       { $$ = $2 + $1 + $3; }
+  | arg kOROP arg                                        { $$ = $2 + $1 + $3; }
+  | kDEFINED opt_nl arg                                  { $$ = $1 + $3; }
+  | arg kQMARK arg opt_nl kCOLON arg                     { $$ = $2 + $1 + $3 + $6; }
   | primary
 ;
 
 aref_args :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | args trailer
   | args kCOMMA assocs trailer { $$ = $1 + $3; }
   | assocs trailer
@@ -530,12 +503,12 @@ paren_args :
 ;
 
 opt_paren_args :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | paren_args
 ;
 
 opt_call_args :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | call_args
   | args kCOMMA
   | args kCOMMA assocs kCOMMA { $$ = $1 + $3; }
@@ -543,11 +516,11 @@ opt_call_args :
 ;
 
 call_args :
-    command                          { $$ = NewNode($1); }
+    command                          { $$ = new SyntaxNode($1); }
   | args opt_block_arg               { $$ = $1 + $2; }
   | assocs opt_block_arg             { $$ = $1 + $2; }
   | args kCOMMA assocs opt_block_arg { $$ = $1 + $3 + $4; }
-  | block_arg                        { $$ = NewNode($1); }
+  | block_arg                        { $$ = new SyntaxNode($1); }
 ;
 
 command_args :
@@ -568,12 +541,12 @@ block_arg :
 
 opt_block_arg :
     kCOMMA block_arg  { $$ = $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 args :
-    arg                   { $$ = NewNode($1); }
-  | kSTAR arg             { $$ = NewNode($1 + $2); }
+    arg                   { $$ = new SyntaxNode($1); }
+  | kSTAR arg             { $$ = new SyntaxNode($1 + $2); }
   | args kCOMMA arg       { $$ = $1 + $3; }
   | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
 ;
@@ -586,7 +559,7 @@ mrhs_arg :
 mrhs :
     args kCOMMA arg       { $$ = $1 + $3; }
   | args kCOMMA kSTAR arg { $$ = $1 + ($3 + $4); }
-  | kSTAR arg             { $$ = NewNode($1 + $2); }
+  | kSTAR arg             { $$ = new SyntaxNode($1 + $2); }
 ;
 
 primary :
@@ -607,7 +580,7 @@ primary :
       Lexer.Cmdarg = new BitStack();
     }
     bodystmt kEND { PopCmdarg(); $$ = $1.Append($3.List); }
-  | kLPAREN_ARG { Lexer.CurrentState = Lexer.EndargState; } rparen { $$ = NewNode(); }
+  | kLPAREN_ARG { Lexer.CurrentState = Lexer.EndargState; } rparen { $$ = new SyntaxNode(); }
   | kLPAREN_ARG
     {
       PushCmdarg();
@@ -625,12 +598,12 @@ primary :
   | kLBRACE assoc_list kRBRACE { $$ = $1.Append($2.List); }
   | kRETURN
   | kYIELD kLPAREN2 call_args rparen { $$ = $1 + $3; }
-  | kYIELD kLPAREN2 rparen           { $$ = $1 + NewNode(); }
+  | kYIELD kLPAREN2 rparen           { $$ = $1 + new SyntaxNode(); }
   | kYIELD
   | kDEFINED opt_nl kLPAREN2 expr rparen { $$ = $1 + $4; }
   | kNOT kLPAREN2 expr rparen { $$ = $1 + $3; }
-  | kNOT kLPAREN2 rparen      { $$ = $1 + NewNode(); }
-  | fcall brace_block         { $$ = CallNode() + NewNode() + $1 + NewNode($2); }
+  | kNOT kLPAREN2 rparen      { $$ = $1 + new SyntaxNode(); }
+  | fcall brace_block         { $$ = CallNode($1, new SyntaxNode($2)); }
   | method_call
   | method_call brace_block
     {
@@ -644,7 +617,7 @@ primary :
         {
             // the last in the list are the parameters => append to it
             var index = method_call.List.Count-1;
-            ((IList<Ast<Token>>) method_call.List)[index] = method_call[index].Append($2);
+            ((IList<SyntaxNode>) method_call.List)[index] = method_call[index].Append($2);
         }
         $$ = method_call;
     }
@@ -658,7 +631,7 @@ primary :
   | kWHILE { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
   | kUNTIL { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND { $$ = $1 + $3 + $6; }
   | kCASE expr opt_terms case_body kEND { $$ = $1 + $2 + $4; }
-  | kCASE opt_terms case_body kEND { $$ = $1 + NewNode() + $3; }
+  | kCASE opt_terms case_body kEND { $$ = $1 + new SyntaxNode() + $3; }
   | kFOR for_var kIN { Lexer.Cond.Push(true); } expr do { Lexer.Cond.Pop(); } compstmt kEND
     {
         $$ = $1 + $2 + $5 + $8;
@@ -667,7 +640,7 @@ primary :
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "class definition in method body");
+            throw new SyntaxError(Filename, $1.Token.Location.StartLine, "class definition in method body");
         }
         Lexer.PushClosedScope();
     }
@@ -689,13 +662,13 @@ primary :
         Lexer.PopClosedScope();
         PopDef();
         PopSingle();
-        $$ = $1 + ($2 + $3) + NewNode() + $6;
+        $$ = $1 + ($2 + $3) + new SyntaxNode() + $6;
     }
   | kMODULE cpath
     {
         if(inDef || inSingle)
         {
-            throw new SyntaxError(Filename, $1.Value.Location.StartLine, "module definition in method body");
+            throw new SyntaxError(Filename, $1.Token.Location.StartLine, "module definition in method body");
         }
         Lexer.PushClosedScope();
     }
@@ -714,7 +687,7 @@ primary :
     {
         Lexer.PopClosedScope();
         PopDef();
-        $$ = $1 + NewNode() + $2 + $4 + $5;
+        $$ = $1 + new SyntaxNode() + $2 + $4 + $5;
     }
   | kDEF singleton dot_or_colon { Lexer.CurrentState = Lexer.FnameState; } fname
     {
@@ -753,7 +726,7 @@ if_tail :
 ;
 
 opt_else :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | kELSE compstmt { $$ = $1 + $2; }
 ;
 
@@ -763,7 +736,7 @@ for_var :
 ;
 
 f_marg :
-    f_norm_arg { $$ = NewNode($1); }
+    f_norm_arg { $$ = new SyntaxNode($1); }
   | kLPAREN f_margs rparen { $$ = $2; }
 ;
 
@@ -778,10 +751,10 @@ f_margs :
   | f_marg_list kCOMMA kSTAR f_norm_arg kCOMMA f_marg_list { $$ = $1 + ($3 + $4) + $6; }
   | f_marg_list kCOMMA kSTAR { $$ = $1 + $3; }
   | f_marg_list kCOMMA kSTAR kCOMMA f_marg_list { $$ = $1 + $3 + $5; }
-  | kSTAR f_norm_arg { $$ = NewNode($1 + $2); }
-  | kSTAR f_norm_arg kCOMMA f_marg_list { $$ = NewNode($1 + $2) + $4; }
-  | kSTAR { $$ = NewNode($1); }
-  | kSTAR kCOMMA f_marg_list { $$ = NewNode($1) + $3; }
+  | kSTAR f_norm_arg { $$ = new SyntaxNode($1 + $2); }
+  | kSTAR f_norm_arg kCOMMA f_marg_list { $$ = new SyntaxNode($1 + $2) + $4; }
+  | kSTAR { $$ = new SyntaxNode($1); }
+  | kSTAR kCOMMA f_marg_list { $$ = new SyntaxNode($1) + $3; }
 ;
 
 block_args_tail :
@@ -795,14 +768,14 @@ block_args_tail :
     }
   | f_kwrest opt_f_block_arg
     {
-      $$ = NewNode($1) + $2;
+      $$ = new SyntaxNode($1) + $2;
     }
-  | f_block_arg { $$ = NewNode($1); }
+  | f_block_arg { $$ = new SyntaxNode($1); }
 ;
 
 opt_block_args_tail :
     kCOMMA block_args_tail { $$ = $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 block_param :
@@ -853,33 +826,33 @@ block_param :
     }
   | f_rest_arg opt_block_args_tail
     {
-      $$ = NewNode($1) + $2;
+      $$ = new SyntaxNode($1) + $2;
     }
   | f_rest_arg kCOMMA f_arg opt_block_args_tail
     {
-      $$ = NewNode($1) + $3 + $4;
+      $$ = new SyntaxNode($1) + $3 + $4;
     }
   | block_args_tail
 ;
 
 opt_block_param :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | block_param_def { Lexer.CommandStart = true; }
 ;
 
 block_param_def :
     kPIPE opt_bv_decl kPIPE             { $$ = $2; }
-  | kOROP                               { $$ = NewNode(); }
+  | kOROP                               { $$ = new SyntaxNode(); }
   | kPIPE block_param opt_bv_decl kPIPE { $$ = $2 + $3; }
 ;
 
 opt_bv_decl :
-    opt_nl                            { $$ = NewNode(); }
+    opt_nl                            { $$ = new SyntaxNode(); }
   | opt_nl kSEMICOLON bv_decls opt_nl { $$ = $3; }
 ;
 
 bv_decls :
-    bvar                 { $$ = NewNode($1); }
+    bvar                 { $$ = new SyntaxNode($1); }
   | bv_decls kCOMMA bvar { $$ = $1 + $3; }
 ;
 
@@ -908,7 +881,7 @@ lambda :
         PopLParBeg();
         PopCmdarg();
         Lexer.Cmdarg.LexPop();
-        $$ = NewNode($2, $4);
+        $$ = new SyntaxNode($2, $4);
     }
 ;
 
@@ -935,7 +908,7 @@ block_call :
 
         var command = $1;
         var index = command.List.Count-1;
-        ((IList<Ast<Token>>) command.List)[index] = command[index].Append($2);
+        ((IList<SyntaxNode>) command.List)[index] = command[index].Append($2);
         $$ = command;
     }
   | block_call call_op2 operation2 opt_paren_args
@@ -955,12 +928,12 @@ block_call :
 ;
 
 method_call :
-    fcall paren_args                          { $$ = CallNode() + NewNode() + $1 + $2; }
+    fcall paren_args                          { $$ = CallNode($1, $2); }
   | primary call_op operation2 opt_paren_args { $$ = $2 + $1 + $3 + $4; }
   | primary kCOLON2 operation2 paren_args     { $$ = $2 + $1 + $3 + $4; }
-  | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + NewNode(); }
-  | primary call_op paren_args                { $$ = $2 + $1 + NewNode() + $3; }
-  | primary kCOLON2 paren_args                { $$ = $2 + $1 + NewNode() + $3; }
+  | primary kCOLON2 operation3                { $$ = $2 + $1 + $3 + new SyntaxNode(); }
+  | primary call_op paren_args                { $$ = $2 + $1 + new SyntaxNode() + $3; }
+  | primary kCOLON2 paren_args                { $$ = $2 + $1 + new SyntaxNode() + $3; }
   | kSUPER paren_args                         { $$ = $1 + $2; }
   | kSUPER
   | primary kLBRACK2 opt_call_args rbracket   { $$ = $2 + $1 + $3; }
@@ -972,36 +945,36 @@ brace_block :
 ;
 
 case_body :
-    kWHEN args then compstmt cases { $$ = NewNode($1 + $2 + $4) + $5; }
+    kWHEN args then compstmt cases { $$ = new SyntaxNode($1 + $2 + $4) + $5; }
 ;
 
 cases :
-    opt_else { $$ = $1.IsList ? $1 : NewNode($1); }
+    opt_else { $$ = $1.IsList ? $1 : new SyntaxNode($1); }
   | case_body
 ;
 
 opt_rescue :
     kRESCUE exc_list exc_var then compstmt opt_rescue
     {
-      $$ = NewNode($1 + $2 + $3 + $5) + $6;
+      $$ = new SyntaxNode($1 + $2 + $3 + $5) + $6;
     }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 exc_list :
     arg
   | mrhs
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 exc_var :
     kASSOC lhs { $$ = $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 opt_ensure :
     kENSURE compstmt { $$ = $1 + $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 literal :
@@ -1023,14 +996,14 @@ string :
 string1 :
     tSTRING_BEG string_contents tSTRING_END {
 		$$ = $1.Append($2.List);
-		$$.Value.MergeProperties($3.Value);
+		$$.Token.MergeProperties($3.Token);
 	}
 ;
 
 xstring :
     tXSTRING_BEG xstring_contents tSTRING_END {
 		$$ = $1.Append($2.List);
-		$$.Value.MergeProperties($3.Value);
+		$$.Token.MergeProperties($3.Token);
 	}
 ;
 
@@ -1044,12 +1017,12 @@ words :
 ;
 
 word_list :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | word_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 word :
-    string_content { $$ = NewNode($1); }
+    string_content { $$ = new SyntaxNode($1); }
   | word string_content { $$ = $1 + $2; }
 ;
 
@@ -1059,7 +1032,7 @@ symbols :
 ;
 
 symbol_list :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | symbol_list word tSPACE { $$ = $1 + $2 + $3; }
 ;
 
@@ -1074,27 +1047,27 @@ qsymbols :
 ;
 
 qword_list :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | qword_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 qsym_list :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | qsym_list tSTRING_CONTENT tSPACE { $$ = $1 + $2 + $3; }
 ;
 
 string_contents :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | string_contents string_content { $$ = $1 + $2; }
 ;
 
 xstring_contents :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | xstring_contents string_content { $$ = $1 + $2; }
 ;
 
 regexp_contents :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | regexp_contents string_content { $$ = $1 + $2; }
 ;
 
@@ -1196,7 +1169,7 @@ superclass :
       Lexer.CommandStart = true;
     }
     expr term { $$ = $3; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 f_arglist :
@@ -1223,13 +1196,13 @@ f_arglist :
 args_tail :
     f_kwarg kCOMMA f_kwrest opt_f_block_arg { $$ = $1 + $3 + $4; }
   | f_kwarg opt_f_block_arg                 { $$ = $1 + $2; }
-  | f_kwrest opt_f_block_arg                { $$ = NewNode($1) + $2; }
-  | f_block_arg                             { $$ = NewNode($1); }
+  | f_kwrest opt_f_block_arg                { $$ = new SyntaxNode($1) + $2; }
+  | f_block_arg                             { $$ = new SyntaxNode($1); }
 ;
 
 opt_args_tail :
     kCOMMA args_tail { $$ = $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 f_args :
@@ -1247,28 +1220,28 @@ f_args :
   | f_optarg kCOMMA f_rest_arg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $5 + $6; }
   | f_optarg opt_args_tail { $$ = $1 + $2; }
   | f_optarg kCOMMA f_arg opt_args_tail { $$ = $1 + $3 + $4; }
-  | f_rest_arg opt_args_tail { $$ = NewNode($1) + $2; }
-  | f_rest_arg kCOMMA f_arg opt_args_tail { $$ = NewNode($1) + $3 + $4; }
+  | f_rest_arg opt_args_tail { $$ = new SyntaxNode($1) + $2; }
+  | f_rest_arg kCOMMA f_arg opt_args_tail { $$ = new SyntaxNode($1) + $3 + $4; }
   | args_tail
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 f_bad_arg :
     tCONSTANT
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a constant");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "formal argument cannot be a constant");
     }
   | tIVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be an instance variable");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "formal argument cannot be an instance variable");
     }
   | tGVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a global variable");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "formal argument cannot be a global variable");
     }
   | tCVAR
     {
-        throw new SyntaxError(Filename, $1.Value.Location.StartLine, "formal argument cannot be a class variable");
+        throw new SyntaxError(Filename, $1.Token.Location.StartLine, "formal argument cannot be a class variable");
     }
 ;
 
@@ -1276,7 +1249,7 @@ f_norm_arg :
     f_bad_arg
   | tIDENTIFIER
     {
-        VerifyFormalArgument($1.Value);
+        VerifyFormalArgument($1.Token);
         Lexer.DefineArgument($1);
     }
 ;
@@ -1286,8 +1259,8 @@ f_arg_asgn :
 ;
 
 f_arg_item :
-    f_arg_asgn { $$ = NewNode($1); }
-  | kLPAREN f_margs rparen { $$ = NewNode($2); }
+    f_arg_asgn { $$ = new SyntaxNode($1); }
+  | kLPAREN f_margs rparen { $$ = new SyntaxNode($2); }
 ;
 
 f_arg :
@@ -1298,7 +1271,7 @@ f_arg :
 f_label :
     tLABEL
     {
-        VerifyFormalArgument($1.Value);
+        VerifyFormalArgument($1.Token);
         Lexer.DefineArgument($1);
     }
 ;
@@ -1314,12 +1287,12 @@ f_block_kw :
 ;
 
 f_block_kwarg :
-    f_block_kw { $$ = NewNode($1); }
+    f_block_kw { $$ = new SyntaxNode($1); }
   | f_block_kwarg kCOMMA f_block_kw { $$ = $1 + $3; }
 ;
 
 f_kwarg :
-    f_kw { $$ = NewNode($1); }
+    f_kw { $$ = new SyntaxNode($1); }
   | f_kwarg kCOMMA f_kw { $$ = $1 + $3; }
 ;
 
@@ -1346,12 +1319,12 @@ f_block_opt :
 ;
 
 f_block_optarg :
-    f_block_opt { $$ = NewNode($1); }
+    f_block_opt { $$ = new SyntaxNode($1); }
   | f_block_optarg kCOMMA f_block_opt { $$ = $1 + $3; }
 ;
 
 f_optarg :
-    f_opt { $$ = NewNode($1); }
+    f_opt { $$ = new SyntaxNode($1); }
   | f_optarg kCOMMA f_opt { $$ = $1 + $3; }
 ;
 
@@ -1384,7 +1357,7 @@ f_block_arg :
 
 opt_f_block_arg :
     kCOMMA f_block_arg { $$ = $2; }
-  | { $$ = NewNode(); } // nothing
+  | { $$ = new SyntaxNode(); } // nothing
 ;
 
 singleton :
@@ -1410,12 +1383,12 @@ singleton :
 ;
 
 assoc_list :
-    { $$ = NewNode(); } // nothing
+    { $$ = new SyntaxNode(); } // nothing
   | assocs trailer
 ;
 
 assocs :
-    assoc { $$ = NewNode($1); }
+    assoc { $$ = new SyntaxNode($1); }
   | assocs kCOMMA assoc { $$ = $1 + $3; }
 ;
 

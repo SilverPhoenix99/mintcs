@@ -6,7 +6,7 @@ namespace Mint.Compilation.Components
 {
     internal class AbsoluteNameClassCompiler : SimpleNameClassCompiler
     {
-        protected override Ast<Token> NameNode => Node[0][0];
+        protected override SyntaxNode NameNode => Node[0][0];
 
         protected override Expression Container => Constant(Class.OBJECT);
 

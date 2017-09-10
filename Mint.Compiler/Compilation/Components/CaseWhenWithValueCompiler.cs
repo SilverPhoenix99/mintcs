@@ -11,13 +11,13 @@ namespace Mint.Compilation.Components
 {
     internal class CaseWhenWithValueCompiler : CompilerComponentBase
     {
-        private Ast<Token> ValueNode => Node[0];
+        private SyntaxNode ValueNode => Node[0];
 
-        private Ast<Token> BodyNode => Node[1];
+        private SyntaxNode BodyNode => Node[1];
 
-        private IEnumerable<Ast<Token>> WhenNodes => BodyNode.Where(n => n.Value.Type == kWHEN);
+        private IEnumerable<SyntaxNode> WhenNodes => BodyNode.Where(n => n.Token.Type == kWHEN);
 
-        private Ast<Token> ElseNode => BodyNode.LastOrDefault(n => n.Value.Type == kELSE);
+        private SyntaxNode ElseNode => BodyNode.LastOrDefault(n => n.Token.Type == kELSE);
 
         public CaseWhenWithValueCompiler(Compiler compiler) : base(compiler)
         { }
@@ -32,7 +32,7 @@ namespace Mint.Compilation.Components
             return Switch(typeof(iObject), Constant(true), defaultCase, null, swithCases);
         }
 
-        private SwitchCase CompileWhen(Ast<Token> node, Expression caseValue, CallSite callSite)
+        private SwitchCase CompileWhen(SyntaxNode node, Expression caseValue, CallSite callSite)
         {
             var instance = node[0].Accept(Compiler);
             var arguments = NewArrayInit(typeof(iObject), caseValue);

@@ -7,7 +7,7 @@ namespace Mint.Compilation.Components
 {
     internal class UMinusNumCompiler : CompilerComponentBase
     {
-        private Ast<Token> Value => Node[0];
+        private SyntaxNode Value => Node[0];
 
         public UMinusNumCompiler(Compiler compiler) : base(compiler)
         { }

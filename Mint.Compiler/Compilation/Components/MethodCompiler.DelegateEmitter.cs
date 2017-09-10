@@ -19,17 +19,13 @@ namespace Mint.Compilation.Components
 
             private ParameterExpression Instance => Scope.Instance as ParameterExpression;
 
-            private Ast<Token> BodyNode => Compiler.CurrentNode[3];
+            private SyntaxNode BodyNode => Compiler.CurrentNode[3];
 
             public DelegateEmitter(Compiler compiler, string name, Parameter[] parameters)
             {
-                if(compiler == null) throw new ArgumentNullException(nameof(compiler));
-                if(name == null) throw new ArgumentNullException(nameof(name));
-                if(parameters == null) throw new ArgumentNullException(nameof(parameters));
-
-                Compiler = compiler;
-                Name = name;
-                Parameters = parameters;
+                Compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+                Name = name ?? throw new ArgumentNullException(nameof(name));
+                Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
                 Scope = new MethodScope(Compiler);
             }
 

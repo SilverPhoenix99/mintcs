@@ -13,7 +13,7 @@ namespace Mint.Compilation.Components
         private readonly ParameterExpression instance;
         private InvocationArgument[] invocationArguments;
 
-        private Ast<Token> ArgumentsNode => LeftNode[1];
+        private SyntaxNode ArgumentsNode => LeftNode[1];
 
         private int ArgumentCount => ArgumentsNode.List.Count;
 
@@ -36,7 +36,7 @@ namespace Mint.Compilation.Components
             var arguments = CompileArguments();
             Right = RightNode.Accept(Compiler);
 
-            var argumentKinds = ArgumentsNode.Select(node => node.Value.Type.GetArgumentKind());
+            var argumentKinds = ArgumentsNode.Select(node => node.Token.Type.GetArgumentKind());
             var argumentVars = CreateArgumentVariables();
 
             invocationArguments =

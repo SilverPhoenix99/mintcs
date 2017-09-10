@@ -7,7 +7,7 @@ namespace Mint.Compilation.Components
 {
     internal class StringContentCompiler : CompilerComponentBase
     {
-        private string Content => Dedent(Node.Value.Value);
+        private string Content => Dedent(Node.Token.Text);
 
         public StringContentCompiler(Compiler compiler) : base(compiler)
         { }
@@ -26,7 +26,7 @@ namespace Mint.Compilation.Components
             return string.Join("\n", lines);
         }
 
-        private int Dedentation() => Node.Value.Properties.TryGetValue("dedent", out var value) ? (int) value : 0;
+        private int Dedentation() => Node.Token.Properties.TryGetValue("dedent", out var value) ? (int) value : 0;
 
         private string Dedent(string line, int dedent)
         {

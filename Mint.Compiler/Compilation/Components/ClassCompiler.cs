@@ -10,15 +10,15 @@ namespace Mint.Compilation.Components
 {
     internal abstract class ClassCompiler : CompilerComponentBase
     {
-		protected virtual Ast<Token> NameNode => Node[0];
+		protected virtual SyntaxNode NameNode => Node[0];
 
-        protected Ast<Token> SuperclassNode => HasSuperclass ? Node[1] : null;
+        protected SyntaxNode SuperclassNode => HasSuperclass ? Node[1] : null;
 
         protected bool HasSuperclass => !Node[1].IsList;
 
-        protected Ast<Token> Body => Node[2];
+        protected SyntaxNode Body => Node[2];
 
-        protected Expression Name => Constant(new Symbol(NameNode.Value.Value));
+        protected Expression Name => Constant(new Symbol(NameNode.Token.Text));
 
         protected Expression Nesting => Compiler.BuildNesting();
 
@@ -62,9 +62,9 @@ namespace Mint.Compilation.Components
 
         private static Class SuperclassCast(iObject super)
         {
-            if(super is Class)
+            if(super is Class c)
             {
-                return super as Class;
+                return c;
             }
 
             throw new TypeError($"superclass must be a Class ({super.Class} given)");

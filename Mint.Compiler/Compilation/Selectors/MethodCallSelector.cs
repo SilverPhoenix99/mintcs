@@ -8,7 +8,7 @@ namespace Mint.Compilation.Selectors
         private CompilerComponent publicMethodCall;
         private CompilerComponent privateMethodCall;
 
-        private Ast<Token> LeftNode => Node[0];
+        private SyntaxNode LeftNode => Node[0];
 
         private CompilerComponent PublicMethodCall =>
             publicMethodCall ?? (publicMethodCall = new PublicMethodCallCompiler(Compiler));

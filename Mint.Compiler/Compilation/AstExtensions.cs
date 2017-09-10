@@ -7,11 +7,11 @@ namespace Mint.Compilation
 {
     internal static class AstExtensions
     {
-        public static Visibility GetVisibility(this Ast<Token> left)
+        public static Visibility GetVisibility(this SyntaxNode node)
         {
             // TODO if protected in instance_eval, and lhs != self but same class => public
 
-            return left.Value?.Type == kSELF ? Protected : Public;
+            return node.Token?.Type == kSELF ? Protected : Public;
         }
     }
 }

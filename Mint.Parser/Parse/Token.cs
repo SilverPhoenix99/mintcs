@@ -6,14 +6,14 @@ namespace Mint.Parse
     public class Token
     {
 		public TokenType Type { get; }
-        public string Value { get; }
+        public string Text { get; }
         public LexLocation Location { get; }
         public Dictionary<string, object> Properties { get; }
 
-        public Token(TokenType type, string token, LexLocation location)
+        public Token(TokenType type, string text, LexLocation location)
 		{
 			Type = type;
-            Value = token;
+            Text = text;
             Location = location;
             Properties = new Dictionary<string, object>();
 		}
@@ -24,7 +24,7 @@ namespace Mint.Parse
         {
             var properties = Properties.Count == 0 ? "" : ", **";
 
-            return $"[{Type}, \"{Value}\", {Location.StartLine}, {Location.StartColumn}{properties}]";
+            return $"Token({Type}, \"{Text}\", [{Location.StartLine} {Location.StartColumn}]{properties})";
         }
 
         public void MergeProperties(Token other)

@@ -13,8 +13,8 @@ namespace Mint.Compilation.Components
 
         public override Expression Compile()
         {
-            var token = Node.Value;
-            var str = CLEAN_INTEGER.Replace(token.Value.ToUpper(), "");
+            var token = Node.Token;
+            var str = CLEAN_INTEGER.Replace(token.Text.ToUpper(), "");
             var numBase = (int) token.Properties["num_base"];
             var val = Convert.ToInt64(str, numBase);
             return Expression.Constant(new Fixnum(val), typeof(iObject));

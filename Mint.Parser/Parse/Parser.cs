@@ -28,7 +28,7 @@ namespace Mint.Parse
 
 
         public Lexer Lexer => ((LexerAdapter) Scanner).Lexer;
-        public Ast<Token> Result => CurrentSemanticValue;
+        public SyntaxNode Result => CurrentSemanticValue;
         public string Filename => Lexer.Filename;
 
 
@@ -104,14 +104,14 @@ namespace Mint.Parse
         }
 
 
-        public new Ast<Token> Parse()
+        public new SyntaxNode Parse()
         {
             if(base.Parse())
             {
                 return Result;
             }
 
-            var token = Scanner.yylval.Value;
+            var token = Scanner.yylval.Token;
             if(token.Type != TokenType.EOF)
             {
                 throw new SyntaxError(Filename, token.Location.StartLine, $"unexpected {token.Type}");
@@ -123,7 +123,7 @@ namespace Mint.Parse
         
         private void VerifyFormalArgument(Token token)
         {
-            var name = token.Value;
+            var name = token.Text;
 
             if(name.StartsWith("@@"))
             {
@@ -147,45 +147,46 @@ namespace Mint.Parse
         }
 
         
-        protected static Ast<Token> EnsureNode()
-            => (Ast<Token>)new Token(kENSURE, "ensure", new LexLocation(-1, -1, -1, -1));
+        protected static SyntaxNode EnsureNode(SyntaxNode body, SyntaxNode rescues)
+            => new SyntaxNode(
+                new Token(kENSURE, "ensure", DefaultLocation()),
+                body,
+                rescues,
+                /*ensureBody: */ new SyntaxNode()
+            );
 
 
-        protected static Ast<Token> CallNode()
-            => (Ast<Token>)new Token(kDOT, ".", new LexLocation(-1, -1, -1, -1));
+        protected static SyntaxNode CallNode(SyntaxNode methodName, SyntaxNode args)
+            => new SyntaxNode(
+                new Token(kDOT, ".", DefaultLocation()),
+                    /*instance: */ new SyntaxNode(),
+                    methodName, args);
 
 
-        private static Ast<Token> NewNode()
-            => new Ast<Token>();
+        private static LexLocation DefaultLocation() =>
+            new LexLocation(-1, -1, -1, -1);
 
-
-        private static Ast<Token> NewNode(params Ast<Token>[] nodes)
-            => new Ast<Token>(null, nodes);
-
-
-        public static Ast<Token> ParseFile(string filename, string data)
+        public static SyntaxNode ParseFile(string filename, string data)
             => new Parser(filename, data, isFile: true).Parse();
 
 
-        public static Ast<Token> ParseString(string filename, string data)
+        public static SyntaxNode ParseString(string filename, string data)
             => new Parser(filename, data, isFile: false).Parse();
 
 
-        private class LexerAdapter : AbstractScanner<Ast<Token>, LexLocation>
+        private class LexerAdapter : AbstractScanner<SyntaxNode, LexLocation>
         {
             public LexerAdapter(Lexer lexer)
             {
                 Lexer = lexer;
             }
 
-
             public Lexer Lexer { get; }
-
-
+            
             public override int yylex()
             {
                 var token = Lexer.NextToken();
-                yylval = (Ast<Token>) token;
+                yylval = new SyntaxNode(token);
                 return (int) token.Type;
             }
         }

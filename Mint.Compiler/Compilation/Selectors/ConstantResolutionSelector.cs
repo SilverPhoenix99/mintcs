@@ -8,7 +8,7 @@ namespace Mint.Compilation.Selectors
         private CompilerComponent relativeResolutionCompiler;
         private CompilerComponent methodCallCompiler;
 
-        private Ast<Token> Right => Node[1];
+        private SyntaxNode Right => Node[1];
 
         private CompilerComponent RelativeResolutionCompiler =>
             relativeResolutionCompiler ?? (relativeResolutionCompiler = new RelativeResolutionCompiler(Compiler));
@@ -20,7 +20,7 @@ namespace Mint.Compilation.Selectors
         { }
 
         public override CompilerComponent Select() =>
-            Right.Value.Type == TokenType.tCONSTANT
+            Right.Token.Type == TokenType.tCONSTANT
             && Node.List.Count == 2 // meaning, no arguments
                 ? RelativeResolutionCompiler
                 : MethodCallCompiler;

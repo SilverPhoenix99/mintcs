@@ -355,7 +355,7 @@ namespace Mint.Lex
                 return;
             }
 
-            var name = token.Value;
+            var name = token.Text;
             if(token.Type == tLABEL)
             {
                 name = name.Substring(0, name.Length - 1);
@@ -401,11 +401,11 @@ namespace Mint.Lex
             => Variables.Peek().Any(_ => _.Contains(name));
 
 
-        internal void DefineVariable(Ast<Token> node)
+        internal void DefineVariable(SyntaxNode node)
         {
             if(!node.IsList)
             {
-                DefineVariable(node.Value);
+                DefineVariable(node.Token);
                 return;
             }
 
@@ -418,7 +418,7 @@ namespace Mint.Lex
 
         private void DefineArgument(Token token)
         {
-            var isDefined = Variables.Peek().Peek().Contains(token.Value);
+            var isDefined = Variables.Peek().Peek().Contains(token.Text);
 
             if(isDefined)
             {
@@ -429,11 +429,11 @@ namespace Mint.Lex
         }
 
 
-        internal void DefineArgument(Ast<Token> node)
+        internal void DefineArgument(SyntaxNode node)
         {
             if(!node.IsList)
             {
-                DefineArgument(node.Value);
+                DefineArgument(node.Token);
                 return;
             }
 

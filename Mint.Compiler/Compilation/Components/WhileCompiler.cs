@@ -7,9 +7,9 @@ namespace Mint.Compilation.Components
 {
     internal class WhileCompiler : CompilerComponentBase
     {
-        private Ast<Token> ConditionNode => Node[0];
+        private SyntaxNode ConditionNode => Node[0];
 
-        private Ast<Token> BodyNode => Node[1];
+        private SyntaxNode BodyNode => Node[1];
 
         public WhileCompiler(Compiler compiler) : base(compiler)
         { }
@@ -39,7 +39,7 @@ namespace Mint.Compilation.Components
         {
             condition = CompilerUtils.ToBool(condition);
 
-            if(Node.Value.Type == kUNTIL || Node.Value.Type == kUNTIL_MOD)
+            if(Node.Token.Type == kUNTIL || Node.Token.Type == kUNTIL_MOD)
             {
                 condition = CompilerUtils.Negate(condition);
             }

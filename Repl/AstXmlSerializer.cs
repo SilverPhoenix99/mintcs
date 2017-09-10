@@ -3,28 +3,28 @@ using Mint.Parse;
 
 namespace Mint
 {
-    public class AstXmlSerializer : AstVisitor<Token>
+    public class AstXmlSerializer : AstVisitor
     {
         private XContainer current;
 
-        public AstXmlSerializer(Ast<Token> ast)
+        public AstXmlSerializer(SyntaxNode node)
         {
-            Ast = ast;
+            Node = node;
             current = Document = new XDocument();
         }
 
-        public Ast<Token> Ast { get; }
+        public SyntaxNode Node { get; }
         public XDocument Document { get; }
 
         public XDocument Visit()
         {
-            Ast.Accept(this);
+            Node.Accept(this);
             return Document;
         }
 
-        public void Visit(Ast<Token> node)
+        public void Visit(SyntaxNode node)
         {
-            var token = node.Value;
+            var token = node.Token;
             var prev = current;
 
             if(token == null)
@@ -36,7 +36,7 @@ namespace Mint
                 current = new XElement("token",
                     new XAttribute("type", token.Type),
                     new XAttribute("location", $"{token.Location.StartLine} {token.Location.StartColumn}"),
-                    new XAttribute("text", token.Value)
+                    new XAttribute("text", token.Text)
                 );
 
                 foreach(var property in token.Properties)
@@ -58,9 +58,9 @@ namespace Mint
             current = prev;
         }
 
-        public static XDocument ToXml(Ast<Token> ast)
+        public static XDocument ToXml(SyntaxNode node)
         {
-            var visitor = new AstXmlSerializer(ast);
+            var visitor = new AstXmlSerializer(node);
             return visitor.Visit();
         }
     }
