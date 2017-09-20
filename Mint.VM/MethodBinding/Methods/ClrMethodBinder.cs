@@ -25,11 +25,11 @@ namespace Mint.MethodBinding.Methods
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
         public ClrMethodBinder(Symbol name,
-                               Module definer,
+                               Module owner,
                                MethodMetadata method,
                                Module caller = null,
                                Visibility visibility = Visibility.Public)
-            : base(name, definer, caller, visibility)
+            : base(name, owner, caller, visibility)
         {
             if(method == null) throw new ArgumentNullException(nameof(method));
 

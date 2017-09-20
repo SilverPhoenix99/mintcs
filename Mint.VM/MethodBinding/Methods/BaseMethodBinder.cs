@@ -25,25 +25,25 @@ namespace Mint.MethodBinding.Methods
 
 
         protected BaseMethodBinder(Symbol name,
-                                   Module definer,
+                                   Module owner,
                                    Module caller = null,
                                    Visibility visibility = Visibility.Public)
         {
             Name = name;
-            Definer = definer ?? throw new ArgumentNullException(nameof(definer));
-            Caller = caller ?? definer;
+            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            Caller = caller ?? owner;
             Condition = new Condition();
             Visibility = visibility;
         }
 
 
         protected BaseMethodBinder(Symbol newName, MethodBinder other)
-            : this(newName, other.Definer, other.Caller, other.Visibility)
+            : this(newName, other.Owner, other.Caller, other.Visibility)
         { }
 
 
         public Symbol Name { get; }
-        public Module Definer { get; }
+        public Module Owner { get; }
         public Module Caller { get; }
         public Condition Condition { get; }
         public Visibility Visibility { get; }

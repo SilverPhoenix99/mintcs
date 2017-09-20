@@ -11,7 +11,7 @@ namespace Mint.MethodBinding.Compilation
         public MegamorphicCallCompiler(CallSite callSite)
             : base(callSite)
         {
-            Cache = new CallCompilerCache<CallSite.Stub>();
+            Cache = new CallCompilerCache<CallSite.Function>();
         }
 
 
@@ -31,10 +31,10 @@ namespace Mint.MethodBinding.Compilation
         }
 
 
-        private CallCompilerCache<CallSite.Stub> Cache { get; }
+        private CallCompilerCache<CallSite.Function> Cache { get; }
 
 
-        public override CallSite.Stub Compile()
+        public override CallSite.Function Compile()
             => Call;
 
 
@@ -55,20 +55,20 @@ namespace Mint.MethodBinding.Compilation
         }
 
  
-        private CachedMethod<CallSite.Stub> CreateCachedMethod(long classId, Type instanceType, MethodBinder binder)
+        private CachedMethod<CallSite.Function> CreateCachedMethod(long classId, Type instanceType, MethodBinder binder)
         {
             var stub = CompileMethod(instanceType, binder);
-            return new CachedMethod<CallSite.Stub>(classId, instanceType, binder, stub);
+            return new CachedMethod<CallSite.Function>(classId, instanceType, binder, stub);
         }
 
 
-        private CallSite.Stub CompileMethod(Type instanceType, MethodBinder binder)
+        private CallSite.Function CompileMethod(Type instanceType, MethodBinder binder)
         {
             var instanceVariable = Parameter(typeof(iObject), "instance");
             var bundle = Parameter(typeof(ArgumentBundle), "bundle");
             var frame = new CallFrameBinder(CallSite, instanceType, instanceVariable, bundle);
             var body = binder.Bind(frame);
-            var lambda = Lambda<CallSite.Stub>(body, instanceVariable, bundle);
+            var lambda = Lambda<CallSite.Function>(body, instanceVariable, bundle);
             return lambda.Compile();
         }
    }

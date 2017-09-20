@@ -42,7 +42,7 @@ namespace Mint.MethodBinding.Compilation
         private readonly GotoExpression gotoExpr = Goto(Label("default"), typeof(iObject));
 
 
-        public override CallSite.Stub Compile()
+        public override CallSite.Function Compile()
         {
             Cache.RemoveInvalidCachedMethods();
 
@@ -56,7 +56,7 @@ namespace Mint.MethodBinding.Compilation
                 return UpgradeCompiler();
             }
 
-            var lambda = Lambda<CallSite.Stub>(BuildBodyExpression(), instanceExpr, bundleExpr);
+            var lambda = Lambda<CallSite.Function>(BuildBodyExpression(), instanceExpr, bundleExpr);
             return lambda.Compile();
         }
 
@@ -79,7 +79,7 @@ namespace Mint.MethodBinding.Compilation
         }
 
 
-        private CallSite.Stub UpgradeCompiler()
+        private CallSite.Function UpgradeCompiler()
         {
             var binderCache = Cache.Values.Cast<CachedMethod>();
             CallSite.CallCompiler = new MegamorphicCallCompiler(CallSite, binderCache);

@@ -10,7 +10,7 @@ namespace Mint.MethodBinding
 {
     public sealed class CallSite
     {
-        public delegate iObject Stub(iObject instance, ArgumentBundle bundle);
+        public delegate iObject Function(iObject instance, ArgumentBundle bundle);
 
 
         private Arity arity;
@@ -44,18 +44,23 @@ namespace Mint.MethodBinding
         public Symbol MethodName { get; }
         public IList<ArgumentKind> ArgumentKinds { get; }
         public CallCompiler CallCompiler { get; set; }
-        public Stub BundledCall { get; set; }
+        public Function BundledCall { get; set; }
         public Arity Arity => arity ?? (arity = CalculateArity());
 
 
         private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
+        {
+            Compile();
+            return BundledCall(instance, bundle);
+        }
+
+        private void Compile()
         {
             if(CallCompiler == null)
             {
                 CallCompiler = new PolymorphicCallCompiler(this);
             }
             BundledCall = CallCompiler.Compile();
-            return BundledCall(instance, bundle);
         }
 
 

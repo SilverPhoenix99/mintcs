@@ -13,7 +13,7 @@ namespace Mint.MethodBinding.Compilation
         protected CallSite CallSite { get; }
 
 
-        public abstract CallSite.Stub Compile();
+        public abstract CallSite.Function Compile();
 
 
         protected MethodBinder TryFindMethodBinder(iObject instance)

@@ -11,7 +11,7 @@ namespace Mint.MethodBinding.Compilation
         { }
 
 
-        public override CallSite.Stub Compile()
+        public override CallSite.Function Compile()
             => DefaultCall;
 
 
