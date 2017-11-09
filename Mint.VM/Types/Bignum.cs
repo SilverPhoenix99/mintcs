@@ -42,10 +42,18 @@ namespace Mint
 
         public override bool Equals(object other)
         {
-            if(other is Bignum bignum) return Equals(bignum);
-            if(other is Fixnum fixnum) return Value.Equals((long) fixnum);
-            if(other is Float real) return Value.Equals(new BigInteger(real));
-            return other is iObject instance && Object.ToBool(Class.EqOp.Call(instance, this));
+            switch(other)
+            {
+                case Bignum bignum:
+                    return Equals(bignum);
+                case Fixnum fixnum:
+                    return Value.Equals(fixnum);
+                case Float real:
+                    return Value.Equals(new BigInteger(real));
+                case iObject instance:
+                    return Object.ToBool(Class.EqOp.Call(instance, this));
+            }
+            return false;
         }
 
 

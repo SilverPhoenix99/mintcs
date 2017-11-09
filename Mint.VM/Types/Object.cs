@@ -52,16 +52,14 @@ namespace Mint
             throw new ArgumentError(nameof(value));
         }
 
+        public static bool ToBool(object obj) => obj is iObject instance ? ToBool(instance) : true.Equals(obj);
 
-        public static bool ToBool(iObject obj)
-            => obj != null && !(obj is NilClass) && !(obj is FalseClass);
-
+        public static bool ToBool(iObject obj) => !(obj == null || obj is NilClass || obj is FalseClass);
 
         internal static string MethodMissingInspect(iObject obj)
             => $"{obj.Inspect()}:{obj.Class.Name}";
 
-
-        internal static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
+        public static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
         {
             var methodNameAsSymbol = MethodNameAsSymbol(methodName);
             var argumentKinds = Enumerable.Range(0, arguments.Length).Select(_ => ArgumentKind.Simple);

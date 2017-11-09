@@ -24,11 +24,7 @@ namespace Mint
         public virtual string Inspect()
             => ToString();
 
-
-        public iObject Send(iObject name, params iObject[] args)
-            => Object.Send(this, name, args);
-
-
+        
         public override string ToString()
             => $"#<{Class.Name}:0x{Id:x}>";
 

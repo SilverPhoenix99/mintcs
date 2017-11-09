@@ -92,7 +92,7 @@ namespace Mint.UnitTests
         {
             var positive = new Float(value);
             var negative = new Float(-value);
-            var result = negative.Send(new Symbol("abs"));
+            var result = Object.Send(negative, new Symbol("abs"));
 
             Assert.That(result, Is.EqualTo(positive));
         }

@@ -292,17 +292,15 @@ namespace Mint
         {
             var constant = TryGetConstant(name, nesting);
 
-            if(constant == null)
+            switch(constant)
             {
-                return new Module(name, this);
+                case null:
+                    return new Module(name, this);
+                case Module mod:
+                    return mod;
+                default:
+                    throw new TypeError($"{constant.Inspect()} is not a module");
             }
-
-            if(!(constant is Module))
-            {
-                throw new TypeError(constant.Inspect() + " is not a module");
-            }
-
-            return (Module) constant;
         }
 
 
@@ -310,12 +308,15 @@ namespace Mint
                                                                 Symbol name,
                                                                 IEnumerable<Module> nesting)
         {
-            if(parent is Module mod)
+            switch(parent)
             {
-                return mod.GetOrCreateModule(name, nesting);
+                case Module mod:
+                    return mod.GetOrCreateModule(name, nesting);
+                case iObject vmObj:
+                    throw new TypeError($"{vmObj.Inspect()} is not a class/module");
+                default:
+                    throw new TypeError($"{parent} is not a class/module");
             }
-
-            throw new TypeError($"{parent.Inspect()} is not a class/module");
         }
 
 
@@ -359,48 +360,42 @@ namespace Mint
         public static class Reflection
         {
             public static readonly MethodInfo DefineMethod = Reflector<Module>.Method(
-                _ => _.DefineMethod(default(MethodBinder))
+                _ => _.DefineMethod(default)
             );
 
 
             public static readonly MethodInfo GetConstant = Reflector<Module>.Method(
-                _ => _.GetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
+                _ => _.GetConstant(default, default, default)
             );
 
 
             public static readonly MethodInfo TryGetConstant = Reflector<Module>.Method(
-                _ => _.TryGetConstant(default(Symbol), default(IEnumerable<Module>), default(bool))
+                _ => _.TryGetConstant(default, default, default)
             );
 
 
             public static readonly MethodInfo SetConstant = Reflector<Module>.Method(
-                _ => _.SetConstant(default(Symbol), default(iObject))
+                _ => _.SetConstant(default, default)
             );
 
 
             public static readonly MethodInfo GetOrCreateModule = Reflector<Module>.Method(
-                _ => _.GetOrCreateModule(default(Symbol), default(IEnumerable<Module>))
+                _ => _.GetOrCreateModule(default, default)
             );
 
 
             public static readonly MethodInfo GetOrCreateModuleWithParentCast = Reflector.Method(
-                () => GetOrCreateModuleWithParentCast(default(iObject), default(Symbol), default(IEnumerable<Module>))
+                () => GetOrCreateModuleWithParentCast(default, default, default)
             );
 
 
             public static readonly MethodInfo GetOrCreateClass = Reflector<Module>.Method(
-                _ => _.GetOrCreateClass(default(Symbol), default(Class), default(IEnumerable<Module>))
+                _ => _.GetOrCreateClass(default, default, default)
             );
 
 
             public static readonly MethodInfo GetOrCreateClassWithParentCast = Reflector.Method(
-                () =>
-                    GetOrCreateClassWithParentCast(
-                        default(iObject),
-                        default(Symbol),
-                        default(Class),
-                        default(IEnumerable<Module>)
-                    )
+                () => GetOrCreateClassWithParentCast(default, default, default, default)
             );
         }
 

@@ -58,7 +58,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestSend()
         {
-            Assert.That(new TrueClass().Send(new Symbol("nil?")), Is.EqualTo(new FalseClass()));
+            Assert.That(Object.Send(new TrueClass(), new Symbol("nil?")), Is.EqualTo(new FalseClass()));
         }
 
         [Test]

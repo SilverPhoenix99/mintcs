@@ -58,10 +58,48 @@ namespace Mint
 
         #region DefMethod
 
+        public ModuleBuilder<T> AutoDefineMethods()
+        {
+            var type = typeof(T);
+
+            var methods =
+                from m in type.GetMethods()
+                from a in m.GetCustomAttributes<RubyMethodAttribute>()
+                select new { Method = m, Name = a.MethodName }
+            ;
+
+            var getters =
+                from p in type.GetProperties()
+                where p.CanRead
+                from a in p.GetCustomAttributes<RubyMethodAttribute>()
+                select new { Method = p.GetGetMethod(), Name = a.MethodName }
+            ;
+
+            var setters =
+                from p in type.GetProperties()
+                where p.CanWrite
+                from a in p.GetCustomAttributes<RubyMethodAttribute>()
+                select new { Method = p.GetSetMethod(), Name = $"{a.MethodName}=" }
+            ;
+
+            var methodBinders =
+                from namedMethod in methods.Concat(getters).Concat(setters)
+                group new MethodMetadata(namedMethod.Method) by new Symbol(namedMethod.Name) into metadatas
+                select new ClrMethodBinder(metadatas.Key, Module, metadatas)
+            ;
+
+            foreach(var methodBinder in methodBinders)
+            {
+                Module.Methods.Add(methodBinder.Name, methodBinder);
+            }
+
+            return this;
+        }
+
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)
         {
-            Module.DefineMethod(new ClrMethodBinder(name, Module, new MethodMetadata(method)));
+            Module.DefineMethod(new ClrMethodBinder(name, Module, new[] { new MethodMetadata(method) }));
             return this;
         }
 

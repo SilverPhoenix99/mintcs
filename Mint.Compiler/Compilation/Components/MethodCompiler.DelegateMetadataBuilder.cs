@@ -18,13 +18,9 @@ namespace Mint.Compilation.Components
 
             public DelegateMetadataBuilder(Delegate lambda, string name, Parameter[] parameters)
             {
-                if(lambda == null) throw new ArgumentNullException(nameof(lambda));
-                if(name == null) throw new ArgumentNullException(nameof(name));
-                if(parameters == null) throw new ArgumentNullException(nameof(parameters));
-
-                Lambda = lambda;
-                Name = name;
-                Parameters = parameters;
+                Lambda = lambda ?? throw new ArgumentNullException(nameof(lambda));
+                Name = name ?? throw new ArgumentNullException(nameof(name));
+                Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
             }
 
             public DelegateMetadata Build()

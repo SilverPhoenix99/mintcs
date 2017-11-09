@@ -78,7 +78,6 @@ namespace Mint.UnitTests
             var fixnum = new Fixnum(value);
 
             Assert.That(fixnum.Inspect(), Is.EqualTo(fixnum.ToString()));
-            Assert.That(fixnum.Inspect(16), Is.EqualTo(fixnum.ToString(16)));
         }
 
         [Test]
@@ -109,7 +108,7 @@ namespace Mint.UnitTests
         {
             var positive = new Fixnum(value);
             var negative = new Fixnum(-value);
-            var result = negative.Send(new Symbol("abs"));
+            var result = Object.Send(negative, new Symbol("abs"));
 
             Assert.That(result, Is.EqualTo(positive));
         }
@@ -207,7 +206,7 @@ namespace Mint.UnitTests
         public void TestFloatCast()
         {
             const long longValue = 100;
-            Assert.That((Fixnum) new Float(100), Is.EqualTo(new Fixnum(longValue)));
+            Assert.That((Fixnum) new Float(longValue), Is.EqualTo(new Fixnum(longValue)));
         }
 
         [Test]

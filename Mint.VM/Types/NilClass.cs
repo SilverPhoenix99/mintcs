@@ -26,11 +26,7 @@ namespace Mint
 
         public string Inspect()
             => "nil";
-
-
-        public iObject Send(iObject name, params iObject[] args)
-            => Object.Send(this, name, args);
-
+        
 
         public override bool Equals(object other)
             => IsNil(other);

@@ -15,75 +15,57 @@ namespace Mint
         {
             sym = Sym.New(name);
         }
-
-
+        
         public long Id => sym.Id;
+
         public string Name => sym.Name;
+
         public Class Class => Class.SYMBOL;
+
         public Class SingletonClass => throw new TypeError("can't define singleton");
+
         public Class EffectiveClass => Class.SYMBOL;
+
         public bool HasSingletonClass => false;
+
         public IEnumerable<Symbol> InstanceVariables => System.Array.Empty<Symbol>();
+
         public bool Frozen => true;
 
+        public iObject Freeze() => this;
+        
+        public override string ToString() => sym.Name;
 
-        public iObject Freeze()
-            => this;
-
-
-        public override string ToString()
-            => sym.Name;
-
-
-        public string Inspect()
-            => ":" + sym.Name; // TODO: use String#Inspect if there is whitespace or non-ascii
+        // TODO: use String#Inspect if there is whitespace or non-ascii
+        public string Inspect() => ":" + sym.Name;
 
 
-        public override bool Equals(object obj)
-            => obj is Symbol && Equals((Symbol)obj);
-
-
-        public bool Equals(Symbol obj)
-            => sym.Id == obj.sym.Id;
-
-
-        public bool ReferenceEquals(Symbol other)
-            => Equals(other);
-
-
-        public iObject Send(iObject name, params iObject[] args)
-            => Object.Send(this, name, args);
-
-
-        public override int GetHashCode()
-            => sym.Id.GetHashCode();
-
-
+        public override bool Equals(object obj) => obj is Symbol s && Equals(s);
+        
+        public bool Equals(Symbol obj) => sym.Id == obj.sym.Id;
+        
+        public bool ReferenceEquals(Symbol other) => Equals(other);
+        
+        public override int GetHashCode() => sym.Id.GetHashCode();
+        
         public iObject InstanceVariableGet(Symbol name)
         {
             Object.ValidateInstanceVariableName(name.Name);
             return null;
         }
 
-
-        public iObject InstanceVariableGet(string name)
-            => InstanceVariableGet(new Symbol(name));
-
+        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
 
         public iObject InstanceVariableSet(Symbol name, iObject obj)
         {
             Object.ValidateInstanceVariableName(name.Name);
             throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
-
-
-        public iObject InstanceVariableSet(string name, iObject obj)
-            => InstanceVariableSet(new Symbol(name), obj);
-
-
+        
+        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
+        
         #region Static
-
-
+        
         public static readonly Symbol SELF;
         public static readonly Symbol AREF;
         public static readonly Symbol ASET;
@@ -115,29 +97,19 @@ namespace Mint
         public static readonly Symbol UMINUS;
 
         private static readonly IDictionary<string, WeakReference<Sym>> SYMBOLS;
+        
+        public static bool operator == (Symbol self, object obj) => self.Equals(obj);
 
+        public static bool operator != (Symbol self, object obj) => !self.Equals(obj);
 
-        public static bool operator == (Symbol self, object obj)
-            => self.Equals(obj);
+        public static explicit operator Symbol(string s) => new Symbol(s);
 
-
-        public static bool operator != (Symbol self, object obj)
-            => !self.Equals(obj);
-
-
-        public static explicit operator Symbol(string s)
-            => new Symbol(s);
-
-
-        public static explicit operator string(Symbol s)
-            => s.Name;
-
-
+        public static explicit operator string(Symbol s) => s.Name;
+        
 #if DEBUG
         public static int Count => SYMBOLS.Count;
 #endif
-
-
+        
         static Symbol()
         {
             SYMBOLS = new Dictionary<string, WeakReference<Sym>>();
@@ -171,25 +143,21 @@ namespace Mint
             UPLUS = new Symbol("+@");
             UMINUS = new Symbol("-@");
         }
-
-
+        
         #endregion
-
 
         private class Sym
         {
             private static long nextId = 2;
-
-
+            
             public readonly long Id = Interlocked.Add(ref nextId, 4);
-            public readonly string Name;
 
+            public readonly string Name;
 
             private Sym(string name)
             {
                 Name = name;
             }
-
 
             ~Sym()
             {
@@ -198,8 +166,7 @@ namespace Mint
                     SYMBOLS.Remove(Name);
                 }
             }
-
-
+            
             public static Sym New(string name)
             {
                 lock(typeof(Symbol))
@@ -216,17 +183,14 @@ namespace Mint
             }
         }
 
-
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor = Reflector<Symbol>.Ctor<string>();
         }
-
-
+        
         public static class Expressions
         {
-            public static NewExpression New(Expression name)
-                => Expression.New(Reflection.Ctor, name);
+            public static NewExpression New(Expression name) => Expression.New(Reflection.Ctor, name);
         }
     }
 }

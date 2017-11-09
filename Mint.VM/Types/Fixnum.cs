@@ -3,36 +3,60 @@ using System.Collections.Generic;
 
 namespace Mint
 {
+    [RubyClass]
     public struct Fixnum : iObject
     {
         public const int BYTE_SIZE = sizeof(long);
         public const int BIT_SIZE = 8 * BYTE_SIZE;
         private const string RADIX = "0123456789abcdefghijklmnopqrstuvwxyz";
 
+        public long Value { get; }
+
         public Fixnum(long value)
         {
             Value = value;
         }
-
-
+        
+        [RubyMethod("id")]
         public long Id => (Value << 1) | 1;
+
+        [RubyMethod("class")]
         public Class Class => Class.FIXNUM;
+
+        [RubyMethod("singleton_class")]
         public Class SingletonClass => throw new TypeError("can't define singleton");
+
         public Class EffectiveClass => Class.FIXNUM;
+
         public bool HasSingletonClass => false;
+
+        [RubyMethod("instance_variables")]
         public IEnumerable<Symbol> InstanceVariables => System.Array.Empty<Symbol>();
+
+        [RubyMethod("frozen?")]
         public bool Frozen => true;
-        public long Value { get; }
 
+        [RubyMethod("even?")]
+        public bool IsEven => (Value & 1L) == 0L;
 
-        public iObject Freeze()
-            => this;
+        [RubyMethod("odd?")]
+        public bool IsOdd => (Value & 1L) == 1L;
 
+        [RubyMethod("zero?")]
+        public bool IsZero => Value == 0L;
 
-        public override string ToString()
-            => ToString(10);
+        [RubyMethod("size")]
+        public Fixnum Size => BYTE_SIZE;
 
+        [RubyMethod("freeze")]
+        public iObject Freeze() => this;
 
+        [RubyMethod("to_s")]
+        [RubyMethod("inspect")]
+        public override string ToString() => ToString(10);
+
+        [RubyMethod("to_s")]
+        [RubyMethod("inspect")]
         public string ToString(int radix)
         {
             if(radix < 2 || radix > 36)
@@ -71,44 +95,38 @@ namespace Mint
             return new string(chars.ToArray());
         }
 
-
-        public override int GetHashCode()
-            => Value.GetHashCode();
-
-
-        public string Inspect()
-            => ToString();
-
-
-        public string Inspect(int radix)
-            => ToString(radix);
-
-
-        public iObject Send(iObject name, params iObject[] args)
-            => Object.Send(this, name, args);
-
-
+        [RubyMethod("hash")]
+        public override int GetHashCode() => Value.GetHashCode();
+        
+        public string Inspect() => ToString();
+        
+        [RubyMethod("==")]
+        [RubyMethod("===")]
+        [RubyMethod("equal?")]
         public override bool Equals(object other)
         {
-            if(other is Fixnum) return Equals((Fixnum) other);
-            if(other is Bignum || other is Float) return other.Equals(this);
-            var instance = other as iObject;
-            return instance != null && Object.ToBool(Class.EqOp.Call(instance, this));
+            switch(other)
+            {
+                case Fixnum _:
+                    return Equals((Fixnum) other);
+                case Bignum _:
+                case Float _:
+                    return other.Equals(this);
+                case iObject vmObj:
+                    return Object.ToBool(Class.EqOp.Call(vmObj, this));
+                default:
+                    return false;
+            }
         }
 
+        [RubyMethod("==")]
+        [RubyMethod("===")]
+        [RubyMethod("equal?")]
+        public bool Equals(Fixnum other) => other.Value == Value;
 
-        public bool Equals(Fixnum other)
-            => other.Value == Value;
-
-
-        public bool ReferenceEquals(Fixnum other)
-            => Equals(other);
-
-
-        public Fixnum BitLength()
-            => BIT_SIZE - LeadingZeros();
-
-
+        [RubyMethod("bit_length")]
+        public Fixnum BitLength() => BIT_SIZE - LeadingZeros();
+        
         private Fixnum LeadingZeros()
         {
             var x = Value;
@@ -128,125 +146,93 @@ namespace Mint
             return n - x;
         }
 
-
+        [RubyMethod("instance_variable_get")]
         public iObject InstanceVariableGet(Symbol name)
         {
             Object.ValidateInstanceVariableName(name.Name);
             return null;
         }
 
+        [RubyMethod("instance_variable_get")]
+        public iObject InstanceVariableGet(string name) => InstanceVariableGet(new Symbol(name));
 
-        public iObject InstanceVariableGet(string name)
-            => InstanceVariableGet(new Symbol(name));
-
-
+        [RubyMethod("instance_variable_set")]
         public iObject InstanceVariableSet(Symbol name, iObject obj)
         {
             Object.ValidateInstanceVariableName(name.Name);
             throw new RuntimeError($"can't modify frozen {EffectiveClass.Name}");
         }
 
+        [RubyMethod("instance_variable_set")]
+        public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
 
-        public iObject InstanceVariableSet(string name, iObject obj)
-            => InstanceVariableSet(new Symbol(name), obj);
+        [RubyMethod("abs")]
+        [RubyMethod("magnitude")]
+        public Fixnum Abs() => Math.Abs(Value);
 
+        [RubyMethod("-@")]
+        public static Fixnum operator -(Fixnum v) => new Fixnum(-v.Value);
 
-        public static Fixnum operator -(Fixnum v)
-            => new Fixnum(-v.Value);
+        [RubyMethod("+@")]
+        public static Fixnum operator +(Fixnum v) => v;
 
-        public static implicit operator Fixnum(long v)
-            => new Fixnum(v);
+        [RubyMethod("+")]
+        public static Fixnum operator +(Fixnum l, Fixnum r) => new Fixnum(l.Value + r.Value);
 
-        public static implicit operator long  (Fixnum s)
-            => s.Value;
+        [RubyMethod("+")]
+        public static Float operator +(Fixnum l, Float r) => new Float(l.Value + r.Value);
 
-        public static implicit operator Fixnum(int v)
-            => new Fixnum(v);
+        [RubyMethod("-")]
+        public static Fixnum operator -(Fixnum l, Fixnum r) => new Fixnum(l.Value - r.Value);
 
-        public static explicit operator int(Fixnum s)
-            => (int) s.Value;
+        [RubyMethod("-")]
+        public static Float operator -(Fixnum l, Float r) => new Float(l.Value - r.Value);
 
-        public static implicit operator Fixnum(uint v)
-            => new Fixnum(v);
+        [RubyMethod("*")]
+        public static Fixnum operator *(Fixnum l, Fixnum r) => new Fixnum(l.Value * r.Value);
 
+        [RubyMethod("*")]
+        public static Float operator *(Fixnum l, Float r) => new Float(l.Value * r.Value);
 
-        public static explicit operator uint(Fixnum s) 
-            => (uint) s.Value;
+        [RubyMethod("/")]
+        public static Fixnum operator /(Fixnum l, Fixnum r) => new Fixnum(l.Value / r.Value);
 
+        [RubyMethod("/")]
+        public static Float operator /(Fixnum l, Float r) => new Float(l.Value / r.Value);
+        
+        public static implicit operator Fixnum(long v) => new Fixnum(v);
 
-        public static implicit operator Fixnum(short v)
-            => new Fixnum(v);
+        public static implicit operator long (Fixnum s) => s.Value;
 
+        public static implicit operator Fixnum(int v) => new Fixnum(v);
 
-        public static explicit operator short(Fixnum s)
-            => (short) s.Value;
+        public static explicit operator int(Fixnum s) => (int) s.Value;
 
+        public static implicit operator Fixnum(uint v) => new Fixnum(v);
+        
+        public static explicit operator uint(Fixnum s) => (uint) s.Value;
+        
+        public static implicit operator Fixnum(short v) => new Fixnum(v);
+        
+        public static explicit operator short(Fixnum s) => (short) s.Value;
 
-        public static implicit operator Fixnum(ushort v)
-            => new Fixnum(v);
+        public static implicit operator Fixnum(ushort v) => new Fixnum(v);
 
+        public static explicit operator ushort(Fixnum s) => (ushort) s.Value;
 
-        public static explicit operator ushort(Fixnum s)
-            => (ushort) s.Value;
+        public static implicit operator Fixnum(sbyte v) => new Fixnum(v);
 
+        public static explicit operator sbyte(Fixnum s) => (sbyte) s.Value;
 
-        public static implicit operator Fixnum(sbyte v)
-            => new Fixnum(v);
+        public static implicit operator Fixnum(byte v) => new Fixnum(v);
 
+        public static explicit operator byte(Fixnum s) => (byte) s.Value;
 
-        public static explicit operator sbyte(Fixnum s)
-            => (sbyte) s.Value;
+        public static explicit operator Fixnum(double v) => new Fixnum((long) v);
 
+        public static explicit operator double(Fixnum v) => v.Value;
 
-        public static implicit operator Fixnum(byte v)
-            => new Fixnum(v);
-
-
-        public static explicit operator byte(Fixnum s)
-            => (byte) s.Value;
-
-
-        public static explicit operator Fixnum(double v)
-            => new Fixnum((long) v);
-
-
-        public static explicit operator double(Fixnum v)
-            => v.Value;
-
-
-        public static explicit operator Fixnum(Float v)
-            => new Fixnum((long) v.Value);
-
-
-        public static Fixnum operator +(Fixnum l, Fixnum r)
-            => new Fixnum(l.Value + r.Value);
-
-
-        public static Float operator +(Fixnum l, Float r)
-            => new Float(l.Value + r.Value);
-
-
-        public static Fixnum operator -(Fixnum l, Fixnum r)
-            => new Fixnum(l.Value - r.Value);
-
-
-        public static Float operator -(Fixnum l, Float r)
-            => new Float(l.Value - r.Value);
-
-
-        public static Fixnum operator *(Fixnum l, Fixnum r)
-            => new Fixnum(l.Value * r.Value);
-
-
-        public static Float operator *(Fixnum l, Float r)
-            => new Float(l.Value * r.Value);
-
-
-        public static Fixnum operator /(Fixnum l, Fixnum r)
-            => new Fixnum(l.Value / r.Value);
-
-
-        public static Float operator /(Fixnum l, Float r)
-            => new Float(l.Value / r.Value);
+        [RubyMethod("to_f")]
+        public static explicit operator Float(Fixnum v) => new Float(v.Value);
     }
 }

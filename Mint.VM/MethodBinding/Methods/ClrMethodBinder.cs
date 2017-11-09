@@ -24,43 +24,39 @@ namespace Mint.MethodBinding.Methods
      */
     public sealed partial class ClrMethodBinder : BaseMethodBinder
     {
+        private IList<MethodMetadata> Methods { get; }
+
         public ClrMethodBinder(Symbol name,
                                Module owner,
-                               MethodMetadata method,
+                               IEnumerable<MethodMetadata> methods,
                                Module caller = null,
                                Visibility visibility = Visibility.Public)
             : base(name, owner, caller, visibility)
         {
-            if(method == null) throw new ArgumentNullException(nameof(method));
+            if(methods == null) throw new ArgumentNullException(nameof(methods));
 
-            if(method.Method.IsDynamicallyGenerated())
+            Methods = new List<MethodMetadata>(methods);
+
+            if(Methods.Any(method => method.Method.IsDynamicallyGenerated()))
             {
                 throw new ArgumentException("Method cannot be dynamically generated. Use DelegateMethodBinder instead.");
             }
-
-            Method = method;
         }
-
-
+        
         private ClrMethodBinder(Symbol newName, ClrMethodBinder other)
             : base(newName, other)
         {
-            Method = other.Method;
+            Methods = new List<MethodMetadata>(other.Methods);
         }
-
-
-        private MethodMetadata Method { get; }
-
-
-        public override MethodBinder Duplicate(Symbol newName)
-            => new ClrMethodBinder(newName, this);
-
+        
+        public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
         public override Expression Bind(CallFrameBinder frame)
         {
             var argumentsArray = Variable(typeof(iObject[]), "arguments");
-            var methods = GetOverloads(frame);
-            var cases = methods.Select(method => CreateCallEmitter(method, frame, argumentsArray).Bind());
+
+            var cases = from method in Methods
+                        select CreateCallEmitter(method, frame, argumentsArray).Bind();
 
             var defaultCase = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
 
@@ -70,24 +66,7 @@ namespace Mint.MethodBinding.Methods
                 Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
         }
-
-
-        private IEnumerable<MethodMetadata> GetOverloads(CallFrameBinder frame)
-        {
-            var methods = frame.InstanceType.GetMethodOverloads(Method.Name);
-            var extensionMethods = frame.InstanceType.GetExtensionOverloads(Method.Name);
-
-            var methodList = methods.Concat(extensionMethods).Select(m => new MethodMetadata(m)).ToList();
-
-            if(!methodList.Exists(_ => _.Method == Method.Method))
-            {
-                methodList.Add(Method);
-            }
-
-            return methodList;
-        }
-
-
+        
         private static CallEmitter CreateCallEmitter(MethodMetadata method,
                                                      CallFrameBinder frame,
                                                      ParameterExpression argumentsArray)

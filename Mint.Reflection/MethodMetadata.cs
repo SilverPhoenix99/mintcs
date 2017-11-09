@@ -18,9 +18,7 @@ namespace Mint.Reflection
             : base(method.GetCustomAttributes(), customAttributes)
         {
             Method = method ?? throw new ArgumentNullException(nameof(method));
-
-            Name = name ?? Method.Name;
-            if(Name == null) throw new ArgumentNullException(nameof(name));
+            Name = name ?? Method.Name ?? throw new ArgumentNullException(nameof(name));
 
             IsStatic = isStatic ?? Method.IsStatic;
             HasInstance = hasInstance ?? IsStatic;

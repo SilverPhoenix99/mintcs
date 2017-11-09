@@ -17,17 +17,9 @@ namespace Mint
 
         bool HasSingletonClass { get; }
 
-        IEnumerable<Symbol> InstanceVariables { get; }
-
-        bool Frozen { get; }
-
-        iObject Freeze();
-
-        string Inspect();
-
         //iObject MethodMissing(params iObject[] args);
 
-        iObject Send(iObject name, params iObject[] args);
+        IEnumerable<Symbol> InstanceVariables { get; }
 
         iObject InstanceVariableGet(Symbol name);
         iObject InstanceVariableGet(string name);
@@ -35,6 +27,14 @@ namespace Mint
         iObject InstanceVariableSet(Symbol name, iObject obj);
         iObject InstanceVariableSet(string name, iObject obj);
 
-        // Reflection and Expressions members are defined in Object class.
+        bool Frozen { get; }
+
+        iObject Freeze();
+
+        string Inspect();
+
+        /*
+         * Reflection and Expressions members are defined in Object class.
+         */
     }
 }

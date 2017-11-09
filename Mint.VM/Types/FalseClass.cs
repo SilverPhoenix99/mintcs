@@ -24,11 +24,7 @@ namespace Mint
 
         public string Inspect()
             => ToString();
-
-
-        public iObject Send(iObject name, params iObject[] args)
-            => Object.Send(this, name, args);
-
+        
 
         public override bool Equals(object other)
             => other is FalseClass || other as bool? == false;

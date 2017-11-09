@@ -42,7 +42,7 @@ namespace Mint
 
             BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .Allocator( () => new Object(BASIC_OBJECT) )
-                .DefMethod("equal?", () => ReferenceEquals(default(object), default(object)) )
+                .DefMethod("equal?", () => ReferenceEquals(default, default) )
                 .AttrReader("__id__", () => default(iObject).Id )
                 .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
                 .Alias("==", "equal?")
@@ -62,14 +62,14 @@ namespace Mint
             MODULE = ModuleBuilder<Module>.DescribeClass()
                 .GenerateAllocator()
                 .AttrReader("ancestors", _ => _.Ancestors )
-                .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default(bool)) )
-                .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default(bool)) )
-                .DefMethod("const_set", _ => _.SetConstant(default(Symbol), default(iObject)) )
+                .DefMethod("const_defined?", _ => _.IsConstantDefined(default(Symbol), default) )
+                .DefMethod("const_get", _ => _.GetConstant(default(Symbol), default) )
+                .DefMethod("const_set", _ => _.SetConstant(default, default) )
                 .AttrReader("constants", _ => _.Constants )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .AttrReader("name", _ => _.Name )
                 .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("==", () => ReferenceEquals(default(object), default(object)) )
+                .DefMethod("==", () => ReferenceEquals(default, default) )
                 .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => Object.IsA(arg, mod)) )
             ;
 
@@ -98,11 +98,11 @@ namespace Mint
                 .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
                 .AttrReader("object_id", _ => _.Id )
                 .DefLambda("===", (Func<iObject, iObject, bool>) ((l, r) => Object.ToBool(EqOp.Call(l, r))) )
-                .DefMethod("is_a?", () => Object.IsA(default(iObject), default(iObject)) )
+                .DefMethod("is_a?", () => Object.IsA(default, default) )
                 .Alias("kind_of?", "is_a?")
                 .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)) )
                 .DefMethod("instance_variable_set", () =>
-                    default(iObject).InstanceVariableSet(default(Symbol), default(iObject))
+                    default(iObject).InstanceVariableSet(default(Symbol), default)
                 )
                 .AttrReader("instance_variables", () => default(iObject).InstanceVariables )
             ;
@@ -136,24 +136,9 @@ namespace Mint
             INTEGER = new Class(NUMERIC, new Symbol("Integer"));
 
             FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-                .DefLambda("abs", (Func<Fixnum, Fixnum>) (_ => Math.Abs(_.Value)) )
-                .DefLambda("even?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 0L) )
-                .DefLambda("odd?", (Func<Fixnum, bool>) (_ => (_.Value & 1L) == 1L) )
-                .Alias("magnitude", "abs")
-                .DefLambda("to_f", (Func<Fixnum, Float>) (_ => (Float) _) )
-                .DefLambda("zero?", (Func<Fixnum, bool>) (_ => _.Value == 0L) )
-                .DefLambda("size", (Func<Fixnum, Fixnum>) (_ => Fixnum.BYTE_SIZE) )
-                .DefMethod("bit_length", _ => _.BitLength() )
-                .DefMethod("+", () => default(Fixnum) + default(Fixnum) )
-                .DefMethod("-", () => default(Fixnum) - default(Fixnum) )
-                .DefMethod("*", () => default(Fixnum) * default(Fixnum) )
-                .DefMethod("/", () => default(Fixnum) / default(Fixnum) )
-                .DefMethod("==", _ => _.Equals(default(object)) )
-                .Alias("===", "==")
+                .AutoDefineMethods()
             ;
-
+            
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
                 .DefMethod("==", _ => _.Equals(default(object)) )
             ;
@@ -162,9 +147,9 @@ namespace Mint
                 // TODO: eval
                 .DefMethod("clone", _ => _.Duplicate() )
                 .Alias("dup", "clone")
-                .DefMethod("local_variable_defined?", _ => _.IsLocalDefined(default(Symbol)) )
-                .DefMethod("local_variable_get", _ => _.GetLocalValue(default(Symbol)) )
-                .DefMethod("local_variable_set", _ => _.SetLocalValue(default(Symbol), default(iObject)) )
+                .DefMethod("local_variable_defined?", _ => _.IsLocalDefined(default) )
+                .DefMethod("local_variable_get", _ => _.GetLocalValue(default) )
+                .DefMethod("local_variable_set", _ => _.SetLocalValue(default, default) )
                 .AttrReader("local_variables", _ => _.LocalVariables )
                 .AttrReader("receiver", _ => _.Receiver )
             ;
@@ -193,10 +178,10 @@ namespace Mint
                 .GenerateAllocator()
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
-                .AttrAccessor("[]", _ => _[default(int)] )
+                .AttrAccessor("[]", _ => _[default] )
                 .DefMethod("clear", _ => _.Clear() )
-                .DefMethod("join", _ => _.Join(default(String)) )
-                .DefMethod("replace", _ => _.Replace(default(Array)) )
+                .DefMethod("join", _ => _.Join(default) )
+                .DefMethod("replace", _ => _.Replace(default) )
                 .DefMethod("compact", _ => _.Compact() )
                 .DefMethod("compact!", _ => _.CompactSelf() )
                 .DefMethod("reverse", _ => _.Reverse() )
@@ -205,8 +190,8 @@ namespace Mint
                 .DefMethod("last", _ => _.Last() )
                 .DefMethod("uniq", _ => _.Uniq() )
                 .DefMethod("uniq!", _ => _.UniqSelf() )
-                .DefMethod("<<", _ => _.Add(default(iObject)) )
-                .DefMethod("&", _ => _.AndAlso(default(Array)) )
+                .DefMethod("<<", _ => _.Add(default) )
+                .DefMethod("&", _ => _.AndAlso(default) )
                 .DefMethod("==", _ => _.Equals(default(iObject)) )
             ;
 
@@ -215,9 +200,9 @@ namespace Mint
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("inspect", _ => _.Inspect() )
                 .AttrReader("count", _ => _.Count )
-                .AttrAccessor("[]", _ => _[default(iObject)] )
-                .DefMethod("merge", _ => _.Merge(default(Hash)) )
-                .DefMethod("merge!", _ => _.MergeSelf(default(Hash)) )
+                .AttrAccessor("[]", _ => _[default] )
+                .DefMethod("merge", _ => _.Merge(default) )
+                .DefMethod("merge!", _ => _.MergeSelf(default) )
             ;
 
             PROC = ModuleBuilder<Proc>.DescribeClass()
@@ -237,7 +222,7 @@ namespace Mint
                 .GenerateAllocator()
                 .DefLambda("to_s", (Func<String, String>) (_ => _) ) // Optimization: return itself
                 .DefMethod("inspect", _ => _.Inspect() )
-                .DefMethod("ljust", _ => _.LeftJustify(default(int), default(string)) )
+                .DefMethod("ljust", _ => _.LeftJustify(default, default) )
             ;
 
             SYMBOL = ModuleBuilder<Symbol>.DescribeClass()
