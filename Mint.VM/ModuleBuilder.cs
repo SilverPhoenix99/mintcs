@@ -58,10 +58,8 @@ namespace Mint
 
         #region DefMethod
 
-        public ModuleBuilder<T> AutoDefineMethods()
+        public ModuleBuilder<T> AutoDefineMethods(Type type)
         {
-            var type = typeof(T);
-
             var methods =
                 from m in type.GetMethods()
                 from a in m.GetCustomAttributes<RubyMethodAttribute>()
@@ -109,6 +107,12 @@ namespace Mint
 
             return this;
         }
+
+
+        public ModuleBuilder<T> AutoDefineMethods<TMod>() => AutoDefineMethods(typeof(TMod));
+
+
+        public ModuleBuilder<T> AutoDefineMethods() => AutoDefineMethods(typeof(T));
 
 
         public ModuleBuilder<T> DefMethod(Symbol name, MethodInfo method)

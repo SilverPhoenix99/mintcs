@@ -11,6 +11,7 @@ namespace Mint
         public RubyClassAttribute(string className = null)
         {
             ClassName = className;
+            Superclass = typeof(Object);
         }
     }
 }

@@ -20,7 +20,6 @@ namespace Mint
         public bool HasSingletonClass => false;
 
         [RubyMethod("frozen?")]
-        [RubyMethod("nil?")]
         public bool Frozen => true;
 
         [RubyMethod("instance_variables")]
@@ -67,6 +66,11 @@ namespace Mint
         public static bool operator ==(FalseClass self, object other) => self.Equals(other);
 
         public static bool operator !=(FalseClass self, object other) => !self.Equals(other);
+
+        internal static ModuleBuilder<FalseClass> Build() =>
+            ModuleBuilder<FalseClass>.DescribeClass()
+                .AutoDefineMethods()
+        ;
 
         public static class Expressions
         {

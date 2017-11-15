@@ -39,17 +39,11 @@ namespace Mint
         static Class()
         {
             EqOp = new CallSite(Symbol.EQ, Visibility.Private, ArgumentKind.Simple);
-
-            BASIC_OBJECT = ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
-                .Allocator( () => new Object(BASIC_OBJECT) )
-                .DefMethod("equal?", () => ReferenceEquals(default, default) )
-                .AttrReader("__id__", () => default(iObject).Id )
-                .DefLambda("!", (Func<iObject, bool>) (_ => !Object.ToBool(_)) )
-                .Alias("==", "equal?")
-                .DefLambda("!=", (Func<iObject, iObject, bool>) ((l, r) => !Object.ToBool(EqOp.Call(l, r))) )
-            ;
+            
+            BASIC_OBJECT = BasicObject.Build();
 
             Debug.Assert(BASIC_OBJECT.BaseName != null, $"{nameof(BASIC_OBJECT)}.{nameof(BaseName)} != null");
+
             BASIC_OBJECT.SetConstant(BASIC_OBJECT.BaseName.Value, BASIC_OBJECT);
 
             OBJECT = ModuleBuilder<Object>.DescribeClass(BASIC_OBJECT)
@@ -113,9 +107,7 @@ namespace Mint
                 .Allocator(() => new Object(NUMERIC))
             ;
 
-            FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
-                .AutoDefineMethods()
-            ;
+            FLOAT = Float.Build();
 
             COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC)
                 //TODO .DefMethod("==", _ => _.Equals(default(object)) )
@@ -127,9 +119,7 @@ namespace Mint
 
             INTEGER = new Class(NUMERIC, new Symbol("Integer"));
 
-            FIXNUM = ModuleBuilder<Fixnum>.DescribeClass(INTEGER)
-                .AutoDefineMethods()
-            ;
+            FIXNUM = Fixnum.Build();
             
             BIGNUM = ModuleBuilder<Bignum>.DescribeClass(INTEGER)
                 .DefMethod("==", _ => _.Equals(default(object)) )
@@ -146,19 +136,9 @@ namespace Mint
                 .AttrReader("receiver", _ => _.Receiver )
             ;
 
-            NIL = ModuleBuilder<NilClass>.DescribeClass()
-                .AutoDefineMethods()
-            ;
-
-            FALSE = ModuleBuilder<FalseClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-            ;
-
-            TRUE = ModuleBuilder<TrueClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-            ;
+            NIL = NilClass.Build();
+            FALSE = FalseClass.Build();
+            TRUE = TrueClass.Build();
 
             ARRAY = ModuleBuilder<Array>.DescribeClass()
                 .GenerateAllocator()

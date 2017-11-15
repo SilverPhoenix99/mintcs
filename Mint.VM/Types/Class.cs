@@ -71,6 +71,7 @@ namespace Mint
         }
 
 
+        [RubyMethod("allocate")]
         public iObject Allocate()
         {
             if(Allocator == null)

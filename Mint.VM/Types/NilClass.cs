@@ -84,7 +84,12 @@ namespace Mint
 
         [RubyMethod("nil?")]
         public static bool IsNil(object other) => other == null || other is NilClass;
-        
+
+        internal static ModuleBuilder<NilClass> Build() =>
+            ModuleBuilder<NilClass>.DescribeClass()
+                .AutoDefineMethods()
+        ;
+
         public static class Reflection
         {
             public static readonly MethodInfo IsNil = Reflector.Method(() => IsNil(default));

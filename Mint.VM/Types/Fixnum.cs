@@ -235,5 +235,10 @@ namespace Mint
 
         [RubyMethod("to_f")]
         public static explicit operator Float(Fixnum v) => new Float(v.Value);
+
+        internal static ModuleBuilder<Fixnum> Build() =>
+            ModuleBuilder<Fixnum>.DescribeClass(Class.INTEGER)
+                .AutoDefineMethods()
+        ;
     }
 }

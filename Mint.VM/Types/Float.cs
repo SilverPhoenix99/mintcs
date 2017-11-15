@@ -141,5 +141,10 @@ namespace Mint
 
         [RubyMethod("to_i")]
         public static explicit operator Fixnum(Float v) => new Fixnum((long) v.Value);
+
+        internal static ModuleBuilder<Float> Build() =>
+            ModuleBuilder<Float>.DescribeClass(Class.NUMERIC)
+                .AutoDefineMethods()
+        ;
     }
 }
