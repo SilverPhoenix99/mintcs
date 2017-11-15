@@ -1,6 +1,6 @@
 %%{
 
-# Character classes are in lowercase. e.g.: eof
+# Character classes are in lowercase. e.g.: nl
 # Machines/scanners are in uppercase. e.g.: EXPR_BEG
 # Actions are in CamelCase. e.g.: DoEof
 
@@ -40,6 +40,7 @@ action CallBaseState
 unicode = ^ascii;
 nl = '\n' @LineJump;
 
+eos = 0;
 ws = space - nl;
 ws_nl = ws | nl;
 esc_ws = ws | '\\' nl;

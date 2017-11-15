@@ -18,5 +18,5 @@ namespace Mint.MethodBinding.Arguments
                 }
             }
         }
-	}
+    }
 }

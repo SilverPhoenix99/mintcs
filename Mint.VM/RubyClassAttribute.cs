@@ -6,6 +6,7 @@ namespace Mint
     public class RubyClassAttribute : Attribute
     {
         public string ClassName { get; }
+        public Type Superclass { get; set; }
 
         public RubyClassAttribute(string className = null)
         {

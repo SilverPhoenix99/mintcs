@@ -995,16 +995,16 @@ string :
 
 string1 :
     tSTRING_BEG string_contents tSTRING_END {
-		$$ = $1.Append($2.List);
-		$$.Token.MergeProperties($3.Token);
-	}
+        $$ = $1.Append($2.List);
+        $$.Token.MergeProperties($3.Token);
+    }
 ;
 
 xstring :
     tXSTRING_BEG xstring_contents tSTRING_END {
-		$$ = $1.Append($2.List);
-		$$.Token.MergeProperties($3.Token);
-	}
+        $$ = $1.Append($2.List);
+        $$.Token.MergeProperties($3.Token);
+    }
 ;
 
 regexp :

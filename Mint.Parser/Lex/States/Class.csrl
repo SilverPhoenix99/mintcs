@@ -68,7 +68,7 @@ main := |*
         fbreak;
     };
 
-    '%' [QqWwIixrs]? %eof(UnterminatedQuotedString);
+    '%' [QqWwIixrs]? eos => UnterminatedQuotedString;
 
     '%s' percent_string_delimiter => {
         Lexer.EmitStringBeginToken(ts, te, endState: Lexer.FnameFitemState);

@@ -65,27 +65,41 @@ namespace Mint
             var methods =
                 from m in type.GetMethods()
                 from a in m.GetCustomAttributes<RubyMethodAttribute>()
-                select new { Method = m, Name = a.MethodName }
+                select new { Method = m, Attribute = a }
             ;
 
             var getters =
                 from p in type.GetProperties()
                 where p.CanRead
                 from a in p.GetCustomAttributes<RubyMethodAttribute>()
-                select new { Method = p.GetGetMethod(), Name = a.MethodName }
+                select new { Method = p.GetGetMethod(), Attribute = a }
             ;
 
             var setters =
                 from p in type.GetProperties()
                 where p.CanWrite
                 from a in p.GetCustomAttributes<RubyMethodAttribute>()
-                select new { Method = p.GetSetMethod(), Name = $"{a.MethodName}=" }
+                select new
+                {
+                    Method = p.GetSetMethod(),
+                    Attribute = new RubyMethodAttribute($"{a.MethodName}=")
+                    {
+                        Visibility = a.Visibility
+                    }
+                }
             ;
 
             var methodBinders =
                 from namedMethod in methods.Concat(getters).Concat(setters)
-                group new MethodMetadata(namedMethod.Method) by new Symbol(namedMethod.Name) into metadatas
-                select new ClrMethodBinder(metadatas.Key, Module, metadatas)
+                group new MethodMetadata(namedMethod.Method)
+                by namedMethod.Attribute into metadatas
+                select new ClrMethodBinder(
+                    new Symbol(metadatas.Key.MethodName),
+                    Module,
+                    metadatas,
+                    null,
+                    metadatas.Key.Visibility
+                )
             ;
 
             foreach(var methodBinder in methodBinders)

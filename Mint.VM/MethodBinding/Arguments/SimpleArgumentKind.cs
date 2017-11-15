@@ -14,5 +14,5 @@ namespace Mint.MethodBinding.Arguments
                 bundle.Splat.Add(argument);
             }
         }
-	}
+    }
 }

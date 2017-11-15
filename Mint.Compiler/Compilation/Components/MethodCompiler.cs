@@ -20,7 +20,7 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Compile()
-	    {
+        {
             var name = Constant(new Symbol(Name));
             var moduleVar = Variable(typeof(Module), "module");
             var module = CompileModule();
@@ -39,7 +39,7 @@ namespace Mint.Compilation.Components
                     DelegateMethodBinder.Expressions.New(name, moduleVar, moduleVar, Constant(delegateMetadata))
                 ).Cast<iObject>()
             );
-	    }
+        }
 
         private Expression CompileModule()
         {

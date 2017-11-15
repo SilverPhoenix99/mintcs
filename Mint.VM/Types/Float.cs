@@ -1,23 +1,27 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 namespace Mint
 {
+    [RubyClass]
     public class Float : FrozenObject
     {
+        public double Value { get; }
+
         public Float(double value)
         {
             Value = value;
         }
 
+        [RubyMethod("class")]
+        public override Class Class => Class.FLOAT;
 
-        public override Class  Class => Class.FLOAT;
-        public double Value { get; }
+        [RubyMethod("to_s")]
+        [RubyMethod("inspect")]
+        public override string ToString() => Value.ToString("0.0###############", CultureInfo.InvariantCulture);
 
-
-        public override string ToString()
-            => Value.ToString("0.0###############", CultureInfo.InvariantCulture);
-
-
+        [RubyMethod("==")]
+        [RubyMethod("===")]
         public override bool Equals(object other)
         {
             switch(other)
@@ -34,56 +38,55 @@ namespace Mint
             return false;
         }
 
+        [RubyMethod("==")]
+        [RubyMethod("===")]
+        public bool Equals(Float other) => Value.Equals(other?.Value);
 
-        public bool Equals(Float other)
-            => Value.Equals(other?.Value);
+        [RubyMethod("hash")]
+        public override int GetHashCode() => Value.GetHashCode();
 
+        [RubyMethod("abs")]
+        public Float Abs() => Math.Abs(Value);
 
-        public override int GetHashCode()
-            => Value.GetHashCode();
-
-
+        [RubyMethod("-@")]
         public static Float operator -(Float v) => new Float(-v.Value);
 
+        [RubyMethod("+@")]
         public static Float operator +(Float v) => v;
 
+        [RubyMethod("+")]
+        public static Float operator +(Float l, Float r) => new Float(l.Value + r.Value);
+
+        [RubyMethod("+")]
+        public static Float operator +(Float l, Fixnum r) => new Float(l.Value + r.Value);
+
+        [RubyMethod("-")]
+        public static Float operator -(Float l, Float r) => new Float(l.Value - r.Value);
+
+        [RubyMethod("-")]
+        public static Float operator -(Float l, Fixnum r) => new Float(l.Value - r.Value);
+        
+        [RubyMethod("*")]
+        public static Float operator *(Float l, Float r) => new Float(l.Value * r.Value);
+        
+        [RubyMethod("*")]
+        public static Float operator *(Float l, Fixnum r) => new Float(l.Value * r.Value);
+        
+        [RubyMethod("/")]
+        public static Float operator /(Float l, Float r) => new Float(l.Value / r.Value);
+        
+        [RubyMethod("/")]
+        public static Float operator /(Float l, Fixnum r) => new Float(l.Value / r.Value);
 
         public static implicit operator Float(double v) => new Float(v);
-
-
+        
         public static implicit operator double(Float v) => v.Value;
-
-
+        
         public static explicit operator Float(float v) => new Float(v);
-
-
+        
         public static explicit operator float (Float v) => (float) v.Value;
 
         [RubyMethod("to_i")]
         public static explicit operator Fixnum(Float v) => new Fixnum((long) v.Value);
-
-
-        public static Float operator +(Float l, Float r) => new Float(l.Value + r.Value);
-
-
-        public static Float operator +(Float l, Fixnum r) => new Float(l.Value + r.Value);
-
-
-        public static Float operator -(Float l, Float r) => new Float(l.Value - r.Value);
-
-
-        public static Float operator -(Float l, Fixnum r) => new Float(l.Value - r.Value);
-
-
-        public static Float operator *(Float l, Float r) => new Float(l.Value * r.Value);
-
-
-        public static Float operator *(Float l, Fixnum r) => new Float(l.Value * r.Value);
-
-
-        public static Float operator /(Float l, Float r) => new Float(l.Value / r.Value);
-
-
-        public static Float operator /(Float l, Fixnum r) => new Float(l.Value / r.Value);
     }
 }

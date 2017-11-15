@@ -114,15 +114,7 @@ namespace Mint
             ;
 
             FLOAT = ModuleBuilder<Float>.DescribeClass(NUMERIC)
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-                .DefLambda("abs", (Func<Float, Float>) (_ => Math.Abs(_.Value)) )
-                .DefMethod("+", () => default(Float) + default(Float) )
-                .DefMethod("-", () => default(Float) - default(Float) )
-                .DefMethod("*", () => default(Float) * default(Float) )
-                .DefMethod("/", () => default(Float) / default(Float) )
-                .DefMethod("==", _ => _.Equals(default(object)) )
-                .Alias("===", "==")
+                .AutoDefineMethods()
             ;
 
             COMPLEX = ModuleBuilder<Complex>.DescribeClass(NUMERIC)
@@ -155,13 +147,7 @@ namespace Mint
             ;
 
             NIL = ModuleBuilder<NilClass>.DescribeClass()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-                .DefLambda("nil?", (Func<iObject, bool>) (_ => true) )
-                .DefLambda("to_a", (Func<iObject, Array>) (_ => new Array()) )
-                .DefLambda("to_f", (Func<iObject, Float>) (_ => new Float(0.0)) )
-                .DefLambda("to_i", (Func<iObject, Fixnum>) (_ => new Fixnum()) )
-                .DefLambda("to_h", (Func<iObject, Hash>) (_ => new Hash()) )
+                .AutoDefineMethods()
             ;
 
             FALSE = ModuleBuilder<FalseClass>.DescribeClass()

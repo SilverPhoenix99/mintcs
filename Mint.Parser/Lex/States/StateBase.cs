@@ -21,7 +21,7 @@
         public Lexer Lexer { get; }
         protected virtual bool CanLabel => false;
         protected virtual State OperatorState => Lexer.BegState;
-        protected int eof => Lexer.DataLength;
+        protected int eof => Lexer.DataLength + 1;
         protected int pe => eof;
         protected virtual char CurrentChar => Lexer.CurrentChar;
 

@@ -39,7 +39,7 @@ namespace Mint.Lex
         internal int LineJump { get; set; }
         internal bool CommandStart { get; set; }
         internal bool InKwarg { get; set; }
-        private bool Eof => Position >= DataLength;
+        private bool Eof => Position > DataLength;
         public int ParenNest { get; set; }
         public bool CanLabel { get; set; }
         internal Literal CurrentLiteral => literals.Count == 0 ? null : literals.Peek();
@@ -181,7 +181,7 @@ namespace Mint.Lex
         }
 
 
-        private Token CreateEofToken()
+        public Token CreateEofToken()
             => new Token(EOF, "$eof", LocationFor(DataLength, 0));
 
 
@@ -202,7 +202,7 @@ namespace Mint.Lex
         }
 
 
-        private void EmitToken(Token token)
+        public void EmitToken(Token token)
         {
             tokens.Enqueue(token);
         }

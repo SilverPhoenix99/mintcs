@@ -15,5 +15,5 @@ namespace Mint.MethodBinding.Arguments
                 bundle.Keywords[labeledArg[0]] = labeledArg[1];
             }
         }
-	}
+    }
 }

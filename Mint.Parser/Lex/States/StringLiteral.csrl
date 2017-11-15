@@ -28,7 +28,7 @@ action NewLine
 
 action WordNewLine
 {
-	if(Lexer.LineJump > Lexer.Position)
+    if(Lexer.LineJump > Lexer.Position)
     {
         fexec te = Lexer.LineJump;
     }
@@ -70,39 +70,41 @@ interpolation_escape = '\\' when HasInterpolation any+;
 main := |*
 
     # only ', " and ` can be used for labels
-	string_delimiter when !IsNested ':' when CanLabel ^':' => LabelDelimiter;
+    string_delimiter when !IsNested ':' when CanLabel ^':' => LabelDelimiter;
 
-	string_delimiter when !IsNested => Delimiter;
+    string_delimiter when !IsNested => Delimiter;
 
     string_delimiter when IsNested => { delimiter.DecrementNesting(); };
 
     [\[{(<] => { delimiter.IncrementNesting(); };
 
-	word_space when IsWords word_space* => {
-		EmitContent(ts);
-		EmitSpace(ts, ts + 1);
-		fbreak;
-	};
+    word_space when IsWords word_space* => {
+        EmitContent(ts);
+        EmitSpace(ts, ts + 1);
+        fbreak;
+    };
 
     # accepted escapes even without interpolation
-	'\\' string_delimiter;
-	'\\' '\r'? string_nl;
-	'\\\\';
+    '\\' string_delimiter;
+    '\\' '\r'? string_nl;
+    '\\\\';
 
-	interpolation_escape & (char_escape - '\\\n' - '\\\\');
+    interpolation_escape & (char_escape - '\\\n' - '\\\\');
     interpolation_escape & octal_escape;
     interpolation_escape & hex_escape;
     interpolation_escape & multi_unicode_escape;
     interpolation_escape & control_escape;
 
-	'#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
-	'#' when HasInterpolation class_variable => { EmitDVar(tCVAR); fbreak; };
-	'#' when HasInterpolation instance_variable => { EmitDVar(tIVAR); fbreak; };
-	'#' when HasInterpolation global_variable => { EmitDVar(tGVAR); fbreak; };
-	'#' when HasInterpolation nth_ref_variable => { EmitDVar(tNTH_REF); fbreak; };
-	'#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
+    '#' when HasInterpolation '{' => { EmitDBeg(); fbreak; };
+    '#' when HasInterpolation class_variable => { EmitDVar(tCVAR); fbreak; };
+    '#' when HasInterpolation instance_variable => { EmitDVar(tIVAR); fbreak; };
+    '#' when HasInterpolation global_variable => { EmitDVar(tGVAR); fbreak; };
+    '#' when HasInterpolation nth_ref_variable => { EmitDVar(tNTH_REF); fbreak; };
+    '#' when HasInterpolation back_ref_variable => { EmitDVar(tBACK_REF); fbreak; };
 
-	string_any;
+    string_any;
+
+    eos => EofLiteralError;
 
     zlen %eof(EofLiteralError);
 

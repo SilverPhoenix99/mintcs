@@ -166,6 +166,7 @@ namespace Mint
         [RubyMethod("instance_variable_set")]
         public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
 
+        // TODO: call Math.Abs directly instead of wrapping it.
         [RubyMethod("abs")]
         [RubyMethod("magnitude")]
         public Fixnum Abs() => Math.Abs(Value);

@@ -10,7 +10,7 @@ namespace Mint.Compilation.Components
 {
     internal abstract class ClassCompiler : CompilerComponentBase
     {
-		protected virtual SyntaxNode NameNode => Node[0];
+        protected virtual SyntaxNode NameNode => Node[0];
 
         protected SyntaxNode SuperclassNode => HasSuperclass ? Node[1] : null;
 
@@ -26,7 +26,7 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Compile()
-	    {
+        {
             var scope = new ClassScope(Compiler);
             var classVar = scope.Module as ParameterExpression;
             Expression header = Assign(classVar, GetClass());
@@ -45,7 +45,7 @@ namespace Mint.Compilation.Components
             {
                 Compiler.EndScope();
             }
-	    }
+        }
 
         protected Expression CompileSuperclass()
         {

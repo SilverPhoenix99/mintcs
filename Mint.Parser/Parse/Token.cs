@@ -5,20 +5,20 @@ namespace Mint.Parse
 {
     public class Token
     {
-		public TokenType Type { get; }
+        public TokenType Type { get; }
         public string Text { get; }
         public LexLocation Location { get; }
         public Dictionary<string, object> Properties { get; }
 
         public Token(TokenType type, string text, LexLocation location)
-		{
-			Type = type;
+        {
+            Type = type;
             Text = text;
             Location = location;
             Properties = new Dictionary<string, object>();
-		}
+        }
 
-		public static readonly Token EOF = new Token(TokenType.EOF, null, null);
+        public static readonly Token EOF = new Token(TokenType.EOF, null, null);
 
         public override string ToString()
         {

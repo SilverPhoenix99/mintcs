@@ -10,56 +10,56 @@ main := |*
     heredoc_identifier => {
         Lexer.EmitHeredocToken(ts, te);
         fexec Lexer.NextLinePosition();
-		fbreak;
+        fbreak;
     };
 
     '+' integer_number => {
         Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-		fbreak;
+        fbreak;
     };
 
     '+' float_number => {
         Lexer.EmitFloatToken(ts, te, isRational, isImaginary);
         Lexer.CurrentState = Lexer.BegState;
-		fbreak;
+        fbreak;
     };
 
     '-' digit => {
         Lexer.EmitToken(kUMINUS_NUM, ts, ts + 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-		fbreak;
+        fbreak;
     };
 
     '-' ^(ws_nl | digit | [=>]) => {
         Lexer.EmitToken(kUMINUS, ts, ts + 1);
         Lexer.CurrentState = Lexer.BegState;
         fhold;
-		fbreak;
+        fbreak;
     };
 
     '::' => {
         Lexer.EmitToken(kCOLON3, ts, ts + 2);
         Lexer.CurrentState = Lexer.BegState;
-		fbreak;
+        fbreak;
     };
 
-    '%' [QqWwIixrs]? %eof(UnterminatedQuotedString);
+    '%' [QqWwIixrs]? eos => UnterminatedQuotedString;
 
     '%s' percent_string_delimiter => {
         Lexer.EmitStringBeginToken(ts, te, endState: Lexer.FnameFitemState);
-		fbreak;
+        fbreak;
     };
 
     '%' [WwIi] percent_string_delimiter ws_nl* => {
         Lexer.EmitStringBeginToken(ts, ts + 3);
-		fbreak;
+        fbreak;
     };
 
     '%' [Qqxr]? percent_string_delimiter => {
         Lexer.EmitStringBeginToken(ts, te);
-		fbreak;
+        fbreak;
     };
 
     '%' [QqWwIixrs]? (unicode | alnum) => {

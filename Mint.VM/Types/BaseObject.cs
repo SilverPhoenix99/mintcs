@@ -19,6 +19,7 @@ namespace Mint
 
         protected readonly IDictionary<Symbol, iObject> variables = new LinkedDictionary<Symbol, iObject>();
         protected Class effectiveClass;
+        protected bool isFrozen;
 
 
         protected BaseObject(Class klass)
@@ -36,7 +37,7 @@ namespace Mint
         public override Class EffectiveClass => effectiveClass;
         public override bool HasSingletonClass => EffectiveClass.IsSingleton;
         public override IEnumerable<Symbol> InstanceVariables => variables.Keys;
-        public override bool Frozen { get; protected set; }
+        public override bool Frozen => isFrozen;
 
         public override Class SingletonClass =>
             !EffectiveClass.IsSingleton
@@ -46,7 +47,7 @@ namespace Mint
 
         public override iObject Freeze()
         {
-            Frozen = true;
+            isFrozen = true;
             return this;
         }
 

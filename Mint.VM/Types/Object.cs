@@ -35,24 +35,27 @@ namespace Mint
 
         public static iObject Box(object value)
         {
-            if(value == null) return new NilClass();
-            if(value is iObject) return (iObject) value;
-            if(value is string) return Box((string) value);
-            if(value is StringBuilder) return Box((StringBuilder) value);
-            if(value is bool) return Box((bool) value);
-            if(value is short) return Box((short) value);
-            if(value is int) return Box((int) value);
-            if(value is long) return Box((long) value);
-            if(value is float) return Box((float) value);
-            if(value is double) return Box((double) value);
-            if(value is IEnumerable<iObject>) return Box((IEnumerable<iObject>) value);
-            if(value is IEnumerable<Symbol>) return Box(((IEnumerable<Symbol>) value).Cast<iObject>());
-            if(value is IEnumerable<Fixnum>) return Box(((IEnumerable<Fixnum>) value).Cast<iObject>());
+            switch(value)
+            {
+                case null: return new NilClass();
+                case iObject val: return val;
+                case string val: return Box(val);
+                case StringBuilder val: return Box(val);
+                case bool val: return Box(val);
+                case short val: return Box(val);
+                case int val: return Box(val);
+                case long val: return Box(val);
+                case float val: return Box(val);
+                case double val: return Box(val);
+                case IEnumerable<iObject> val: return Box(val);
+                case IEnumerable<Symbol> val: return Box(val.Cast<iObject>());
+                case IEnumerable<Fixnum> val: return Box(val.Cast<iObject>());
+            }
 
             throw new ArgumentError(nameof(value));
         }
 
-        public static bool ToBool(object obj) => obj is iObject instance ? ToBool(instance) : true.Equals(obj);
+        //public static bool ToBool(object obj) => obj is iObject instance ? ToBool(instance) : true.Equals(obj);
 
         public static bool ToBool(iObject obj) => !(obj == null || obj is NilClass || obj is FalseClass);
 

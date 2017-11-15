@@ -8,7 +8,7 @@ namespace Mint.Compilation.Components
 {
     internal abstract class ModuleCompiler : CompilerComponentBase
     {
-		protected virtual SyntaxNode NameNode => Node[0];
+        protected virtual SyntaxNode NameNode => Node[0];
 
         protected abstract Expression Container { get; }
 
@@ -22,7 +22,7 @@ namespace Mint.Compilation.Components
         { }
 
         public override Expression Compile()
-	    {
+        {
             var scope = new ModuleScope(Compiler);
             var moduleVar = scope.Module as ParameterExpression;
             Expression header = Assign(moduleVar, GetModule());
@@ -41,7 +41,7 @@ namespace Mint.Compilation.Components
             {
                 Compiler.EndScope();
             }
-	    }
+        }
 
         protected abstract Expression GetModule();
     }

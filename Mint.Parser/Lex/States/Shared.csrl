@@ -44,10 +44,10 @@ action EmbeddedDocEof
 
 embedded_doc =
     '=begin' (ws ^nl*)? nl
-	(
-		(any* nl)*
-		'=end' ( (ws ^nl*)? nl ) @eof { fbreak; }
-	) @err(EmbeddedDocEof)
+    (
+        (any* nl)*
+        '=end' (ws ^nl*)? (nl | eos)
+    ) @err(EmbeddedDocEof)
 ;
 
 
@@ -97,6 +97,12 @@ reserved =
 
 
 main := |*
+
+    eos => {
+        Lexer.EmitToken(Lexer.CreateEofToken());
+        fhold;
+        fbreak;
+    };
 
     esc_ws+ => {
         Lexer.Retry = true;
@@ -381,7 +387,7 @@ main := |*
         fbreak;
     };
 
-    nl '__END__' nl >eof(EndToken) => EndToken;
+    nl '__END__' (nl | eos) => EndToken;
 
     integer_number => {
         Lexer.EmitIntegerToken(ts, te, numBase, isRational, isImaginary);
@@ -455,7 +461,7 @@ main := |*
         fbreak;
     };
 
-    '@@' ws_nl >eof(InvalidClassVariableName) => InvalidClassVariableName;
+    '@@' (ws_nl | eos) => InvalidClassVariableName;
 
     '@@' ^(ws_nl | name_prefix) => {
         var c = Lexer.Data[ts + 2];
@@ -468,7 +474,7 @@ main := |*
         fbreak;
     };
 
-    '@' ws_nl >eof(InvalidInstanceVariableName) => InvalidInstanceVariableName;
+    '@' (ws_nl | eos) => InvalidInstanceVariableName;
 
     '@' ^('@' | ws_nl | name_prefix) => {
         var c = Lexer.Data[ts + 1];
@@ -497,7 +503,7 @@ main := |*
         throw new SyntaxError(Lexer.Filename, Lexer.LineAt(ts), "syntax error, unexpected $undefined");
     };
 
-    '$' ws_nl >eof(InvalidGlobalVariableName) => InvalidGlobalVariableName;
+    '$' (ws_nl | eos) => InvalidGlobalVariableName;
 
     '$' ^(ws_nl | back_ref_char | gvar_char | name_char | '-') => {
         var c = Lexer.Data[ts + 1];
@@ -510,7 +516,7 @@ main := |*
         fbreak;
     };
 
-    '?' %eof(IncompleteCharacter);
+    '?' eos => IncompleteCharacter;
 
     '?' (alnum | '_') name_char => {
         Lexer.EmitToken(kQMARK, ts, te - 2);

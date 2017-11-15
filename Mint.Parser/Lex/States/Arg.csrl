@@ -24,7 +24,7 @@ main := |*
         fbreak;
     };
 
-    esc_ws_nl+ '%' [QqWwIixrs]? %eof(UnterminatedQuotedString);
+    esc_ws_nl+ '%' [QqWwIixrs]? eos => UnterminatedQuotedString;
 
     esc_ws_nl+ '%' [Qqxr] percent_string_delimiter => {
         Lexer.EmitStringBeginToken(te - 3, te);

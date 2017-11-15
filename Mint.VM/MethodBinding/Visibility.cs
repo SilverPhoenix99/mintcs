@@ -2,8 +2,8 @@
 {
     public enum Visibility
     {
-        Private,   // f()
+        Public,    // anything.f()
         Protected, // self.f()
-        Public     // anything.f()
+        Private,   // f()
     }
 }
