@@ -9,8 +9,8 @@ namespace Mint
     {
         private static long nextId = 4;
 
-        [RubyMethod("id")]
-        public virtual long Id { get; } = Interlocked.Add(ref nextId, 4);
+        [RubyMethod("object_id")]
+        public virtual long Id { get; } = NextId();
 
         [RubyMethod("class")]
         public abstract Class Class { get; }
@@ -63,5 +63,7 @@ namespace Mint
         
         [RubyMethod("instance_variable_set")]
         public iObject InstanceVariableSet(string name, iObject obj) => InstanceVariableSet(new Symbol(name), obj);
+        
+        internal static long NextId() => Interlocked.Add(ref nextId, 4);
     }
 }

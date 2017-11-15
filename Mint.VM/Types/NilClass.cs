@@ -8,7 +8,7 @@ namespace Mint
     [RubyClass]
     public struct NilClass : iObject
     {
-        [RubyMethod("id")]
+        [RubyMethod("object_id")]
         public long Id => 0x4;
 
         [RubyMethod("class")]

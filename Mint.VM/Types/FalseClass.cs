@@ -6,7 +6,7 @@ namespace Mint
     [RubyClass]
     public struct FalseClass : iObject
     {
-        [RubyMethod("id")]
+        [RubyMethod("object_id")]
         public long Id => 0x0;
 
         [RubyMethod("class")]

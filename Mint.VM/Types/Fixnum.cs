@@ -17,7 +17,7 @@ namespace Mint
             Value = value;
         }
         
-        [RubyMethod("id")]
+        [RubyMethod("object_id")]
         public long Id => (Value << 1) | 1;
 
         [RubyMethod("class")]
@@ -95,10 +95,10 @@ namespace Mint
             return new string(chars.ToArray());
         }
 
+        public string Inspect() => ToString();
+        
         [RubyMethod("hash")]
         public override int GetHashCode() => Value.GetHashCode();
-        
-        public string Inspect() => ToString();
         
         [RubyMethod("==")]
         [RubyMethod("===")]
