@@ -137,7 +137,7 @@ class ModulePrinter
   private def print_metadatas(header, items)
     return if items.length == 0
 
-    items = items.sort_by { |item| item.name.downcase }
+    items = items.sort_by { |item| [item.color, item.name.downcase] }
     lengths = items.map { |items| items.name.length + PADDING }
     slices = calculate_slices(lengths)
     items = slice_items(items, slices)
@@ -182,7 +182,7 @@ end
 
 if $0 == __FILE__ && ARGV.size > 0
 
-  ARGV.each.with_index do |module_name, i|
+  ARGV.each do |module_name|
     puts
 
     mod = begin
