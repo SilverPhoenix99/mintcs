@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mint</RootNamespace>
     <AssemblyName>Mint.Compiler</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FrameworkPathOverride Condition="'$(BuildingInsideVisualStudio)' != 'true'">C:\Windows\Microsoft.NET\Framework64\v4.0.30319</FrameworkPathOverride>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
