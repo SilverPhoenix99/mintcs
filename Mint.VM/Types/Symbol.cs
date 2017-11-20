@@ -161,7 +161,7 @@ namespace Mint
 
             ~Sym()
             {
-                lock(typeof(Symbol))
+                lock(SYMBOLS)
                 {
                     SYMBOLS.Remove(Name);
                 }
@@ -169,7 +169,7 @@ namespace Mint
             
             public static Sym New(string name)
             {
-                lock(typeof(Symbol))
+                lock(SYMBOLS)
                 {
                     if(SYMBOLS.TryGetValue(name, out var weakSym) && weakSym.TryGetTarget(out var sym))
                     {

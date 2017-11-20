@@ -1,6 +1,5 @@
-﻿using System.Reflection;
-using Mint.MethodBinding;
-using Mint.MethodBinding.Compilation;
+﻿using Mint.MethodBinding;
+using Mint.MethodBinding.Cache;
 using NUnit.Framework;
 
 namespace Mint.UnitTests
@@ -13,7 +12,11 @@ namespace Mint.UnitTests
         public void TestMonomorphicCall()
         {
             var callSite = GetClassCallSite();
-            callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
+            callSite.CallCache = new MonomorphicCallSiteCache(
+                callSite,
+                Class.FIXNUM.Id,
+                Class.FIXNUM.FindMethod(new Symbol("class"))
+            );
 
             Assert.That(callSite.Call(new Fixnum()), Is.EqualTo(Class.FIXNUM));
 
@@ -30,7 +33,7 @@ namespace Mint.UnitTests
         public void TestPolymorphicCall()
         {
             var callSite = GetClassCallSite();
-            callSite.CallCompiler = new PolymorphicCallCompiler(callSite);
+            callSite.CallCache = new PolymorphicCallSiteCache(callSite);
 
             Assert.That(callSite.Call(new TrueClass()), Is.EqualTo(Class.TRUE));
             Assert.That(callSite.Call(new FalseClass()), Is.EqualTo(Class.FALSE));
@@ -42,7 +45,7 @@ namespace Mint.UnitTests
         public void TestMegamorphicCall()
         {
             var callSite = GetClassCallSite();
-            callSite.CallCompiler = new MegamorphicCallCompiler(callSite);
+            callSite.CallCache = new MegamorphicCallSiteCache(callSite);
 
             Assert.That(callSite.Call(new TrueClass()), Is.EqualTo(Class.TRUE));
             Assert.That(callSite.Call(new FalseClass()), Is.EqualTo(Class.FALSE));
@@ -64,31 +67,18 @@ namespace Mint.UnitTests
         public void TestCallCompilerUpgrade()
         {
             var callSite = GetClassCallSite();
-            Assert.That(callSite.CallCompiler, Is.Null);
+            callSite.CallCache = new PolymorphicCallSiteCache(callSite);
 
-            callSite.Call(new Fixnum());
-
-            Assert.That(callSite.CallCompiler, Is.InstanceOf(typeof(PolymorphicCallCompiler)));
-
-            var threshold = GetPolymorphicCacheThreshold();
-
-            for(var i = 0; i < threshold + 1; i++)
+            for(var i = 0; i < PolymorphicCallSiteCache.MAX_CACHE_THRESHOLD + 1; i++)
             {
                 var obj = new Object();
                 var forcedSingletonClass = obj.SingletonClass;
                 callSite.Call(obj);
             }
 
-            Assert.That(callSite.CallCompiler, Is.InstanceOf(typeof(MegamorphicCallCompiler)));
+            Assert.That(callSite.CallCache, Is.InstanceOf(typeof(MegamorphicCallSiteCache)));
         }
-
-        private static int GetPolymorphicCacheThreshold()
-        {
-            return (int) typeof(PolymorphicCallCompiler).GetField(
-                "CACHE_FULL_THRESHOLD",
-                BindingFlags.NonPublic | BindingFlags.Static).GetRawConstantValue();
-        }
-
+        
         [Test]
         public void TestResultBoxing()
         {

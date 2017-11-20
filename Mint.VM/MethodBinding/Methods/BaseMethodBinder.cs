@@ -8,7 +8,7 @@ namespace Mint.MethodBinding.Methods
 {
     public abstract class BaseMethodBinder : MethodBinder
     {
-        private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>(11)
+        private static readonly Dictionary<Type, Type> TYPES = new Dictionary<Type, Type>
         {
             { typeof(string),        typeof(String) },
             { typeof(StringBuilder), typeof(String) },
@@ -33,6 +33,8 @@ namespace Mint.MethodBinding.Methods
 
         public Visibility Visibility { get; }
 
+        public Func<iObject> Call { get; protected set; }
+
         protected BaseMethodBinder(Symbol name,
                                    Module owner,
                                    Module caller = null,
@@ -43,17 +45,27 @@ namespace Mint.MethodBinding.Methods
             Caller = caller ?? owner;
             Condition = new Condition();
             Visibility = visibility;
+            Call = DefaultCall;
         }
-        
+
         protected BaseMethodBinder(Symbol newName, MethodBinder other)
             : this(newName, other.Owner, other.Caller, other.Visibility)
         { }
-        
-        public abstract Expression Bind(CallFrameBinder frame);
-        
+
         public abstract MethodBinder Duplicate(Symbol newName);
         
         public MethodBinder Duplicate() => Duplicate(Name);
+
+        private iObject DefaultCall() => (Call = Compile())();
+
+        private Func<iObject> Compile()
+        {
+            var body = Bind();
+            var lambda = Lambda<Func<iObject>>(body);
+            return lambda.Compile();
+        }
+
+        protected abstract Expression Bind();
 
         protected static Expression Box(Expression expression)
         {

@@ -1,5 +1,3 @@
-using System;
-
 namespace Mint.Compilation
 {
     internal class CompilerException : Exception

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Scopes.Variables;
 using static System.Linq.Expressions.Expression;
-using CallFrame_Expressions = Mint.MethodBinding.Methods.CallFrame.Expressions;
+using CallFrame_Expressions = Mint.MethodBinding.CallFrame.Expressions;
 
 namespace Mint.Compilation.Scopes
 {

@@ -1,5 +1,5 @@
-﻿using Mint.MethodBinding.Methods;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Mint.MethodBinding;
 using static System.Linq.Expressions.Expression;
 
 namespace Mint.Compilation.Scopes.Variables

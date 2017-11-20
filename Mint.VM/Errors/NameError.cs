@@ -1,16 +1,12 @@
-﻿using System;
-
-namespace Mint
+﻿namespace Mint
 {
-    internal class NameError : Exception
+    public class NameError : StandardError
     {
         public NameError()
         { }
 
-
         public NameError(string message) : base(message)
         { }
-
 
         public NameError(string message, Exception innerException) : base(message, innerException)
         { }

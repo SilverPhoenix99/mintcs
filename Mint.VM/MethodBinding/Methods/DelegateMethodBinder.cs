@@ -10,86 +10,66 @@ namespace Mint.MethodBinding.Methods
     /*
      * Generated Stub:
      *
-     * global iObject $instance;
-     * global ArgumentBundle $bundle;
-     *
      * {
-     *     var arguments = $bundle.Bind(@methodInfo);
-     *     return Object.Box(<Lambda>.Invoke((<cast>) $instance, (<cast>) arguments[0], ...));
+     *     CallFrame frame = CallFrame.Current;
+     *     iObject[] arguments = frame.Arguments.Bind(@lambda.Method);
+     *     // TODO: add arguments as local variables
+     *     return Object.Box(@lambda.Invoke((<cast>) frame.Instance, (<cast>) arguments[0], ...));
      * }
      */
     public sealed class DelegateMethodBinder : BaseMethodBinder
     {
+        private DelegateMetadata Lambda { get; }
+
         public DelegateMethodBinder(Symbol name, Module owner, DelegateMetadata lambda)
             : base(name, owner)
         {
             Lambda = lambda;
         }
 
-
         private DelegateMethodBinder(Symbol newName, DelegateMethodBinder other)
             : base(newName, other)
         {
             Lambda = other.Lambda;
         }
+        
+        public override MethodBinder Duplicate(Symbol newName) => new DelegateMethodBinder(newName, this);
 
-
-        private DelegateMetadata Lambda { get; }
-
-
-        public override MethodBinder Duplicate(Symbol newName)
-            => new DelegateMethodBinder(newName, this);
-
-
-        public override Expression Bind(CallFrameBinder frame)
+        protected override Expression Bind()
         {
-            var argumentsArray = Variable(typeof(iObject[]), "arguments");
-
+            var frameBinder = new CallFrameBinder();
+            
             var method = Property(Constant(Lambda), nameof(Lambda.Method));
-            var bindExpression = ArgumentBundle.Expressions.Bind(frame.Arguments, method);
+            var bundle = CallFrame.Expressions.Arguments(frameBinder.CallFrame);
+
+            var instance = CallFrame.Expressions.Instance(frameBinder.CallFrame).Cast(Lambda.InstanceType);
+            var convertedArgs = from p in Lambda.Method.Parameters
+                                select ConvertArgument(frameBinder.Arguments, p);
+            var arguments = new[] { instance }.Concat(convertedArgs);
 
             return Block(
-                new[] { argumentsArray },
-                Assign(argumentsArray, bindExpression),
-                CreateBody(frame.Instance, argumentsArray)
+                new[] { frameBinder.CallFrame, frameBinder.Arguments },
+                Assign(frameBinder.CallFrame, CallFrame.Expressions.Current()),
+                Assign(frameBinder.Arguments, ArgumentBundle.Expressions.Bind(bundle, method)),
+                Box(Invoke(Constant(Lambda.Lambda), arguments))
             );
         }
-
-
-        private Expression CreateBody(Expression instance, Expression argumentsArray)
+        
+        private static Expression ConvertArgument(Expression argumentArray, ParameterMetadata parameter)
         {
-            instance = instance.Cast(Lambda.InstanceType);
-            var convertedArgs = Lambda.Method.Parameters.Select(p => ConvertArgument(argumentsArray, p));
-            var arguments = new[] { instance }.Concat(convertedArgs);
-            
-            return Box(Invoke(Constant(Lambda.Lambda), arguments));
-        }
-
-
-        private Expression ConvertArgument(Expression argumentArray, ParameterMetadata parameter)
-        {
-            var argument = GetArgument(argumentArray, parameter);
+            var argument = ArrayIndex(argumentArray, Constant(parameter.Position));
             return TryConvert(argument, parameter.Parameter.ParameterType);
         }
-
-
-        private BinaryExpression GetArgument(Expression argumentArray, ParameterMetadata parameter)
-            => ArrayIndex(argumentArray, Constant(parameter.Position));
-
 
         public static class Reflection
         {
             public static readonly ConstructorInfo Ctor =
                 Reflector<DelegateMethodBinder>.Ctor<Symbol, Module, DelegateMetadata>();
         }
-
-
+        
         public static class Expressions
         {
-            public static NewExpression New(Expression name,
-                                            Expression owner,
-                                            Expression caller,
-                                            Expression lambda)
+            public static NewExpression New(Expression name, Expression owner, Expression caller, Expression lambda)
                 => Expression.New(Reflection.Ctor, name, owner, caller, lambda);
         }
     }

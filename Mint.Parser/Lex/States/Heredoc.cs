@@ -17,7 +17,7 @@ namespace Mint.Lex.States
         {
             var text = lexer.TextAt(ts, te);
             delimiter = new HeredocDelimiter(text);
-            this.restorePosition = te;
+            restorePosition = te;
 
             BeginToken = lexer.GenerateToken(delimiter.BeginType, ts, te);
             BeginToken.Properties["has_interpolation"] = delimiter.HasInterpolation;

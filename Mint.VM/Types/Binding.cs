@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Mint.MethodBinding.Methods;
+using Mint.MethodBinding;
 using Mint.Reflection;
 
 namespace Mint
@@ -36,7 +36,7 @@ namespace Mint
 
         public iObject Receiver => frame.Instance;
         public Array LocalVariables => new Array(Locals.Select(_ => _.Name).Cast<iObject>());
-        private IEnumerable<LocalVariable> Locals => frame.Arguments.Concat(frame.Locals.Values).Concat(dynamicLocals);
+        private IEnumerable<LocalVariable> Locals => frame.Locals.Values.Concat(dynamicLocals);
 
 
         public bool IsLocalDefined(Symbol local)

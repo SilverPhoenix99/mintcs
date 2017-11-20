@@ -1,9 +1,8 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Mint.Reflection;
-using static System.Linq.Expressions.Expression;
 
-namespace Mint.MethodBinding.Methods
+namespace Mint.MethodBinding
 {
     public class LocalVariable
     {
@@ -38,7 +37,7 @@ namespace Mint.MethodBinding.Methods
         public static class Expressions
         {
             public static MemberExpression Value(Expression localVariable)
-                => Property(localVariable, Reflection.Value);
+                => Expression.Property(localVariable, Reflection.Value);
             
 
             public static NewExpression New(Expression name, Expression value = null)

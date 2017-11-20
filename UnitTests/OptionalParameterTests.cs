@@ -1,6 +1,5 @@
 ﻿using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
-using Mint.MethodBinding.Compilation;
 using NUnit.Framework;
 
 namespace Mint.UnitTests
@@ -37,8 +36,7 @@ namespace Mint.UnitTests
         private static CallSite CreateCallSite(string methodName, params ArgumentKind[] arguments)
         {
             var name = new Symbol(methodName);
-            var callSite = new CallSite(name, arguments);
-            callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
+            var callSite = new CallSite(name, argumentKinds: arguments);
             return callSite;
         }
     }

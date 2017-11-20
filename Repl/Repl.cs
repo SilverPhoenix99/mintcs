@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Mint.Compilation;
-using Mint.MethodBinding.Methods;
+using Mint.MethodBinding;
 using Mint.Parse;
 
 namespace Mint
@@ -12,7 +12,7 @@ namespace Mint
         {
             var lastResult = new LocalVariable(new Symbol("_"));
             var previousResult = new LocalVariable(new Symbol("__"));
-            var binding = new CallFrame(new Object());
+            var binding = new CallFrame(null, new Object());
             binding.AddLocal(lastResult);
             binding.AddLocal(previousResult);
 

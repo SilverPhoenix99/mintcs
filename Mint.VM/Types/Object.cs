@@ -1,6 +1,5 @@
 ﻿using Mint.MethodBinding;
 using Mint.MethodBinding.Arguments;
-using Mint.MethodBinding.Compilation;
 using Mint.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
@@ -59,34 +58,28 @@ namespace Mint
 
         public static bool ToBool(iObject obj) => !(obj == null || obj is NilClass || obj is FalseClass);
 
-        internal static string MethodMissingInspect(iObject obj)
-            => $"{obj.Inspect()}:{obj.Class.Name}";
+        internal static string MethodMissingInspect(iObject obj) => $"{obj.Inspect()}:{obj.Class.Name}";
 
         public static iObject Send(iObject instance, iObject methodName, params iObject[] arguments)
         {
             var methodNameAsSymbol = MethodNameAsSymbol(methodName);
             var argumentKinds = Enumerable.Range(0, arguments.Length).Select(_ => ArgumentKind.Simple);
             var callSite = new CallSite(methodNameAsSymbol, Visibility.Private, argumentKinds);
-            callSite.CallCompiler = new MonomorphicCallCompiler(callSite);
             return callSite.Call(instance, arguments);
         }
-
-
+        
         private static Symbol MethodNameAsSymbol(iObject methodName)
         {
-            if(methodName is Symbol)
+            switch(methodName)
             {
-                return (Symbol) methodName;
+                case Symbol symName:
+                    return symName;
+                case String name:
+                    return new Symbol(name.Value);
+                default:
+                    throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
             }
-
-            if(methodName is String name)
-            {
-                return new Symbol(name.Value);
-            }
-
-            throw new TypeError($"{methodName.Inspect()} is not a symbol nor a string");
         }
-
 
         internal static void ValidateInstanceVariableName(string name)
         {
@@ -97,8 +90,7 @@ namespace Mint
 
             throw new NameError($"`{name}' is not allowed as an instance variable name");
         }
-
-
+        
         public static bool IsA(iObject instance, iObject arg)
         {
             if(!(arg is Module))
@@ -111,8 +103,7 @@ namespace Mint
 
             return instanceClass.Ancestors.Any(c => c.Equals(module));
         }
-
-
+        
         public static bool RespondTo(iObject instance, Symbol methodName) 
             => instance.EffectiveClass.Methods.ContainsKey(methodName);
 
@@ -122,27 +113,22 @@ namespace Mint
             public static readonly PropertyInfo Id = Reflector<iObject>.Property(_ => _.Id);
 
             public static readonly PropertyInfo EffectiveClass = Reflector<iObject>.Property(_ => _.EffectiveClass);
-
-
+            
             public static readonly MethodInfo Box = Reflector.Method(
                 () => Box(default(object))
             );
-
 
             public static readonly MethodInfo InstanceVariableGet = Reflector<iObject>.Method(
                 _ => _.InstanceVariableGet(default(Symbol))
             );
 
-
             public static readonly MethodInfo InstanceVariableSet = Reflector<iObject>.Method(
                 _ => _.InstanceVariableSet(default(Symbol), default(iObject))
             );
 
-
             public static readonly PropertyInfo SingletonClass = Reflector<iObject>.Property(_ => _.SingletonClass);
         }
-
-
+        
         public static class Expressions
         {
             public static MethodCallExpression Box(Expression value)
@@ -158,18 +144,15 @@ namespace Mint
                 
                 return Expression.Call(method, value);
             }
-
-
+            
             public static MethodCallExpression InstanceVariableGet(Expression instance, Expression variableName)
                 => Expression.Call(instance, Reflection.InstanceVariableGet, variableName);
-
-
+            
             public static MethodCallExpression InstanceVariableSet(Expression instance,
                                                                    Expression variableName,
                                                                    Expression value)
                 => Expression.Call(instance, Reflection.InstanceVariableSet, variableName, value);
-
-
+            
             public static MemberExpression SingletonClass(Expression obj)
                 => Expression.Property(obj, Reflection.SingletonClass);
         }

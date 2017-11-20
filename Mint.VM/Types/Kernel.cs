@@ -1,6 +1,5 @@
 ﻿using System;
 using Mint.MethodBinding;
-using Mint.MethodBinding.Methods;
 using Mint.Reflection.Parameters.Attributes;
 
 namespace Mint

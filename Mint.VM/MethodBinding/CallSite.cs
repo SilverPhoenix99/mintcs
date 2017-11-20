@@ -1,5 +1,6 @@
+using System;
 using Mint.MethodBinding.Arguments;
-using Mint.MethodBinding.Compilation;
+using Mint.MethodBinding.Cache;
 using Mint.Reflection;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,67 +11,86 @@ namespace Mint.MethodBinding
 {
     public sealed class CallSite
     {
-        public delegate iObject Function(iObject instance, ArgumentBundle bundle);
-
+        private const string RB_STACK_KEY = "rb_stack";
 
         private Arity arity;
+        
+        public Visibility Visibility { get; }
 
+        public Symbol MethodName { get; }
 
-        public CallSite(Symbol methodName, Visibility visibility, params ArgumentKind[] argumentKinds)
+        public IList<ArgumentKind> ArgumentKinds { get; }
+
+        public CallSiteCache CallCache { get; set; }
+
+        public CallSite(Symbol methodName,
+            Visibility visibility = Visibility.Public,
+            IEnumerable<ArgumentKind> argumentKinds = null)
         {
             MethodName = methodName;
             Visibility = visibility;
-            ArgumentKinds = System.Array.AsReadOnly(argumentKinds);
-            BundledCall = DefaultCall;
+            ArgumentKinds = System.Array.AsReadOnly(argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>());
+            CallCache = new EmptyCallSiteCache(this);
         }
 
-
-        public CallSite(Symbol methodName, Visibility visibility, IEnumerable<ArgumentKind> argumentKinds)
-            : this(methodName, visibility, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
+        public CallSite(Symbol methodName,
+                        Visibility visibility = Visibility.Public,
+                        params ArgumentKind[] argumentKinds)
+            : this(methodName, visibility, (IEnumerable<ArgumentKind>) argumentKinds)
         { }
 
-
-        public CallSite(Symbol methodName, params ArgumentKind[] argumentKinds)
-            : this(methodName, Visibility.Public, argumentKinds)
-        { }
-
-
-        public CallSite(Symbol methodName, IEnumerable<ArgumentKind> argumentKinds)
-            : this(methodName, argumentKinds?.ToArray() ?? System.Array.Empty<ArgumentKind>())
-        { }
-
-
-        public Visibility Visibility { get; }
-        public Symbol MethodName { get; }
-        public IList<ArgumentKind> ArgumentKinds { get; }
-        public CallCompiler CallCompiler { get; set; }
-        public Function BundledCall { get; set; }
         public Arity Arity => arity ?? (arity = CalculateArity());
-
-
-        private iObject DefaultCall(iObject instance, ArgumentBundle bundle)
-        {
-            Compile();
-            return BundledCall(instance, bundle);
-        }
-
-        private void Compile()
-        {
-            if(CallCompiler == null)
-            {
-                CallCompiler = new PolymorphicCallCompiler(this);
-            }
-            BundledCall = CallCompiler.Compile();
-        }
-
-
+        
         public iObject Call(iObject instance, params iObject[] arguments)
         {
-            var bundle = new ArgumentBundle(ArgumentKinds, arguments);
-            return BundledCall(instance, bundle);
+            if(arguments.Length != ArgumentKinds.Count)
+            {
+                throw new ArgumentException(
+                    $"{MethodName}: Number of arguments ({arguments.Length}) doesn't match expected number ({ArgumentKinds.Count})."
+                );
+            }
+
+            var bundle = new ArgumentBundle(ArgumentKinds.Zip(arguments, (kind, arg) => (kind, arg)));
+
+            CallFrame.Push(this, instance, bundle);
+
+            try
+            {
+                try
+                {
+                    return CallCache.Call();
+                }
+                catch(RecompilationRequiredException)
+                {
+                    // caught while a method was being redefined.
+                    // give a second chance to recover.
+                    return CallCache.Call();
+                }
+            }
+            catch(Exception e)
+            {
+                if(!e.Data.Contains(RB_STACK_KEY))
+                {
+                    e.Data[RB_STACK_KEY] = CallFrame.Current;
+                }
+
+                throw;
+            }
+            catch(System.Exception e)
+            {
+                if(!e.Data.Contains(RB_STACK_KEY))
+                {
+                    e.Data[RB_STACK_KEY] = CallFrame.Current.CallSite.MethodName.Name;
+                }
+
+                throw;
+            }
+            finally
+            {
+                CallFrame.Pop();
+            }
         }
-
-
+        
         private Arity CalculateArity()
         {
             var min = ArgumentKinds.Count(a => a == ArgumentKind.Simple);
@@ -81,23 +101,20 @@ namespace Mint.MethodBinding
             var max = ArgumentKinds.Any(a => a == ArgumentKind.Rest) ? int.MaxValue : min;
             return new Arity(min, max);
         }
-
-
+        
         public override string ToString()
         {
             var argumentKinds = string.Join(", ", ArgumentKinds.Select(_ => _.Description));
             return $"CallSite<\"{MethodName}\"<{Arity}>({argumentKinds})>";
         }
-
-
+        
         public static class Reflection
         {
             public static readonly MethodInfo Call = Reflector<CallSite>.Method(
-                _ => _.Call(default(iObject), default(iObject[]))
+                _ => _.Call(default, default)
             );
         }
-
-
+        
         public static class Expressions
         {
             public static MethodCallExpression Call(Expression callSite, Expression instance, Expression arguments)

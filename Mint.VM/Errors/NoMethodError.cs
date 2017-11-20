@@ -1,16 +1,12 @@
-﻿using System;
-
-namespace Mint
+﻿namespace Mint
 {
-    public class NoMethodError : Exception
+    public class NoMethodError : NameError
     {
         public NoMethodError()
         { }
 
-
         public NoMethodError(string message) : base(message)
         { }
-
 
         public NoMethodError(string message, Exception innerException) : base(message, innerException)
         { }

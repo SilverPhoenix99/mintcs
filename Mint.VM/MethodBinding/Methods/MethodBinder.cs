@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+using System;
 
 namespace Mint.MethodBinding.Methods
 {
@@ -16,7 +16,7 @@ namespace Mint.MethodBinding.Methods
 
         Visibility Visibility { get; }
 
-        Expression Bind(CallFrameBinder frame);
+        Func<iObject> Call { get; }
 
         MethodBinder Duplicate();
 

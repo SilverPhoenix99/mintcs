@@ -11,11 +11,13 @@ namespace Mint.MethodBinding.Methods
     /*
      * Generated Stub:
      *
-     * (iObject $instance, ArgumentBundle $bundle) => {
-     *
+     * () => {
+     *     CallFrame frame = CallFrame.Current;
+     * 
      *     switch
      *     {
      *         case <CallEmitter code>;
+     *         case ...
      *         
      *         default:
      *             new TypeError("no implicit conversion exists");
@@ -51,30 +53,31 @@ namespace Mint.MethodBinding.Methods
         
         public override MethodBinder Duplicate(Symbol newName) => new ClrMethodBinder(newName, this);
 
-        public override Expression Bind(CallFrameBinder frame)
+        protected override Expression Bind()
         {
-            var argumentsArray = Variable(typeof(iObject[]), "arguments");
+            var frameBinder = new CallFrameBinder();
 
             var cases = from method in Methods
-                        select CreateCallEmitter(method, frame, argumentsArray).Bind();
+                        select CreateCallEmitter(method, frameBinder).Bind();
 
             var defaultCase = Throw(Expressions.ThrowInvalidConversion(), typeof(iObject));
 
             return Block(
                 typeof(iObject),
-                new[] { argumentsArray },
+                frameBinder,
+                Assign(frameBinder.CallFrame, CallFrame.Expressions.Current()),
+                Assign(frameBinder.Instance, CallFrame.Expressions.Instance(frameBinder.CallFrame)),
+                Assign(frameBinder.Bundle, CallFrame.Expressions.Arguments(frameBinder.CallFrame)),
                 Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
         }
-        
+
         private static CallEmitter CreateCallEmitter(MethodMetadata method,
-                                                     CallFrameBinder frame,
-                                                     ParameterExpression argumentsArray)
+                                                     CallFrameBinder frameBinder)
             => method.IsStatic
-                ? new StaticCallEmitter(method, frame, argumentsArray)
-                : new InstanceCallEmitter(method, frame, argumentsArray);
+                ? new StaticCallEmitter(method, frameBinder)
+                : new InstanceCallEmitter(method, frameBinder);
     
-        
         private static Exception ThrowInvalidConversion()
         {
             // TODO
@@ -89,6 +92,10 @@ namespace Mint.MethodBinding.Methods
             return new TypeError("no implicit conversion exists");
         }
 
+        private interface CallEmitter
+        {
+            SwitchCase Bind();
+        }
 
         public static class Reflection
         {
@@ -99,8 +106,8 @@ namespace Mint.MethodBinding.Methods
 
         public static class Expressions
         {
-            public static MethodCallExpression ThrowInvalidConversion()
-                => Call(Reflection.ThrowInvalidConversion);
+            public static MethodCallExpression ThrowInvalidConversion() 
+                => Expression.Call(Reflection.ThrowInvalidConversion);
         }
     }
 }

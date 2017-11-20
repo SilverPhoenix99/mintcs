@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Mint.Compilation.Scopes;
-using Mint.MethodBinding.Methods;
+using Mint.MethodBinding;
 using Mint.Parse;
 using static System.Linq.Expressions.Expression;
 
@@ -61,7 +61,7 @@ namespace Mint.Compilation.Components
                 body = Block(
                     typeof(iObject),
                     Parameters.Select(_ => _.Local),
-                    CallFrame.Expressions.Push(Instance, arguments),
+                    CallFrame.Expressions.Push(null, Instance, arguments),
                     TryFinally(body, CallFrame.Expressions.Pop())
                 );
 

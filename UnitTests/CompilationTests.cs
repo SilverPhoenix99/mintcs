@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Linq.Expressions;
 using Mint.Compilation;
-using Mint.MethodBinding.Methods;
+using Mint.MethodBinding;
 using Mint.Parse;
 using NUnit.Framework;
 
@@ -14,7 +14,7 @@ namespace Mint.UnitTests
         public static Compiler CreateCompiler(string name, CallFrame frame = null)
         {
             name = $"(CompilationTests.{name})";
-            frame = frame ?? new CallFrame(new Object());
+            frame = frame ?? new CallFrame(null, new Object());
             return new Compiler(name, frame);
         }
 
@@ -242,7 +242,7 @@ namespace Mint.UnitTests
         [Test]
         public void TestIndexer()
         {
-            var frame = new CallFrame(new Object());
+            var frame = new CallFrame(null, new Object());
             Eval("a = []", frame);
             var array = frame.Locals[new Symbol("a")].Value as Array;
 

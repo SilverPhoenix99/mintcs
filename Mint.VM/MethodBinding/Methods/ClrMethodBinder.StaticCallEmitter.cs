@@ -19,29 +19,24 @@ namespace Mint.MethodBinding.Methods
          *     $arguments != null && $arguments[0] is <Type> && ...
          * }:
          * {
+         *     // TODO: add arguments as local variables
          *     return Object.Box(<Type>.<Method>((<cast>) $instance, (<cast>) $arguments[0], ...));
          * }
          */
         private class StaticCallEmitter : InstanceCallEmitter
         {
-            public StaticCallEmitter(MethodMetadata method,
-                                     CallFrameBinder bundledFrame,
-                                     ParameterExpression argumentsArray)
-                : base(method, bundledFrame, argumentsArray)
+            public StaticCallEmitter(MethodMetadata method, CallFrameBinder frame)
+                : base(method, frame)
             { }
-
-
-            protected override Expression GetInstance()
-                => null;
-
+            
+            protected override Expression GetInstance() => null;
 
             protected override Expression GetConvertedInstance()
             {
                 var position = Method.HasClosure ? 1 : 0;
                 var type = Method.Method.GetParameters()[position].ParameterType;
-                return BundledFrame.Instance.Cast(type);
+                return Frame.Instance.Cast(type);
             }
-
 
             protected override IEnumerable<Expression> GetArguments()
             {

@@ -5,11 +5,10 @@ using System.Linq.Expressions;
 using Mint.Compilation.Components;
 using Mint.Compilation.Scopes;
 using Mint.Compilation.Selectors;
-using Mint.MethodBinding.Methods;
+using Mint.MethodBinding;
 using Mint.Parse;
 using static Mint.Parse.TokenType;
 using static System.Linq.Expressions.Expression;
-using Mint.MethodBinding;
 
 namespace Mint.Compilation
 {
@@ -38,7 +37,7 @@ namespace Mint.Compilation
         }
 
         public Compiler(string filename, iObject instance)
-            : this(filename, new CallFrame(instance))
+            : this(filename, new CallFrame(null, instance))
         { }
 
         private void InitializeComponents()
@@ -151,12 +150,9 @@ namespace Mint.Compilation
             body = scope.CompileBody(body);
 
             return Block(
-                Assign(CallFrame.Expressions.Current(), scope.CallFrame),
+                CallFrame.Expressions.Push(scope.CallFrame),
                 TryFinally(
-                    Block(
-                        Assign(CallFrame.Expressions.Visibility(scope.CallFrame), Constant(Visibility.Private)),
-                        body
-                    ),
+                    body,
                     CallFrame.Expressions.Pop()
                 )
             );

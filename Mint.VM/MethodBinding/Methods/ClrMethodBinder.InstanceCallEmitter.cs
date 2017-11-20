@@ -9,12 +9,6 @@ namespace Mint.MethodBinding.Methods
 {
     public sealed partial class ClrMethodBinder
     {
-        private interface CallEmitter
-        {
-            SwitchCase Bind();
-        }
-
-
         /*
          * Generated Stub:
          *
@@ -27,38 +21,33 @@ namespace Mint.MethodBinding.Methods
          *     $arguments != null && $arguments[0] is <Type> && ...
          * }:
          * {
+         *     // TODO: add arguments as local variables
          *     return Object.Box(((<cast>) $instance).<Method>((<cast>) $arguments[0], ...));
          * }
          */
         private class InstanceCallEmitter : CallEmitter
         {
-            public InstanceCallEmitter(MethodMetadata method,
-                                       CallFrameBinder bundledFrame,
-                                       ParameterExpression argumentsArray)
+            protected MethodMetadata Method { get; }
+
+            protected CallFrameBinder Frame { get; }
+
+            public InstanceCallEmitter(MethodMetadata method, CallFrameBinder frame)
             {
                 Method = method;
-                BundledFrame = bundledFrame;
-                ArgumentArray = argumentsArray;
+                Frame = frame;
             }
-
-
-            protected MethodMetadata Method { get; }
-            protected CallFrameBinder BundledFrame { get; }
-            private ParameterExpression ArgumentArray { get; }
-
-
+            
             public SwitchCase Bind()
             {
                 var condition = CreateCondition();
                 var body = CreateBody();
                 return SwitchCase(body, condition);
             }
-
-
+            
             private Expression CreateCondition()
             {
-                var bindExpression = ArgumentBundle.Expressions.TryBind(BundledFrame.Arguments, Constant(Method));
-                Expression argumentCheck = NotEqual(ArgumentArray, Constant(null));
+                var bindExpression = ArgumentBundle.Expressions.TryBind(Frame.Bundle, Constant(Method));
+                Expression argumentCheck = NotEqual(Frame.Arguments, Constant(null));
 
                 if(Method.Parameters.Count > 0)
                 {
@@ -66,45 +55,34 @@ namespace Mint.MethodBinding.Methods
                 }
 
                 return Block(
-                    Assign(ArgumentArray, bindExpression),
+                    Assign(Frame.Arguments, bindExpression),
                     argumentCheck
                 );
             }
-
-
+            
             private Expression TypeCheckArgumentsExpression()
                 => Method.Parameters.Select(TypeCheckArgumentExpression).Aggregate(AndAlso);
-
-
+            
             private Expression TypeCheckArgumentExpression(ParameterMetadata parameter)
                 => TypeIs(GetArgument(parameter), parameter.Parameter.ParameterType);
+            
+            private Expression CreateBody() => Box(Expression.Call(GetInstance(), Method.Method, GetArguments()));
 
-
-            private Expression CreateBody()
-                => Box(Call(GetInstance(), Method.Method, GetArguments()));
-
-
-            protected virtual Expression GetInstance()
-                => GetConvertedInstance();
-
-
+            protected virtual Expression GetInstance() => GetConvertedInstance();
+            
             protected virtual Expression GetConvertedInstance()
             {
                 var type = Method.Method.DeclaringType;
-                return type == null ? BundledFrame.Instance : BundledFrame.Instance.Cast(type);
+                return type == null ? Frame.Instance : Frame.Instance.Cast(type);
             }
-
-
-            protected virtual IEnumerable<Expression> GetArguments()
-                => Method.Parameters.Select(ConvertArgument);
-
-
-            private Expression ConvertArgument(ParameterMetadata parameter) 
+            
+            protected virtual IEnumerable<Expression> GetArguments() => Method.Parameters.Select(ConvertArgument);
+            
+            private Expression ConvertArgument(ParameterMetadata parameter)
                 => TryConvert(GetArgument(parameter), parameter.Parameter.ParameterType);
 
-
             private BinaryExpression GetArgument(ParameterMetadata parameter)
-                => ArrayIndex(ArgumentArray, Constant(parameter.Position));
+                => ArrayIndex(Frame.Arguments, Constant(parameter.Position));
         }
     }
 }
