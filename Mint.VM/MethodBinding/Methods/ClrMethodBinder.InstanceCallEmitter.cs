@@ -17,7 +17,7 @@ namespace Mint.MethodBinding.Methods
          * global iObject[] $arguments;
          *
          * case {
-         *     $arguments = $bundle.Bind(@methodInfo);
+         *     $arguments = $bundle.TryBind(@methodInfo);
          *     $arguments != null && $arguments[0] is <Type> && ...
          * }:
          * {

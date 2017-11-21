@@ -85,8 +85,8 @@ namespace Mint.Lex.States
         {
             if(delimiter.Dedents && lineIndentation >= 0)
             {
-                var numTabs = 1 + lineIndentation / Lex.Lexer.TabWidth;
-                lineIndentation = numTabs * Lex.Lexer.TabWidth;
+                var numTabs = 1 + lineIndentation / Lexer.TabWidth;
+                lineIndentation = numTabs * Lexer.TabWidth;
             }
         }
 

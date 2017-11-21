@@ -31,8 +31,8 @@ namespace Mint.UnitTests
         [Test]
         public void WithIndentation()
         {
-            const string result = "     a\n"
-                                + "    b\n";
+            const string result = "         a\n"
+                                + "\tb\n";
             const string expect = " a\n"
                                 + "b\n";
             AssertDedentedHeredoc(expect, result);

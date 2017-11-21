@@ -65,9 +65,8 @@ namespace Mint.MethodBinding.Methods
             return Block(
                 typeof(iObject),
                 frameBinder,
-                Assign(frameBinder.CallFrame, CallFrame.Expressions.Current()),
-                Assign(frameBinder.Instance, CallFrame.Expressions.Instance(frameBinder.CallFrame)),
-                Assign(frameBinder.Bundle, CallFrame.Expressions.Arguments(frameBinder.CallFrame)),
+                Assign(frameBinder.Instance, CallFrame.Expressions.Instance(CallFrame.Expressions.Current())),
+                Assign(frameBinder.Bundle, CallFrame.Expressions.Arguments(CallFrame.Expressions.Current())),
                 Switch(typeof(iObject), Constant(true), defaultCase, null, cases)
             );
         }

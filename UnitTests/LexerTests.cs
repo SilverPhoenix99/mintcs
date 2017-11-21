@@ -45,5 +45,36 @@ namespace Mint.UnitTests
             Assert.That(token.Type, Is.EqualTo(TokenType.EOF));
             Assert.That(lexer.Position, Is.GreaterThanOrEqualTo(lexer.Data.Length));
         }
+
+        [Test]
+        public void TestFid()
+        {
+            var lexer = CreateLexer("class c!\n  def f!\n    a!.b! v!", isFile: true);
+
+            AssertToken(lexer.NextToken(), TokenType.kCLASS);
+            AssertToken(lexer.NextToken(), TokenType.tFID, "c!");
+            AssertToken(lexer.NextToken(), TokenType.kNL);
+
+            AssertToken(lexer.NextToken(), TokenType.kDEF);
+            AssertToken(lexer.NextToken(), TokenType.tFID, "f!");
+            AssertToken(lexer.NextToken(), TokenType.kNL);
+
+            AssertToken(lexer.NextToken(), TokenType.tFID, "a!");
+            AssertToken(lexer.NextToken(), TokenType.kDOT);
+            AssertToken(lexer.NextToken(), TokenType.tFID, "b!");
+            AssertToken(lexer.NextToken(), TokenType.tFID, "v!");
+
+            Assert.That(lexer.Position, Is.GreaterThanOrEqualTo(lexer.Data.Length));
+        }
+
+        private static void AssertToken(Token token, TokenType type, string text = null)
+        {
+            Assert.That(token.Type, Is.EqualTo(type));
+
+            if(text != null)
+            {
+                Assert.That(token.Text, Is.EqualTo(text));
+            }
+        }
     }
 }

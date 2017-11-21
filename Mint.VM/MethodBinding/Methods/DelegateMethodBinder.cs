@@ -13,7 +13,7 @@ namespace Mint.MethodBinding.Methods
      * {
      *     CallFrame frame = CallFrame.Current;
      *     iObject[] arguments = frame.Arguments.Bind(@lambda.Method);
-     *     // TODO: add arguments as local variables
+     *
      *     return Object.Box(@lambda.Invoke((<cast>) frame.Instance, (<cast>) arguments[0], ...));
      * }
      */
@@ -40,16 +40,18 @@ namespace Mint.MethodBinding.Methods
             var frameBinder = new CallFrameBinder();
             
             var method = Property(Constant(Lambda), nameof(Lambda.Method));
-            var bundle = CallFrame.Expressions.Arguments(frameBinder.CallFrame);
+            var bundle = CallFrame.Expressions.Arguments(CallFrame.Expressions.Current());
 
-            var instance = CallFrame.Expressions.Instance(frameBinder.CallFrame).Cast(Lambda.InstanceType);
-            var convertedArgs = from p in Lambda.Method.Parameters
-                                select ConvertArgument(frameBinder.Arguments, p);
+            var instance = CallFrame.Expressions.Instance(CallFrame.Expressions.Current()).Cast(Lambda.InstanceType);
+
+            var convertedArgs =
+                from p in Lambda.Method.Parameters
+                select ConvertArgument(frameBinder.Arguments, p);
+
             var arguments = new[] { instance }.Concat(convertedArgs);
 
             return Block(
-                new[] { frameBinder.CallFrame, frameBinder.Arguments },
-                Assign(frameBinder.CallFrame, CallFrame.Expressions.Current()),
+                new[] { frameBinder.Arguments },
                 Assign(frameBinder.Arguments, ArgumentBundle.Expressions.Bind(bundle, method)),
                 Box(Invoke(Constant(Lambda.Lambda), arguments))
             );
@@ -69,8 +71,8 @@ namespace Mint.MethodBinding.Methods
         
         public static class Expressions
         {
-            public static NewExpression New(Expression name, Expression owner, Expression caller, Expression lambda)
-                => Expression.New(Reflection.Ctor, name, owner, caller, lambda);
+            public static NewExpression New(Expression name, Expression owner, Expression lambda)
+                => Expression.New(Reflection.Ctor, name, owner, lambda);
         }
     }
 }

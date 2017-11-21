@@ -40,7 +40,7 @@ namespace Mint.Compilation.Components
 
                 try
                 {
-                    var body = CompileLambdaBody();
+                    var body = CompileBody();
                     var lambdaParameters = new[] { Instance }.Concat(Parameters.Select(_ => _.Param));
                     var lambda = Lambda(body, Name, lambdaParameters);
                     return lambda.Compile();
@@ -51,28 +51,28 @@ namespace Mint.Compilation.Components
                 }
             }
 
-            private Expression CompileLambdaBody()
+            private Expression CompileBody()
             {
-                var localVariables = Parameters.Select(CompileLocalVariable);
-                var arguments = NewArrayInit(typeof(LocalVariable), localVariables);
+                var localVariables =
+                    from p in Parameters
+                    select CompileLocalVariable(p);
 
                 var body = BodyNode.Accept(Compiler);
 
                 body = Block(
                     typeof(iObject),
                     Parameters.Select(_ => _.Local),
-                    CallFrame.Expressions.Push(null, Instance, arguments),
-                    TryFinally(body, CallFrame.Expressions.Pop())
+                    localVariables.Concat(new[] { body })
                 );
 
                 return Scope.CompileBody(body);
             }
 
             private static Expression CompileLocalVariable(Parameter parameter)
-            {
-                var expression = parameter.CompileLocalVariable();
-                return Assign(parameter.Local, expression);
-            }
+                => CallFrame.Expressions.AddLocal(
+                    CallFrame.Expressions.Current(),
+                    Assign(parameter.Local, parameter.CompileLocalVariable())
+                );
         }
     }
 }
