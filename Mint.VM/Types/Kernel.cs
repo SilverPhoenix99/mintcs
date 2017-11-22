@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Mint.MethodBinding;
+using Mint.Reflection;
 using Mint.Reflection.Parameters.Attributes;
 
 namespace Mint
@@ -110,9 +112,7 @@ namespace Mint
         [RubyMethod("warn", Visibility = Visibility.Private)]
         [RubyMethod("!~")]
         [RubyMethod("<=>")]
-        [RubyMethod("===")]
         [RubyMethod("=~")]
-        [RubyMethod("class")]
         [RubyMethod("clone")]
         [RubyMethod("define_singleton_method")]
         [RubyMethod("display")]
@@ -120,22 +120,10 @@ namespace Mint
         [RubyMethod("enum_for")]
         [RubyMethod("eql?")]
         [RubyMethod("extend")]
-        [RubyMethod("freeze")]
-        [RubyMethod("frozen?")]
-        [RubyMethod("hash")]
-        [RubyMethod("inspect")]
         [RubyMethod("instance_of?")]
         [RubyMethod("instance_variable_defined?")]
-        [RubyMethod("instance_variable_get")]
-        [RubyMethod("instance_variable_set")]
-        [RubyMethod("instance_variables")]
-        [RubyMethod("is_a?")]
-        [RubyMethod("itself")]
-        [RubyMethod("kind_of?")]
         [RubyMethod("method")]
         [RubyMethod("methods")]
-        [RubyMethod("nil?")]
-        [RubyMethod("object_id")]
         [RubyMethod("private_methods")]
         [RubyMethod("protected_methods")]
         [RubyMethod("public_method")]
@@ -144,23 +132,60 @@ namespace Mint
         [RubyMethod("remove_instance_variable")]
         [RubyMethod("respond_to?")]
         [RubyMethod("send")]
-        [RubyMethod("singleton_class")]
         [RubyMethod("singleton_method")]
         [RubyMethod("singleton_methods")]
         [RubyMethod("taint")]
         [RubyMethod("tainted?")]
         [RubyMethod("tap")]
         [RubyMethod("to_enum")]
-        [RubyMethod("to_s")]
         [RubyMethod("trust")]
         [RubyMethod("untaint")]
         [RubyMethod("untrust")]
         [RubyMethod("untrusted?")]
-        public static iObject NotImplemented(this iObject instance, [Rest] Array args)
-            => throw new NotImplementedException();
+        public static iObject NotImplemented(this iObject instance, [Rest] Array args, [Block] object block)
+            => throw new NotImplementedException(
+                $"{nameof(Kernel)}#{CallFrame.Current.CallSite.MethodName.Name}"
+            );
 
+        [RubyMethod("nil?")]
+        public static bool IsNil(this iObject instance) => false;
+
+        [RubyMethod("itself")]
+        public static iObject Itself(this iObject instance) => instance;
+
+        [RubyMethod("===")]
+        public static bool Equals(this iObject left, iObject right) => Object.ToBool(Class.EqOp.Call(left, right));
+
+        [RubyMethod("is_a?")]
+        [RubyMethod("kind_of?")]
+        public static bool IsA(this iObject instance, iObject arg)
+        {
+            if(!(arg is Module module))
+            {
+                throw new TypeError("class or module required");
+            }
+
+            var instanceClass = instance as Class ?? instance.EffectiveClass;
+
+            return instanceClass.Ancestors.Any(c => c.Equals(module));
+        }
+
+#pragma warning disable CS1720
         internal static ModuleBuilder<iObject> Build() => ModuleBuilder<iObject>.DescribeModule(nameof(Kernel))
             .AutoDefineMethods(typeof(Kernel))
+
+            .AttrReader("class", _ => _.Class )
+            .DefMethod("freeze", _ => _.Freeze() )
+            .DefMethod("frozen?", Reflector<iObject>.Getter(_ => _.Frozen) )
+            .DefMethod("hash", _ => _.GetHashCode() )
+            .DefMethod("inspect", _ => _.Inspect() )
+            .DefMethod("instance_variable_get", _ => _.InstanceVariableGet(default(Symbol)) )
+            .DefMethod("instance_variable_set", _ => _.InstanceVariableSet(default(Symbol), default) )
+            .AttrReader("instance_variables", _ => _.InstanceVariables )
+            .AttrReader("object_id", _ => _.Id )
+            .AttrReader("singleton_class", _ => _.SingletonClass )
+            .DefMethod("to_s", _ => _.ToString() )
         ;
+#pragma warning restore CS1720
     }
 }

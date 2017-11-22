@@ -62,8 +62,8 @@ namespace Mint.MethodBinding
                 }
                 catch(RecompilationRequiredException)
                 {
-                    // caught while a method was being redefined.
-                    // give a second chance to recover.
+                    // caught while a method was being undefined.
+                    // give a second chance to recover (which will possibly call method_missing).
                     return CallCache.Call();
                 }
             }

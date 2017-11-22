@@ -26,12 +26,12 @@ namespace Mint.UnitTests
         public void TestIsA()
         {
             var value = new FalseClass();
-            Assert.IsTrue(Object.IsA(value, Class.FALSE));
-            Assert.IsTrue(Object.IsA(value, Class.OBJECT));
-            Assert.IsTrue(Object.IsA(value, Class.BASIC_OBJECT));
-            Assert.IsFalse(Object.IsA(value, Class.FIXNUM));
-            Assert.IsFalse(Object.IsA(value, Class.SYMBOL));
-            Assert.IsFalse(Object.IsA(value, Class.TRUE));
+            Assert.IsTrue(value.IsA(Class.FALSE));
+            Assert.IsTrue(value.IsA(Class.OBJECT));
+            Assert.IsTrue(value.IsA(Class.BASIC_OBJECT));
+            Assert.IsFalse(value.IsA(Class.FIXNUM));
+            Assert.IsFalse(value.IsA(Class.SYMBOL));
+            Assert.IsFalse(value.IsA(Class.TRUE));
         }
 
         [Test]

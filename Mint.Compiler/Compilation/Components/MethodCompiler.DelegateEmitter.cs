@@ -62,7 +62,8 @@ namespace Mint.Compilation.Components
                 body = Block(
                     typeof(iObject),
                     Parameters.Select(_ => _.Local),
-                    localVariables.Concat(new[] { body })
+                    Block(localVariables),
+                    body
                 );
 
                 return Scope.CompileBody(body);

@@ -56,7 +56,7 @@ namespace Mint
 
                     Console.WriteLine();
                 }
-                catch(Exception e)
+                catch(System.Exception e)
                 {
                     Console.WriteLine(e);
                     Console.WriteLine();

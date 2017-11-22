@@ -85,13 +85,13 @@ namespace Mint.UnitTests
         {
             var fixnum = new Fixnum();
 
-            Assert.IsTrue(Object.IsA(fixnum, Class.FIXNUM));
-            Assert.IsTrue(Object.IsA(fixnum, Class.INTEGER));
-            Assert.IsTrue(Object.IsA(fixnum, Class.NUMERIC));
-            Assert.IsTrue(Object.IsA(fixnum, Class.OBJECT));
-            Assert.IsTrue(Object.IsA(fixnum, Class.BASIC_OBJECT));
-            Assert.IsFalse(Object.IsA(fixnum, Class.STRING));
-            Assert.IsFalse(Object.IsA(fixnum, Class.FLOAT));
+            Assert.IsTrue(fixnum.IsA(Class.FIXNUM));
+            Assert.IsTrue(fixnum.IsA(Class.INTEGER));
+            Assert.IsTrue(fixnum.IsA(Class.NUMERIC));
+            Assert.IsTrue(fixnum.IsA(Class.OBJECT));
+            Assert.IsTrue(fixnum.IsA(Class.BASIC_OBJECT));
+            Assert.IsFalse(fixnum.IsA(Class.STRING));
+            Assert.IsFalse(fixnum.IsA(Class.FLOAT));
         }
 
         [Test]

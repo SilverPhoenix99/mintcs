@@ -64,7 +64,7 @@ namespace Mint
                 .AttrReader("name", _ => _.Name )
                 .DefMethod("to_s", _ => _.ToString() )
                 .DefMethod("==", () => ReferenceEquals(default, default) )
-                .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => Object.IsA(arg, mod)) )
+                .DefLambda("===", (Func<iObject, iObject, bool>) ((mod, arg) => arg.IsA(mod)) )
             ;
 
             CLASS = ModuleBuilder<Class>.DescribeClass(MODULE)
@@ -80,28 +80,7 @@ namespace Mint
             MODULE.effectiveClass = CLASS;
             CLASS.effectiveClass = CLASS;
 
-            Module kernel = ModuleBuilder<iObject>.DescribeModule("Kernel")
-                .AttrReader("class", _ => _.Class )
-                .AttrReader("singleton_class", _ => _.SingletonClass )
-                .DefMethod("to_s", () => default(FrozenObject).ToString() )
-                .DefMethod("inspect", () => default(FrozenObject).Inspect() )
-                .DefLambda("nil?", (Func<iObject, bool>) (_ => false) )
-                .DefLambda("frozen?", (Func<iObject, bool>) (_ => _.Frozen) )
-                .DefMethod("freeze", _ => _.Freeze() )
-                .DefMethod("hash", _ => _.GetHashCode() )
-                .DefLambda("itself", (Func<iObject, iObject>) (_ => _) )
-                .AttrReader("object_id", _ => _.Id )
-                .DefLambda("===", (Func<iObject, iObject, bool>) ((l, r) => Object.ToBool(EqOp.Call(l, r))) )
-                .DefMethod("is_a?", () => Object.IsA(default, default) )
-                .Alias("kind_of?", "is_a?")
-                .DefMethod("instance_variable_get", () => default(iObject).InstanceVariableGet(default(Symbol)) )
-                .DefMethod("instance_variable_set", () =>
-                    default(iObject).InstanceVariableSet(default(Symbol), default)
-                )
-                .AttrReader("instance_variables", () => default(iObject).InstanceVariables )
-            ;
-
-            OBJECT.Include(kernel);
+            OBJECT.Include(Kernel.Build());
 
             NUMERIC = ModuleBuilder<Object>.DescribeClass("Numeric")
                 .Allocator(() => new Object(NUMERIC))

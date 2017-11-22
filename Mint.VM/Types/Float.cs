@@ -68,8 +68,8 @@ namespace Mint
                     return Value.Equals((double) (Fixnum) other);
                 case Bignum _:
                     return other.Equals(this);
-                case iObject instance:
-                    return Object.ToBool(Class.EqOp.Call(instance, this));
+                case iObject obj:
+                    return Object.ToBool(Class.EqOp.Call(obj, this));
             }
             return false;
         }

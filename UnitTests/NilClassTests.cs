@@ -47,11 +47,11 @@ namespace Mint.UnitTests
         {
             var instance = new NilClass();
 
-            Assert.IsTrue(Object.IsA(instance, Class.NIL));
-            Assert.IsTrue(Object.IsA(instance, Class.OBJECT));
-            Assert.IsTrue(Object.IsA(instance, Class.BASIC_OBJECT));
-            Assert.IsFalse(Object.IsA(instance, Class.STRING));
-            Assert.IsFalse(Object.IsA(instance, Class.TRUE));
+            Assert.IsTrue(instance.IsA(Class.NIL));
+            Assert.IsTrue(instance.IsA(Class.OBJECT));
+            Assert.IsTrue(instance.IsA(Class.BASIC_OBJECT));
+            Assert.IsFalse(instance.IsA(Class.STRING));
+            Assert.IsFalse(instance.IsA(Class.TRUE));
         }
 
         [Test]

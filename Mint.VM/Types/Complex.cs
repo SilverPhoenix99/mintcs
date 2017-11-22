@@ -12,12 +12,12 @@ namespace Mint
                 throw new TypeError("can't convert nil into Complex");
             }
             
-            if(!Object.IsA(real, Class.INTEGER) && !Object.IsA(real, Class.FLOAT))
+            if(!real.IsA(Class.INTEGER) && !real.IsA(Class.FLOAT))
             {
                 throw new TypeError($"can't convert {real.Class} into Complex");
             }
 
-            if(!Object.IsA(imag, Class.INTEGER) && !Object.IsA(imag, Class.FLOAT))
+            if(!imag.IsA(Class.INTEGER) && !imag.IsA(Class.FLOAT))
             {
                 throw new TypeError($"can't convert {imag.Class} into Complex");
             }

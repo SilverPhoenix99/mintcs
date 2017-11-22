@@ -25,8 +25,10 @@ namespace Mint
         [RubyMethod("singleton_method_added", Visibility = Visibility.Private)]
         [RubyMethod("singleton_method_removed", Visibility = Visibility.Private)]
         [RubyMethod("singleton_method_undefined", Visibility = Visibility.Private)]
-        public static iObject NotImplemented(this iObject instance, [Rest] Array args)
-            => throw new NotImplementedException();
+        public static iObject NotImplemented(this iObject instance, [Rest] Array args, [Block] object block)
+            => throw new NotImplementedException(
+                $"{nameof(BasicObject)}#{CallFrame.Current.CallSite.MethodName.Name}"
+            );
 
         [RubyMethod("!")]
         public static bool Not(this iObject instance) => !Object.ToBool(instance);
@@ -35,16 +37,15 @@ namespace Mint
         public static bool NotEq(this iObject instance, iObject other)
             => !Object.ToBool( Class.EqOp.Call(instance, other) );
 
+#pragma warning disable CS1720
         public static ModuleBuilder<Object> Build() =>
             ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .Allocator(Allocate)
                 .AutoDefineMethods(typeof(BasicObject))
 
-                #pragma warning disable CS1720
                 .AttrReader("__id__",
                     () => default(iObject).Id
                 )
-                #pragma warning restore CS1720
                 
                 .DefMethod("==",
                     // ReSharper disable once EqualExpressionComparison
@@ -53,5 +54,6 @@ namespace Mint
                 
                 .Alias("equal?", "==")
         ;
+#pragma warning restore CS1720
     }
 }
