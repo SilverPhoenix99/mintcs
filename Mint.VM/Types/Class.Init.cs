@@ -118,27 +118,7 @@ namespace Mint
             NIL = NilClass.Build();
             FALSE = FalseClass.Build();
             TRUE = TrueClass.Build();
-
-            ARRAY = ModuleBuilder<Array>.DescribeClass()
-                .GenerateAllocator()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-                .AttrAccessor("[]", _ => _[default] )
-                .DefMethod("clear", _ => _.Clear() )
-                .DefMethod("join", _ => _.Join(default) )
-                .DefMethod("replace", _ => _.Replace(default) )
-                .DefMethod("compact", _ => _.Compact() )
-                .DefMethod("compact!", _ => _.CompactSelf() )
-                .DefMethod("reverse", _ => _.Reverse() )
-                .DefMethod("reverse!", _ => _.ReverseSelf() )
-                .DefMethod("first", _ => _.First() )
-                .DefMethod("last", _ => _.Last() )
-                .DefMethod("uniq", _ => _.Uniq() )
-                .DefMethod("uniq!", _ => _.UniqSelf() )
-                .DefMethod("<<", _ => _.Add(default) )
-                .DefMethod("&", _ => _.AndAlso(default) )
-                .DefMethod("==", _ => _.Equals(default(iObject)) )
-            ;
+            ARRAY = Array.Build();
 
             HASH = ModuleBuilder<Hash>.DescribeClass()
                 .GenerateAllocator()

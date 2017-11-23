@@ -5,7 +5,7 @@ using Mint.Reflection.Parameters.Attributes;
 namespace Mint
 {
     [RubyClass(Superclass = null)]
-    internal static class BasicObject
+    public static class BasicObject
     {
         /*
         constants:
@@ -38,7 +38,7 @@ namespace Mint
             => !Object.ToBool( Class.EqOp.Call(instance, other) );
 
 #pragma warning disable CS1720
-        public static ModuleBuilder<Object> Build() =>
+        internal static ModuleBuilder<Object> Build() =>
             ModuleBuilder<Object>.DescribeClass(null, "BasicObject")
                 .Allocator(Allocate)
                 .AutoDefineMethods(typeof(BasicObject))
