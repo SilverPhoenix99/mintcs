@@ -5,7 +5,7 @@ using System.Globalization;
 namespace Mint
 {
     [RubyClass]
-    public struct Float : iObject
+    public readonly struct Float : iObject
     {
         private static readonly IDictionary<double, long> ID_MAP = new Dictionary<double, long>();
 

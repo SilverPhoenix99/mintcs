@@ -6,7 +6,7 @@ using Mint.Reflection;
 namespace Mint
 {
     [RubyClass]
-    public struct NilClass : iObject
+    public readonly struct NilClass : iObject
     {
         [RubyMethod("object_id")]
         public long Id => 0x4;

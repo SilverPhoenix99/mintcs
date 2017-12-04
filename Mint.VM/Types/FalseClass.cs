@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Mint
 {
     [RubyClass]
-    public struct FalseClass : iObject
+    public readonly struct FalseClass : iObject
     {
         [RubyMethod("object_id")]
         public long Id => 0x0;

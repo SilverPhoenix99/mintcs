@@ -245,7 +245,8 @@ namespace Mint
                 }
             }
         }
-        
+
+        [RubyMethod("+")]
         public static Array operator +(Array left, Array right)
         {
             if(left == null || right == null)
@@ -256,7 +257,8 @@ namespace Mint
             result.list.AddRange(right);
             return result;
         }
-        
+
+        [RubyMethod("*")]
         public static Array operator *(Array left, Fixnum right)
         {
             if(left == null)
@@ -271,8 +273,10 @@ namespace Mint
             return result;
         }
 
+        [RubyMethod("*")]
         public static String operator *(Array left, String right) => left.Join(right);
 
+        [RubyMethod("-")]
         public static Array operator -(Array left, Array right)
         {
             if (left == null || right == null)
@@ -288,9 +292,6 @@ namespace Mint
 
         [RubyMethod("initialize", Visibility = Visibility.Private)]
         [RubyMethod("initialize_copy", Visibility = Visibility.Private)]
-        [RubyMethod("*")]
-        [RubyMethod("+")]
-        [RubyMethod("-")]
         [RubyMethod("<=>")]
         [RubyMethod("any?")]
         [RubyMethod("assoc")]

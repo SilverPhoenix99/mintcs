@@ -119,16 +119,7 @@ namespace Mint
             FALSE = FalseClass.Build();
             TRUE = TrueClass.Build();
             ARRAY = Array.Build();
-
-            HASH = ModuleBuilder<Hash>.DescribeClass()
-                .GenerateAllocator()
-                .DefMethod("to_s", _ => _.ToString() )
-                .DefMethod("inspect", _ => _.Inspect() )
-                .AttrReader("count", _ => _.Count )
-                .AttrAccessor("[]", _ => _[default] )
-                .DefMethod("merge", _ => _.Merge(default) )
-                .DefMethod("merge!", _ => _.MergeSelf(default) )
-            ;
+            HASH = Hash.Build();
 
             PROC = ModuleBuilder<Proc>.DescribeClass()
             ;

@@ -7,7 +7,7 @@ using Mint.Reflection;
 
 namespace Mint
 {
-    public struct Symbol : iObject
+    public readonly struct Symbol : iObject
     {
         private readonly Sym sym;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Mint
 {
     [RubyClass]
-    public struct Fixnum : iObject
+    public readonly struct Fixnum : iObject
     {
         public const int BYTE_SIZE = sizeof(long);
         public const int BIT_SIZE = 8 * BYTE_SIZE;
