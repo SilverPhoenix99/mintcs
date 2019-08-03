@@ -151,7 +151,6 @@ class ModulePrinter
   end
 
   private def calculate_slices(lengths)
-    console_width = self.class.console_size[0]
     (1..lengths.count).each do |slice|
       width = lengths.each_slice(slice).map(&:max).reduce(&:+)
       return slice if width <= console_width
@@ -175,8 +174,8 @@ class ModulePrinter
     puts "\e[3#{color};1m#{header}\e[0m:"
   end
 
-  def self.console_size
-    `stty size`.split.map(&:to_i).reverse
+  private def console_width
+    `ruby -rio/console -e "puts IO.console.winsize.last"`.to_i
   end
 end
 
